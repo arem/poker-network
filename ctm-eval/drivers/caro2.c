@@ -907,7 +907,16 @@ main (int argc, char *argv[])
   pegged_common = 0;
   seen_cards_already = false;
 
-  if (argc != 1)
+  if (argc == 1)
+    {
+#if defined (__MINGW32__)
+      printf ("Type 18 hole cards separated by spaces.\n"
+	      "Then hit the Enter key and wait a few seconds.\n"
+	      "Type Ctrl-Z when you want to quit.\n"
+	      "e.g.: as ad 2s 2d 3s 3d 4s 4d 5s 5d 6s 6d 7s 7d 8s 8d 9s 9d\n");
+#endif
+    }
+  else
     {
       for (i = 1; i < argc; ++i)
 	{
