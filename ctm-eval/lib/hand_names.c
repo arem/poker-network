@@ -1,5 +1,5 @@
 char rcsid_hand_names[] =
-        "$Id";
+        "$Id$";
 
 /*
  *  hand_names.c: a poker helper table

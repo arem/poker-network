@@ -1,5 +1,5 @@
 char rcsid_dump_rank[] =
-        "$Id";
+        "$Id$";
 
 /*
  *  dump_rank.c: a poker helper routine

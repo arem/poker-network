@@ -1,5 +1,5 @@
 char rcsid_string_to_card[] =
-        "$Id";
+        "$Id$";
 
 
 /*

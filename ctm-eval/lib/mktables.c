@@ -1,5 +1,5 @@
 char rcsid_mktables[] =
-        "$Id";
+        "$Id$";
 
 /*
  *  mktables.c: a program to generate the tables required by eval.h

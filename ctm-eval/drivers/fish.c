@@ -1,5 +1,5 @@
 char rcsid_fish[] =
-	"$Id";
+	"$Id$";
 
 /*
  *  fish.c: a rewrite of Roy T. Hashimoto's classic "fish" poker hand
