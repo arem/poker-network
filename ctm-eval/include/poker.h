@@ -1,6 +1,9 @@
+#if	!defined(__POKER__)
+#define	__POKER__
+
 /*
  * NOTE:  This code was written to be useful for single deck poker games
- *	  that don't involve wild cards and that never have ten cards or
+ *	  that don't involve wild cards and that never have eight cards or
  *	  more in a given hand to evaluate.
  *
  *	  Specifically I wrote this code for Hold 'em simulators running
@@ -32,7 +35,7 @@ typedef enum {
 } hand_t;
 
 typedef enum {
-    deuce = 2,	/* one would probably work, but why confuse things */
+    deuce = 0,
     trey,
     four,
     five,
@@ -113,3 +116,5 @@ typedef enum { false, true } boolean_t;
 extern int         n_bits_in_13[1 << 13];
 extern int top_five_cards_in_13[1 << 13];
 extern int       top_card_in_13[1 << 13];
+
+#endif	/* !defined(__POKER__) */
