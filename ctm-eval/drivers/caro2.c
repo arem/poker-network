@@ -303,7 +303,7 @@ loop:
 	if (score[i] > high)
 	  high = score[i];
       }
-    printf (" high = %9d\n  low = %9d\nratio = %f", high, low,
+    printf (" high = %9d\n  low = %9d\nratio = %f\n", high, low,
 	    (float) high / low);
   }
 
