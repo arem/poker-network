@@ -453,28 +453,84 @@ while (0)
 
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
 
+
 PRIVATE void
 new_random_keith_hand (uint64 hands[9])
 {
   static int suit_shifts[] = {  0,  0,  0,  0,  0,
 			       13, 13, 13, 13, 13,
 			       26, 26, 26, 26,
-			       39, 39, 39, 39, }, *ssp;
+			       39, 39, 39, 39, };
 
-  static int low_cards[] = { 0, 1, 2, 3, 4, 5, -1}, *lcp;
-  static int invert[] = { 0, 1, 2, 3, 4, 5 };
-  static int extra_low_index = 6;
+  static int ranks[] =
+  {
+    ace, four,		/* 0 1 */
+    king, deuce,	/* 2 3 */
+    queen, trey,	/* 4 5 */
+    jack, five,		/* 6 7 */
+    ten, six,		/* 8 9 */
+    nine, seven,	/* 10 11 */
+    eight, seven,	/* 12 13 */
+    four, deuce,	/* 14 15*/
+    four, trey,		/* 16 17 */
+  };
+
   int i, j;
-  int rank14, rank15, rank16, rank17;
-  uint64 dead_cards, new_dead;
 
   do
     {
+      int ss1, ss2;
+
       i = random () % NELEM (suit_shifts);
       do
 	j = random () % NELEM (suit_shifts);
       while (i == j);
       EXCHANGE (suit_shifts, i, j);
+
+      ss1 = suit_shifts[1]; /* one of our fours */
+#if !defined (LETGCCWAIL)
+      ss2 = 0;
+#endif
+      for (i = 0; i < 18; ++i)
+	if (suit_shifts[i] != ss1)
+	  {
+	    ss2 = suit_shifts[i];
+	    EXCHANGE (suit_shifts, i, 14);
+	    break;
+	  }
+      for (i = 0; i < 18; ++i)
+	if (suit_shifts[i] != ss1 &&
+	    suit_shifts[i] != ss2)
+	  {
+	    EXCHANGE (suit_shifts, i, 16);
+	    break;
+	  }
+
+      ss1 = suit_shifts[3]; /* one of the deuces */
+      for (i = 0; i < 18; ++i)
+	if (i != 1 && i != 14 && i != 16 && suit_shifts[i] != ss1)
+	  {
+	    EXCHANGE (suit_shifts, i, 15);
+	    break;
+	  }
+
+      ss1 = suit_shifts[5]; /* one of the treys */
+      for (i = 0; i < 18; ++i)
+	if (i != 1 && i != 14 && i != 16 && i != 3 && i != 15 &&
+	    suit_shifts[i] != ss1)
+	  {
+	    EXCHANGE (suit_shifts, i, 17);
+	    break;
+	  }
+
+      ss1 = suit_shifts[11]; /* one of the sevens */
+      for (i = 0; i < 18; ++i)
+	if (i != 1 && i != 14 && i != 16 && i != 3 && i != 15 &&
+	    i != 5 && i != 17 && suit_shifts[i] != ss1)
+	  {
+	    EXCHANGE (suit_shifts, i, 13);
+	    break;
+	  }
     }
   while ((suit_shifts[ 0] == suit_shifts[ 1]) ||
 	 (suit_shifts[ 2] == suit_shifts[ 3]) ||
@@ -484,95 +540,11 @@ new_random_keith_hand (uint64 hands[9])
 	 (suit_shifts[10] == suit_shifts[11]) ||
 	 (suit_shifts[12] == suit_shifts[13]));
 
-  i = random () % NELEM (low_cards);
-  do
-    j = random () % NELEM (low_cards);
-  while (i == j);
-  EXCHANGE (low_cards, i, j);
-
-  if (i == extra_low_index)
-    extra_low_index = j;
-  else if (j == extra_low_index)
-    extra_low_index = i;
-
-  if (i != extra_low_index)
-    invert[low_cards[i]] = i;
-
-  if (j != extra_low_index)
-    invert[low_cards[j]] = j;
-
-  do
-    low_cards[extra_low_index] = random () % 6; /* deuce through 7 */
-  while (suit_shifts[2 * extra_low_index + 1]
-	 == suit_shifts[2 * invert[low_cards[extra_low_index]] + 1]);
-
-  dead_cards = 0;
-
-  for (i = 0; i < 7; ++i)
+  for (i = 0; i < 9; ++i)
     {
-      dead_cards |= ((uint64)1 <<       (12-i)) << suit_shifts[2*i];
-      dead_cards |= ((uint64)1 << low_cards[i]) << suit_shifts[2*i+1];
+      hands[i] = ((((uint64) 1 << ranks[2*i]) << suit_shifts[2*i]) | 
+		  (((uint64) 1 << ranks[2*i+1]) << suit_shifts[2*i+1]));
     }
-
-  do
-    {
-      rank14 = random () % 5; /* deuce through 6 */
-      new_dead = ((uint64) 1 << rank14) << suit_shifts[14];
-    }
-  while (dead_cards & new_dead);
-  dead_cards |= new_dead;
-
-  do
-    {
-      rank15 = random () % 5; /* deuce through 6 */
-      new_dead = ((uint64) 1 << rank15) << suit_shifts[15];
-    }
-  while (dead_cards & new_dead);
-  dead_cards |= new_dead;
-
-  do
-    {
-      rank16 = random () % 5; /* deuce through 6 */
-      new_dead = ((uint64) 1 << rank16) << suit_shifts[16];
-    }
-  while (dead_cards & new_dead);
-  dead_cards |= new_dead;
-
-  do
-    {
-      rank17 = random () % 5; /* deuce through 6 */
-      new_dead = ((uint64) 1 << rank17) << suit_shifts[17];
-    }
-  while (dead_cards & new_dead);
-
-  ssp = suit_shifts;
-  lcp = low_cards;
-  hands[0]  = ((uint64)1 <<     12) << *ssp++;
-  hands[0] |= ((uint64)1 << *lcp++) << *ssp++;
-
-  hands[1]  = ((uint64)1 <<     11) << *ssp++;
-  hands[1] |= ((uint64)1 << *lcp++) << *ssp++;
-
-  hands[2]  = ((uint64)1 <<     10) << *ssp++;
-  hands[2] |= ((uint64)1 << *lcp++) << *ssp++;
-
-  hands[3]  = ((uint64)1 <<      9) << *ssp++;
-  hands[3] |= ((uint64)1 << *lcp++) << *ssp++;
-
-  hands[4]  = ((uint64)1 <<      8) << *ssp++;
-  hands[4] |= ((uint64)1 << *lcp++) << *ssp++;
-
-  hands[5]  = ((uint64)1 <<      7) << *ssp++;
-  hands[5] |= ((uint64)1 << *lcp++) << *ssp++;
-
-  hands[6]  = ((uint64)1 <<      6) << *ssp++;
-  hands[6] |= ((uint64)1 << *lcp++) << *ssp++;
-
-  hands[7]  = ((uint64)1 << rank14) << *ssp++;
-  hands[7] |= ((uint64)1 << rank15) << *ssp++;
-
-  hands[8]  = ((uint64)1 << rank16) << *ssp++;
-  hands[8] |= ((uint64)1 << rank17) << *ssp++;
 }
 
 PUBLIC int
