@@ -66,6 +66,14 @@ typedef enum {
 
 #define	N_RANK	(ace - deuce + 1)
 
+/*
+ * These two are used by rank_eval which doesn't use the cards_u structure.
+ * Be sure you understand the difference.
+ */
+
+#define	SUIT_MASK	( (1 << N_RANK) - 1 )	/* Two's complement! */
+#define SUIT_SHIFT	( N_RANK )
+
 typedef	unsigned char uint8;
 typedef	unsigned int uint32;
 
