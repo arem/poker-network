@@ -87,25 +87,29 @@ while (false)
 
 /* globals -- ick */
 PRIVATE int lcd;
-PRIVATE int reward_table[10]; /* NOTE: 1-based array, not 0-based */
+PRIVATE int reward_table[MAX_TEXAS_HOLDEM_HANDS+1]; /* NOTE: 1-based array,
+						       not 0-based */
 
 PRIVATE void
-score_hands (uint32 score[9], uint64 hands[9],
+score_hands (int n_hands, uint32 score[], uint64 hands[],
 	     uint64 *dead_cardsp, uint64 pegged_cards, uint8 n_cards)
 {
   uint32 val, high_val;
-  int to_reward[9], *rewardp;
-  rank_set_t card_diffs[8 * 4], *card_diffp;
+  int *to_reward, *rewardp;
+  rank_set_t *card_diffs, *card_diffp;
   int reward;
   int i;
   uint64 card1, card2, card3, card4, card5;
   uint64 n1, n2, n3, n4, n5;
   uint64 dead_cards;
 
-  memset (score, 0, sizeof score[0] * 9);
+  to_reward = malloc (sizeof *to_reward * n_hands);
+  card_diffs = malloc (sizeof *card_diffs * (n_hands-1) * 4);
+
+  memset (score, 0, sizeof score[0] * n_hands);
   dead_cards = *dead_cardsp;
   card_diffp = card_diffs;
-  for (i = 0; i < 8; ++i)
+  for (i = 0; i < n_hands-1; ++i)
     {
       rank_set_t h0, h1, c0, c1, d0, d1, s0, s1;
 
@@ -204,7 +208,7 @@ loop:
 				  }
 				*rewardp++ = i;
 			      }
-			    if (++i <= 8)
+			    if (++i < n_hands)
 			      {
 				hearts   ^= *card_diffp++;
 				diamonds ^= *card_diffp++;
@@ -229,20 +233,22 @@ loop:
 PUBLIC int
 main (int argc, char *argv[])
 {
-  uint64 hands[9];
-  uint32 score[9];
+  uint64 hands[MAX_TEXAS_HOLDEM_HANDS]; /* we might want to use an alloca'd
+					   buffer to help locality of
+					   reference (since we'll be hitting
+					   hands[] and score[] in the evaluate
+					   function).  In fact, it may
+					   make sense to move the variables
+					   off the stack. */
+  uint32 score[MAX_TEXAS_HOLDEM_HANDS];
   int i;
   uint8 n_cards;
   uint64 temp_card, dead_cards, pegged_common;
   boolean_t seen_cards_already;
   int hole_card_no;
-
-  lcd = poker_lcd (9);
+  int n_hands;
 
   hole_card_no = 0;
-  memset (hands, 0, sizeof hands);
-  for (i = 1; i <= 9; ++i)
-    reward_table[i] = lcd / i;
 
   n_cards = 5;
   dead_cards = 0;
@@ -297,20 +303,37 @@ main (int argc, char *argv[])
 	    }
 	  else
 	    {
-	      dead_cards |= temp_card;
-	      hands[hole_card_no++/2] |= temp_card;
+	      if (hole_card_no / 2 >= NELEM (hands))
+		{
+		  fprintf (stderr, "Too many starting hands\n");
+		  exit (1);
+		}
+	      else
+		{
+		  dead_cards |= temp_card;
+		  if (hole_card_no & 1)
+		    hands[hole_card_no++/2] |= temp_card;
+		  else
+		    hands[hole_card_no++/2] = temp_card;
+		}
 	    }
 	}
     }
   
-  if (hole_card_no != 18)
+  if (hole_card_no & 1)
     {
-      fprintf (stderr, "Wrong number of hole cards\n");
+      fprintf (stderr, "Odd number of hole cards\n");
       exit (1);
     }
 
-  score_hands (score, hands, &dead_cards, pegged_common, n_cards);
-  for (i = 0; i < hole_card_no / 2; ++i)
+  n_hands = hole_card_no / 2;
+
+  lcd = poker_lcd (n_hands);
+  for (i = 1; i <= n_hands; ++i)
+    reward_table[i] = lcd / i;
+
+  score_hands (n_hands, score, hands, &dead_cards, pegged_common, n_cards);
+  for (i = 0; i < n_hands; ++i)
     {
       printf ("%d\n", score[i]);
     }
