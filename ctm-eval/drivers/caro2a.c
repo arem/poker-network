@@ -458,14 +458,14 @@ enum { H = 0, D = 13, C = 26, S = 39 };
 PRIVATE void
 new_random_keith_hand (uint64 hands[9])
 {
-  static int suit_shifts[] = {  C, D, /* 0 1 */
-				D, C, /* 2 3 */
+  static int suit_shifts[] = {  D, H, /* 0 1 */
+				H, D, /* 2 3 */
 				S, C, /* 4 5 */
 				S, H, /* 6 7 */
-				D, C, /* 8 9 */
-			        D, D, /* 10 11 */
-				D, H, /* 12 13 */
-			        H, H, /* 14 15 */
+				D, H, /* 8 9 */
+			        H, D, /* 10 11 */
+				D, C, /* 12 13 */
+			        C, C, /* 14 15 */
 				S, S, /* 16 17 */
   };
 
@@ -473,13 +473,13 @@ new_random_keith_hand (uint64 hands[9])
   {
     ace, four,		/* 0 1 */
     king, deuce,		/* 2 3 */
-    queen, seven,	/* 4 5 */
+    queen, trey,	/* 4 5 */
     jack, five,		/* 6 7 */
     ten, six,		/* 8 9 */
-    nine, trey,	/* 10 11 */
+    nine, seven,	/* 10 11 */
     eight, seven,	/* 12 13 */
-    four, trey,	/* 14 15*/
-    four, deuce,		/* 16 17 */
+    four, deuce,	/* 14 15*/
+    four, trey,		/* 16 17 */
   };
   int i;
   static int flip = 0;
