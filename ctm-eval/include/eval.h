@@ -1,3 +1,4 @@
+#include	<stdio.h>
 #include "poker.h"
 
 static inline uint32 is_flush( cards_u cards, cards_u *flushp )
@@ -34,35 +35,39 @@ static inline uint32 is_straight( cards_u cards )
 
     retval.eval_n = 0;
 
-    ranks = cards.cards_t.spades | cards.cards_t.clubs | cards.cards_t.diamonds | cards.cards_t.hearts;
-    if        (ranks &   ACE_STRAIGHT_MASK) {
+    ranks = cards.cards_t.spades   |
+	    cards.cards_t.clubs    |
+	    cards.cards_t.diamonds |
+	    cards.cards_t.hearts;
+
+    if        ((ranks &   ACE_STRAIGHT_MASK) ==   ACE_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = ace;
-    } else if (ranks &  KING_STRAIGHT_MASK) {
+    } else if ((ranks &  KING_STRAIGHT_MASK) ==  KING_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = king;
-    } else if (ranks & QUEEN_STRAIGHT_MASK) {
+    } else if ((ranks & QUEEN_STRAIGHT_MASK) == QUEEN_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = queen;
-    } else if (ranks &  JACK_STRAIGHT_MASK) {
+    } else if ((ranks &  JACK_STRAIGHT_MASK) ==  JACK_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = jack;
-    } else if (ranks &   TEN_STRAIGHT_MASK) {
+    } else if ((ranks &   TEN_STRAIGHT_MASK) ==   TEN_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = ten;
-    } else if (ranks &  NINE_STRAIGHT_MASK) {
+    } else if ((ranks &  NINE_STRAIGHT_MASK) ==  NINE_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = nine;
-    } else if (ranks & EIGHT_STRAIGHT_MASK) {
+    } else if ((ranks & EIGHT_STRAIGHT_MASK) == EIGHT_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = eight;
-    } else if (ranks & SEVEN_STRAIGHT_MASK) {
+    } else if ((ranks & SEVEN_STRAIGHT_MASK) == SEVEN_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = seven;
-    } else if (ranks &   SIX_STRAIGHT_MASK) {
+    } else if ((ranks &   SIX_STRAIGHT_MASK) ==   SIX_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = six;
-    } else if (ranks &  FIVE_STRAIGHT_MASK) {
+    } else if ((ranks &  FIVE_STRAIGHT_MASK) ==  FIVE_STRAIGHT_MASK) {
 	retval.eval_t.hand     = straight;
 	retval.eval_t.top_card = five;
     }
@@ -82,15 +87,41 @@ static inline uint32 is_four_of_a_kind( cards_u cards )
 	retval.eval_t.hand = four_of_a_kind;
 	retval.eval_t.top_card = top_card_in_13[ranks];
 	retval.eval_t.second_card = top_card_in_13[ranks ^
-		(cards.cards_t.spades | cards.cards_t.clubs | cards.cards_t.diamonds | cards.cards_t.hearts )];
+						      (cards.cards_t.spades   |
+						       cards.cards_t.clubs    |
+						       cards.cards_t.diamonds |
+						       cards.cards_t.hearts )];
     }
 
     return retval.eval_n;
 }
 
-static inline uint32 is_three_of_a_kind( cards_u cards )
+static inline uint32 three_helper( uint32 totest1, uint32 totest2,
+				   uint32 totest3, uint32 slop )
 {
     unsigned int ranks;
+    eval_u retval;
+
+    ranks = totest1 & totest2 & totest3;
+    if (ranks) {
+	retval.eval_t.hand = three_of_a_kind;
+	retval.eval_t.top_card = top_card_in_13[ranks];
+
+	/* NOTE: we don't have to worry about there being a pair here, */
+	/*	 because the full-house check won't care about anything */
+	/*	 that we return except for hand and top_card */
+
+	ranks ^= (totest1|totest2|totest3|slop);
+	retval.eval_t.second_card = top_card_in_13[ranks];
+	ranks ^= (1 << retval.eval_t.second_card);
+	retval.eval_t.third_card = top_card_in_13[ranks];
+    } else
+	retval.eval_n = 0;
+    return retval.eval_n;
+}
+
+static inline uint32 is_three_of_a_kind( cards_u cards )
+{
     uint32 temp;
     eval_u retval;
 
@@ -115,9 +146,34 @@ static inline uint32 is_three_of_a_kind( cards_u cards )
     return retval.eval_n;
 }
 
-static inline uint32 is_pair( cards_u cards )
+static inline uint32 two_helper( uint32 totest1, uint32 totest2,
+				 uint32 slop1,   uint32 slop2 )
 {
     unsigned int ranks;
+    eval_u retval;
+
+    ranks = totest1 & totest2;
+    if (ranks) {
+	retval.eval_t.hand     = two_pair;
+	retval.eval_t.top_card = top_card_in_13[ranks];
+
+	/* NOTE: we don't have to worry about there being anything better
+		 than a pair left over */
+
+	ranks ^= totest1 | totest2 | slop1 | slop2;
+	retval.eval_t.second_card = top_card_in_13[ranks];
+	ranks ^= (1 << retval.eval_t.second_card);
+	retval.eval_t.third_card  = top_card_in_13[ranks];
+	ranks ^= (1 << retval.eval_t.third_card);
+	retval.eval_t.fourth_card = top_card_in_13[ranks];
+    } else
+	retval.eval_n = 0;
+
+    return retval.eval_n;
+}
+
+static inline uint32 is_pair( cards_u cards )
+{
     uint32 temp;
     eval_u retval;
 
@@ -180,7 +236,7 @@ static inline uint32 eval( cards_u cards )
 		if (tempeval.eval_n) {
 		    tempcards.cards_n = cards.cards_n ^
 				      all_rank_in_13(tempeval.eval_t.top_card);
-		    tempeval2.eval_n = is_two_of_a_kind(tempcards);
+		    tempeval2.eval_n = is_pair(tempcards);
 		    if (tempeval2.eval_n) {
 			retval.eval_t.hand = full_house;
 			retval.eval_t.top_card = tempeval.eval_t.top_card;
@@ -190,7 +246,7 @@ static inline uint32 eval( cards_u cards )
 	    }
 	}
     } else {
-	retval.eval_n = is_straight(tempcards);
+	retval.eval_n = is_straight(cards);
 	if (!retval.eval_n) {
 	    retval.eval_n = is_three_of_a_kind(cards);
 	    if (!retval.eval_n) {
@@ -224,4 +280,63 @@ static inline uint32 eval( cards_u cards )
     }
 
     return retval.eval_n;
+}
+
+void dump_eval( eval_u eval )
+{
+    static const char *hand_names[] = {
+	"internal error",
+	"high hand",
+	"pair",
+	"two pair",
+	"three of a kind",
+	"straight",
+	"flush",
+	"full house",
+	"four of a kind",
+	"straight flush",
+    };
+    static const char *rank_names[] = {
+	"deuce",
+	"trey",
+	"four",
+	"five",
+	"six",
+	"seven",
+	"eight",
+	"nine",
+	"ten",
+	"jack",
+	"queen",
+	"king",
+	"ace",
+    };
+    printf("%s: %s", hand_names[eval.eval_t.hand],
+					     rank_names[eval.eval_t.top_card]);
+    if (eval.eval_t.second_card)
+	printf(", %s", rank_names[eval.eval_t.second_card]);
+    if (eval.eval_t.third_card)
+	printf(", %s", rank_names[eval.eval_t.third_card]);
+    if (eval.eval_t.fourth_card)
+	printf(", %s", rank_names[eval.eval_t.fourth_card]);
+    if (eval.eval_t.fifth_card)
+	printf(", %s", rank_names[eval.eval_t.fifth_card]);
+
+    printf("\n");
+}
+
+int main( void )
+{
+    eval_u to_eval;
+    cards_u cards;
+
+    cards.cards_t.spades = (1 << deuce) | (1 << trey);
+    cards.cards_t.clubs =  (1 << trey);
+    cards.cards_t.hearts = (1 << trey) | (1 << five);
+    cards.cards_t.diamonds = (1 << ace) | (1 << king);
+
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);
+    
+    return 0;
 }
