@@ -34,9 +34,19 @@ dump_hand (uint64 hand)
   i = ffs_uint64 (hand) - 1;
   hand ^= (uint64) 1 << i;
   j = ffs_uint64 (hand) - 1;
-  dump_card (j);
-  printf (" ");
-  dump_card (i);
+
+  if (i % 13 >= j %13)
+    {
+      dump_card (i);
+      printf (" ");
+      dump_card (j);
+    }
+  else
+    {
+      dump_card (j);
+      printf (" ");
+      dump_card (i);
+    }
 }
 
 PRIVATE void
