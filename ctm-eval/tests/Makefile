@@ -11,13 +11,13 @@ CFLAGS=-g -O4 -Wall -finline-functions -Winline
 all:	five_card_hands random_test newrandom
 
 five_card_hands:        $(FIVE_OBJ)
-	$(CC) -o five_card_hands $(FIVE_OBJ) $(LIB_POKER)
+	$(CC) $(CFLAGS) -o five_card_hands $(FIVE_OBJ) $(LIB_POKER)
 
 random_test:    $(RANDOM_OBJ)
-	$(CC) -o random_test $(RANDOM_OBJ) $(LIB_POKER)
+	$(CC) $(CFLAGS) -o random_test $(RANDOM_OBJ) $(LIB_POKER)
 
 newrandom:      $(NEWRANDOM_OBJ) $(LIB_POKER)
-	$(CC) -o newrandom $(NEWRANDOM_OBJ) $(LIB_POKER)
+	$(CC) $(CFLAGS) -o newrandom $(NEWRANDOM_OBJ) $(LIB_POKER)
 
 clean:
 	rm -f $(FIVE_OBJ) $(RANDOM_OBJ) $(NEWRANDOM_OBJ) \
