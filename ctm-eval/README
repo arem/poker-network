@@ -20,6 +20,12 @@ make_switch.c, make_switch.h and switch_preamble.c.  I modified the
 rest of my code to use Mat's new algorithm and wrote the file tree.h
 and tree_inlines.h with guidance from Mat.
 
+There's really no reason to keep the old evaluator around, and as such,
+"cmp2" should be replaced by "newcmp2".  Likewise, "cmpall" should be
+replaced by "newcmpall", but there's some other house-cleaning that
+needs to be done and I wanted to let people see our new code now before
+I rearrange things.
+
 Also included is a rewrite of Roy's fish program, which evaluates all
 possible hands given some initial starting conditions.
 
