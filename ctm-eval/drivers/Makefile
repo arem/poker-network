@@ -1,5 +1,6 @@
 FISH_OBJ=fish.o
 CMP2_OBJ=cmp2.o
+CMPN_OBJ=cmpn.o
 CARO2_OBJ=caro2.o
 CARO2A_OBJ=caro2a.o
 CARO2B_OBJ=caro2b.o
@@ -12,13 +13,16 @@ CC=gcc
 CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer
 # CFLAGS=-g -Wall
 
-all:    fish cmp2 cmpall caro2 caro2a caro2b
+all:    fish cmp2 cmpn cmpall caro2 caro2a caro2b
 
 fish:   $(FISH_OBJ)
 	$(CC) $(CFLAGS) -o fish $(FISH_OBJ) $(LIB_POKER)
 
 cmp2:   $(CMP2_OBJ)
 	$(CC) $(CFLAGS) -o cmp2 $(CMP2_OBJ) $(LIB_POKER)
+
+cmpn:   $(CMPN_OBJ)
+	$(CC) $(CFLAGS) -o cmpn $(CMPN_OBJ) $(LIB_POKER)
 
 cmpall: $(CMPALL_OBJ)
 	$(CC) $(CFLAGS) -o cmpall $(CMPALL_OBJ) $(LIB_POKER)
