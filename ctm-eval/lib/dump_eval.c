@@ -4,7 +4,7 @@ char rcsid_dump_eval[] =
 /*
  *  dump_eval.c: a poker helper routine
  *
- *  Copyright (C) 1993, 1994  Clifford T. Matthews
+ *  Copyright (C) 1993 - 1995  Clifford T. Matthews
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,15 +27,15 @@ char rcsid_dump_eval[] =
 
 PUBLIC void dump_eval( eval_u eval )
 {
-    printf("%s: %s", hand_names[eval.eval_t.hand],
+    printf("%s: %s", hand_info[eval.eval_t.hand].hand_name,
 					     rank_names[eval.eval_t.top_card]);
-    if (eval.eval_t.second_card)
+    if (hand_info[eval.eval_t.hand].n_significant_ranks >= 2)
 	printf(", %s", rank_names[eval.eval_t.second_card]);
-    if (eval.eval_t.third_card)
+    if (hand_info[eval.eval_t.hand].n_significant_ranks >= 3)
 	printf(", %s", rank_names[eval.eval_t.third_card]);
-    if (eval.eval_t.fourth_card)
+    if (hand_info[eval.eval_t.hand].n_significant_ranks >= 4)
 	printf(", %s", rank_names[eval.eval_t.fourth_card]);
-    if (eval.eval_t.fifth_card)
+    if (hand_info[eval.eval_t.hand].n_significant_ranks >= 5)
 	printf(", %s", rank_names[eval.eval_t.fifth_card]);
 
     printf("\n");
