@@ -3,7 +3,7 @@ LIB=libpoker.a
 OBJ=dump_cards.o dump_eval.o dump_rank.o hand_names.o n_bits_table.o \
 	top_five_cards_table.o top_card_table.o mask_rank_table.o \
 	str_and_flu_table.o straight_table.o rank_fsm_table.o \
-	cards_to_counts_table.o
+	cards_to_counts_table.o string_to_card.o
 
 DERIVED_SRC=n_bits_table.c top_five_cards_table.c top_card_table.c \
 	mask_rank_table.c str_and_flu_table.c straight_table.c \
