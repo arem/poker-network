@@ -25,6 +25,8 @@
 #include	"poker.h"
 #include	"eval.h"
 
+/* #define VERBOSE */
+
 uint32 totals[N_HAND];
 
 void dump_totals(void)
@@ -71,6 +73,10 @@ int main( void )
 		dump_eval(evalu1);
 		dump_eval(evalu2);
 	      }
+#ifdef VERBOSE
+            dump_cards(cards);
+            dump_eval(evalu1);
+#endif
 	    ++totals[evalu1.eval_t.hand];
 	  }
 	}
