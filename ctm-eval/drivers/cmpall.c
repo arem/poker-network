@@ -86,7 +86,7 @@ PUBLIC int main( int argc, char *argv[] )
     }
   }
   if (n_cards != 5) {
-      fprintf(stderr, "Exactly four cards should have been given\n");
+      fprintf(stderr, "Exactly two cards should have been given\n");
       exit(1);
   }
   n_cards = 7;
