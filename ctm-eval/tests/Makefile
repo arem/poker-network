@@ -33,7 +33,8 @@ eval7-digest : eval7-digest.o
 
 clean:
 	rm -f $(FIVE_OBJ) $(RANDOM_OBJ) $(NEWRANDOM_OBJ) \
-	five_card_hands random_test newrandom
+	five_card_hands random_test newrandom eval-digest eval5-digest \
+	eval7-digest
 
 .c.o:
 	$(CC) $(CFLAGS) -I../include -c $<
