@@ -76,6 +76,9 @@ int main( void )
 						    cards.cards_t.clubs));
             if (evalu1.eval_n != evalu2.eval_n) {
               fprintf(stderr, "eval() and eval7() do not agree\n");
+              dump_cards(cards);
+              dump_eval(evalu1);
+              dump_eval(evalu2);
               exit(0);
             };
             MD5DigestLong(ctx, evalu2.eval_n);
