@@ -1,6 +1,11 @@
 # Makefile for top-level of the poker library, tests and sample programs
 #
 
+# ctm's gcc uses a new version of glibc that doesn't have the bug that
+# the glibc on irc.poker.net has in it, but it can only be used to make static
+# binaries
+CC=/home/ctm/bin/gcc -static
+
 all:
 	(cd lib; make)
 	(cd tests; make)
