@@ -30,36 +30,52 @@
 
 #include "poker.h"
 
-static inline hand_t rank_eval(cards_u hand)
+static inline hand_t rank_eval(uint64 hand)
 {
     hand_t retval, fsm_hand;
     unsigned long long n;
+    uint32 hearts, diamonds, clubs, spades;
+	
 
-    retval = str_and_flu_table[high_hand][hand.cards_t.spades  ];
-    retval = str_and_flu_table[retval   ][hand.cards_t.clubs   ];
-    retval = str_and_flu_table[retval   ][hand.cards_t.diamonds];
-    retval = str_and_flu_table[retval   ][hand.cards_t.hearts  ];
+    hearts   = hand & SUIT_MASK;
+    hand   >>= SUIT_SHIFT;
+
+    clubs    = hand & SUIT_MASK;
+    hand   >>= SUIT_SHIFT;
+
+    diamonds = hand & SUIT_MASK;
+    hand   >>= SUIT_SHIFT;
+
+    spades   = hand;
+
+    retval = str_and_flu_table[high_hand][hearts  ];
+    retval = str_and_flu_table[retval   ][clubs   ];
+    retval = str_and_flu_table[retval   ][diamonds];
+    retval = str_and_flu_table[retval   ][hearts  ];
 
     if (retval < straight_flush) {
-	n = cards_to_counts_table[hand.cards_t.spades  ] +
-	    cards_to_counts_table[hand.cards_t.clubs   ] +
-	    cards_to_counts_table[hand.cards_t.diamonds] +
-	    cards_to_counts_table[hand.cards_t.hearts  ];
+	n = cards_to_counts_table[spades  ] +
+	    cards_to_counts_table[clubs   ] +
+	    cards_to_counts_table[diamonds] +
+	    cards_to_counts_table[hearts  ];
 
-        fsm_hand = straight_table[hand.cards_t.spades   |
-				  hand.cards_t.clubs    |
-				  hand.cards_t.diamonds |
-				  hand.cards_t.hearts     ];
+        fsm_hand = straight_table[spades   |
+				  clubs    |
+				  diamonds |
+				  hearts     ];
 
         if (fsm_hand > retval)
 	    retval = fsm_hand;
 
 	fsm_hand = rank_fsm_table[high_hand][n & FSM_MASK];
 	n >>= FSM_SHIFT;
+
 	fsm_hand = rank_fsm_table[fsm_hand ][n & FSM_MASK];
 	n >>= FSM_SHIFT;
+
 	fsm_hand = rank_fsm_table[fsm_hand ][n & FSM_MASK];
 	n >>= FSM_SHIFT;
+
 	fsm_hand = rank_fsm_table[fsm_hand ][n];
 
 	if (fsm_hand > retval)
