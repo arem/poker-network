@@ -1,3 +1,6 @@
+char rcsid_dump_cards[] =
+	"$Id";
+
 /*
  *  dump_cards.c: a poker hand helper routine
  *

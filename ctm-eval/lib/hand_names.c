@@ -1,3 +1,6 @@
+char rcsid_hand_names[] =
+        "$Id";
+
 /*
  *  hand_names.c: a poker helper table
  *

@@ -1,3 +1,7 @@
+char rcsid_string_to_card[] =
+        "$Id";
+
+
 /*
  *  string_to_card.c: a poker hand helper routine
  *

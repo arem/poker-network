@@ -1,3 +1,6 @@
+char rcsid_dump_eval[] =
+        "$Id";
+
 /*
  *  dump_eval.c: a poker helper routine
  *

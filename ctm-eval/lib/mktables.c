@@ -1,3 +1,6 @@
+char rcsid_mktables[] =
+        "$Id";
+
 /*
  *  mktables.c: a program to generate the tables required by eval.h
  *		and rank_eval.h
