@@ -32,7 +32,7 @@ void dump_totals(void)
 
     putchar('\r');
     for (i = high_hand; i <= straight_flush; ++i)
-	printf("%s:\t%d\n", hand_names[i], totals[i]);
+	printf("%s:\t%d\n", hand_info[i].hand_name, totals[i]);
 }
 
 int main( void )
