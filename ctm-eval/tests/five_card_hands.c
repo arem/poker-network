@@ -21,6 +21,7 @@
 
 #include	<stdio.h>
 #include	<signal.h>
+#include	"eval5.h"
 #include	"poker.h"
 #include	"eval.h"
 
@@ -38,7 +39,7 @@ void dump_totals(void)
 int main( void )
 {
   cards_u cards;
-  eval_u evalu1;
+  eval_u evalu1, evalu2;
   uint64 card1, card2, card3, card4, card5;
   uint64 n2, n3, n4, n5;
 
@@ -58,6 +59,18 @@ int main( void )
 	    cards.cards_t.clubs    = (n5 >> 26) & 0x1FFF;
 	    cards.cards_t.spades   = (n5 >> 39) & 0x1FFF;
 	    evalu1.eval_n = eval(cards);
+	    evalu2.eval_n = new_eval_to_old_eval (
+			      eval_exactly_5_cards (cards.cards_t.hearts,
+						    cards.cards_t.spades,
+						    cards.cards_t.diamonds,
+						    cards.cards_t.clubs));
+	    if (evalu1.eval_n != evalu2.eval_n)
+	      {
+		printf("bad match");
+		dump_cards(cards);
+		dump_eval(evalu1);
+		dump_eval(evalu2);
+	      }
 	    ++totals[evalu1.eval_t.hand];
 	  }
 	}
