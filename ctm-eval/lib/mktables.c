@@ -449,7 +449,6 @@ int main( int argc, char *argv[] )
 	TABLE_ENTRY(uint8 , n_bits         , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint8 , straight       , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint32, top_five_cards , 1 << N_RANK, 0),
-	TABLE_ENTRY(uint32, top_five_bits  , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint32, top_card       , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint32, top_bit        , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint64, cards_to_counts, 1 << N_RANK, 0),
