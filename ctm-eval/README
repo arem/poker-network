@@ -9,6 +9,10 @@ and I'll try to make sure you don't step on anyone else's toes.  I
 don't know if I'll ever do anything with these routines, but it was fun
 to write them.
 
+Please let me know if you find a bug.  So far these routines have run
+successfully on a SPARC, a variety of HP machines, a '486, a DEC Alpha
+and an mc68040.
+
 Sun Dec  5 16:40:10 MST 1993
 
 	--Cliff[ord T. Matthews]
