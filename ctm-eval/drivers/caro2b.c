@@ -479,11 +479,11 @@ main (int argc, char *argv[])
 					      ((uint64) card3 << HEART_TO_SPADE));
 
 				  hands[6] = (((uint64) card4 << HEART_TO_SPADE)|
-					      ((uint64) card5 << HEART_TO_SPADE));
-				  hands[7] = (((uint64) card4 << HEART_TO_HEART)|
 					      ((uint64) card5 << HEART_TO_HEART));
-				  hands[8] = (((uint64) card4 << HEART_TO_DIAMOND)|
+				  hands[7] = (((uint64) card4 << HEART_TO_HEART)|
 					      ((uint64) card5 << HEART_TO_DIAMOND));
+				  hands[8] = (((uint64) card4 << HEART_TO_DIAMOND)|
+					      ((uint64) card5 << HEART_TO_SPADE));
 				  dead_cards = 0;
 				  score_hands (score, hands, &dead_cards,
 					       pegged_common, n_cards);
