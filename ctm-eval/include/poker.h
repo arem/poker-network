@@ -11,7 +11,7 @@
  *	  quick hand evaluation.
  */
 
-#define	SUIT_BIT_WIDTH	16	/* 13 would work, 16 is probably faster */
+#define	SUIT_BIT_WIDTH	16	/* 14 would work, 16 is probably faster */
 
 typedef union {
     long long cards_n;
@@ -37,7 +37,7 @@ typedef enum {
 } hand_t;
 
 typedef enum {
-    deuce = 0,
+    deuce = 1,
     trey,
     four,
     five,
@@ -79,14 +79,18 @@ typedef enum {
  *	 things are laid out.
  */
 
-#if	defined(__alpha) && defined(__GNUC__)
+#if	defined(__GNUC__)
 
-#define	SMALL_TO_BIG_BIT_FIELDS
 typedef	unsigned int uint32;
 
+#if	defined(__alpha) || defined(i386)
+#define	SMALL_TO_BIG_BIT_FIELDS
+#elif	defined(mc68000)
+#define	BIG_TO_SMALL_BIT_FIELDS
 #endif
 
-#if	defined(SMALL_TO_BIG_BIT_FIELDS)
+#endif	/* defined(__GNUC__) */
+
 
 /*
  * The point of the eval_u union is to be able to fill in enough information
@@ -98,9 +102,11 @@ typedef	unsigned int uint32;
 
 #define	CARD_BIT_WIDTH	4
 
+
 typedef union {
     uint32 eval_n;
     struct {
+#if	defined(SMALL_TO_BIG_BIT_FIELDS)
 	rank_t fifth_card :CARD_BIT_WIDTH;
 	rank_t fourth_card:CARD_BIT_WIDTH;
 	rank_t third_card :CARD_BIT_WIDTH;
@@ -108,11 +114,19 @@ typedef union {
 	rank_t top_card   :CARD_BIT_WIDTH;
 	hand_t hand       :4;
 	unsigned int zeros:8;
-    } eval_t;
-} eval_u;
+#elif	defined(BIG_TO_SMALL_BIT_FIELDS)
+	unsigned int zeros:8;
+	hand_t hand       :4;
+	rank_t top_card   :CARD_BIT_WIDTH;
+	rank_t second_card:CARD_BIT_WIDTH;
+	rank_t third_card :CARD_BIT_WIDTH;
+	rank_t fourth_card:CARD_BIT_WIDTH;
+	rank_t fifth_card :CARD_BIT_WIDTH;
 #else
 #error "Not enough information to known about this machine"
 #endif
+    } eval_t;
+} eval_u;
 
 typedef enum { false, true } boolean_t;
 

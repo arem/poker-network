@@ -306,6 +306,7 @@ void dump_eval( eval_u eval )
 	"straight flush",
     };
     static const char *rank_names[] = {
+	"internal error",
 	"deuce",
 	"trey",
 	"four",
