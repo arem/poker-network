@@ -21,13 +21,11 @@ char rcsid_hand_names[] =
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
-#include "poker.h"
-#include <stdio.h>
-
 /*
  * NOTE: these must correspond to the hand_t typedef in poker.h
  */
+
+#include "poker.h"
 
 PUBLIC const char *hand_names[] = {
     "high hand",
