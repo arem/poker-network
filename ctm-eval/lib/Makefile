@@ -1,4 +1,5 @@
 LIB=libpoker.a
+AR=ar
 
 OBJ=dump_cards.o dump_eval.o dump_rank.o hand_names.o n_bits_table.o \
 	top_five_cards_table.o top_card_table.o mask_rank_table.o \
@@ -22,8 +23,10 @@ RANLIB=ranlib
 
 all:	$(LIB) ../include/eval7.h ../include/bit_order.h
 
+$(OBJ):	../include/bit_order.h
+
 $(LIB): $(OBJ)
-	ar cr $(LIB) $(OBJ)
+	$(AR) cr $(LIB) $(OBJ)
 	$(RANLIB) $(LIB)
 
 clean:
