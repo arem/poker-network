@@ -1,6 +1,6 @@
 static inline uint32 flush_value(rank_set_t ranks)
 {
-    return FLUSH_VALUE | top_five_card_table[ranks];
+    return FLUSH_VALUE | top_five_bits_table[ranks];
 }
 
 /*
@@ -14,7 +14,7 @@ static inline uint32 straight_value(rank_set_t ranks)
 
 static inline uint32 high_hand_value(rank_set_t ranks)
 {
-    return HIGH_HAND_VALUE | top_five_card_table[ranks];
+    return HIGH_HAND_VALUE | top_five_bits_table[ranks];
 }
 
 /*
@@ -32,7 +32,7 @@ static inline uint32 two_pair_value(rank_set_t ranks, rank_set_t all_pairs)
     uint32 retval;
 
     retval = top_pair_table[all_pairs];
-    return TWO_PAIR_VALUE | (retval << N_RANK) | top_card_table[ranks^retval];
+    return TWO_PAIR_VALUE | (retval << N_RANK) | top_bit_table[ranks^retval];
 }
 
 /*
@@ -43,6 +43,11 @@ static inline uint32 pair_value(rank_set_t ranks, rank_set_t all_pairs)
 {
     uint32 retval;
 
-    retval = top_card_table[all_pairs];
+    retval = top_bit_table[all_pairs];
     return (retval << N_RANK) | pair_value_table[ranks^retval];
 }
+
+#define c clubs
+#define d diamonds
+#define h hearts
+#define s spades
