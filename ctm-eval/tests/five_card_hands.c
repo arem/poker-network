@@ -24,7 +24,7 @@
 #include	"poker.h"
 #include	"eval.h"
 
-uint32 totals[straight_flush+1];
+uint32 totals[N_HAND];
 
 void dump_totals(void)
 {
@@ -39,13 +39,9 @@ int main( void )
 {
   cards_u cards;
   eval_u evalu1;
-  int ones;
-  int millions;
   uint64 card1, card2, card3, card4, card5;
   uint64 n2, n3, n4, n5;
 
-  ones = 0;
-  millions = 0;
   signal(SIGINT, (void *) dump_totals);
   for (card1 =    (uint64) 1 << 51; card1 ; card1 >>= 1) {
     for (card2 = card1 >> 1; card2 ; card2 >>= 1) {
