@@ -449,12 +449,10 @@ hash_insert (const uint64 hands[9], uint32 high, uint32 low)
   entryp->high = high;
   entryp->low = low;
   *pp = entryp;
-  if (!outfile)
-    outfile = fopen ("/tmp/caro2.data", "w");
-  fwrite (hands, sizeof hands[0] * 9, 1, outfile);
-  fwrite (&high, sizeof high,  1, outfile);
-  fwrite (&low,  sizeof low,   1, outfile);
-  fflush (outfile);
+  fwrite (hands, sizeof hands[0] * 9, 1, stdout);
+  fwrite (&high, sizeof high,  1, stdout);
+  fwrite (&low,  sizeof low,   1, stdout);
+  fflush (stdout);
 }
 
 /* globals -- ick */
@@ -796,7 +794,9 @@ main (int argc, char *argv[])
 		  (float) high / low);
 	else
 	  {
-	    printf ("%f\n", (float) high / low);
+#if 0
+	    fprintf (stderr, "%f\n", (float) high / low);
+#endif
 	    hash_insert (hands, high, low);
 	    if (low_count < high_count)
 	      to_replace = low_i;
