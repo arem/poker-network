@@ -464,15 +464,15 @@ new_random_keith_hand (uint64 hands[9])
 
   static int ranks[] =
   {
-    ace, four,		/* 0 1 */
-    king, deuce,	/* 2 3 */
-    queen, trey,	/* 4 5 */
-    jack, five,		/* 6 7 */
-    ten, six,		/* 8 9 */
-    nine, seven,	/* 10 11 */
-    eight, seven,	/* 12 13 */
-    four, deuce,	/* 14 15*/
-    four, trey,		/* 16 17 */
+    ace, deuce,		/* 0 1 */
+    king, five,	/* 2 3 */
+    queen, six,	/* 4 5 */
+    jack, seven,		/* 6 7 */
+    ten, seven,		/* 8 9 */
+    nine, four,	/* 10 11 */
+    eight, trey,	/* 12 13 */
+    six, five,	/* 14 15*/
+    deuce, deuce,		/* 16 17 */
   };
 
   int i, j;
@@ -487,60 +487,39 @@ new_random_keith_hand (uint64 hands[9])
       while (i == j);
       EXCHANGE (suit_shifts, i, j);
 
-      ss1 = suit_shifts[1]; /* one of our fours */
+      ss1 = suit_shifts[1]; /* one of our deuces */
 #if !defined (LETGCCWAIL)
       ss2 = 0;
 #endif
-      for (i = 0; i < 18; ++i)
-	if (suit_shifts[i] != ss1)
-	  {
-	    ss2 = suit_shifts[i];
-	    EXCHANGE (suit_shifts, i, 14);
-	    break;
-	  }
-      for (i = 0; i < 18; ++i)
-	if (suit_shifts[i] != ss1 &&
-	    suit_shifts[i] != ss2)
-	  {
-	    EXCHANGE (suit_shifts, i, 16);
-	    break;
-	  }
+      do
+	i = random () % 18;
+      while (suit_shifts[i] == ss1);
+      EXCHANGE (suit_shifts, i, 16);
+      ss2 = suit_shifts[16];
+      do
+	i = random () % 18;
+      while (suit_shifts[i] == ss1 || suit_shifts[i] == ss2);
+      EXCHANGE (suit_shifts, i, 17);
 
       ss1 = suit_shifts[14];
-      for (i = 0; i < 18; ++i)
-	if (i != 14 && suit_shifts[i] == ss1)
-	  EXCHANGE (suit_shifts, i, 15);
+      do
+	i = random() % 18;
+      while (i == 1 || i == 16 || i == 17 || suit_shifts[i] != ss1);
+      EXCHANGE(suit_shifts, i, 15);
 
-      ss1 = suit_shifts[15]; /* one of the deuces */
-      for (i = 0; i < 18; ++i)
-	if (i != 1 && i != 14 && i != 16 && suit_shifts[i] != ss1)
-	  {
-	    EXCHANGE (suit_shifts, i, 3);
-	    break;
-	  }
+      ss1 = suit_shifts[14];
+      do
+	i = random () % 18;
+      while (i == 1 || i == 16 || i == 17 || i == 14 || i == 15 ||
+	     suit_shifts[i] == ss1);
+      EXCHANGE (suit_shifts, i, 5);
 
-      ss1 = suit_shifts[16];
-      for (i = 0; i < 18; ++i)
-	if (i != 16 && suit_shifts[i] == ss1)
-	  EXCHANGE (suit_shifts, i, 17);
-
-      ss1 = suit_shifts[17]; /* one of the treys */
-      for (i = 0; i < 18; ++i)
-	if (i != 1 && i != 14 && i != 16 && i != 3 && i != 15 &&
-	    suit_shifts[i] != ss1)
-	  {
-	    EXCHANGE (suit_shifts, i, 5);
-	    break;
-	  }
-
-      ss1 = suit_shifts[11]; /* one of the sevens */
-      for (i = 0; i < 18; ++i)
-	if (i != 1 && i != 14 && i != 16 && i != 3 && i != 15 &&
-	    i != 5 && i != 17 && suit_shifts[i] != ss1)
-	  {
-	    EXCHANGE (suit_shifts, i, 13);
-	    break;
-	  }
+      ss1 = suit_shifts[7];
+      do
+	i = random () % 18;
+      while (i == 1 || i == 16 || i == 17 || i == 14 || i == 15 ||
+	     i == 14 || i == 5 || suit_shifts[i] == ss1);
+      EXCHANGE (suit_shifts, i, 9);
     }
   while ((suit_shifts[ 0] == suit_shifts[ 1]) ||
 	 (suit_shifts[ 2] == suit_shifts[ 3]) ||
