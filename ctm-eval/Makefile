@@ -6,3 +6,9 @@ all:
 	(cd lib; make)
 	(cd tests; make)
 	(cd fish; make)
+
+clean:
+	(cd new; make clean)
+	(cd lib; make clean)
+	(cd tests; make clean)
+	(cd fish; make clean)
