@@ -4,7 +4,7 @@
 # ctm's gcc uses a new version of glibc that doesn't have the bug that
 # the glibc on irc.poker.net has in it, but it can only be used to make static
 # binaries
-CC=/home/ctm/bin/gcc -static
+export CC = /home/ctm/bin/gcc -static
 
 all:
 	(cd lib; make)

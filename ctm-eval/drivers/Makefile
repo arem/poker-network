@@ -9,7 +9,6 @@ CMPALL_OBJ=cmpall.o
 
 LIB_POKER=../lib/libpoker.a
 
-CC=gcc
 CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer
 # CC=egcs
 # CFLAGS=-g -O6 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer -mpentiumpro
