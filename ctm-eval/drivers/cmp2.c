@@ -119,17 +119,19 @@ PUBLIC int main( int argc, char *argv[] )
 {
   uint8 i;
   uint8 n_cards;
-  uint64 temp_card, dead_cards, pegged_cards1, pegged_cards2, peg1_or_peg2;
+  uint64 temp_card, dead_cards, pegged_cards1, pegged_cards2, peg1_or_peg2,
+								 pegged_common;
   uint64 card1, card2, card3, card4, card5, card6, card7, card8, card9;
   uint64 n1, n2, n3, n4, n5, n6, n7, n8, n9;
   boolean_t seen_cards_already;
   uint32 val1, val2, val1_count, val2_count, tie_count;
   cards_u cards;
 
-  n_cards = 7;
+  n_cards = 9;
   dead_cards = 0;
   pegged_cards1 = 0;
   pegged_cards2 = 0;
+  pegged_common = 0;
   val1_count = 0;
   val2_count = 0;
   tie_count = 0;
@@ -162,20 +164,23 @@ PUBLIC int main( int argc, char *argv[] )
 	fprintf(stderr, "Malformed card \"%s\"\n", argv[i]);
 	exit(1);
       } else {
-	if (n_cards >= 6)
+	if (n_cards >= 8)
 	    pegged_cards1 |= temp_card;
-	else
+	else if (n_cards >= 6)
 	    pegged_cards2 |= temp_card;
+	else
+	    pegged_common |= temp_card;
 	dead_cards   |= temp_card;
 	--n_cards;
       }
     }
   }
+#if	0
   if (n_cards != 3) {
       fprintf(stderr, "Exactly four cards should have been given\n");
       exit(1);
   }
-  n_cards = 5;
+#endif
   n1    =    n2 =    n3 =    n4 =    n5 =    n6 =    n7 =    n8 =    n9 = 0;
   card1 = card2 = card3 = card4 = card5 = card6 = card7 = card8 = card9 = 0;
   peg1_or_peg2 = pegged_cards1 | pegged_cards2;
@@ -197,38 +202,38 @@ PUBLIC int main( int argc, char *argv[] )
     break;
   case 8:
     card2 = (uint64) 1 << 51;
-    n1    = pegged_cards1;
+    n1    = pegged_cards1 | pegged_common;
     break;
   case 7:
     card3 = (uint64) 1 << 51;
-    n2    = pegged_cards1;
+    n2    = pegged_cards1 | pegged_common;
     break;
   case 6:
     card4 = (uint64) 1 << 51;
-    n3    = pegged_cards1;
+    n3    = pegged_cards1 | pegged_common;
     break;
   case 5:
     card5 = (uint64) 1 << 51;
-    n4    = pegged_cards1;
+    n4    = pegged_cards1 | pegged_common;
     break;
   case 4:
     card6 = (uint64) 1 << 51;
-    n5    = pegged_cards1;
+    n5    = pegged_cards1 | pegged_common;
     break;
   case 3:
     card7 = (uint64) 1 << 51;
-    n6    = pegged_cards1;
+    n6    = pegged_cards1 | pegged_common;
     break;
   case 2:
     card8 = (uint64) 1 << 51;
-    n7    = pegged_cards1;
+    n7    = pegged_cards1 | pegged_common;
     break;
   case 1:
     card9 = (uint64) 1 << 51;
-    n8    = pegged_cards1;
+    n8    = pegged_cards1 | pegged_common;
     break;
   case 0:
-    n9    = pegged_cards1;
+    n9    = pegged_cards1 | pegged_common;
     break;
   }
   switch (n_cards) {
