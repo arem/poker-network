@@ -27,14 +27,15 @@ char rcsid_hand_names[] =
 
 #include "poker.h"
 
-PUBLIC const char *hand_names[] = {
-    "high hand",
-    "pair",
-    "two pair",
-    "three of a kind",
-    "straight",
-    "flush",
-    "full house",
-    "four of a kind",
-    "straight flush",
+PUBLIC const hand_info_t hand_info[] =
+{
+    { "high hand",	 5, }, 
+    { "pair",		 4, },
+    { "two pair",	 3, },
+    { "three of a kind", 3, },
+    { "straight",	 1, },
+    { "flush",		 5, },
+    { "full house",	 2, },
+    { "four of a kind",	 2, },
+    { "straight flush",	 1, },
 };
