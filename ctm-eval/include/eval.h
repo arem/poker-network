@@ -1,5 +1,5 @@
-#if	!defined(__eval__)
-#define	__eval__
+#if	!defined(__EVAL__)
+#define	__EVAL__
 
 #include "poker.h"
 
@@ -318,3 +318,5 @@ static inline uint32 eval( cards_u cards )
 
     return retval.eval_n;
 }
+
+#endif	/* !defined(__EVAL__) */
