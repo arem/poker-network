@@ -1,7 +1,7 @@
 /*
- *  newrandom.c: a test driver for neweval.h
+ *  newrandom.c: a test driver for eval7.h
  *
- *  Copyright (C) 1993,1994  Clifford T. Matthews
+ *  Copyright (C) 1993 - 1995  Clifford T. Matthews
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #include "poker.h"
 #include "eval.h"
-#include "neweval.h"
+#include "eval7.h"
 
 extern int random( void );
 
@@ -62,10 +62,10 @@ int main( void )
 	}
 	evalu1.eval_n = eval(cards);
 	evalu2.eval_n = new_eval_to_old_eval(
-			    new_eval(cards.cards_t.hearts,
-				     cards.cards_t.spades,
-				     cards.cards_t.diamonds,
-				     cards.cards_t.clubs));
+			       eval_exactly_7_cards(cards.cards_t.hearts,
+				     		    cards.cards_t.spades,
+				     		    cards.cards_t.diamonds,
+				     		    cards.cards_t.clubs));
 	if (evalu1.eval_n != evalu2.eval_n) {
 	    printf("%d,%d bad match for ", millions, ones);
 	    dump_cards(cards);
