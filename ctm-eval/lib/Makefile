@@ -23,7 +23,7 @@ CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer
 # CFLAGS=-g -Wall
 RANLIB=ranlib
 
-all:	$(LIB) ../include/eval7.h ../include/bit_order.h
+all:	$(LIB) ../include/eval7.h ../include/eval5.h ../include/bit_order.h
 
 $(OBJ):	../include/bit_order.h
 
@@ -34,7 +34,8 @@ $(LIB): $(OBJ)
 clean:
 	rm -f $(OBJ) $(LIB) $(DERIVED_SRC) mktables core makeswitch.o \
 			makeswitch ../include/eval7.h endian.o endian \
-			../include/bit_order.h
+			../include/bit_order.h makeswitch5.o makeswitch5 \
+			../include/eval5.h
 
 $(DERIVED_SRC): mktables
 	./mktables $@
@@ -53,3 +54,15 @@ makeswitch:	makeswitch.o
 
 ../include/bit_order.h:	endian
 	./endian > ../include/bit_order.h
+
+makeswitch5.o:	makeswitch.c
+	$(CC) $(CFLAGS) -I../include -DCARDS_DEALT=5 -c $< -o makeswitch5.o
+
+makeswitch.o:	makeswitch.c
+	$(CC) $(CFLAGS) -I../include -DCARDS_DEALT=7 -c $<
+
+makeswitch5:	makeswitch5.o
+	$(CC) -o makeswitch5 makeswitch5.o
+
+../include/eval5.h:	makeswitch5
+	./makeswitch5 > ../include/eval5.h
