@@ -8,7 +8,7 @@ OBJ=dump_cards.o dump_eval.o dump_rank.o hand_names.o n_bits_table.o \
 	three_of_a_kind_value_table.o top_pair_table.o \
 	pair_value_table.o straight_value_table.o flush_cards_table.o \
 	newdumpeval.o rank_names.o top_bit_table.o top_five_bits_table.o \
-	plural_ranks.o
+	plural_ranks.o md5c.o 
 
 DERIVED_SRC=n_bits_table.c top_five_cards_table.c top_card_table.c \
 	mask_rank_table.c str_and_flu_table.c straight_table.c \
