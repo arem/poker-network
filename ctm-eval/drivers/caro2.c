@@ -26,6 +26,7 @@ char rcsid_caro2[] =
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "poker.h"
 #include "eval7.h"
@@ -686,6 +687,195 @@ replace_hand (uint64 hands[9], uint64 *dead_cardsp, int to_replace)
     }
 }
 
+PRIVATE void
+dump_card (int i)
+{
+  int suit, card;
+  static char *cards = "23456789tjqka";
+  static char *suits = "hdcs";
+
+  suit = i / 13;
+  card = i % 13;
+  putchar (cards[card]);
+  putchar (suits[suit]);
+}
+
+PRIVATE int
+ffs_uint64 (uint64 val)
+{
+  int retval;
+
+  retval = __builtin_ffs (val);
+  if (!retval)
+    retval = __builtin_ffs (val >> 32) + 32;
+  return retval;
+}
+
+PRIVATE void
+dump_hand (uint64 hand)
+{
+  int i, j;
+
+  i = ffs_uint64 (hand) - 1;
+  hand ^= (uint64) 1 << i;
+  j = ffs_uint64 (hand) - 1;
+  dump_card (j);
+  printf (" ");
+  dump_card (i);
+}
+
+PRIVATE uint64 get_card_from_buf (char **pp)
+{
+  char *p;
+  int rank;
+  uint64 rank_bit, retval;
+
+  p = *pp;
+  while (*p && isspace (*p))
+    ++p;
+
+  switch (*p)
+    {
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      rank = *p - '0';
+      ++p;
+      break;
+    case 't':
+    case 'T':
+      rank = 10;
+      ++p;
+      break;
+    case 'j':
+    case 'J':
+      rank = 11;
+      ++p;
+      break;
+    case 'q':
+    case 'Q':
+      rank = 12;
+      ++p;
+      break;
+    case 'k':
+    case 'K':
+      rank = 13;
+      ++p;
+      break;
+    case 'a':
+    case 'A':
+      rank = 14;
+      ++p;
+      break;
+    default:
+      rank = 0;
+      break;
+    }
+  if (!rank)
+    retval = 0;
+  else
+    {
+      rank_bit = 1 << (rank - 2);
+
+      switch (*p)
+	{
+	case 'h':
+	case 'H':
+	  retval = rank_bit << 0;
+	  ++p;
+	  break;
+	case 'd':
+	case 'D':
+	  retval = rank_bit << 13;
+	  ++p;
+	  break;
+	case 'c':
+	case 'C':
+	  retval = rank_bit << 26;
+	  ++p;
+	  break;
+	case 's':
+	case 'S':
+	  retval = rank_bit << 39;
+	  ++p;
+	  break;
+	default:
+	  retval = 0;
+	  break;
+	}
+    }
+
+  while (*p && isspace (*p))
+    ++p;
+  *pp = p;
+  return retval;
+}
+
+PRIVATE uint64 get_cards_from_buf (char **pp)
+{
+  uint64 card1, card2, retval;
+
+  card1 = get_card_from_buf (pp);
+  card2 = get_card_from_buf (pp);
+  retval = card1 && card2 ? card1 | card2 : 0;
+  return retval;
+}
+
+PRIVATE void
+read_hands_from_stdin (uint64 hands[9])
+{
+  char buf[100];
+  boolean_t valid_hands;
+
+  valid_hands = false;
+  while (!valid_hands && !feof (stdin))
+    {
+      int i;
+      uint64 dead_cards;
+      char *p;
+
+      fgets (buf, sizeof buf, stdin);
+      if (!feof (stdin))
+	{
+	  p = buf;
+	  dead_cards = 0;
+	  for (i = 0; i < 9; ++i)
+	    {
+	      hands[i] = get_cards_from_buf (&p);
+	      if (!hands[i])
+		{
+		  if (*p)
+		    printf ("bad input '%s'\n", p);
+		  break;
+		}
+	      else if (hands[i] & dead_cards)
+		{
+		  printf ("duplicate card ");
+		  dump_hand (hands[i]);
+		  printf ("\n");
+		  break;
+		}
+	      else
+		dead_cards |= hands[i];
+	    }
+	  if (i == 9)
+	    {
+	      if (!*p)
+		valid_hands = true;
+	      else
+		printf ("junk at end of line '%s'\n", p);
+	    }
+	  else if (!*p)
+	    printf ("need 18 starting cards\n");
+	}
+    }
+}
+
 PUBLIC int
 main (int argc, char *argv[])
 {
@@ -712,25 +902,51 @@ main (int argc, char *argv[])
   dead_cards = 0;
   pegged_common = 0;
   seen_cards_already = false;
-  for (i = 1; i < argc; ++i)
+
+  if (argc != 1)
     {
-      if (argv[i][0] == '-')
+      for (i = 1; i < argc; ++i)
 	{
-	  if (seen_cards_already)
+	  if (argv[i][0] == '-')
 	    {
-	      fprintf(stderr, "Cards must come before options\n");
-	      exit(1);
-	    }
-	  if (strcmp (argv[i], "-a") == 0)
-	    auto_flag = true;
-	  else if ((strcmp (argv[i], "-d") == 0 ||
-		    strcmp (argv[i], "-c") == 0))
-	    {
-	      if (i == argc)
+	      if (seen_cards_already)
 		{
-		  fprintf(stderr, "Missing card portion of -d\n");
+		  fprintf(stderr, "Cards must come before options\n");
 		  exit(1);
 		}
+	      if (strcmp (argv[i], "-a") == 0)
+		auto_flag = true;
+	      else if ((strcmp (argv[i], "-d") == 0 ||
+			strcmp (argv[i], "-c") == 0))
+		{
+		  if (i == argc)
+		    {
+		      fprintf(stderr, "Missing card portion of -d\n");
+		      exit(1);
+		    }
+		  temp_card = string_to_card(argv[i]);
+		  if (!temp_card)
+		    {
+		      fprintf(stderr, "Malformed card \"%s\"\n", argv[i]);
+		      exit(1);
+		    }
+		  else
+		    {
+		      if (argv[i][1] == 'c')
+			pegged_common |= temp_card;
+		      dead_cards |= temp_card;
+		      --n_cards;
+		      ++i;
+		    }
+		}
+	      else
+		{
+		  fprintf(stderr, "Unknown switch \"%s\"\n", argv[i]);
+		  exit(1);
+		}
+	    }
+	  else
+	    {
 	      temp_card = string_to_card(argv[i]);
 	      if (!temp_card)
 		{
@@ -739,125 +955,112 @@ main (int argc, char *argv[])
 		}
 	      else
 		{
-		  if (argv[i][1] == 'c')
-		    pegged_common |= temp_card;
 		  dead_cards |= temp_card;
-		  --n_cards;
-		  ++i;
+		  hands[hole_card_no++/2] |= temp_card;
 		}
 	    }
-	  else
-	    {
-	      fprintf(stderr, "Unknown switch \"%s\"\n", argv[i]);
-	      exit(1);
-	    }
 	}
-      else
+      
+      if (hole_card_no != 18)
 	{
-	  temp_card = string_to_card(argv[i]);
-	  if (!temp_card)
-	    {
-	      fprintf(stderr, "Malformed card \"%s\"\n", argv[i]);
-	      exit(1);
-	    }
-	  else
-	    {
-	      dead_cards |= temp_card;
-	      hands[hole_card_no++/2] |= temp_card;
-	    }
+	  fprintf (stderr, "Wrong number of hole cards\n");
+	  exit (1);
 	}
-    }
-
-  if (hole_card_no != 18)
-    {
-      fprintf (stderr, "Wrong number of hole cards\n");
-      exit (1);
     }
 
   do
     {
-      canon (hands, &dead_cards, &pegged_common);
-      score_hands (score, hands, &dead_cards, pegged_common, n_cards);
-      {
-	uint32 second_low, second_high;
-	int low_i, high_i, second_low_i, second_high_i;
-	int low_count, high_count;
+      if (argc == 1)
+	{
+	  read_hands_from_stdin (hands);
+	  dead_cards = 0;
+	}
+      else
+	canon (hands, &dead_cards, &pegged_common);
+      if (argc != 1 || !feof (stdin))
+	{
+	  score_hands (score, hands, &dead_cards, pegged_common, n_cards);
+	  {
+	    uint32 second_low, second_high;
+	    int low_i, high_i, second_low_i, second_high_i;
+	    int low_count, high_count;
       
-	low = second_low = 0x7fffffff;
-	high = second_high = 0;
-	low_count = 0;
-	high_count = 0;
-  
-	for (i = 0; i < 9; ++i)
-	  {
-	    if (!auto_flag)
-	      printf ("        %9d\n", score[i]);
-	    if (score[i] < low)
-	      {
-		second_low = low;
-		second_low_i = low_i;
-		low = score[i];
-		low_i = i;
-		low_count = 1;
-	      }
-	    else if (score[i] == low)
-	      ++low_count;
-	    else if (score[i] < second_low)
-	      {
-		second_low = score[i];
-		second_low_i = i;
-	      }
+	    low = second_low = 0x7fffffff;
+	    high = second_high = 0;
+	    low_count = 0;
+	    high_count = 0;
 	    
-	    if (score[i] > high)
+	    for (i = 0; i < 9; ++i)
 	      {
-		second_high = high;
-		second_high_i = high_i;
-		high = score[i];
-		high_i = i;
-		high_count = 1;
+		if (!auto_flag)
+		  printf ("        %9d\n", score[i]);
+		if (score[i] < low)
+		  {
+		    second_low = low;
+		    second_low_i = low_i;
+		    low = score[i];
+		    low_i = i;
+		    low_count = 1;
+		  }
+		else if (score[i] == low)
+		  ++low_count;
+		else if (score[i] < second_low)
+		  {
+		    second_low = score[i];
+		    second_low_i = i;
+		  }
+	    
+		if (score[i] > high)
+		  {
+		    second_high = high;
+		    second_high_i = high_i;
+		    high = score[i];
+		    high_i = i;
+		    high_count = 1;
+		  }
+		else if (score[i] == high)
+		  ++high_count;
+		else if (score[i] > second_high)
+		  {
+		    second_high = score[i];
+		    second_high_i = i;
+		  }
 	      }
-	    else if (score[i] == high)
-	      ++high_count;
-	    else if (score[i] > second_high)
-	      {
-		second_high = score[i];
-		second_high_i = i;
-	      }
-	  }
-	if (!auto_flag)
-	  printf (" high = %9d\n  low = %9d\nratio = %f\n", high, low,
-		  (float) high / low);
-	else
-	  {
-#if 0
-	    fprintf (stderr, "%f\n", (float) high / low);
-#endif
-	    /* The choices made below and the current implementation of
-	       replace_hand are far from optimal.  Currently they're
-	       toy implementations just to see how the rest of the
-	       scaffolding works.  */
-
-	    hash_insert (hands, high, low);
-	    if (low_count < high_count)
-	      to_replace = low_i;
-	    else if (high_count < low_count)
-	      to_replace = high_i;
+	    if (!auto_flag)
+	      printf (" high = %9d\n  low = %9d\nratio = %f\n", high, low,
+		      (float) high / low);
 	    else
 	      {
-		uint32 high_diff, low_diff;
+#if 0
+		fprintf (stderr, "%f\n", (float) high / low);
+#endif
+		/* The choices made below and the current implementation of
+		   replace_hand are far from optimal.  Currently they're
+		   toy implementations just to see how the rest of the
+		   scaffolding works.  */
 
-		high_diff = high - second_high;
-		low_diff = second_low - low;
-
-		if (high_diff > low_diff)
+		hash_insert (hands, high, low);
+		if (low_count < high_count)
+		  to_replace = low_i;
+		else if (high_count < low_count)
 		  to_replace = high_i;
 		else
-		  to_replace = low_i;
+		  {
+		    uint32 high_diff, low_diff;
+
+		    high_diff = high - second_high;
+		    low_diff = second_low - low;
+		    
+		    if (high_diff > low_diff)
+		      to_replace = high_i;
+		    else
+		      to_replace = low_i;
+		  }
+		replace_hand (hands, &dead_cards, to_replace);
 	      }
-	    replace_hand (hands, &dead_cards, to_replace);
 	  }
-      }
-    } while (auto_flag && high != low);
+	}
+    } while ((argc == 1 && !feof (stdin)) || (auto_flag && high != low));
   
   return 0;
 }
