@@ -1,5 +1,6 @@
 CC=gcc
-OBJ=eval.o tables.o
+OBJ=eval.o tables.o eval2.o
+CFLAGS=-g -O4 -Wall
 
 eval:	$(OBJ)
 	$(CC) -o eval $(OBJ)
