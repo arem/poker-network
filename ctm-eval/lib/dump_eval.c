@@ -1,5 +1,5 @@
 char rcsid_dump_eval[] =
-        "$Id$";
+	"$Id$";
 
 /*
  *  dump_eval.c: a poker helper routine
@@ -27,21 +27,6 @@ char rcsid_dump_eval[] =
 
 PUBLIC void dump_eval( eval_u eval )
 {
-    static const char *rank_names[] = {
-	"deuce",
-	"trey",
-	"four",
-	"five",
-	"six",
-	"seven",
-	"eight",
-	"nine",
-	"ten",
-	"jack",
-	"queen",
-	"king",
-	"ace",
-    };
     printf("%s: %s", hand_names[eval.eval_t.hand],
 					     rank_names[eval.eval_t.top_card]);
     if (eval.eval_t.second_card)
