@@ -11,7 +11,7 @@ CFLAGS=-g -O4 -Wall -finline-functions -Winline
 
 all:	five_card_hands random_test newrandom tests
 
-tests: eval-digest eval5-digest
+tests: eval-digest eval5-digest eval7-digest
 
 five_card_hands:        $(FIVE_OBJ) $(LIB_POKER)
 	$(CC) $(CFLAGS) -o $@ $(FIVE_OBJ) $(LIB_POKER)
@@ -26,6 +26,9 @@ eval-digest : eval-digest.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIB_POKER)
 
 eval5-digest : eval5-digest.o
+	$(CC) $(CFLAGS) -o $@ $< $(LIB_POKER)
+
+eval7-digest : eval7-digest.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIB_POKER)
 
 clean:
@@ -44,5 +47,7 @@ test : tests
 		then echo "eval5-digest:		Passed"; \
 		else echo "eval5-digest:		Failed"; \
 	fi
-
-
+	@if [ `./eval7-digest` = "73844ddc4017d186d0e590c46f6d6b8e" ]; \
+		then echo "eval7-digest:		Passed"; \
+		else echo "eval7-digest:		Failed"; \
+	fi
