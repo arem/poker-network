@@ -595,11 +595,6 @@ loop:
   *dead_cardsp = dead_cards;
 }
 
-/*
- * replace_hand is fairly important, but this first implementation
- * is pretty poor (watching movies with my wife)
- */
-
 enum { TRY_MAX = 500 };
 
 PRIVATE inline uint64
@@ -615,6 +610,11 @@ random_hole_cards (void)
   retval = ((uint64) 1 << i) | ((uint64) 1 << j);
   return retval;
 }
+
+/*
+ * replace_hand is fairly important, but this first implementation
+ * is pretty poor (watching movies with my wife)
+ */
 
 PRIVATE void
 replace_hand (uint64 hands[9], uint64 *dead_cardsp, int to_replace)
@@ -650,6 +650,7 @@ replace_hand (uint64 hands[9], uint64 *dead_cardsp, int to_replace)
 	  hands[i] = new_cards;
 	  dead_cards |= new_cards;
 	}
+      *dead_cardsp = dead_cards;
     }
 }
 
