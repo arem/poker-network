@@ -30,10 +30,14 @@ char rcsid_caro2[] =
 #include "poker.h"
 #include "eval7.h"
 
-/* speed doesn't matter for lcd_of_first_n_positive_integers */
+/* Speed doesn't matter for poker_lcd.
+   Barbara Yoon pointed out that there's no point in worrying
+   about pots split more than 4 ways (other than a complete n-way
+   split), so instead of getting the lcd of the first positive
+   integers, we only do the lcd of (2, 3, 4, n). */
 
 PRIVATE int
-lcd_of_first_n_positive_integers (int n)
+poker_lcd (int n)
 {
   int retval, i;
   boolean_t done;
@@ -45,7 +49,7 @@ lcd_of_first_n_positive_integers (int n)
     {
       done = true;
       for (i = 2; done && i <= n; ++i)
-	if (retval % i)
+	if ((i <= 4 || i == n) && retval % i)
 	  {
 	    done = false;
 	    ++retval;
@@ -648,12 +652,19 @@ replace_hand (uint64 hands[9], uint64 *dead_cardsp, int to_replace)
   dead_cards ^= hands[to_replace];
   do
     hands[to_replace] = random_hole_cards();
+
+  /* the code that looks for a non-zero value in hash_ratio below is
+     basically useless, because the new hand hasn't been canonicalized. */
+
   while (((hands[to_replace] & dead_cards) || hash_ratio (hands))
 	 && ++try_count <= TRY_MAX);
   *dead_cardsp = dead_cards | hands[to_replace];
   if (try_count > TRY_MAX)
     {
-      /* What do we do here?  replace all 9 hole cards? */
+      /* What do we do here?  Replace all 9 hole cards?
+         That's what we do below, but it's a very bad choice, since
+	 it means we throw away a potentially good fit just because
+	 we're having trouble with one hole card. */
       int i;
 
       for (i = 0; i < 9; ++i)
@@ -689,7 +700,7 @@ main (int argc, char *argv[])
   uint32 high, low;
   int to_replace;
 
-  lcd = lcd_of_first_n_positive_integers (9);
+  lcd = poker_lcd (9);
 
   hole_card_no = 0;
   memset (hands, 0, sizeof hands);
@@ -821,6 +832,11 @@ main (int argc, char *argv[])
 #if 0
 	    fprintf (stderr, "%f\n", (float) high / low);
 #endif
+	    /* The choices made below and the current implementation of
+	       replace_hand are far from optimal.  Currently they're
+	       toy implementations just to see how the rest of the
+	       scaffolding works.  */
+
 	    hash_insert (hands, high, low);
 	    if (low_count < high_count)
 	      to_replace = low_i;
