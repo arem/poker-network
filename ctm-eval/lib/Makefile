@@ -14,7 +14,7 @@ CFLAGS=-g -O4 -Wall -finline-functions -Winline
 RANLIB=ranlib
 
 $(LIB):	$(OBJ)
-	ar cur $(LIB) $(OBJ)
+	ar cr $(LIB) $(OBJ)
 	$(RANLIB) $(LIB)
 
 clean:
