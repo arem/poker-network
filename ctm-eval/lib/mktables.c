@@ -50,9 +50,10 @@ static void output_table(const char *tabname, int (*fp)(int))
     printf("};\n");
 }
 
-void main( void )
+int main( void )
 {
     output_table("n_bits_in_13",         n_bits_in_13_func);
     output_table("top_five_cards_in_13", top_five_cards_in_13_func);
     output_table("top_card_in_13",       top_card_in_13_func);
+    return 0;
 }
