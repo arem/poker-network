@@ -1,7 +1,7 @@
 /*
- *  random_test.c: another test driver for eval.h
+ *  newrandom.c: a test driver for neweval.h
  *
- *  Copyright (C) 1993  Clifford T. Matthews
+ *  Copyright (C) 1993,1994  Clifford T. Matthews
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
