@@ -66,6 +66,7 @@ typedef enum {
 
 #define	N_RANK	(ace - deuce + 1)
 
+typedef	unsigned char uint8;
 typedef	unsigned int uint32;
 
 #if	!defined(__alpha)
@@ -167,9 +168,9 @@ typedef union {
 
 typedef enum { false, true } boolean_t;
 
-extern int         n_bits_table[1 << N_RANK];
-extern int top_five_cards_table[1 << N_RANK];
-extern int       top_card_table[1 << N_RANK];
+extern uint8          n_bits_table[1 << N_RANK];
+extern uint32 top_five_cards_table[1 << N_RANK];
+extern uint32       top_card_table[1 << N_RANK];
 
 extern uint64   mask_rank_table[N_RANK];
 
@@ -194,16 +195,16 @@ static inline uint64 mask_rank( uint32 rank )
 #define	HAND_SIZE	5	/* number of significant cards in showdown */
 
 extern const char *hand_names[];
-extern void dump_rank( int ranks, char suitchar );
+extern void dump_rank( uint32 ranks, char suitchar );
 extern void dump_cards( cards_u cards );
 extern void dump_eval( eval_u eval );
 
 #define	FSM_SHIFT	12
 #define	FSM_MASK	((1 << FSM_SHIFT) - 1)	/* two's complement! */
 
-extern char str_and_flu_table[N_HAND][1 << N_RANK];
-extern char straight_table[1 << N_RANK];
-extern char rank_fsm[N_HAND][1 << FSM_SHIFT];
-extern unsigned long long cards_to_counts[1 << N_RANK];
+extern uint8 str_and_flu_table[N_HAND][1 << N_RANK];
+extern uint8 straight_table[1 << N_RANK];
+extern uint8 rank_fsm_table[N_HAND][1 << FSM_SHIFT];
+extern uint64 cards_to_counts_table[1 << N_RANK];
 
 #endif	/* !defined(__POKER__) */
