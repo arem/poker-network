@@ -472,11 +472,11 @@ main (int argc, char *argv[])
 					      ((uint64) card1 << HEART_TO_SPADE));
 
 				  hands[3] = (((uint64) card2 << HEART_TO_SPADE)|
-					      ((uint64) card3 << HEART_TO_HEART));
-				  hands[4] = (((uint64) card2 << HEART_TO_HEART)|
-					      ((uint64) card3 << HEART_TO_DIAMOND));
-				  hands[5] = (((uint64) card2 << HEART_TO_DIAMOND)|
 					      ((uint64) card3 << HEART_TO_SPADE));
+				  hands[4] = (((uint64) card2 << HEART_TO_HEART)|
+					      ((uint64) card3 << HEART_TO_HEART));
+				  hands[5] = (((uint64) card2 << HEART_TO_DIAMOND)|
+					      ((uint64) card3 << HEART_TO_DIAMOND));
 
 				  hands[6] = (((uint64) card4 << HEART_TO_SPADE)|
 					      ((uint64) card5 << HEART_TO_HEART));
