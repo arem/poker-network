@@ -23,4 +23,4 @@ tables.c:	mktables
 	chmod a-w tables.c
 
 clean:
-	rm -f *.o mktables tables.c eval
+	rm -f *.o mktables tables.c five_card_hands random_test
