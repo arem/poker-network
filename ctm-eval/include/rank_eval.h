@@ -28,7 +28,7 @@
 #if	!defined(__FISH_EVAL__)
 #define	__FISH_EVAL__
 
-#include "fsm.h"
+#include "poker.h"
 
 static inline hand_t rank_eval(cards_u hand)
 {
@@ -51,13 +51,16 @@ static inline hand_t rank_eval(cards_u hand)
 				  hand.cards_t.diamonds |
 				  hand.cards_t.hearts     ];
 
-	fsm_hand = rank_fsm_table[fsm_hand][n & FSM_MASK];
+        if (fsm_hand > retval)
+	    retval = fsm_hand;
+
+	fsm_hand = rank_fsm_table[high_hand][n & FSM_MASK];
 	n >>= FSM_SHIFT;
-	fsm_hand = rank_fsm_table[fsm_hand][n & FSM_MASK];
+	fsm_hand = rank_fsm_table[fsm_hand ][n & FSM_MASK];
 	n >>= FSM_SHIFT;
-	fsm_hand = rank_fsm_table[fsm_hand][n & FSM_MASK];
+	fsm_hand = rank_fsm_table[fsm_hand ][n & FSM_MASK];
 	n >>= FSM_SHIFT;
-	fsm_hand = rank_fsm_table[fsm_hand][n];
+	fsm_hand = rank_fsm_table[fsm_hand ][n];
 
 	if (fsm_hand > retval)
 	    retval = fsm_hand;
