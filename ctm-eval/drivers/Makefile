@@ -5,7 +5,7 @@ CMPALL_OBJ=cmpall.o
 LIB_POKER=../lib/libpoker.a
 
 CC=gcc
-CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG
+CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer
 # CFLAGS=-g -Wall
 
 all:    fish cmp2 cmpall
