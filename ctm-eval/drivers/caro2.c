@@ -136,6 +136,29 @@ normalize_suits (uint64 *cardsp, int hs, int ds, int cs, int ss)
 	      ((uint64) temp_spades   << ss));
 }
 
+PRIVATE int
+count_bits_32 (uint32 val)
+{
+  int retval;
+  int bit;
+
+  retval = 0;
+  while ((bit = __builtin_ffs (val)))
+    {
+      ++retval;
+      val ^= (1 << (bit-1));
+    }
+  return retval;
+}
+
+PRIVATE int
+count_bits_64 (uint64 val)
+{
+  int retval;
+  retval = count_bits_32 (val) + count_bits_32 (val >> 32);
+  return retval;
+}
+
 PRIVATE void
 canon (uint64 hands[9], uint64 *deadp, uint64 *peggedp)
 {
@@ -252,7 +275,7 @@ canon (uint64 hands[9], uint64 *deadp, uint64 *peggedp)
 		  hs = HEART_TO_DIAMOND;
 		  ds = DIAMOND_TO_CLUB;
 		  cs = CLUB_TO_SPADE;
-		  ss = SPADE_TO_DIAMOND;
+		  ss = SPADE_TO_HEART;
 		}
 	      else
 		{ /* spades, hearts, clubs, diamonds */
@@ -433,8 +456,6 @@ hash_ratio (const uint64 hands[9])
   retval = *pp ? (float) (*pp)->high / (*pp)->low : 0;
   return retval;
 }
-
-PRIVATE FILE *outfile;
 
 PRIVATE void
 hash_insert (const uint64 hands[9], uint32 high, uint32 low)
@@ -691,8 +712,8 @@ main (int argc, char *argv[])
 	    }
 	  if (strcmp (argv[i], "-a") == 0)
 	    auto_flag = true;
-	  else if (strcmp (argv[i], "-d") == 0 ||
-	      strcmp (argv[i], "-c") == 0)
+	  else if ((strcmp (argv[i], "-d") == 0 ||
+		    strcmp (argv[i], "-c") == 0))
 	    {
 	      if (i == argc)
 		{
@@ -729,7 +750,10 @@ main (int argc, char *argv[])
 	      exit(1);
 	    }
 	  else
-	    hands[hole_card_no++/2] |= temp_card;
+	    {
+	      dead_cards |= temp_card;
+	      hands[hole_card_no++/2] |= temp_card;
+	    }
 	}
     }
 
