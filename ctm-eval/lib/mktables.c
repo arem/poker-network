@@ -442,8 +442,6 @@ PRIVATE int output_table(const table_entry_t *tp)
     }
 
 
-#define NELEM(x)        (sizeof(x) / sizeof((x)[0]))
-
 int main( int argc, char *argv[] )
 {
     int retval;
