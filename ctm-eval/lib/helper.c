@@ -1,6 +1,7 @@
 #include "poker.h"
+#include <stdio.h>
 
-static void dump_rank( int ranks, char suitchar )
+PUBLIC void dump_rank( int ranks, char suitchar )
 {
     int bit;
     const char *namep;
@@ -15,7 +16,7 @@ static void dump_rank( int ranks, char suitchar )
     }
 }
 
-static void dump_cards( cards_u cards )
+PUBLIC void dump_cards( cards_u cards )
 {
     dump_rank(cards.cards_t.hearts,   'H');
     dump_rank(cards.cards_t.diamonds, 'D');
@@ -24,7 +25,7 @@ static void dump_cards( cards_u cards )
     putchar('\n');
 }
 
-static const char *hand_names[] = {
+PUBLIC const char *hand_names[] = {
     "internal error",
     "high hand",
     "pair",
@@ -37,7 +38,7 @@ static const char *hand_names[] = {
     "straight flush",
 };
 
-static void dump_eval( eval_u eval )
+PUBLIC void dump_eval( eval_u eval )
 {
     static const char *rank_names[] = {
 	"deuce",
