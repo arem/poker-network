@@ -26,7 +26,7 @@ int main( void )
   ones = 0;
   millions = 0;
   signal(SIGINT, (void *) dump_totals);
-  for (card1 =    1LL << 51; card1 ; card1 >>= 1) {
+  for (card1 =    (uint64) 1 << 51; card1 ; card1 >>= 1) {
     for (card2 = card1 >> 1; card2 ; card2 >>= 1) {
       n2 = card1 | card2;
       for (card3 = card2 >> 1; card3 ; card3 >>= 1) {
