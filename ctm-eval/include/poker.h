@@ -261,6 +261,7 @@ extern void dump_rank( uint32 ranks, char suitchar );
 extern void dump_cards( cards_u cards );
 extern void dump_eval( eval_u eval );
 extern uint32 new_eval_to_old_eval( uint32 new_eval );
+extern void new_dump_eval( uint32 eval );
 
 #define FSM_SHIFT       12
 #define FSM_MASK        ((1 << FSM_SHIFT) - 1)  /* two's complement! */
