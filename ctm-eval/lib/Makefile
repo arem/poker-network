@@ -18,7 +18,7 @@ DERIVED_SRC=n_bits_table.c top_five_cards_table.c top_card_table.c \
 	top_bit_table.c top_five_bits_table.c
 
 CC=gcc
-CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer
+CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer -D_REENTRANT
 # CC=egcs
 # CFLAGS=-g -O6 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer -mpentiumpro
 # CFLAGS=-g -Wall
