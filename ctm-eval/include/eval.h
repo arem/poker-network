@@ -102,6 +102,7 @@ static inline uint32 three_helper( uint32 totest1, uint32 totest2,
     unsigned int ranks;
     eval_u retval;
 
+    retval.eval_n = 0;
     ranks = totest1 & totest2 & totest3;
     if (ranks) {
 	retval.eval_t.hand = three_of_a_kind;
@@ -115,8 +116,7 @@ static inline uint32 three_helper( uint32 totest1, uint32 totest2,
 	retval.eval_t.second_card = top_card_in_13[ranks];
 	ranks ^= (1 << retval.eval_t.second_card);
 	retval.eval_t.third_card = top_card_in_13[ranks];
-    } else
-	retval.eval_n = 0;
+    }
     return retval.eval_n;
 }
 
@@ -152,9 +152,10 @@ static inline uint32 two_helper( uint32 totest1, uint32 totest2,
     unsigned int ranks;
     eval_u retval;
 
+    retval.eval_n = 0;
     ranks = totest1 & totest2;
     if (ranks) {
-	retval.eval_t.hand     = two_pair;
+	retval.eval_t.hand     = pair;
 	retval.eval_t.top_card = top_card_in_13[ranks];
 
 	/* NOTE: we don't have to worry about there being anything better
@@ -166,8 +167,7 @@ static inline uint32 two_helper( uint32 totest1, uint32 totest2,
 	retval.eval_t.third_card  = top_card_in_13[ranks];
 	ranks ^= (1 << retval.eval_t.third_card);
 	retval.eval_t.fourth_card = top_card_in_13[ranks];
-    } else
-	retval.eval_n = 0;
+    }
 
     return retval.eval_n;
 }
@@ -208,12 +208,12 @@ static inline uint32 is_pair( cards_u cards )
     return retval.eval_n;
 }
 
-static inline long long all_rank_in_13(uint32 rank)
+static inline long long mask_rank_in_13(uint32 rank)
 {
     long long retval;
     retval = (1 << rank) | ( 1 << (rank + 13));
     retval |= retval << 26;
-    return retval;
+    return ~retval;
 }
 
 static inline uint32 eval( cards_u cards )
@@ -225,55 +225,64 @@ static inline uint32 eval( cards_u cards )
     if (retval.eval_n) {
 	tempeval.eval_n = is_straight(tempcards);
 	if (tempeval.eval_n) {
+	    retval.eval_n = 0;
 	    retval.eval_t.hand = straight_flush;
 	    retval.eval_t.top_card = tempeval.eval_t.top_card;
-	} else {
-	    tempeval.eval_n = is_four_of_a_kind(cards);
-	    if (tempeval.eval_n)
-		retval.eval_n = tempeval.eval_n;
-	    else {
-		tempeval.eval_n = is_three_of_a_kind(cards);
-		if (tempeval.eval_n) {
-		    tempcards.cards_n = cards.cards_n ^
-				      all_rank_in_13(tempeval.eval_t.top_card);
-		    tempeval2.eval_n = is_pair(tempcards);
-		    if (tempeval2.eval_n) {
-			retval.eval_t.hand = full_house;
-			retval.eval_t.top_card = tempeval.eval_t.top_card;
-			retval.eval_t.second_card = tempeval2.eval_t.top_card;
-		    }
+	}
+    }
+    if (retval.eval_t.hand != straight_flush) {
+	tempeval.eval_n = is_four_of_a_kind(cards);
+	if (tempeval.eval_n)
+	    retval.eval_n = tempeval.eval_n;
+	else {
+	    tempeval.eval_n = is_three_of_a_kind(cards);
+	    if (tempeval.eval_n) {
+		tempcards.cards_n = cards.cards_n &
+				  mask_rank_in_13(tempeval.eval_t.top_card);
+		tempeval2.eval_n = is_pair(tempcards);
+		if (tempeval2.eval_n) {
+		    retval.eval_n = 0;
+		    retval.eval_t.hand = full_house;
+		    retval.eval_t.top_card = tempeval.eval_t.top_card;
+		    retval.eval_t.second_card = tempeval2.eval_t.top_card;
+		    retval.eval_t.third_card = tempeval2.eval_t.second_card;
 		}
 	    }
 	}
-    } else {
-	retval.eval_n = is_straight(cards);
 	if (!retval.eval_n) {
-	    retval.eval_n = is_three_of_a_kind(cards);
+	    retval.eval_n = is_straight(cards);
 	    if (!retval.eval_n) {
-		retval.eval_n = is_pair(cards);
-		if (retval.eval_n) {
-		    tempcards.cards_n = cards.cards_n ^
-					all_rank_in_13(retval.eval_t.top_card);
-		    tempeval.eval_n = is_pair(tempcards);
-		    if (tempeval.eval_n) {
-			retval.eval_t.hand = two_pair;
-			retval.eval_t.second_card = tempeval.eval_t.top_card;
-			tempcards.cards_n ^=
-				      all_rank_in_13(tempeval.eval_t.top_card);
-			retval.eval_t.third_card = top_card_in_13[
+		retval.eval_n = tempeval.eval_n;	/* three of a kind? */
+		if (!retval.eval_n) {
+		    retval.eval_n = is_pair(cards);
+		    if (retval.eval_n) {
+			tempcards.cards_n = cards.cards_n &
+				       mask_rank_in_13(retval.eval_t.top_card);
+			tempeval.eval_n = is_pair(tempcards);
+			if (tempeval.eval_n) {
+			    retval.eval_t.hand = two_pair;
+			    retval.eval_t.second_card =
+						      tempeval.eval_t.top_card;
+			    tempcards.cards_n &=
+				     mask_rank_in_13(tempeval.eval_t.top_card);
+			    retval.eval_t.third_card = top_card_in_13[
 						   tempcards.cards_t.spades   |
 						   tempcards.cards_t.clubs    |
 						   tempcards.cards_t.diamonds |
 						   tempcards.cards_t.hearts
 						   ];
-		    }
-		} else {
-		    retval.eval_n = top_five_cards_in_13[
+			    retval.eval_t.fourth_card = 0;
+			    retval.eval_t.fifth_card = 0;
+			}
+		    } else {
+			retval.eval_n = top_five_cards_in_13[
 						       cards.cards_t.spades   |
 						       cards.cards_t.clubs    |
 						       cards.cards_t.diamonds |
 						       cards.cards_t.hearts
 						       ];
+			retval.eval_t.hand = high_hand;
+		    }
 		}
 	    }
 	}
@@ -330,13 +339,77 @@ int main( void )
     eval_u to_eval;
     cards_u cards;
 
+    cards.cards_n = 0;
+    cards.cards_t.spades = (1 << ten) | (1 << nine) | (1 << eight) |
+				(1 << seven) | (1 << six);
+    cards.cards_t.clubs =  (1 << trey);
+    cards.cards_t.hearts = (1 << trey) | (1 << five);
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* straight flush */
+
+    cards.cards_n = 0;
+    cards.cards_t.spades = (1 << ten) | (1 << nine) | (1 << eight) |
+				(1 << seven) | (1 << four);
+    cards.cards_t.clubs =  (1 << four);
+    cards.cards_t.hearts = (1 << four);
+    cards.cards_t.diamonds = (1 << four);
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* four of a kind */
+
+    cards.cards_n = 0;
+    cards.cards_t.spades = (1 << ten) | (1 << nine) | (1 << eight) |
+				(1 << seven) | (1 << four);
+    cards.cards_t.clubs =  (1 << four);
+    cards.cards_t.hearts = (1 << four);
+    cards.cards_t.diamonds = (1 << nine);
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* full house */
+
+    cards.cards_n = 0;
+    cards.cards_t.spades = (1 << ace) | (1 << nine) | (1 << eight) |
+				(1 << seven) | (1 << six) | (1 << deuce);
+    cards.cards_t.hearts = (1 << trey) | (1 << five);
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* flush */
+
+    cards.cards_n = 0;
+    cards.cards_t.spades = (1 << seven) | (1 << six) | (1 << deuce);
+    cards.cards_t.hearts = (1 << trey) | (1 << five);
+    cards.cards_t.clubs = (1 << ace) | (1 << nine) | (1 << eight);
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* straight */
+
     cards.cards_t.spades = (1 << deuce) | (1 << trey);
     cards.cards_t.clubs =  (1 << trey);
     cards.cards_t.hearts = (1 << trey) | (1 << five);
     cards.cards_t.diamonds = (1 << ace) | (1 << king);
 
     to_eval.eval_n = eval(cards);
-    dump_eval(to_eval);
+    dump_eval(to_eval);	/* three of a kind */
+    
+    cards.cards_t.spades = (1 << deuce) | (1 << trey);
+    cards.cards_t.clubs =  (1 << king);
+    cards.cards_t.hearts = (1 << trey) | (1 << five);
+    cards.cards_t.diamonds = (1 << ace) | (1 << king);
+
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* two pair */
+    
+    cards.cards_t.spades = (1 << deuce) | (1 << trey);
+    cards.cards_t.clubs =  (1 << king);
+    cards.cards_t.hearts = (1 << six) | (1 << five);
+    cards.cards_t.diamonds = (1 << ace) | (1 << king);
+
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* pair */
+    
+    cards.cards_t.spades = (1 << deuce) | (1 << trey);
+    cards.cards_t.clubs =  (1 << queen);
+    cards.cards_t.hearts = (1 << six) | (1 << five);
+    cards.cards_t.diamonds = (1 << ace) | (1 << king);
+
+    to_eval.eval_n = eval(cards);
+    dump_eval(to_eval);	/* high hand */
     
     return 0;
 }
