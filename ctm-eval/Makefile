@@ -1,9 +1,11 @@
 CC=gcc
-OBJ=eval.o tables.o eval2.o
 CFLAGS=-g -O4 -Wall
+FIVE_OBJ=five_card_hands.o tables.o helper.o
 
-eval:	$(OBJ)
-	$(CC) -o eval $(OBJ)
+five_card_hands:	$(FIVE_OBJ)
+	$(CC) -o five_card_hands $(FIVE_OBJ)
+
+five_card_hands.o:	poker.h eval.h
 
 mktables.o:	poker.h
 
@@ -15,4 +17,4 @@ tables.c:	mktables
 	chmod a-w tables.c
 
 clean:
-	rm -f $(OBJ) mktables mktables.o tables.c eval
+	rm -f *.o mktables tables.c eval
