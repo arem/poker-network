@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -O4 -Wall
+CFLAGS=-g -O4 -Wall -finline-functions -Winline
 FIVE_OBJ=five_card_hands.o tables.o helper.o
 RANDOM_OBJ=random_test.o tables.o helper.o eval2.o
 
