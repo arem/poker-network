@@ -182,12 +182,13 @@ compute_cases ()
       for (i = 0; i <= N_RANK - HAND_SIZE; i++)
 	if (((cards >> i) & ((1 << HAND_SIZE) - 1)) == ((1 << HAND_SIZE) - 1))
 	  {
-	    possible_hands |= MUST_HAVE_STRAIGHT;  /* Really we MUST have it. */
+	    possible_hands |= MUST_HAVE_STRAIGHT;
 	    break;
 	  }
 
       if ((cards & FIVE_STRAIGHT_MASK) == FIVE_STRAIGHT_MASK)
 	  possible_hands |= MUST_HAVE_STRAIGHT;
+
       /* Check for a possible flush. */
       if (num_unique_ranks >= HAND_SIZE)
 	possible_hands |= MAY_HAVE_FLUSH;
@@ -202,7 +203,7 @@ compute_cases ()
 
       /* Check for a possible pair when _no better hand is possible_. */
       if (num_unique_ranks == CARDS_DEALT - 1)
-	possible_hands |= MUST_HAVE_PAIR;  /* Really we MUST have it. */
+	possible_hands |= MUST_HAVE_PAIR;
 
       /* Check for at least a pair. */
       if (num_unique_ranks <= CARDS_DEALT - 1)
