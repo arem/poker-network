@@ -1,7 +1,11 @@
 /*
- *  rank_eval.h: a fast poker hand evaluator that doesn't care about
+ *  rank_eval2.h: a fast poker hand evaluator that doesn't care about
  *                 signficant cards (i.e. it only figures out the rank
  *                 of a hand).
+ *
+ *  This version of rank_eval takes four uint32 arguments instead of
+ *	one uint64 argument.  This is a win on machines that don't handle
+ *	64 bit ints quickly
  *
  *  Copyright (C) 1994  Clifford T. Matthews, Keith Miyake
  *
