@@ -376,6 +376,78 @@ canon (uint64 hands[9], uint64 *deadp, uint64 *peggedp)
 						      sort might be faster */
 }
 
+enum { HASH_SIZE = 504149 };
+
+PRIVATE uint32
+hash_func (const uint64 hands[9])
+{
+  uint32 retval;
+  int i;
+  
+  retval = 0;
+  for (i = 0; i < 9; ++i)
+    {
+      retval = ((retval >> 29) | (retval << 3)) ^ (hands[i] >> 32);
+      retval = ((retval >> 29) | (retval << 3)) ^ (hands[i] >> 0);
+    }
+  return retval % HASH_SIZE;
+}
+
+typedef struct hash_entry_str
+{
+  struct hash_entry_str *next;
+  uint64 hands[9];
+  float ratio; /* do we even need this */
+}
+hash_entry_t;
+
+PRIVATE hash_entry_t *hash_table[HASH_SIZE];
+
+PRIVATE boolean_t
+hands_equal (const uint64 hands1[9], const uint64 hands2[9])
+{
+  boolean_t retval;
+
+  retval = memcmp (hands1, hands2, sizeof (uint64) * 9) == 0;
+  return retval;
+}
+
+PRIVATE hash_entry_t **
+hash_pp (const uint64 hands[9])
+{
+  hash_entry_t **retval;
+
+  retval = &hash_table[hash_func (hands)];
+  while (*retval && !hands_equal ((*retval)->hands, hands))
+    retval = &(*retval)->next;
+  return retval;
+}
+
+PRIVATE float
+hash_ratio (const uint64 hands[9])
+{
+  float retval;
+  hash_entry_t **pp;
+
+  pp = hash_pp (hands);
+  retval = *pp ? (*pp)->ratio : 0;
+  return retval;
+}
+
+PRIVATE void
+hash_insert (const uint64 hands[9], float ratio)
+{
+  hash_entry_t **pp;
+  hash_entry_t *entryp;
+
+  pp = hash_pp (hands);
+  entryp = malloc (sizeof *entryp);
+  entryp->next = *pp;
+  memcpy (entryp->hands, hands, sizeof entryp->hands);
+  entryp->ratio = ratio;
+  *pp = entryp;
+}
+
 PUBLIC int
 main (int argc, char *argv[])
 {
