@@ -152,5 +152,8 @@ extern int       top_card_table[1 << N_RANK];
 #define	HAND_SIZE	5	/* number of significant cards in showdown */
 
 extern const char *hand_names[];
+extern void dump_rank( int ranks, char suitchar );
+extern void dump_cards( cards_u cards );
+extern void dump_eval( eval_u eval );
 
 #endif	/* !defined(__POKER__) */
