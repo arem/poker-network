@@ -13,7 +13,7 @@ cmp2:	$(CMP2_OBJ)
 	$(CC) -o cmp2 $(CMP2_OBJ) $(LIB_POKER)
 
 clean:
-	rm -f $(FISH_OBJ) fish
+	rm -f $(FISH_OBJ) $(CMP2_OBJ) fish cmp2
 
 .c.o:
 	$(CC) $(CFLAGS) -I../include -c $<
