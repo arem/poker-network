@@ -1,4 +1,4 @@
-char rcsid_rank_names[] =
+char rcsid_plural_ranks[] =
         "$Id$";
 
 /*
