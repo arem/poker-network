@@ -226,7 +226,12 @@ typedef enum {
 
 #define HAND_SIZE       5       /* number of significant cards in showdown */
 
-extern const char *hand_names[];
+typedef struct {
+    const char *hand_name;
+    uint8 n_significant_ranks;
+} hand_info_t;
+
+extern const hand_info_t hand_info[];
 extern const char *rank_names[];
 extern void dump_rank( uint32 ranks, char suitchar );
 extern void dump_cards( cards_u cards );
