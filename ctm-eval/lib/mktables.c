@@ -28,17 +28,19 @@ static int top_card_table_func( int n )
 
 static int top_five_cards_table_func( int n )
 {
-    int temp, retval, shiftval, i;
+    eval_u eval;
 
-    retval = 0;
-    shiftval = (HAND_SIZE - 1) * CARD_BIT_WIDTH;
-    for (i = HAND_SIZE; --i >= 0;) {
-	temp = top_card_table_func(n);
-	n ^= (1 << temp);
-	retval |= (temp << shiftval);
-	shiftval -= CARD_BIT_WIDTH;
-    }
-    return retval;
+    eval.eval_n = 0;
+    eval.eval_t.top_card    = top_card_table_func(n);
+    n &= ~(1 << eval.eval_t.top_card);
+    eval.eval_t.second_card = top_card_table_func(n);
+    n &= ~(1 << eval.eval_t.second_card);
+    eval.eval_t.third_card  = top_card_table_func(n);
+    n &= ~(1 << eval.eval_t.third_card);
+    eval.eval_t.fourth_card = top_card_table_func(n);
+    n &= ~(1 << eval.eval_t.fourth_card);
+    eval.eval_t.fifth_card  = top_card_table_func(n);
+    return eval.eval_n;
 }
 
 static void output_table(const char *tabname, int (*fp)(int))

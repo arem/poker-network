@@ -11,18 +11,8 @@
  *	  quick hand evaluation.
  */
 
-#define	SUIT_BIT_WIDTH	16	/* 14 would work, 16 is probably faster */
-
-typedef union {
-    long long cards_n;
-    struct {
-	unsigned long long spades  :SUIT_BIT_WIDTH;
-	unsigned long long clubs   :SUIT_BIT_WIDTH;
-	unsigned long long diamonds:SUIT_BIT_WIDTH;
-	unsigned long long hearts  :SUIT_BIT_WIDTH;
-    }
-    cards_t;
-} cards_u;
+#define	PRIVATE	static
+#define PUBLIC
 
 typedef enum {
     high_hand = 1,
@@ -37,7 +27,7 @@ typedef enum {
 } hand_t;
 
 typedef enum {
-    deuce = 1,
+    deuce = 0,
     trey,
     four,
     five,
@@ -50,8 +40,30 @@ typedef enum {
     queen,
     king,
     ace,
-    N_RANK	/* must be last */
 } rank_t;
+
+#define	N_RANK	(ace - deuce + 1)
+
+#if	!defined(__alpha)
+typedef	long long uint64;
+#else
+typedef	unsigned long uint64;
+#endif
+
+typedef union {
+    uint64 cards_n;
+    struct {
+	uint64         :3;
+	uint64 spades  :N_RANK;
+	uint64         :3;
+	uint64 clubs   :N_RANK;
+	uint64         :3;
+	uint64 diamonds:N_RANK;
+	uint64         :3;
+	uint64 hearts  :N_RANK;
+    }
+    cards_t;
+} cards_u;
 
 #define	FIVE_STRAIGHT_MASK ((1 << ace  ) | \
 			    (1 << five )| \
@@ -79,7 +91,7 @@ typedef enum {
  *	 things are laid out.
  */
 
-#if	defined(__GNUC__)
+#if	defined(__GNUC__) || defined(__alpha)
 
 typedef	unsigned int uint32;
 
@@ -91,6 +103,9 @@ typedef	unsigned int uint32;
 
 #endif	/* defined(__GNUC__) */
 
+#if	!defined(__GNUC__)
+#define	inline
+#endif
 
 /*
  * The point of the eval_u union is to be able to fill in enough information
