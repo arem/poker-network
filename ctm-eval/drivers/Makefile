@@ -45,7 +45,7 @@ carodump:	$(CARODUMP_OBJ)
 clean:
 	rm -f $(FISH_OBJ) $(CMP2_OBJ) $(CMPALL_OBJ) $(CARO2_OBJ) \
 	$(CARO2A_OBJ) $(CARO2B_OBJ) fish cmp2 cmpall caro2 caro2a caro2b \
-	carodump
+	carodump cmpn $(CMPN_OBJ)
 
 .c.o:
 	$(CC) $(CFLAGS) -I../include -c $<
