@@ -1,29 +1,29 @@
 Hi Folks,
 
-Here are the poker routines I wrote with the help of Keith Miyake and
-Roy T.  Hashimoto.  If you can figure out how to use them, enjoy.  If
-not, perhaps you can ask me, or try to get some info from someone else
-on rec.gambling.
+Here are the poker routines I wrote with the help of Keith Miyake
+(kmiyake@cs.rutgers.edu) and Roy T.  Hashimoto (hashimoto@sgi.com).  If
+you can figure out how to use them, enjoy.  If not, perhaps you can ask
+me, or try to get some info from someone else on rec.gambling.
 
-Also included is a rewrite of Roy Hashimoto's fish program, which evaluates
-all possible hands given some initial starting conditions.
+Also included is a rewrite of Roy's fish program, which evaluates all
+possible hands given some initial starting conditions.
 
 If you want to add to these, or write some documentation, let me know
 and I'll try to make sure you don't step on anyone else's toes.  I
 don't know if I'll ever do anything with these routines, but it was fun
 to write them.
 
-Since their initial creation, I have spruced the code up after receiving
-pointers from Keith and Roy and I have recoded Roy's fish program to use
-rank_eval.  I've also split the source into a few appropriate directories
-and made the helper routines and the lookup tables into a library, so
-programs that don't need particular routines or tables aren't saddled with
-too much extra baggage.
+Since their initial creation, I have spruced the code up after
+receiving pointers from Keith and Roy and I have recoded Roy's fish
+program to use rank_eval.  I've also split the source into a few
+appropriate directories and made the helper routines and the lookup
+tables into a library, so programs that don't need particular routines
+or tables aren't saddled with too much extra baggage.
 
 Please let me know if you find a bug.  So far these routines have run
 successfully on a SPARC, a variety of HP machines, a '486, a DEC Alpha
 and an mc68040.
 
-Sat Jan  8 21:43:18 MST 1994
+Mon Jan 10 18:21:58 MST 1994
 
 	--Cliff[ord T. Matthews]
