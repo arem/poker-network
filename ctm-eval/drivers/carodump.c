@@ -52,20 +52,42 @@ dump_hands (uint64 hands[9])
     }
 }
 
+PRIVATE void
+verify_hands (int hand_no, uint64 hands[9])
+{
+  uint64 seen_already;
+  int i;
+
+  seen_already = 0;
+  for (i = 0; i < 9; ++i)
+    {
+      if (hands[i] & seen_already)
+	fprintf (stderr, "bad hand set on line %d\n", hand_no);
+      seen_already |= hands[i];
+    }
+}
+
 PUBLIC int 
 main (int argc, char *argv[])
 {
   uint64 hands[9];
   uint32 high, low;
   int retval;
+  int i;
 
+  i = 0;
   while (!feof (stdin))
     {
-      fread (hands, sizeof hands, 1, stdin);
-      dump_hands (hands);
-      fread (&high, sizeof high,  1, stdin);
-      fread (&low,  sizeof low,   1, stdin);
-      printf (" %f\n", (float) high / low);
+      if (fread (hands, sizeof hands, 1, stdin) == 1)
+	{
+	  verify_hands (++i, hands);
+	  if ((fread (&high, sizeof high,  1, stdin) == 1 &&
+	       fread (&low,  sizeof low,   1, stdin) == 1))
+	    {
+	      dump_hands (hands);
+	      printf (" %f\n", (float) high / low);
+	    }
+	}
     }
   retval = 0;
   return retval;
