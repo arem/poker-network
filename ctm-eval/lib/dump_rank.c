@@ -22,7 +22,7 @@
 #include "poker.h"
 #include <stdio.h>
 
-PUBLIC void dump_rank( int ranks, char suitchar )
+PUBLIC void dump_rank( uint32 ranks, char suitchar )
 {
     int bit;
     const char *namep;
