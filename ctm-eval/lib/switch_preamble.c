@@ -24,7 +24,7 @@ char rcsid_switch_preamble[] =
 #include "poker.h"
 #include "tree_inlines.h"
 
-uint32
+static inline uint32
 eval_exactly_7_cards (rank_set_t clubs, rank_set_t diamonds, rank_set_t hearts,
       rank_set_t spades)
 {
