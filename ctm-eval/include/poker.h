@@ -200,6 +200,10 @@ static inline uint64 mask_rank( uint32 rank )
     return ~temp.cards_n;
 }
 
+typedef enum { hearts, diamonds, clubs, spades } suit_t;
+
+#define	N_SUIT	(spades + 1)
+
 #define	HAND_SIZE	5	/* number of significant cards in showdown */
 
 extern const char *hand_names[];
@@ -214,5 +218,6 @@ extern uint8 str_and_flu_table[N_HAND][1 << N_RANK];
 extern uint8 straight_table[1 << N_RANK];
 extern uint8 rank_fsm_table[N_HAND][1 << FSM_SHIFT];
 extern uint64 cards_to_counts_table[1 << N_RANK];
+extern uint64 string_to_card(const char *str);
 
 #endif	/* !defined(__POKER__) */
