@@ -11,13 +11,15 @@
  *	  quick hand evaluation.
  */
 
+#define	SUIT_BIT_WIDTH	16	/* 13 would work, 16 is probably faster */
+
 typedef union {
     long long cards_n;
     struct {
-	unsigned long long spades  :13;
-	unsigned long long clubs   :13;
-	unsigned long long diamonds:13;
-	unsigned long long hearts  :13;
+	unsigned long long spades  :SUIT_BIT_WIDTH;
+	unsigned long long clubs   :SUIT_BIT_WIDTH;
+	unsigned long long diamonds:SUIT_BIT_WIDTH;
+	unsigned long long hearts  :SUIT_BIT_WIDTH;
     }
     cards_t;
 } cards_u;
@@ -48,6 +50,7 @@ typedef enum {
     queen,
     king,
     ace,
+    N_RANK	/* must be last */
 } rank_t;
 
 #define	FIVE_STRAIGHT_MASK ((1 << ace  ) | \
@@ -113,8 +116,10 @@ typedef union {
 
 typedef enum { false, true } boolean_t;
 
-extern int         n_bits_in_13[1 << 13];
-extern int top_five_cards_in_13[1 << 13];
-extern int       top_card_in_13[1 << 13];
+extern int         n_bits_table[1 << N_RANK];
+extern int top_five_cards_table[1 << N_RANK];
+extern int       top_card_table[1 << N_RANK];
+
+#define	HAND_SIZE	5	/* number of significant cards in showdown */
 
 #endif	/* !defined(__POKER__) */

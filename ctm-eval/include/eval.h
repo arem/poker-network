@@ -7,22 +7,22 @@ static inline uint32 is_flush( cards_u cards, cards_u *flushp )
 
     retval.eval_n = 0;
 
-    if        (n_bits_in_13[cards.cards_t.spades  ] >= 5) {
+    if        (n_bits_table[cards.cards_t.spades  ] >= HAND_SIZE) {
 	flushp->cards_n     = cards.cards_t.spades;
 	retval.eval_t.hand  = flush;
-	retval.eval_n      += top_five_cards_in_13[cards.cards_t.spades];
-    } else if (n_bits_in_13[cards.cards_t.clubs   ] >= 5) {
+	retval.eval_n      += top_five_cards_table[cards.cards_t.spades];
+    } else if (n_bits_table[cards.cards_t.clubs   ] >= HAND_SIZE) {
 	flushp->cards_n     = cards.cards_t.clubs;
 	retval.eval_t.hand  = flush;
-	retval.eval_n      += top_five_cards_in_13[cards.cards_t.spades];
-    } else if (n_bits_in_13[cards.cards_t.diamonds] >= 5) {
+	retval.eval_n      += top_five_cards_table[cards.cards_t.spades];
+    } else if (n_bits_table[cards.cards_t.diamonds] >= HAND_SIZE) {
 	flushp->cards_n     = cards.cards_t.diamonds;
 	retval.eval_t.hand  = flush;
-	retval.eval_n      += top_five_cards_in_13[cards.cards_t.spades];
-    } else if (n_bits_in_13[cards.cards_t.hearts  ] >= 5) {
+	retval.eval_n      += top_five_cards_table[cards.cards_t.spades];
+    } else if (n_bits_table[cards.cards_t.hearts  ] >= HAND_SIZE) {
 	flushp->cards_n     = cards.cards_t.hearts;
 	retval.eval_t.hand  = flush;
-	retval.eval_n      += top_five_cards_in_13[cards.cards_t.spades];
+	retval.eval_n      += top_five_cards_table[cards.cards_t.spades];
     }
 
     return retval.eval_n;
@@ -85,8 +85,8 @@ static inline uint32 is_four_of_a_kind( cards_u cards )
     ranks = cards.cards_t.spades & cards.cards_t.clubs & cards.cards_t.diamonds & cards.cards_t.hearts;
     if (ranks) {
 	retval.eval_t.hand = four_of_a_kind;
-	retval.eval_t.top_card = top_card_in_13[ranks];
-	retval.eval_t.second_card = top_card_in_13[ranks ^
+	retval.eval_t.top_card = top_card_table[ranks];
+	retval.eval_t.second_card = top_card_table[ranks ^
 						      (cards.cards_t.spades   |
 						       cards.cards_t.clubs    |
 						       cards.cards_t.diamonds |
@@ -106,16 +106,16 @@ static inline uint32 three_helper( uint32 totest1, uint32 totest2,
     ranks = totest1 & totest2 & totest3;
     if (ranks) {
 	retval.eval_t.hand = three_of_a_kind;
-	retval.eval_t.top_card = top_card_in_13[ranks];
+	retval.eval_t.top_card = top_card_table[ranks];
 
 	/* NOTE: we don't have to worry about there being a pair here, */
 	/*	 because the full-house check won't care about anything */
 	/*	 that we return except for hand and top_card */
 
 	ranks ^= (totest1|totest2|totest3|slop);
-	retval.eval_t.second_card = top_card_in_13[ranks];
+	retval.eval_t.second_card = top_card_table[ranks];
 	ranks ^= (1 << retval.eval_t.second_card);
-	retval.eval_t.third_card = top_card_in_13[ranks];
+	retval.eval_t.third_card = top_card_table[ranks];
     }
     return retval.eval_n;
 }
@@ -156,17 +156,17 @@ static inline uint32 two_helper( uint32 totest1, uint32 totest2,
     ranks = totest1 & totest2;
     if (ranks) {
 	retval.eval_t.hand     = pair;
-	retval.eval_t.top_card = top_card_in_13[ranks];
+	retval.eval_t.top_card = top_card_table[ranks];
 
 	/* NOTE: we don't have to worry about there being anything better
 		 than a pair left over */
 
 	ranks ^= totest1 | totest2 | slop1 | slop2;
-	retval.eval_t.second_card = top_card_in_13[ranks];
+	retval.eval_t.second_card = top_card_table[ranks];
 	ranks ^= (1 << retval.eval_t.second_card);
-	retval.eval_t.third_card  = top_card_in_13[ranks];
+	retval.eval_t.third_card  = top_card_table[ranks];
 	ranks ^= (1 << retval.eval_t.third_card);
-	retval.eval_t.fourth_card = top_card_in_13[ranks];
+	retval.eval_t.fourth_card = top_card_table[ranks];
     }
 
     return retval.eval_n;
@@ -208,11 +208,11 @@ static inline uint32 is_pair( cards_u cards )
     return retval.eval_n;
 }
 
-static inline long long mask_rank_in_13(uint32 rank)
+static inline long long mask_rank_table(uint32 rank)
 {
     long long retval;
-    retval = (1 << rank) | ( 1 << (rank + 13));
-    retval |= retval << 26;
+    retval = (1 << rank) | ( 1 << (rank + SUIT_BIT_WIDTH));
+    retval |= retval << (2 * SUIT_BIT_WIDTH);
     return ~retval;
 }
 
@@ -238,7 +238,7 @@ static inline uint32 eval( cards_u cards )
 	    tempeval.eval_n = is_three_of_a_kind(cards);
 	    if (tempeval.eval_n) {
 		tempcards.cards_n = cards.cards_n &
-				  mask_rank_in_13(tempeval.eval_t.top_card);
+				  mask_rank_table(tempeval.eval_t.top_card);
 		tempeval2.eval_n = is_pair(tempcards);
 		if (tempeval2.eval_n) {
 		    retval.eval_n = 0;
@@ -257,15 +257,15 @@ static inline uint32 eval( cards_u cards )
 		    retval.eval_n = is_pair(cards);
 		    if (retval.eval_n) {
 			tempcards.cards_n = cards.cards_n &
-				       mask_rank_in_13(retval.eval_t.top_card);
+				       mask_rank_table(retval.eval_t.top_card);
 			tempeval.eval_n = is_pair(tempcards);
 			if (tempeval.eval_n) {
 			    retval.eval_t.hand = two_pair;
 			    retval.eval_t.second_card =
 						      tempeval.eval_t.top_card;
 			    tempcards.cards_n &=
-				     mask_rank_in_13(tempeval.eval_t.top_card);
-			    retval.eval_t.third_card = top_card_in_13[
+				     mask_rank_table(tempeval.eval_t.top_card);
+			    retval.eval_t.third_card = top_card_table[
 						   tempcards.cards_t.spades   |
 						   tempcards.cards_t.clubs    |
 						   tempcards.cards_t.diamonds |
@@ -275,7 +275,7 @@ static inline uint32 eval( cards_u cards )
 			    retval.eval_t.fifth_card = 0;
 			}
 		    } else {
-			retval.eval_n = top_five_cards_in_13[
+			retval.eval_n = top_five_cards_table[
 						       cards.cards_t.spades   |
 						       cards.cards_t.clubs    |
 						       cards.cards_t.diamonds |
