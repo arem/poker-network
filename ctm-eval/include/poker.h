@@ -257,6 +257,7 @@ enum
 
 extern const hand_info_t hand_info[];
 extern const char *rank_names[];
+extern const char *plural_ranks[];
 extern void dump_rank( uint32 ranks, char suitchar );
 extern void dump_cards( cards_u cards );
 extern void dump_eval( eval_u eval );
