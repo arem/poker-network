@@ -69,9 +69,11 @@ typedef enum {
 /*
  * These two are used by rank_eval which doesn't use the cards_u structure.
  * Be sure you understand the difference.
+ *
+ * SUIT_MASK is also useful for eval_exactly7 
  */
 
-#define SUIT_MASK       ( (1 << N_RANK) - 1 )   /* Two's complement! */
+enum { SUIT_MASK = (1 << N_RANK) - 1 }; /* twos complement */
 #define SUIT_SHIFT      ( N_RANK )
 
 typedef unsigned char uint8;
@@ -230,6 +232,28 @@ typedef struct {
     const char *hand_name;
     uint8 n_significant_ranks;
 } hand_info_t;
+
+enum
+{
+  HEART_SHIFT    = 0,
+  DIAMOND_SHIFT = 13,
+  CLUB_SHIFT    = 26,
+  SPADE_SHIFT   = 39,
+};
+
+enum { N_CARDS_IN_DECK = 52 };
+enum
+{
+  N_TEXAS_HOLDEM_COMMON_CARDS = 5,
+  N_CARDS_PER_TEXAS_HOLDEM_HOLE = 2,
+  MAX_TEXAS_HOLDEM_HANDS = ((N_CARDS_IN_DECK
+			     - N_TEXAS_HOLDEM_COMMON_CARDS)
+			    / N_CARDS_PER_TEXAS_HOLDEM_HOLE)
+};
+
+#if !defined (NELEM)
+#define NELEM(x) (sizeof(x) / sizeof (x)[0])
+#endif
 
 extern const hand_info_t hand_info[];
 extern const char *rank_names[];
