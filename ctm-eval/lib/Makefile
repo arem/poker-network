@@ -20,7 +20,7 @@ CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer
 # CFLAGS=-g -Wall
 RANLIB=ranlib
 
-all:	$(LIB) ../include/eval7.h
+all:	$(LIB) ../include/eval7.h ../include/bit_order.h
 
 $(LIB): $(OBJ)
 	ar cr $(LIB) $(OBJ)
@@ -28,7 +28,8 @@ $(LIB): $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(LIB) $(DERIVED_SRC) mktables core makeswitch.o \
-			makeswitch ../include/eval7.h
+			makeswitch ../include/eval7.h endian.o endian \
+			../include/bit_order.h
 
 $(DERIVED_SRC): mktables
 	./mktables $@
@@ -44,3 +45,6 @@ makeswitch:	makeswitch.o
 
 ../include/eval7.h:	makeswitch
 	./makeswitch > ../include/eval7.h
+
+../include/bit_order.h:	endian
+	./endian > ../include/bit_order.h
