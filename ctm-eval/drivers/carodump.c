@@ -55,18 +55,16 @@ dump_hands (uint64 hands[9])
 PUBLIC int 
 main (int argc, char *argv[])
 {
-  FILE *fp;
   uint64 hands[9];
   uint32 high, low;
   int retval;
 
-  fp = fopen ("/tmp/caro2.data", "r");
-  while (!feof (fp))
+  while (!feof (stdin))
     {
-      fread (hands, sizeof hands, 1, fp);
+      fread (hands, sizeof hands, 1, stdin);
       dump_hands (hands);
-      fread (&high, sizeof high,  1, fp);
-      fread (&low,  sizeof low,   1, fp);
+      fread (&high, sizeof high,  1, stdin);
+      fread (&low,  sizeof low,   1, stdin);
       printf (" %f\n", (float) high / low);
     }
   retval = 0;
