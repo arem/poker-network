@@ -2,23 +2,23 @@ char rcsid_cmp2[] =
 	"$Id$";
 
 /*
- * THIS PROGRAM IS A QUICK HACK USEFUL FOR COMPARING TWO STARTING PAIRS
- * I HAVEN'T EVEN BOTHERED CHANGING THE COMMENTS -- THIS IS NOT FISH
- */
-
-/*
- *  fish.c: a rewrite of Roy T. Hashimoto's classic "fish" poker hand
- *		evaluator.
+ *  cmp2.c: a program to compare two pairs of hold'em hole cards at any
+ *		point of the game (pre-flop, on the flop, turn or river).
+ *		
+ *  Example:
  *
- *  This program is a rewrite of Roy T. Hashimoto's (hashimoto@sgi.com)
- *	fish.c program.  It primarily exists to test rank_eval, which
- *	is a faster version of the hand evaluator that was present in Roy's
- *	fish.c.  Since I had already written an evaluator that took significant
- *	cards into consideration, Roy's fish.c inspired me to write rank_eval
- *	as well, hence this test program, which provides the same functionality
- *	that the original fish.c program did.
+ *	cmp2 tc ac 3h ah 8c 6h 7h
+ *	517 439 (ties = 34)
  *
- *  Copyright (C) 1993,1994  Clifford T. Matthews
+ *	Ten of Clubs and Ace of Clubs will beat
+ *	Ace of Hearts and Three of Hearts 517 times, while it will
+ *	lose 439 times and tie 34 times, if the flop comes Eight of Clubs,
+ *	Six of Hearts, Seven of Hearts
+ *
+ *  Previous versions of cmp2 only allowed you to enter the two starting
+ *  hole pairs.
+ *
+ *  Copyright (C) 1993, 1994  Clifford T. Matthews
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
