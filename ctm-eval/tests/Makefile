@@ -8,6 +8,8 @@ CC=gcc
 CFLAGS=-g -O4 -Wall -finline-functions -Winline
 # CFLAGS=-g -Wall
 
+all:	five_card_hands random_test newrandom
+
 five_card_hands:        $(FIVE_OBJ)
 	$(CC) -o five_card_hands $(FIVE_OBJ) $(LIB_POKER)
 
@@ -18,7 +20,8 @@ newrandom:      $(NEWRANDOM_OBJ) $(LIB_POKER)
 	$(CC) -o newrandom $(NEWRANDOM_OBJ) $(LIB_POKER)
 
 clean:
-	rm -f $(FIVE_OBJ) $(RANDOM_OBJ) five_card_hands random_test
+	rm -f $(FIVE_OBJ) $(RANDOM_OBJ) $(NEWRANDOM_OBJ) \
+	five_card_hands random_test newrandom
 
 .c.o:
 	$(CC) $(CFLAGS) -I../include -I../new -c $<
