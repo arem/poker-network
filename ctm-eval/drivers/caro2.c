@@ -623,6 +623,10 @@ loop:
 
 enum { TRY_MAX = 500 };
 
+#if defined __MINGW32__
+#define random rand
+#endif
+
 PRIVATE inline uint64
 random_hole_cards (void)
 {
