@@ -452,7 +452,6 @@ hash_insert (const uint64 hands[9], uint32 high, uint32 low)
   fwrite (hands, sizeof hands[0] * 9, 1, stdout);
   fwrite (&high, sizeof high,  1, stdout);
   fwrite (&low,  sizeof low,   1, stdout);
-  fflush (stdout);
 }
 
 /* globals -- ick */
