@@ -453,47 +453,178 @@ while (0)
 
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
 
-enum { H = 0, D = 13, C = 26, S = 39 };
-
 PRIVATE void
 new_random_keith_hand (uint64 hands[9])
 {
-  static int suit_shifts[] = {  S, C, /* 0 1 */
-				S, C, /* 2 3 */
-				H, C, /* 4 5 */
-				H, D, /* 6 7 */
-				H, C, /* 8 9 */
-			        H, D, /* 10 11 */
-				H, S, /* 12 13 */
-			        D, D, /* 14 15 */
-				D, S, /* 16 17 */
-  };
+  static int suit_shifts[] = {  0,  0,  0,  0,  0,
+			       13, 13, 13, 13, 13,
+			       26, 26, 26, 26,
+			       39, 39, 39, 39, }, *ssp;
 
-  static int ranks[] =
-  {
-    ace, deuce,		/* 0 1 */
-    king, five,		/* 2 3 */
-    queen, six,	/* 4 5 */
-    jack, seven,		/* 6 7 */
-    ten, seven,		/* 8 9 */
-    nine, four,	/* 10 11 */
-    eight, trey,	/* 12 13 */
-    six, five,	/* 14 15*/
-    deuce, deuce,		/* 16 17 */
-  };
-  int i;
-  static int flip = 0;
+  static int low_cards[] = { 0, 1, 2, 3, 4, 5, -1}, *lcp;
+  static int invert[] = { 0, 1, 2, 3, 4, 5 };
+  static int extra_low_index = 6;
+  int i, j;
+  int rank14, rank15, rank16, rank17;
+  uint64 dead_cards, new_dead;
+  static int flip = 512;
 
-  for (i = 0; i < 9; ++i)
+  if (flip < 512)
     {
-      if (flip & (1 << i))
-	hands[i] = ((((uint64) 1 << ranks[2*i])   << suit_shifts[2*i+1]) | 
-		    (((uint64) 1 << ranks[2*i+1]) << suit_shifts[2*i]));
-      else
-	hands[i] = ((((uint64) 1 << ranks[2*i])   << suit_shifts[2*i]) | 
-		    (((uint64) 1 << ranks[2*i+1]) << suit_shifts[2*i+1]));
+      int i;
+
+      for (i = 0; i < 9; ++i)
+	{
+	  if (i <= 6)
+	    if (flip & (1 << i))
+	      hands[i] = ((((uint64) 1 << low_cards[2*i])   << suit_shifts[2*i+1]) | 
+			  (((uint64) 1 << low_cards[2*i+1]) << suit_shifts[2*i]));
+	    else
+	      hands[i] = ((((uint64) 1 << low_cards[2*i])   << suit_shifts[2*i]) | 
+			  (((uint64) 1 << low_cards[2*i+1]) << suit_shifts[2*i+1]));
+	  else if (i == 7)
+	    {
+	      if (flip & (1 << i))
+		{
+		  hands[7]  = ((uint64)1 << rank14) << suit_shifts[2*i+1];
+		  hands[7] |= ((uint64)1 << rank15) << suit_shifts[2*i];
+		}
+	      else
+		{
+		  hands[7]  = ((uint64)1 << rank14) << suit_shifts[2*i];
+		  hands[7] |= ((uint64)1 << rank15) << suit_shifts[2*i+1];
+		}
+	    }
+	  else if (i == 8)
+	    {
+	      if (flip & (1 << i))
+		{
+		  hands[8]  = ((uint64)1 << rank14) << suit_shifts[2*i+1];
+		  hands[8] |= ((uint64)1 << rank15) << suit_shifts[2*i];
+		}
+	      else
+		{
+		  hands[8]  = ((uint64)1 << rank14) << suit_shifts[2*i];
+		  hands[8] |= ((uint64)1 << rank15) << suit_shifts[2*i+1];
+		}
+	    }
+	}
+      ++flip;
+      if (*hash_pp (hands))
+	goto try_again;
+      hash_insert (hands, 1, 1);
+      return;
     }
-  ++flip;
+try_again:
+  flip = 0;
+  do
+    {
+      i = random () % NELEM (suit_shifts);
+      do
+	j = random () % NELEM (suit_shifts);
+      while (i == j);
+      EXCHANGE (suit_shifts, i, j);
+    }
+  while ((suit_shifts[ 0] == suit_shifts[ 1]) ||
+	 (suit_shifts[ 2] == suit_shifts[ 3]) ||
+	 (suit_shifts[ 4] == suit_shifts[ 5]) ||
+	 (suit_shifts[ 6] == suit_shifts[ 7]) ||
+	 (suit_shifts[ 8] == suit_shifts[ 9]) ||
+	 (suit_shifts[10] == suit_shifts[11]) ||
+	 (suit_shifts[12] == suit_shifts[13]));
+
+  i = random () % NELEM (low_cards);
+  do
+    j = random () % NELEM (low_cards);
+  while (i == j);
+  EXCHANGE (low_cards, i, j);
+
+  if (i == extra_low_index)
+    extra_low_index = j;
+  else if (j == extra_low_index)
+    extra_low_index = i;
+
+  if (i != extra_low_index)
+    invert[low_cards[i]] = i;
+
+  if (j != extra_low_index)
+    invert[low_cards[j]] = j;
+
+  do
+    low_cards[extra_low_index] = random () % 6; /* deuce through 7 */
+  while (suit_shifts[2 * extra_low_index + 1]
+	 == suit_shifts[2 * invert[low_cards[extra_low_index]] + 1]);
+
+  dead_cards = 0;
+
+  for (i = 0; i < 7; ++i)
+    {
+      dead_cards |= ((uint64)1 <<       (12-i)) << suit_shifts[2*i];
+      dead_cards |= ((uint64)1 << low_cards[i]) << suit_shifts[2*i+1];
+    }
+
+  do
+    {
+      rank14 = random () % 5; /* deuce through 6 */
+      new_dead = ((uint64) 1 << rank14) << suit_shifts[14];
+    }
+  while (dead_cards & new_dead);
+  dead_cards |= new_dead;
+
+  do
+    {
+      rank15 = random () % 5; /* deuce through 6 */
+      new_dead = ((uint64) 1 << rank15) << suit_shifts[15];
+    }
+  while (dead_cards & new_dead);
+  dead_cards |= new_dead;
+
+  do
+    {
+      rank16 = random () % 5; /* deuce through 6 */
+      new_dead = ((uint64) 1 << rank16) << suit_shifts[16];
+    }
+  while (dead_cards & new_dead);
+  dead_cards |= new_dead;
+
+  do
+    {
+      rank17 = random () % 5; /* deuce through 6 */
+      new_dead = ((uint64) 1 << rank17) << suit_shifts[17];
+    }
+  while (dead_cards & new_dead);
+
+  ssp = suit_shifts;
+  lcp = low_cards;
+  hands[0]  = ((uint64)1 <<     12) << *ssp++;
+  hands[0] |= ((uint64)1 << *lcp++) << *ssp++;
+
+  hands[1]  = ((uint64)1 <<     11) << *ssp++;
+  hands[1] |= ((uint64)1 << *lcp++) << *ssp++;
+
+  hands[2]  = ((uint64)1 <<     10) << *ssp++;
+  hands[2] |= ((uint64)1 << *lcp++) << *ssp++;
+
+  hands[3]  = ((uint64)1 <<      9) << *ssp++;
+  hands[3] |= ((uint64)1 << *lcp++) << *ssp++;
+
+  hands[4]  = ((uint64)1 <<      8) << *ssp++;
+  hands[4] |= ((uint64)1 << *lcp++) << *ssp++;
+
+  hands[5]  = ((uint64)1 <<      7) << *ssp++;
+  hands[5] |= ((uint64)1 << *lcp++) << *ssp++;
+
+  hands[6]  = ((uint64)1 <<      6) << *ssp++;
+  hands[6] |= ((uint64)1 << *lcp++) << *ssp++;
+
+  hands[7]  = ((uint64)1 << rank14) << *ssp++;
+  hands[7] |= ((uint64)1 << rank15) << *ssp++;
+
+  hands[8]  = ((uint64)1 << rank16) << *ssp++;
+  hands[8] |= ((uint64)1 << rank17) << *ssp++;
+  if (*hash_pp (hands))
+    goto try_again;
+  hash_insert (hands, 1, 1);
 }
 
 PUBLIC int
@@ -523,7 +654,7 @@ main (int argc, char *argv[])
   low_ratio = 99;
   hand_count = 0;
 
-  for (i = 0; i < 512; ++i)
+  while (low_ratio != 1.0)
     {
       dead_cards = 0;
       new_random_keith_hand (hands);
