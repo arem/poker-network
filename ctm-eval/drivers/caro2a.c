@@ -22,6 +22,10 @@ char rcsid_caro2[] =
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -499,7 +503,7 @@ new_random_keith_hand (uint64 hands[9])
 
   do
     low_cards[extra_low_index] = random () % 6; /* deuce through 7 */
-  while (suit_shifts[extra_low_index]
+  while (suit_shifts[2 * extra_low_index + 1]
 	 == suit_shifts[2 * invert[low_cards[extra_low_index]] + 1]);
 
   dead_cards = 0;
@@ -581,7 +585,13 @@ main (int argc, char *argv[])
   uint64 dead_cards, pegged_common;
   float low_ratio;
   int hand_count;
+  unsigned int seed;
+  int fd;
 
+  fd = open ("/dev/random", O_RDONLY);
+  read (fd, &seed, sizeof seed);
+  srandom (seed);
+  
   lcd = poker_lcd (9);
 
   for (i = 1; i <= 9; ++i)
