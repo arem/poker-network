@@ -3,22 +3,22 @@ char rcsid_cmp2[] =
 
 /*
  *  cmp2.c: a program to compare two pairs of hold'em hole cards at any
- *		point of the game (pre-flop, on the flop, turn or river).
- *		
+ *              point of the game (pre-flop, on the flop, turn or river).
+ *              
  *  Example:
  *
- *	cmp2 tc ac 3h ah 8c 6h 7h
- *	517 439 (ties = 34)
+ *      cmp2 tc ac 3h ah 8c 6h 7h
+ *      517 439 (ties = 34)
  *
- *	Ten of Clubs and Ace of Clubs will beat
- *	Ace of Hearts and Three of Hearts 517 times, while it will
- *	lose 439 times and tie 34 times, if the flop comes Eight of Clubs,
- *	Six of Hearts, Seven of Hearts
+ *      Ten of Clubs and Ace of Clubs will beat
+ *      Ace of Hearts and Three of Hearts 517 times, while it will
+ *      lose 439 times and tie 34 times, if the flop comes Eight of Clubs,
+ *      Six of Hearts, Seven of Hearts
  *
  *  Previous versions of cmp2 only allowed you to enter the two starting
  *  hole pairs.
  *
- *  Copyright (C) 1993, 1994  Clifford T. Matthews
+ *  Copyright (C) 1993 - 1995  Clifford T. Matthews
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ char rcsid_cmp2[] =
 #include <stdlib.h>
 
 #include "poker.h"
-#include "eval.h"
+#include "eval7.h"
 
 PUBLIC int main( int argc, char *argv[] )
 {
@@ -52,7 +52,7 @@ PUBLIC int main( int argc, char *argv[] )
   uint64 n1, n2, n3, n4, n5, n6, n7, n8, n9;
   boolean_t seen_cards_already;
   uint32 val1, val2, val1_count, val2_count, tie_count;
-  cards_u cards;
+  rank_set_t hearts, clubs, diamonds, spades;
 
   n_cards = 9;
   dead_cards = 0;
@@ -154,64 +154,62 @@ PUBLIC int main( int argc, char *argv[] )
   case 9:
     for (card1 =    (uint64) 1 << 51; card1 ; card1 >>= 1) {
       if (card1 & dead_cards)
-/*-->*/	continue;
+/*-->*/ continue;
       n1 = card1 | pegged_cards1;
       for (card2 = card1 >> 1; card2 ; card2 >>= 1) {
   case 8:
 	if (card2 & dead_cards)
-/*-->*/	  continue;
+/*-->*/   continue;
 	n2 = n1 | card2;
 	for (card3 = card2 >> 1; card3 ; card3 >>= 1) {
   case 7:
 	  if (card3 & dead_cards)
-/*-->*/	    continue;
+/*-->*/     continue;
 	  n3 = n2 | card3;
 	  for (card4 = card3 >> 1; card4 ; card4 >>= 1) {
   case 6:
 	    if (card4 & dead_cards)
-/*-->*/	      continue;
+/*-->*/       continue;
 	    n4 = n3 | card4;
 	    for (card5 = card4 >> 1; card5 ; card5 >>= 1) {
   case 5:
 	      if (card5 & dead_cards)
-/*-->*/	        continue;
+/*-->*/         continue;
 	      n5 = n4 | card5;
 	      for (card6 = card5 >> 1; card6 ; card6 >>= 1) {
   case 4:
 		if (card6 & dead_cards)
-/*-->*/	          continue;
+/*-->*/           continue;
 		n6 = n5 | card6;
 		for (card7 = card6 >> 1; card7 ; card7 >>= 1) {
   case 3:
 		  if (card7 & dead_cards)
-/*-->*/	            continue;
+/*-->*/             continue;
 		  n7 = n6 | card7;
 		  for (card8 = card7 >> 1; card8 ; card8 >>= 1) {
   case 2:
 		    if (card8 & dead_cards)
-/*-->*/	              continue;
+/*-->*/               continue;
 		    n8 = n7 | card8;
 		    for (card9 = card8 >> 1; card9 ; card9 >>= 1) {
   case 1:
 		      if (card9 & dead_cards)
-/*-->*/	                continue;
+/*-->*/                 continue;
 		      n9 = n8 | card9;
   case 0:
-		      cards.cards_n = 0;
-		      cards.cards_t.hearts   =  n9 & 0x1FFF;
-		      cards.cards_t.diamonds = (n9 >> 13) & 0x1FFF;
-		      cards.cards_t.clubs    = (n9 >> 26) & 0x1FFF;
-		      cards.cards_t.spades   = (n9 >> 39) & 0x1FFF;
-		      val1 = eval(cards);
+		      hearts   =  n9        & 0x1FFF;
+		      diamonds = (n9 >> 13) & 0x1FFF;
+		      clubs    = (n9 >> 26) & 0x1FFF;
+		      spades   = (n9 >> 39) & 0x1FFF;
+		      val1 = eval_exactly_7_cards(hearts, diamonds, clubs, spades);
 
 		      n9 ^= peg1_or_peg2;
 
-		      cards.cards_n = 0;
-		      cards.cards_t.hearts   =  n9 & 0x1FFF;
-		      cards.cards_t.diamonds = (n9 >> 13) & 0x1FFF;
-		      cards.cards_t.clubs    = (n9 >> 26) & 0x1FFF;
-		      cards.cards_t.spades   = (n9 >> 39) & 0x1FFF;
-		      val2 = eval(cards);
+		      hearts   =  n9        & 0x1FFF;
+		      diamonds = (n9 >> 13) & 0x1FFF;
+		      clubs    = (n9 >> 26) & 0x1FFF;
+		      spades   = (n9 >> 39) & 0x1FFF;
+		      val2 = eval_exactly_7_cards(hearts, diamonds, clubs, spades);
 
 		      if (val1 > val2)
 			  ++val1_count;
