@@ -1,3 +1,6 @@
+char rcsid_fish[] =
+	"$Id";
+
 /*
  *  fish.c: a rewrite of Roy T. Hashimoto's classic "fish" poker hand
  *		evaluator.
@@ -54,82 +57,6 @@ PRIVATE void dump_totals(int sig)
 	else
 	    printf("%.2f ", 100.0 * totals[i] / grand_total);
     printf(": %d\n", grand_total);
-}
-
-typedef enum { hearts, diamonds, clubs, spades } suit_t;
-
-#define	N_SUIT	(spades + 1)
-
-PRIVATE uint64 string_to_card(const char *str)
-{
-    rank_t rank;
-    suit_t suit;
-
-    rank = N_RANK;	/* illegal */
-    suit = N_SUIT;	/* illegal */
-
-    if (strlen(str) == 2) {
-	switch (str[0]) {
-	case '2':
-	    rank = deuce;
-	    break;
-	case '3':
-	    rank = trey;
-	    break;
-	case '4':
-	    rank = four;
-	    break;
-	case '5':
-	    rank = five;
-	    break;
-	case '6':
-	    rank = six;
-	    break;
-	case '7':
-	    rank = seven;
-	    break;
-	case '8':
-	    rank = eight;
-	    break;
-	case '9':
-	    rank = nine;
-	    break;
-	case 'T': case 't':
-	    rank = ten;
-	    break;
-	case 'J': case 'j':
-	    rank = jack;
-	    break;
-	case 'Q': case 'q':
-	    rank = queen;
-	    break;
-	case 'K': case 'k':
-	    rank = king;
-	    break;
-	case 'A': case 'a':
-	    rank = ace;
-	    break;
-	}
-	switch (str[1]) {
-	case 'H': case 'h':
-	    suit = hearts;
-	    break;
-	case 'D': case 'd':
-	    suit = diamonds;
-	    break;
-	case 'C': case 'c':
-	    suit = clubs;
-	    break;
-	case 'S': case 's':
-	    suit = spades;
-	    break;
-	}
-    }
-
-    return (rank == N_RANK || suit == N_SUIT) ?
-	0
-    :
-	((uint64) 1 << rank) << (suit * 13);
 }
 
 PUBLIC int main( int argc, char *argv[] )
