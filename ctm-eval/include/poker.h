@@ -1,3 +1,23 @@
+/*
+ *  poker.h: a collection of definitions useful for writing poker programs
+ *
+ *  Copyright (C) 1993  Clifford T. Matthews
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
+
 #if	!defined(__POKER__)
 #define	__POKER__
 
@@ -97,7 +117,7 @@ typedef union {
 
 #if	defined(__alpha) || defined(i386)
 #define	SMALL_TO_BIG_BIT_FIELDS
-#elif	defined(mc68000)
+#elif	defined(mc68000) || defined(sparc) || defined(hppa)
 #define	BIG_TO_SMALL_BIT_FIELDS
 #endif
 
