@@ -11,7 +11,7 @@ CFLAGS=-g -O4 -Wall -finline-functions -Winline
 
 all:	five_card_hands random_test newrandom tests
 
-tests: eval-digest eval5-digest eval7-digest
+tests: digtest5 digtest7
 
 five_card_hands:        $(FIVE_OBJ) $(LIB_POKER)
 	$(CC) $(CFLAGS) -o $@ $(FIVE_OBJ) $(LIB_POKER)
@@ -22,33 +22,27 @@ random_test:    $(RANDOM_OBJ) $(LIB_POKER)
 newrandom:      $(NEWRANDOM_OBJ) $(LIB_POKER)
 	$(CC) $(CFLAGS) -o $@ $(NEWRANDOM_OBJ) $(LIB_POKER)
 
-eval-digest : eval-digest.o
+digtest5 : digtest5.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIB_POKER)
 
-eval5-digest : eval5-digest.o
-	$(CC) $(CFLAGS) -o $@ $< $(LIB_POKER)
-
-eval7-digest : eval7-digest.o
+digtest7 : digtest7.o
 	$(CC) $(CFLAGS) -o $@ $< $(LIB_POKER)
 
 clean:
 	rm -f $(FIVE_OBJ) $(RANDOM_OBJ) $(NEWRANDOM_OBJ) \
-	five_card_hands random_test newrandom eval-digest eval5-digest \
-	eval7-digest
+	five_card_hands random_test newrandom digtest5 digtest7
 
 .c.o:
 	$(CC) $(CFLAGS) -I../include -c $<
 
 test : tests
-	@if [ `./eval-digest` = "d0facbffc225197e0bf30a9501ddbab8" ]; \
-		then echo "eval-digest:		Passed"; \
-		else echo "eval-digest:		Failed"; \
+	@echo -n "digtest5: 5-card hands..."
+	@if [ `./digtest5` = "1f066feff1a8b3406fe069c05c4ba17d" ]; \
+		then echo "		Passed"; \
+		else echo "		Failed"; \
 	fi
-	@if [ `./eval5-digest` = "d0facbffc225197e0bf30a9501ddbab8" ]; \
-		then echo "eval5-digest:		Passed"; \
-		else echo "eval5-digest:		Failed"; \
-	fi
-	@if [ `./eval7-digest` = "73844ddc4017d186d0e590c46f6d6b8e" ]; \
-		then echo "eval7-digest:		Passed"; \
-		else echo "eval7-digest:		Failed"; \
+	@echo -n "digtest7: 7-card hands..."
+	@if [ `./digtest7` = "03a86bd2deac3052bbe93256e0d7b156" ]; \
+		then echo "		Passed"; \
+		else echo "		Failed"; \
 	fi
