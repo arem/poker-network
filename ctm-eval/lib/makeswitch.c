@@ -66,10 +66,10 @@ print_cases ()
       boolean_t found;
 
       /* First see if we have _any_ cases for this switch. */
-      for (n = 0, found = FALSE; n < RANK_COMBINATIONS / 8; n++)
+      for (n = 0, found = false; n < RANK_COMBINATIONS / 8; n++)
 	if (may_have[possible][n] != 0)
 	  {
-	    found = TRUE;
+	    found = true;
 	    break;
 	  }
 
@@ -84,35 +84,39 @@ print_cases ()
 	      printf ("    case %u:\n", cards);
 
 	  /* Print out all of the #defines for stuff we know. */
+	  if (!(possible & MAY_HAVE_FLUSH)
+		|| !(possible & MUST_HAVE_STRAIGHT))
+	    puts ("#define STRAIGHT_FLUSH_helper_P(suit) 0");
 	  if (!(possible & MAY_HAVE_FOUR_OF_A_KIND))
-	    puts ("#define FOUR_OF_A_KIND() 0");
+	    puts ("#define FOUR_OF_A_KIND_complete_P() 0");
 	  if (!(possible & MAY_HAVE_FLUSH))
-	    puts ("#define FLUSH() 0");
+	    puts ("#define FLUSH_helper_P() 0");
 	  if (!(possible & MAY_HAVE_FULL_HOUSE))
-	    puts ("#define FULL_HOUSE() 0");
+	    puts ("#define FULL_HOUSE_complete_P(three_info) 0");
 	  if (!(possible & MAY_HAVE_THREE_OF_A_KIND))
-	    puts ("#define THREE_OF_A_KIND() 0");
-	  if (!(possible & MAY_HAVE_TWO_PAIR))
-	    puts ("#define TWO_PAIR() 0");
-
-	  /* For these two, we _know_ if we do or do not have them based
+	    puts ("#define THREE_OF_A_KIND_helper_P() 0");
+	  
+	  /* For these three, we _know_ if we do or do not have them based
 	   * solely on the ranks of the cards in our hands.
 	   */
-	  printf ("#define STRAIGHT() %d\n",
-		  (possible & MAY_HAVE_STRAIGHT) != 0);
-	  printf ("#define PAIR() %d\n", (possible & MAY_HAVE_PAIR) != 0);
+	  printf ("#define STRAIGHT_P() %d\n",
+		  (possible & MUST_HAVE_STRAIGHT) != 0);
+	  printf ("#define AT_LEAST_PAIR_P() %d\n",
+		  (possible & MUST_HAVE_AT_LEAST_PAIR) != 0);
+	  printf ("#define PAIR_P() %d\n", (possible & MUST_HAVE_PAIR) != 0);
 
 	  puts ("\n"
 		"#include \"tree.h\"\n");
 
 	  /* #undef everything. */
-	  puts ("#undef FOUR_OF_A_KIND\n"
-		"#undef STRAIGHT\n"
-		"#undef FLUSH\n"
-		"#undef FULL_HOUSE\n"
-		"#undef THREE_OF_A_KIND\n"
-		"#undef TWO_PAIR\n"
-		"#undef PAIR");
+	  puts ("#undef STRAIGHT_FLUSH_helper_P\n"
+		"#undef FOUR_OF_A_KIND_complete_P\n"
+		"#undef STRAIGHT_P\n"
+		"#undef FLUSH_helper_P\n"
+		"#undef FULL_HOUSE_complete_P\n"
+		"#undef THREE_OF_A_KIND_helper_P\n"
+		"#undef AT_LEAST_PAIR_P\n"
+		"#undef PAIR_P");
 
 	  /* Print out the break. */
 	  puts ("      break;");
@@ -147,7 +151,7 @@ compute_cases ()
       num_unique_ranks = num_bits (cards);
       if (num_unique_ranks > CARDS_DEALT
 	  || num_unique_ranks < (CARDS_DEALT + 3) / 4)
-/*-->*/	continue;
+/*-->*/ continue;
 
       possible_hands = 0;
 
@@ -155,10 +159,12 @@ compute_cases ()
       for (i = 0; i <= N_RANK - HAND_SIZE; i++)
 	if (((cards >> i) & ((1 << HAND_SIZE) - 1)) == ((1 << HAND_SIZE) - 1))
 	  {
-	    possible_hands |= MAY_HAVE_STRAIGHT;  /* Really we MUST have it. */
+	    possible_hands |= MUST_HAVE_STRAIGHT;  /* Really we MUST have it. */
 	    break;
 	  }
 
+      if ((cards & FIVE_STRAIGHT_MASK) == FIVE_STRAIGHT_MASK)
+	  possible_hands |= MUST_HAVE_STRAIGHT;
       /* Check for a possible flush. */
       if (num_unique_ranks >= HAND_SIZE)
 	possible_hands |= MAY_HAVE_FLUSH;
@@ -173,11 +179,11 @@ compute_cases ()
 
       /* Check for a possible pair when _no better hand is possible_. */
       if (num_unique_ranks == CARDS_DEALT - 1)
-	possible_hands |= MAY_HAVE_PAIR;  /* Really we MUST have it. */
+	possible_hands |= MUST_HAVE_PAIR;  /* Really we MUST have it. */
 
-      /* Check for a possible two pair. */
-      if (num_unique_ranks <= CARDS_DEALT - 2)
-	possible_hands |= MAY_HAVE_TWO_PAIR;
+      /* Check for at least a pair. */
+      if (num_unique_ranks <= CARDS_DEALT - 1)
+	possible_hands |= MUST_HAVE_AT_LEAST_PAIR;
 
       /* Check for a possible full house. */
       if (num_unique_ranks <= CARDS_DEALT - 3)
