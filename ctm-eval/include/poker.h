@@ -35,7 +35,7 @@
 #define PUBLIC
 
 typedef enum {
-    high_hand = 1,
+    high_hand,
     pair,
     two_pair,
     three_of_a_kind,
@@ -45,6 +45,8 @@ typedef enum {
     four_of_a_kind,
     straight_flush,
 } hand_t;
+
+#define N_HAND	(straight_flush - high_hand + 1)
 
 typedef enum {
     deuce = 0,
@@ -195,5 +197,13 @@ extern const char *hand_names[];
 extern void dump_rank( int ranks, char suitchar );
 extern void dump_cards( cards_u cards );
 extern void dump_eval( eval_u eval );
+
+#define	FSM_SHIFT	12
+#define	FSM_MASK	((1 << FSM_SHIFT) - 1)	/* two's complement! */
+
+extern char str_and_flu_table[N_HAND][1 << N_RANK];
+extern char straight_table[1 << N_RANK];
+extern char rank_fsm[N_HAND][1 << FSM_SHIFT];
+extern unsigned long long cards_to_counts[1 << N_RANK];
 
 #endif	/* !defined(__POKER__) */
