@@ -437,6 +437,7 @@ main (int argc, char *argv[])
   uint64 dead_cards, pegged_common;
   int card0, card1, card2, card3, card4, card5;
   float low_ratio;
+  int hand_count;
 
   lcd = poker_lcd (9);
 
@@ -446,6 +447,7 @@ main (int argc, char *argv[])
   pegged_common = 0;
   n_cards = 5;
   low_ratio = 99;
+  hand_count = 0;
   for (card0 = (1 << 12); card0 >= (1 << 5); card0 >>= 1)
     {
       for (card1 = card0 >> 1; card1 > 0; card1 >>= 1)
@@ -458,7 +460,7 @@ main (int argc, char *argv[])
 		    {
 		      for (card4 = card2 >> 1; card4 >= (1 << 3); card4 >>= 1)
 			{
-			  if (card4 != card2 && card4 != card1)
+			  if (card4 != card3 && card4 != card1)
 			    {
 			      for (card5 = card4 >> 1; card5 > 0; card5 >>= 1)
 				{
@@ -502,11 +504,13 @@ main (int argc, char *argv[])
 					  high = score[i];
 				      }
 				    ratio = (float) high / low;
+				    ++hand_count;
 				    if (ratio < low_ratio)
 				      {
 					low_ratio = ratio;
 					hash_insert (hands, high, low);
-					fprintf (stderr, "%f\n", low_ratio);
+					fprintf (stderr, "%d %f\n", hand_count,
+						 low_ratio);
 				      }
 				  }
 				}
