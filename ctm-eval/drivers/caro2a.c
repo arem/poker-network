@@ -453,87 +453,47 @@ while (0)
 
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
 
+enum { H = 0, D = 13, C = 26, S = 39 };
 
 PRIVATE void
 new_random_keith_hand (uint64 hands[9])
 {
-  static int suit_shifts[] = {  0,  0,  0,  0,  0,
-			       13, 13, 13, 13, 13,
-			       26, 26, 26, 26,
-			       39, 39, 39, 39, };
+  static int suit_shifts[] = {  C, D, /* 0 1 */
+				D, C, /* 2 3 */
+				S, C, /* 4 5 */
+				S, H, /* 6 7 */
+				D, C, /* 8 9 */
+			        D, D, /* 10 11 */
+				D, H, /* 12 13 */
+			        H, H, /* 14 15 */
+				S, S, /* 16 17 */
+  };
 
   static int ranks[] =
   {
-    ace, deuce,		/* 0 1 */
-    king, five,	/* 2 3 */
-    queen, six,	/* 4 5 */
-    jack, seven,		/* 6 7 */
-    ten, seven,		/* 8 9 */
-    nine, four,	/* 10 11 */
-    eight, trey,	/* 12 13 */
-    six, five,	/* 14 15*/
-    deuce, deuce,		/* 16 17 */
+    ace, four,		/* 0 1 */
+    king, deuce,		/* 2 3 */
+    queen, seven,	/* 4 5 */
+    jack, five,		/* 6 7 */
+    ten, six,		/* 8 9 */
+    nine, trey,	/* 10 11 */
+    eight, seven,	/* 12 13 */
+    four, trey,	/* 14 15*/
+    four, deuce,		/* 16 17 */
   };
-
-  int i, j;
-
-  do
-    {
-      int ss1, ss2;
-
-      i = random () % NELEM (suit_shifts);
-      do
-	j = random () % NELEM (suit_shifts);
-      while (i == j);
-      EXCHANGE (suit_shifts, i, j);
-
-      ss1 = suit_shifts[1]; /* one of our deuces */
-#if !defined (LETGCCWAIL)
-      ss2 = 0;
-#endif
-      do
-	i = random () % 18;
-      while (suit_shifts[i] == ss1);
-      EXCHANGE (suit_shifts, i, 16);
-      ss2 = suit_shifts[16];
-      do
-	i = random () % 18;
-      while (suit_shifts[i] == ss1 || suit_shifts[i] == ss2);
-      EXCHANGE (suit_shifts, i, 17);
-
-      ss1 = suit_shifts[14];
-      do
-	i = random() % 18;
-      while (i == 1 || i == 16 || i == 17 || suit_shifts[i] != ss1);
-      EXCHANGE(suit_shifts, i, 15);
-
-      ss1 = suit_shifts[14];
-      do
-	i = random () % 18;
-      while (i == 1 || i == 16 || i == 17 || i == 14 || i == 15 ||
-	     suit_shifts[i] == ss1);
-      EXCHANGE (suit_shifts, i, 5);
-
-      ss1 = suit_shifts[7];
-      do
-	i = random () % 18;
-      while (i == 1 || i == 16 || i == 17 || i == 14 || i == 15 ||
-	     i == 14 || i == 5 || suit_shifts[i] == ss1);
-      EXCHANGE (suit_shifts, i, 9);
-    }
-  while ((suit_shifts[ 0] == suit_shifts[ 1]) ||
-	 (suit_shifts[ 2] == suit_shifts[ 3]) ||
-	 (suit_shifts[ 4] == suit_shifts[ 5]) ||
-	 (suit_shifts[ 6] == suit_shifts[ 7]) ||
-	 (suit_shifts[ 8] == suit_shifts[ 9]) ||
-	 (suit_shifts[10] == suit_shifts[11]) ||
-	 (suit_shifts[12] == suit_shifts[13]));
+  int i;
+  static int flip = 0;
 
   for (i = 0; i < 9; ++i)
     {
-      hands[i] = ((((uint64) 1 << ranks[2*i]) << suit_shifts[2*i]) | 
-		  (((uint64) 1 << ranks[2*i+1]) << suit_shifts[2*i+1]));
+      if (flip & (1 << i))
+	hands[i] = ((((uint64) 1 << ranks[2*i])   << suit_shifts[2*i+1]) | 
+		    (((uint64) 1 << ranks[2*i+1]) << suit_shifts[2*i]));
+      else
+	hands[i] = ((((uint64) 1 << ranks[2*i])   << suit_shifts[2*i]) | 
+		    (((uint64) 1 << ranks[2*i+1]) << suit_shifts[2*i+1]));
     }
+  ++flip;
 }
 
 PUBLIC int
@@ -563,7 +523,7 @@ main (int argc, char *argv[])
   low_ratio = 99;
   hand_count = 0;
 
-  while (low_ratio != 1.0)
+  for (i = 0; i < 512; ++i)
     {
       dead_cards = 0;
       new_random_keith_hand (hands);
