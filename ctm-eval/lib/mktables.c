@@ -18,11 +18,10 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
 #include <stdio.h>
 #include "poker.h"
 
-static int n_bits_table_func( int n )
+static uint64 n_bits_func( int n )
 {
     int retval;
 
@@ -35,7 +34,7 @@ static int n_bits_table_func( int n )
     return retval;
 }
 
-static int top_card_table_func( int n )
+static uint64 top_card_func( int n )
 {
     int retval, bit;
 
@@ -47,37 +46,53 @@ static int top_card_table_func( int n )
     return retval;
 }
 
-static int top_five_cards_table_func( int n )
+static uint64 top_five_cards_func( int n )
 {
     eval_u eval;
 
     eval.eval_n = 0;
-    eval.eval_t.top_card    = top_card_table_func(n);
+    eval.eval_t.top_card    = top_card_func(n);
     n &= ~(1 << eval.eval_t.top_card);
-    eval.eval_t.second_card = top_card_table_func(n);
+    eval.eval_t.second_card = top_card_func(n);
     n &= ~(1 << eval.eval_t.second_card);
-    eval.eval_t.third_card  = top_card_table_func(n);
+    eval.eval_t.third_card  = top_card_func(n);
     n &= ~(1 << eval.eval_t.third_card);
-    eval.eval_t.fourth_card = top_card_table_func(n);
+    eval.eval_t.fourth_card = top_card_func(n);
     n &= ~(1 << eval.eval_t.fourth_card);
-    eval.eval_t.fifth_card  = top_card_table_func(n);
+    eval.eval_t.fifth_card  = top_card_func(n);
     return eval.eval_n;
 }
 
-static void output_table(const char *tabname, int (*fp)(int))
+static uint64 mask_rank_func( int rank )
+{
+    return mask_rank(rank);
+}
+
+static void output_table(const char *typename, const char *tabname, int len,
+							     uint64 (*fp)(int))
 {
     int i;
-    printf("int %s[1 << N_RANK] = {\n", tabname);
-    for (i = 0; i < (1 << N_RANK); ++i)
-	printf("    %d,\n", fp(i));
+    uint64 u64;
+    uint32 high, low;
+
+    printf("%s %s_table[] = {\n", typename, tabname);
+    for (i = 0; i < len; ++i) {
+	u64  = fp(i);
+	high = u64 >> 32;
+	low  = u64;
+	printf("    0x%08x%08x%s,\n", high, low, high ? "LL" : "");
+    }
     printf("};\n");
 }
 
 int main( void )
 {
     printf("#include \"poker.h\"\n");
-    output_table("n_bits_table",         n_bits_table_func);
-    output_table("top_five_cards_table", top_five_cards_table_func);
-    output_table("top_card_table",       top_card_table_func);
+
+    output_table("int",    "n_bits",         1 << N_RANK, n_bits_func);
+    output_table("int",    "top_five_cards", 1 << N_RANK, top_five_cards_func);
+    output_table("int",    "top_card",       1 << N_RANK, top_card_func);
+    output_table("uint64", "mask_rank",           N_RANK, mask_rank_func);
+
     return 0;
 }
