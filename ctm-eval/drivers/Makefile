@@ -11,6 +11,8 @@ LIB_POKER=../lib/libpoker.a
 
 CC=gcc
 CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer
+# CC=egcs
+# CFLAGS=-g -O6 -Wall -finline-functions -Winline -DNDEBUG -fomit-frame-pointer -mpentiumpro
 # CFLAGS=-g -Wall
 
 all:    fish cmp2 cmpn cmpall caro2 caro2a caro2b
