@@ -448,108 +448,36 @@ hash_insert (const uint64 hands[9], float ratio)
   *pp = entryp;
 }
 
-PUBLIC int
-main (int argc, char *argv[])
+/* globals -- ick */
+PRIVATE int lcd;
+PRIVATE int reward_table[10]; /* NOTE: 1-based array, not 0-based */
+
+PRIVATE void
+score_hands (uint32 score[9], uint64 hands[9],
+	     uint64 dead_cards, uint64 pegged_cards, uint8 n_cards)
 {
-  uint64 hands[9];
   uint32 val, high_val;
   int to_reward[9], *rewardp;
   rank_set_t card_diffs[8 * 4], *card_diffp;
   int reward;
-  int reward_table[10]; /* NOTE: 1-based array, not 0-based */
-  uint32 score[9];
-  int lcd;
   int i;
-  uint8 n_cards;
-  uint64 temp_card, dead_cards, pegged_common;
   uint64 card1, card2, card3, card4, card5;
   uint64 n1, n2, n3, n4, n5;
-  boolean_t seen_cards_already;
-  int hole_card_no;
-
-  lcd = lcd_of_first_n_positive_integers (9);
-
-  hole_card_no = 0;
-  memset (hands, 0, sizeof hands);
-  memset (score, 0, sizeof score);
-  for (i = 1; i <= 9; ++i)
-    reward_table[i] = lcd / i;
-
-  n_cards = 5;
-  dead_cards = 0;
-  pegged_common = 0;
-  seen_cards_already = false;
-  for (i = 1; i < argc; ++i)
-    {
-      if (argv[i][0] == '-')
-	{
-	  if (seen_cards_already)
-	    {
-	      fprintf(stderr, "Cards must come before options\n");
-	      exit(1);
-	    }
-	  if (strcmp (argv[i], "-d") == 0 ||
-	      strcmp (argv[i], "-c") == 0)
-	    {
-	      if (i == argc)
-		{
-		  fprintf(stderr, "Missing card portion of -d\n");
-		  exit(1);
-		}
-	      temp_card = string_to_card(argv[i]);
-	      if (!temp_card)
-		{
-		  fprintf(stderr, "Malformed card \"%s\"\n", argv[i]);
-		  exit(1);
-		}
-	      else
-		{
-		  if (argv[i][1] == 'c')
-		    pegged_common |= temp_card;
-		  dead_cards |= temp_card;
-		  --n_cards;
-		  ++i;
-		}
-	    }
-	  else
-	    {
-	      fprintf(stderr, "Unknown switch \"%s\"\n", argv[i]);
-	      exit(1);
-	    }
-	}
-      else
-	{
-	  temp_card = string_to_card(argv[i]);
-	  if (!temp_card)
-	    {
-	      fprintf(stderr, "Malformed card \"%s\"\n", argv[i]);
-	      exit(1);
-	    }
-	  else
-	    {
-	      hands[hole_card_no++/2] |= temp_card;
-	      dead_cards |= temp_card;
-	    }
-	}
-    }
-
-  if (hole_card_no != 18)
-    {
-      fprintf (stderr, "Wrong number of hole cards\n");
-      exit (1);
-    }
 
   card_diffp = card_diffs;
   for (i = 0; i < 8; ++i)
     {
       rank_set_t h0, h1, c0, c1, d0, d1, s0, s1;
+
       extr_suits (hands[i]  , &h0, &d0, &c0, &s0);
       extr_suits (hands[i+1], &h1, &d1, &c1, &s1);
       *card_diffp++ = h0 ^ h1;
       *card_diffp++ = d0 ^ d1;
       *card_diffp++ = c0 ^ c1;
       *card_diffp++ = s0 ^ s1;
+      dead_cards |= hands[i];
     }
+  dead_cards |= hands[i];
 
      n1 =    n2 =    n3 =    n4 =    n5 = 0;
   card1 = card2 = card3 = card4 = card5 = 0;
@@ -565,22 +493,22 @@ main (int argc, char *argv[])
       break;
     case 4:
       card2 = (uint64) 1 << 51;
-      n1    = hands[0] | pegged_common;
+      n1    = hands[0] | pegged_cards;
       break;
     case 3:
       card3 = (uint64) 1 << 51;
-      n2    = hands[0] | pegged_common;
+      n2    = hands[0] | pegged_cards;
       break;
     case 2:
       card4 = (uint64) 1 << 51;
-      n3    = hands[0] | pegged_common;
+      n3    = hands[0] | pegged_cards;
       break;
     case 1:
       card5 = (uint64) 1 << 51;
-      n4    = hands[0] | pegged_common;
+      n4    = hands[0] | pegged_cards;
       break;
     case 0:
-      n5    = hands[0] | pegged_common;
+      n5    = hands[0] | pegged_cards;
       break;
     }
   switch (n_cards)
@@ -655,6 +583,93 @@ loop:
 	    }
 	}
     }
+}
+
+PUBLIC int
+main (int argc, char *argv[])
+{
+  uint64 hands[9];
+  uint32 score[9];
+  int i;
+  uint8 n_cards;
+  uint64 temp_card, dead_cards, pegged_common;
+  boolean_t seen_cards_already;
+  int hole_card_no;
+  boolean_t auto_flag;
+
+  lcd = lcd_of_first_n_positive_integers (9);
+
+  hole_card_no = 0;
+  memset (hands, 0, sizeof hands);
+  memset (score, 0, sizeof score);
+  for (i = 1; i <= 9; ++i)
+    reward_table[i] = lcd / i;
+
+  auto_flag = false;
+  n_cards = 5;
+  dead_cards = 0;
+  pegged_common = 0;
+  seen_cards_already = false;
+  for (i = 1; i < argc; ++i)
+    {
+      if (argv[i][0] == '-')
+	{
+	  if (seen_cards_already)
+	    {
+	      fprintf(stderr, "Cards must come before options\n");
+	      exit(1);
+	    }
+	  if (strcmp (argv[i], "-a") == 0)
+	    auto_flag = true;
+	  else if (strcmp (argv[i], "-d") == 0 ||
+	      strcmp (argv[i], "-c") == 0)
+	    {
+	      if (i == argc)
+		{
+		  fprintf(stderr, "Missing card portion of -d\n");
+		  exit(1);
+		}
+	      temp_card = string_to_card(argv[i]);
+	      if (!temp_card)
+		{
+		  fprintf(stderr, "Malformed card \"%s\"\n", argv[i]);
+		  exit(1);
+		}
+	      else
+		{
+		  if (argv[i][1] == 'c')
+		    pegged_common |= temp_card;
+		  dead_cards |= temp_card;
+		  --n_cards;
+		  ++i;
+		}
+	    }
+	  else
+	    {
+	      fprintf(stderr, "Unknown switch \"%s\"\n", argv[i]);
+	      exit(1);
+	    }
+	}
+      else
+	{
+	  temp_card = string_to_card(argv[i]);
+	  if (!temp_card)
+	    {
+	      fprintf(stderr, "Malformed card \"%s\"\n", argv[i]);
+	      exit(1);
+	    }
+	  else
+	    hands[hole_card_no++/2] |= temp_card;
+	}
+    }
+
+  if (hole_card_no != 18)
+    {
+      fprintf (stderr, "Wrong number of hole cards\n");
+      exit (1);
+    }
+
+  score_hands (score, hands, dead_cards, pegged_common, n_cards);
 
   {
     uint32 low, high;
