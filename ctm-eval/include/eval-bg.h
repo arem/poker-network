@@ -84,19 +84,23 @@ extern uint8 is_straight_table[];
 
 static inline uint32 is_straight( uint32 ranks )	/* Keith's */
 {
-    int st;
+    unsigned int ranks2;
+    eval_u retval;
 
-    st = is_straight_table[ranks];
-    if (st) {
-      eval_u retval;
+    retval.eval_n = 0;
 
-      retval.eval_n = 0;
-      retval.eval_t.hand = straight;
-      retval.eval_t.top_card = st;
-      return retval.eval_n;
+    if ( (ranks2  = ranks & (ranks << 1)) &&
+	 (ranks2 &=         (ranks << 2)) &&
+	 (ranks2 &=         (ranks << 3)) &&
+	 (ranks2 &=         (ranks << 4)) ) {
+        retval.eval_t.hand     = straight;
+        retval.eval_t.top_card = top_card_table[ranks2];
+    } else if ((ranks & FIVE_STRAIGHT_MASK) ==  FIVE_STRAIGHT_MASK) {
+        retval.eval_t.hand     = straight;
+        retval.eval_t.top_card = five;
     }
-    else 
-      return 0;
+
+    return retval.eval_n;
 }
 
 
