@@ -20,12 +20,15 @@ CFLAGS=-g -O4 -Wall -finline-functions -Winline -DNDEBUG
 # CFLAGS=-g -Wall
 RANLIB=ranlib
 
+all:	$(LIB) ../include/eval7.h
+
 $(LIB): $(OBJ)
 	ar cr $(LIB) $(OBJ)
 	$(RANLIB) $(LIB)
 
 clean:
-	rm -f $(OBJ) $(LIB) $(DERIVED_SRC) mktables core
+	rm -f $(OBJ) $(LIB) $(DERIVED_SRC) mktables core makeswitch.o \
+			makeswitch ../include/eval7.h
 
 $(DERIVED_SRC): mktables
 	./mktables $@
@@ -35,3 +38,9 @@ mktables:       mktables.c
 
 .c.o:
 	$(CC) $(CFLAGS) -I../include -c $<
+
+makeswitch:	makeswitch.o
+	$(CC) -o makeswitch makeswitch.o
+
+../include/eval7.h:	makeswitch
+	./makeswitch > ../include/eval7.h
