@@ -23,7 +23,8 @@
 
 typedef enum
 {
-  CARDS_DEALT = 7
+  /* CARDS_DEALT is passed in from Makefile */
+  /* CARDS_DEALT = 7 */
 } cards_dealt_t;
 
 typedef enum
