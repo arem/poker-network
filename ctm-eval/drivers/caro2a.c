@@ -506,20 +506,30 @@ new_random_keith_hand (uint64 hands[9])
 	    break;
 	  }
 
-      ss1 = suit_shifts[3]; /* one of the deuces */
+      ss1 = suit_shifts[14];
+      for (i = 0; i < 18; ++i)
+	if (i != 14 && suit_shifts[i] == ss1)
+	  EXCHANGE (suit_shifts, i, 15);
+
+      ss1 = suit_shifts[15]; /* one of the deuces */
       for (i = 0; i < 18; ++i)
 	if (i != 1 && i != 14 && i != 16 && suit_shifts[i] != ss1)
 	  {
-	    EXCHANGE (suit_shifts, i, 15);
+	    EXCHANGE (suit_shifts, i, 3);
 	    break;
 	  }
 
-      ss1 = suit_shifts[5]; /* one of the treys */
+      ss1 = suit_shifts[16];
+      for (i = 0; i < 18; ++i)
+	if (i != 16 && suit_shifts[i] == ss1)
+	  EXCHANGE (suit_shifts, i, 17);
+
+      ss1 = suit_shifts[17]; /* one of the treys */
       for (i = 0; i < 18; ++i)
 	if (i != 1 && i != 14 && i != 16 && i != 3 && i != 15 &&
 	    suit_shifts[i] != ss1)
 	  {
-	    EXCHANGE (suit_shifts, i, 17);
+	    EXCHANGE (suit_shifts, i, 5);
 	    break;
 	  }
 
