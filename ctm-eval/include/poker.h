@@ -44,6 +44,8 @@ typedef enum {
 
 #define	N_RANK	(ace - deuce + 1)
 
+typedef	unsigned int uint32;
+
 #if	!defined(__alpha)
 typedef	long long uint64;
 #else
@@ -53,14 +55,14 @@ typedef	unsigned long uint64;
 typedef union {
     uint64 cards_n;
     struct {
-	uint64         :3;
-	uint64 spades  :N_RANK;
-	uint64         :3;
-	uint64 clubs   :N_RANK;
-	uint64         :3;
-	uint64 diamonds:N_RANK;
-	uint64         :3;
-	uint64 hearts  :N_RANK;
+	uint32         :3;
+	uint32 spades  :N_RANK;
+	uint32         :3;
+	uint32 clubs   :N_RANK;
+	uint32         :3;
+	uint32 diamonds:N_RANK;
+	uint32         :3;
+	uint32 hearts  :N_RANK;
     }
     cards_t;
 } cards_u;
@@ -92,8 +94,6 @@ typedef union {
  */
 
 #if	defined(__GNUC__) || defined(__alpha)
-
-typedef	unsigned int uint32;
 
 #if	defined(__alpha) || defined(i386)
 #define	SMALL_TO_BIG_BIT_FIELDS
@@ -150,5 +150,7 @@ extern int top_five_cards_table[1 << N_RANK];
 extern int       top_card_table[1 << N_RANK];
 
 #define	HAND_SIZE	5	/* number of significant cards in showdown */
+
+extern const char *hand_names[];
 
 #endif	/* !defined(__POKER__) */
