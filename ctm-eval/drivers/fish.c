@@ -136,7 +136,6 @@ PUBLIC int main( int argc, char *argv[] )
 {
   uint8 i;
   uint8 n_cards;
-  cards_u cards;
   uint64 temp_card, dead_cards, pegged_cards;
   uint64 card1, card2, card3, card4, card5, card6, card7, card8, card9;
   uint64 n1, n2, n3, n4, n5, n6, n7, n8, n9;
@@ -282,12 +281,7 @@ PUBLIC int main( int argc, char *argv[] )
 /*-->*/	                continue;
 		      n9 = n8 | card9;
   case 0:
-		      cards.cards_n = 0;
-		      cards.cards_t.hearts   =  n9        & 0x1FFF;
-		      cards.cards_t.diamonds = (n9 >> 13) & 0x1FFF;
-		      cards.cards_t.clubs    = (n9 >> 26) & 0x1FFF;
-		      cards.cards_t.spades   = (n9 >> 39) & 0x1FFF;
-		      ++totals[rank_eval(cards)];
+		      ++totals[rank_eval(n9)];
 		    }
 		  }
 		}
