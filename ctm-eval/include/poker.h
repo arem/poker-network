@@ -169,6 +169,26 @@ extern int         n_bits_table[1 << N_RANK];
 extern int top_five_cards_table[1 << N_RANK];
 extern int       top_card_table[1 << N_RANK];
 
+extern uint64   mask_rank_table[N_RANK];
+
+/*
+ * NOTE: mask_rank is provided here so that mktable can
+ *	 use it.  Duplicated code is evil...
+ */
+
+static inline uint64 mask_rank( uint32 rank )
+{
+    cards_u temp;
+    uint32 bit;
+
+    bit = (1 << rank);
+    temp.cards_t.spades   = bit;
+    temp.cards_t.clubs    = bit;
+    temp.cards_t.diamonds = bit;
+    temp.cards_t.hearts   = bit;
+    return ~temp.cards_n;
+}
+
 #define	HAND_SIZE	5	/* number of significant cards in showdown */
 
 extern const char *hand_names[];
