@@ -48,7 +48,7 @@ static inline hand_t rank_eval(uint64 hand)
 
     spades   = hand;
 
-    retval = str_and_flu_table[high_hand][hearts  ];
+    retval = str_and_flu_table[high_hand][spades  ];
     retval = str_and_flu_table[retval   ][clubs   ];
     retval = str_and_flu_table[retval   ][diamonds];
     retval = str_and_flu_table[retval   ][hearts  ];
