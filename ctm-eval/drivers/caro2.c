@@ -81,6 +81,301 @@ while (false)
 
 #endif
 
+PRIVATE int
+card_compare (const void *p1, const void *p2)
+{
+  uint64 cards1, cards2;
+  int retval;
+
+  cards1 = *(uint64 *)p1;
+  cards2 = *(uint64 *)p2;
+  if (cards1 < cards2)
+    retval = -1;
+  else if (cards1 > cards2)
+    retval = 1;
+  else
+    retval = 0;
+
+  return retval;
+}
+
+enum
+{
+  HEART_TO_HEART = 0,
+  HEART_TO_DIAMOND = 13,
+  HEART_TO_CLUB = 26,
+  HEART_TO_SPADE = 39,
+
+  DIAMOND_TO_HEART = 0,
+  DIAMOND_TO_DIAMOND = 13,
+  DIAMOND_TO_CLUB = 26,
+  DIAMOND_TO_SPADE = 39,
+
+  CLUB_TO_HEART = 0,
+  CLUB_TO_DIAMOND = 13,
+  CLUB_TO_CLUB = 26,
+  CLUB_TO_SPADE = 39,
+
+  SPADE_TO_HEART = 0,
+  SPADE_TO_DIAMOND = 13,
+  SPADE_TO_CLUB = 26,
+  SPADE_TO_SPADE = 39,
+};
+
+PRIVATE inline void
+normalize_suits (uint64 *cardsp, int hs, int ds, int cs, int ss)
+{
+  rank_set_t temp_hearts, temp_diamonds, temp_clubs, temp_spades;
+
+  extr_suits (*cardsp, &temp_hearts, &temp_diamonds,
+	               &temp_clubs , &temp_spades);
+
+  *cardsp = (((uint64) temp_hearts    << hs) |
+	      ((uint64) temp_diamonds << ds) |
+	      ((uint64) temp_clubs    << cs) |
+	      ((uint64) temp_spades   << ss));
+}
+
+PRIVATE void
+canon (uint64 hands[9], uint64 *deadp, uint64 *peggedp)
+{
+  int i;
+  rank_set_t hearts, diamonds, clubs, spades;
+  int hs, ds, cs, ss; /* heart_shift, diamond_shift, club_shift, spade_shift */
+  boolean_t doit;
+
+  hearts   = 0;
+  clubs    = 0;
+  diamonds = 0;
+  spades   = 0;
+  for (i = 0; i < 9; ++i)
+    {
+      rank_set_t temp_hearts, temp_diamonds, temp_clubs, temp_spades;
+
+      extr_suits (hands[i], &temp_hearts, &temp_diamonds,
+		            &temp_clubs , &temp_spades);
+      hearts   |= temp_hearts;
+      diamonds |= temp_diamonds;
+      clubs    |= temp_clubs;
+      spades   |= temp_spades;
+    }
+  doit = true;
+  if (hearts >= diamonds)
+    {
+      if (clubs >= spades)
+	{
+	  if (diamonds >= clubs)
+	    { /* hearts, diamonds, clubs, spades */
+#if !defined (LETGCCWAIL)
+	      hs = HEART_TO_HEART;
+	      ds = DIAMOND_TO_DIAMOND;
+	      cs = CLUB_TO_CLUB;
+	      ss = SPADE_TO_SPADE;
+#endif
+	      doit = false; /* already canonical */
+	    }
+	  else if (hearts >= clubs)
+	    if (diamonds >= spades)
+	      { /* hearts, clubs, diamonds, spades */
+		hs = HEART_TO_HEART;
+		ds = DIAMOND_TO_CLUB;
+		cs = CLUB_TO_DIAMOND;
+		ss = SPADE_TO_SPADE;
+	      }
+	    else
+	      { /* hearts, clubs, spades, diamonds */
+		hs = HEART_TO_HEART;
+		ds = DIAMOND_TO_SPADE;
+		cs = CLUB_TO_DIAMOND;
+		ss = SPADE_TO_CLUB;
+	      }
+	  else
+	    {
+	      if (spades >= hearts)
+		{ /* clubs, spades, hearts, diamonds */
+		  hs = HEART_TO_CLUB;
+		  ds = DIAMOND_TO_SPADE;
+		  cs = CLUB_TO_HEART;
+		  ss = SPADE_TO_DIAMOND;
+		}
+	      else if (diamonds >= spades)
+		{ /* clubs, hearts, diamonds, spades */
+		  hs = HEART_TO_DIAMOND;
+		  ds = DIAMOND_TO_CLUB;
+		  cs = CLUB_TO_HEART;
+		  ss = SPADE_TO_SPADE;
+		}
+	      else
+		{ /* clubs, hearts, spades, diamonds */
+		  hs = HEART_TO_DIAMOND;
+		  ds = DIAMOND_TO_SPADE;
+		  cs = CLUB_TO_HEART;
+		  ss = SPADE_TO_CLUB;
+		}
+	    }
+	}
+      else
+	{
+	  if (diamonds >= spades)
+	    { /* hearts, diamonds, spades, clubs */
+	      hs = HEART_TO_HEART;
+	      ds = DIAMOND_TO_DIAMOND;
+	      cs = CLUB_TO_SPADE;
+	      ss = SPADE_TO_CLUB;
+	    }
+	  else if (hearts >= spades)
+	    if (diamonds >= clubs)
+	      { /* hearts, spades, diamonds, clubs */
+		hs = HEART_TO_HEART;
+		ds = DIAMOND_TO_CLUB;
+		cs = CLUB_TO_SPADE;
+		ss = SPADE_TO_DIAMOND;
+	      }
+	    else
+	      { /* hearts, spades, clubs, diamonds */
+		hs = HEART_TO_HEART;
+		ds = DIAMOND_TO_SPADE;
+		cs = CLUB_TO_CLUB;
+		ss = SPADE_TO_DIAMOND;
+	      }
+	  else
+	    {
+	      if (clubs >= hearts)
+		{ /* spades, clubs, hearts, diamonds */
+		  hs = HEART_TO_CLUB;
+		  ds = DIAMOND_TO_SPADE;
+		  cs = CLUB_TO_DIAMOND;
+		  ss = SPADE_TO_HEART;
+		}
+	      else if (diamonds >= clubs)
+		{ /* spades, hearts, diamonds, clubs */
+		  hs = HEART_TO_DIAMOND;
+		  ds = DIAMOND_TO_CLUB;
+		  cs = CLUB_TO_SPADE;
+		  ss = SPADE_TO_DIAMOND;
+		}
+	      else
+		{ /* spades, hearts, clubs, diamonds */
+		  hs = HEART_TO_DIAMOND;
+		  ds = DIAMOND_TO_SPADE;
+		  cs = CLUB_TO_CLUB;
+		  ss = SPADE_TO_HEART;
+		}
+	    }
+	}
+    }
+  else
+    {
+      if (clubs >= spades)
+	{
+	  if (hearts >= clubs)
+	    { /* diamonds, hearts, clubs, spades */
+	      hs = HEART_TO_DIAMOND;
+	      ds = DIAMOND_TO_HEART;
+	      cs = CLUB_TO_CLUB;
+	      ss = SPADE_TO_SPADE;
+	    }
+	  else if (diamonds >= clubs)
+	    if (hearts >= spades)
+	      { /* diamonds, clubs, hearts, spades */
+		hs = HEART_TO_CLUB;
+		ds = DIAMOND_TO_HEART;
+		cs = CLUB_TO_DIAMOND;
+		ss = SPADE_TO_SPADE;
+	      }
+	    else
+	      { /* diamonds, clubs, spades, hearts */
+		hs = HEART_TO_SPADE;
+		ds = DIAMOND_TO_HEART;
+		cs = CLUB_TO_DIAMOND;
+		ss = SPADE_TO_CLUB;
+	      }
+	  else
+	    {
+	      if (spades >= diamonds)
+		{ /* clubs, spades, diamonds, hearts */
+		  hs = HEART_TO_SPADE;
+		  ds = DIAMOND_TO_CLUB;
+		  cs = CLUB_TO_HEART;
+		  ss = SPADE_TO_DIAMOND;
+		}
+	      else if (hearts >= spades)
+		{ /* clubs, diamonds, hearts, spades */
+		  hs = HEART_TO_CLUB;
+		  ds = DIAMOND_TO_DIAMOND;
+		  cs = CLUB_TO_HEART;
+		  ss = SPADE_TO_SPADE;
+		}
+	      else
+		{ /* clubs, diamonds, spades, hearts */
+		  hs = HEART_TO_SPADE;
+		  ds = DIAMOND_TO_DIAMOND;
+		  cs = CLUB_TO_HEART;
+		  ss = SPADE_TO_CLUB;
+		}
+	    }
+	}
+      else
+	{
+	  if (hearts >= spades)
+	    { /* diamonds, hearts, spades, clubs */
+	      hs = HEART_TO_DIAMOND;
+	      ds = DIAMOND_TO_HEART;
+	      cs = CLUB_TO_SPADE;
+	      ss = SPADE_TO_CLUB;
+	    }
+	  else if (diamonds >= spades)
+	    if (hearts >= clubs)
+	      { /* diamonds, spades, hearts, clubs */
+		hs = HEART_TO_CLUB;
+		ds = DIAMOND_TO_HEART;
+		cs = CLUB_TO_SPADE;
+		ss = SPADE_TO_DIAMOND;
+	      }
+	    else
+	      { /* diamonds, spades, clubs, hearts */
+		hs = HEART_TO_SPADE;
+		ds = DIAMOND_TO_HEART;
+		cs = CLUB_TO_CLUB;
+		ss = SPADE_TO_DIAMOND;
+	      }
+	  else
+	    {
+	      if (clubs >= diamonds)
+		{ /* spades, clubs, diamonds, hearts */
+		  hs = HEART_TO_SPADE;
+		  ds = DIAMOND_TO_CLUB;
+		  cs = CLUB_TO_DIAMOND;
+		  ss = SPADE_TO_HEART;
+		}
+	      else if (hearts >= clubs)
+		{ /* spades, diamonds, hearts, clubs */
+		  hs = HEART_TO_CLUB;
+		  ds = DIAMOND_TO_DIAMOND;
+		  cs = CLUB_TO_SPADE;
+		  ss = SPADE_TO_HEART;
+		}
+	      else
+		{ /* spades, diamonds, clubs, hearts */
+		  hs = HEART_TO_SPADE;
+		  ds = DIAMOND_TO_DIAMOND;
+		  cs = CLUB_TO_CLUB;
+		  ss = SPADE_TO_HEART;
+		}
+	    }
+	}
+    }
+  if (doit)
+    {
+      for (i = 0; i < 9; ++i)
+	normalize_suits (&hands[i], hs, ds, cs, ss);
+      normalize_suits (deadp, hs, ds, cs, ss);
+      normalize_suits (peggedp, hs, ds, cs, ss);
+    }
+  qsort (hands, 9, sizeof hands[0], card_compare); /* hand-coded insertion
+						      sort might be faster */
+}
+
 PUBLIC int
 main (int argc, char *argv[])
 {
