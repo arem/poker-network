@@ -267,7 +267,7 @@ main (int argc, char *argv[])
 	  if ((strcmp (argv[i], "-d") == 0 ||
 	       strcmp (argv[i], "-c") == 0))
 	    {
-	      if (i == argc)
+	      if (++i == argc)
 		{
 		  fprintf(stderr, "Missing card portion of -d\n");
 		  exit(1);
@@ -280,11 +280,10 @@ main (int argc, char *argv[])
 		}
 	      else
 		{
-		  if (argv[i][1] == 'c')
+		  if (argv[i-1][1] == 'c')
 		    pegged_common |= temp_card;
 		  dead_cards |= temp_card;
 		  --n_cards;
-		  ++i;
 		}
 	    }
 	  else
