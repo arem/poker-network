@@ -24,4 +24,4 @@ clean:
 	five_card_hands random_test newrandom
 
 .c.o:
-	$(CC) $(CFLAGS) -I../include -I../new -c $<
+	$(CC) $(CFLAGS) -I../include -c $<
