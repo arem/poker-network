@@ -349,6 +349,11 @@ typedef struct {
     uint64 (*table_func)( uint32, uint32 );
 } table_entry_t;
 
+#if defined (linux)
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 /*
  * return 0 for success, 1 for failure.
  */
