@@ -3,11 +3,11 @@ char rcsid_cmpall[] =
 
 /*
  *  cmpall.c: a program to compare a set of hole cards to every possible
- *		other set of hole cards with every possible board.
+ *              other set of hole cards with every possible board.
  *
- *		NOTE:  This takes a lot of CPU time.
+ *              NOTE:  This takes a lot of CPU time.
  *
- *  Copyright (C) 1994  Clifford T. Matthews
+ *  Copyright (C) 1994, 1995  Clifford T. Matthews
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ char rcsid_cmpall[] =
 #include <stdlib.h>
 
 #include "poker.h"
-#include "eval.h"
+#include "eval7.h"
 
 PUBLIC int main( int argc, char *argv[] )
 {
@@ -92,53 +92,51 @@ PUBLIC int main( int argc, char *argv[] )
   n_cards = 7;
   n1    =    n2 =    n3 =    n4 =    n5 =    n6 =    n7 =    n8 =    n9 = 0;
   card1 = card2 = card3 = card4 = card5 = card6 = card7 = card8 = card9 = 0;
-#if	0
+#if     0
   printf("%08x%08x\n", (int) (pegged_cards1 >> 32), (int) pegged_cards1);
 #endif
   for (card3 = (uint64) 1 << 51; card3 ; card3 >>= 1) {
     if (card3 & dead_cards)
-  /*-->*/	    continue;
+  /*-->*/           continue;
     for (card4 = card3 >> 1; card4 ; card4 >>= 1) {
       if (card4 & dead_cards)
-  /*-->*/	      continue;
+  /*-->*/             continue;
       card3_or_card4 = card3|card4;
       card3_or_card4_or_pegged_cards1 = card3_or_card4 | pegged_cards1;
       new_dead_cards = card3_or_card4 | dead_cards;
       for (card5 = (uint64) 1 << 51; card5 ; card5 >>= 1) {
 	if (card5 & new_dead_cards)
-  /*-->*/	        continue;
+  /*-->*/               continue;
 	n5 = card5 | pegged_cards1;
 	for (card6 = card5 >> 1; card6 ; card6 >>= 1) {
 	  if (card6 & new_dead_cards)
-  /*-->*/	          continue;
+  /*-->*/                 continue;
 	  n6 = n5 | card6;
 	  for (card7 = card6 >> 1; card7 ; card7 >>= 1) {
 	    if (card7 & new_dead_cards)
-  /*-->*/	            continue;
+  /*-->*/                   continue;
 	    n7 = n6 | card7;
 	    for (card8 = card7 >> 1; card8 ; card8 >>= 1) {
 	      if (card8 & new_dead_cards)
-  /*-->*/	              continue;
+  /*-->*/                     continue;
 	      n8 = n7 | card8;
 	      for (card9 = card8 >> 1; card9 ; card9 >>= 1) {
 		if (card9 & new_dead_cards)
-  /*-->*/	                continue;
+  /*-->*/                       continue;
 		n9 = n8 | card9;
 		cards.cards_n = 0;
-		cards.cards_t.hearts   =  n9 & 0x1FFF;
-		cards.cards_t.diamonds = (n9 >> 13) & 0x1FFF;
-		cards.cards_t.clubs    = (n9 >> 26) & 0x1FFF;
-		cards.cards_t.spades   = (n9 >> 39) & 0x1FFF;
-		val1 = eval(cards);
+		val1  =  eval_exactly_7_cards( n9        & 0x1FFF,
+			       (n9 >> 13) & 0x1FFF,
+			       (n9 >> 26) & 0x1FFF,
+			       (n9 >> 39) & 0x1FFF );
 
 		n9 ^= card3_or_card4_or_pegged_cards1;
-
+	       
 		cards.cards_n = 0;
-		cards.cards_t.hearts   =  n9 & 0x1FFF;
-		cards.cards_t.diamonds = (n9 >> 13) & 0x1FFF;
-		cards.cards_t.clubs    = (n9 >> 26) & 0x1FFF;
-		cards.cards_t.spades   = (n9 >> 39) & 0x1FFF;
-		val2 = eval(cards);
+		val2 = eval_exactly_7_cards( n9        & 0x1FFF,
+			     (n9 >> 13) & 0x1FFF,
+			     (n9 >> 26) & 0x1FFF,
+			     (n9 >> 39) & 0x1FFF );
 
 		if (val1 > val2)
 		    ++val1_count;
