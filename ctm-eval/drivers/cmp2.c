@@ -1,3 +1,6 @@
+char rcsid_cmp2[] =
+	"$Id$";
+
 /*
  * THIS PROGRAM IS A QUICK HACK USEFUL FOR COMPARING TWO STARTING PAIRS
  * I HAVEN'T EVEN BOTHERED CHANGING THE COMMENTS -- THIS IS NOT FISH
@@ -15,7 +18,7 @@
  *	as well, hence this test program, which provides the same functionality
  *	that the original fish.c program did.
  *
- *  Copyright (C) 1993  Clifford T. Matthews
+ *  Copyright (C) 1993,1994  Clifford T. Matthews
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -38,82 +41,6 @@
 
 #include "poker.h"
 #include "eval.h"
-
-typedef enum { hearts, diamonds, clubs, spades } suit_t;
-
-#define	N_SUIT	(spades + 1)
-
-PRIVATE uint64 string_to_card(const char *str)
-{
-    rank_t rank;
-    suit_t suit;
-
-    rank = N_RANK;	/* illegal */
-    suit = N_SUIT;	/* illegal */
-
-    if (strlen(str) == 2) {
-	switch (str[0]) {
-	case '2':
-	    rank = deuce;
-	    break;
-	case '3':
-	    rank = trey;
-	    break;
-	case '4':
-	    rank = four;
-	    break;
-	case '5':
-	    rank = five;
-	    break;
-	case '6':
-	    rank = six;
-	    break;
-	case '7':
-	    rank = seven;
-	    break;
-	case '8':
-	    rank = eight;
-	    break;
-	case '9':
-	    rank = nine;
-	    break;
-	case 'T': case 't':
-	    rank = ten;
-	    break;
-	case 'J': case 'j':
-	    rank = jack;
-	    break;
-	case 'Q': case 'q':
-	    rank = queen;
-	    break;
-	case 'K': case 'k':
-	    rank = king;
-	    break;
-	case 'A': case 'a':
-	    rank = ace;
-	    break;
-	}
-	switch (str[1]) {
-	case 'H': case 'h':
-	    suit = hearts;
-	    break;
-	case 'D': case 'd':
-	    suit = diamonds;
-	    break;
-	case 'C': case 'c':
-	    suit = clubs;
-	    break;
-	case 'S': case 's':
-	    suit = spades;
-	    break;
-	}
-    }
-
-    return (rank == N_RANK || suit == N_SUIT) ?
-	0
-    :
-	((uint64) 1 << rank) << (suit * 13);
-}
 
 PUBLIC int main( int argc, char *argv[] )
 {
@@ -175,23 +102,10 @@ PUBLIC int main( int argc, char *argv[] )
       }
     }
   }
-#if	0
-  if (n_cards != 3) {
-      fprintf(stderr, "Exactly four cards should have been given\n");
-      exit(1);
-  }
-#endif
   n1    =    n2 =    n3 =    n4 =    n5 =    n6 =    n7 =    n8 =    n9 = 0;
   card1 = card2 = card3 = card4 = card5 = card6 = card7 = card8 = card9 = 0;
   peg1_or_peg2 = pegged_cards1 | pegged_cards2;
-#if	0
-  printf("%08x%08x %08x%08x %08x%08x\n", (int) (pegged_cards1 >> 32),
-					       (int) pegged_cards1,
-					       (int) (pegged_cards2 >> 32),
-					       (int) pegged_cards2,
-					       (int) (peg1_or_peg2 >> 32),
-					       (int) peg1_or_peg2);
-#endif
+
   switch (n_cards) {
   default:
     fprintf(stderr, "Number of cards to iterate must be "
