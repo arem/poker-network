@@ -397,7 +397,7 @@ typedef struct hash_entry_str
 {
   struct hash_entry_str *next;
   uint64 hands[9];
-  float ratio; /* do we even need this */
+  uint32 high, low;
 }
 hash_entry_t;
 
@@ -430,12 +430,14 @@ hash_ratio (const uint64 hands[9])
   hash_entry_t **pp;
 
   pp = hash_pp (hands);
-  retval = *pp ? (*pp)->ratio : 0;
+  retval = *pp ? (float) (*pp)->high / (*pp)->low : 0;
   return retval;
 }
 
+PRIVATE FILE *outfile;
+
 PRIVATE void
-hash_insert (const uint64 hands[9], float ratio)
+hash_insert (const uint64 hands[9], uint32 high, uint32 low)
 {
   hash_entry_t **pp;
   hash_entry_t *entryp;
@@ -444,8 +446,15 @@ hash_insert (const uint64 hands[9], float ratio)
   entryp = malloc (sizeof *entryp);
   entryp->next = *pp;
   memcpy (entryp->hands, hands, sizeof entryp->hands);
-  entryp->ratio = ratio;
+  entryp->high = high;
+  entryp->low = low;
   *pp = entryp;
+  if (!outfile)
+    outfile = fopen ("/tmp/caro2.data", "w");
+  fwrite (hands, sizeof hands[0] * 9, 1, outfile);
+  fwrite (&high, sizeof high,  1, outfile);
+  fwrite (&low,  sizeof low,   1, outfile);
+  fflush (outfile);
 }
 
 /* globals -- ick */
@@ -454,7 +463,7 @@ PRIVATE int reward_table[10]; /* NOTE: 1-based array, not 0-based */
 
 PRIVATE void
 score_hands (uint32 score[9], uint64 hands[9],
-	     uint64 dead_cards, uint64 pegged_cards, uint8 n_cards)
+	     uint64 *dead_cardsp, uint64 pegged_cards, uint8 n_cards)
 {
   uint32 val, high_val;
   int to_reward[9], *rewardp;
@@ -463,7 +472,10 @@ score_hands (uint32 score[9], uint64 hands[9],
   int i;
   uint64 card1, card2, card3, card4, card5;
   uint64 n1, n2, n3, n4, n5;
+  uint64 dead_cards;
 
+  memset (score, 0, sizeof score[0] * 9);
+  dead_cards = *dead_cardsp;
   card_diffp = card_diffs;
   for (i = 0; i < 8; ++i)
     {
@@ -583,6 +595,65 @@ loop:
 	    }
 	}
     }
+  *dead_cardsp = dead_cards;
+}
+
+/*
+ * replace_hand is fairly important, but this first implementation
+ * is pretty poor (watching movies with my wife)
+ */
+
+enum { TRY_MAX = 500 };
+
+PRIVATE inline uint64
+random_hole_cards (void)
+{
+  uint64 retval;
+  int i, j;
+
+  i = random() % 52;
+  do
+    j = random () % 52;
+  while (i == j);
+  retval = ((uint64) 1 << i) | ((uint64) 1 << j);
+  return retval;
+}
+
+PRIVATE void
+replace_hand (uint64 hands[9], uint64 *dead_cardsp, int to_replace)
+{
+  uint64 dead_cards;
+  int try_count;
+
+  try_count = 0;
+  dead_cards = *dead_cardsp;
+  dead_cards ^= hands[to_replace];
+  do
+    hands[to_replace] = random_hole_cards();
+  while (((hands[to_replace] & dead_cards) || hash_ratio (hands))
+	 && ++try_count <= TRY_MAX);
+  *dead_cardsp = dead_cards | hands[to_replace];
+  if (try_count > TRY_MAX)
+    {
+      /* What do we do here?  replace all 9 hole cards? */
+      int i;
+
+      for (i = 0; i < 9; ++i)
+	{
+	  if (i != to_replace)
+	    dead_cards ^= hands[i];
+	}
+      for (i = 0; i < 9; ++i)
+	{
+	  uint64 new_cards;
+
+	  do
+	    new_cards = random_hole_cards();
+	  while (dead_cards & new_cards);
+	  hands[i] = new_cards;
+	  dead_cards |= new_cards;
+	}
+    }
 }
 
 PUBLIC int
@@ -596,12 +667,13 @@ main (int argc, char *argv[])
   boolean_t seen_cards_already;
   int hole_card_no;
   boolean_t auto_flag;
+  uint32 high, low;
+  int to_replace;
 
   lcd = lcd_of_first_n_positive_integers (9);
 
   hole_card_no = 0;
   memset (hands, 0, sizeof hands);
-  memset (score, 0, sizeof score);
   for (i = 1; i <= 9; ++i)
     reward_table[i] = lcd / i;
 
@@ -669,25 +741,83 @@ main (int argc, char *argv[])
       exit (1);
     }
 
-  score_hands (score, hands, dead_cards, pegged_common, n_cards);
-
-  {
-    uint32 low, high;
-
-    low = 0x7fffffff;
-    high = 0;
-  
-    for (i = 0; i < 9; ++i)
+  do
+    {
+      canon (hands, &dead_cards, &pegged_common);
+      score_hands (score, hands, &dead_cards, pegged_common, n_cards);
       {
-	printf ("        %9d\n", score[i]);
-	if (score[i] < low)
-	  low = score[i];
-	if (score[i] > high)
-	  high = score[i];
-      }
-    printf (" high = %9d\n  low = %9d\nratio = %f\n", high, low,
-	    (float) high / low);
-  }
+	uint32 second_low, second_high;
+	int low_i, high_i, second_low_i, second_high_i;
+	int low_count, high_count;
+      
+	low = second_low = 0x7fffffff;
+	high = second_high = 0;
+	low_count = 0;
+	high_count = 0;
+  
+	for (i = 0; i < 9; ++i)
+	  {
+	    if (!auto_flag)
+	      printf ("        %9d\n", score[i]);
+	    if (score[i] < low)
+	      {
+		second_low = low;
+		second_low_i = low_i;
+		low = score[i];
+		low_i = i;
+		low_count = 1;
+	      }
+	    else if (score[i] == low)
+	      ++low_count;
+	    else if (score[i] < second_low)
+	      {
+		second_low = score[i];
+		second_low_i = i;
+	      }
+	    
+	    if (score[i] > high)
+	      {
+		second_high = high;
+		second_high_i = high_i;
+		high = score[i];
+		high_i = i;
+		high_count = 1;
+	      }
+	    else if (score[i] == high)
+	      ++high_count;
+	    else if (score[i] > second_high)
+	      {
+		second_high = score[i];
+		second_high_i = i;
+	      }
+	  }
+	if (!auto_flag)
+	  printf (" high = %9d\n  low = %9d\nratio = %f\n", high, low,
+		  (float) high / low);
+	else
+	  {
+	    printf ("%f\n", (float) high / low);
+	    hash_insert (hands, high, low);
+	    if (low_count < high_count)
+	      to_replace = low_i;
+	    else if (high_count < low_count)
+	      to_replace = high_i;
+	    else
+	      {
+		uint32 high_diff, low_diff;
 
+		high_diff = high - second_high;
+		low_diff = second_low - low;
+
+		if (high_diff > low_diff)
+		  to_replace = high_i;
+		else
+		  to_replace = low_i;
+	      }
+	    replace_hand (hands, &dead_cards, to_replace);
+	  }
+      }
+    } while (auto_flag && high != low);
+  
   return 0;
 }
