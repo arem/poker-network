@@ -1,9 +1,9 @@
 char rcsid_mktables[] =
-        "$Id$";
+	"$Id$";
 
 /*
  *  mktables.c: a program to generate the tables required by eval.h
- *		and rank_eval.h
+ *              and rank_eval.h
  *
  *  Copyright (C) 1993  Clifford T. Matthews
  *
@@ -26,15 +26,15 @@ char rcsid_mktables[] =
  * usage: mktables [table_name.c] [table_name_2.c] ...
  *
  * Run with no arguments, mktables builds all the tables it knows how.
- *	optional arguments are filenames (complete with ".c" suffix),
- *	which restrict mktables to building only those tables.
+ *      optional arguments are filenames (complete with ".c" suffix),
+ *      which restrict mktables to building only those tables.
  *
  * WARNING:  This program will write on read-only files if it can
- *		do a chmod(2) on them to allow writing.  This is
- *		so we can chmod -w tables after they're built so they
- *		won't be confused with source code that has been checked
- *		out, but hasn't been checked in.  You should never fiddle
- *		with tables by hand anyway.
+ *              do a chmod(2) on them to allow writing.  This is
+ *              so we can chmod -w tables after they're built so they
+ *              won't be confused with source code that has been checked
+ *              out, but hasn't been checked in.  You should never fiddle
+ *              with tables by hand anyway.
  */
 
 #include <stdio.h>
@@ -69,6 +69,16 @@ PRIVATE uint64 top_card_func( uint32 n, uint32 ignored )
     return retval;
 }
 
+PRIVATE uint64 top_bit_func( uint32 n, uint32 ignored )
+{
+    uint32 retval;
+
+    assert(ignored == 0);
+    for (retval = 1 << ace; !(retval & n) && retval; retval >>= 1)
+	;
+    return retval;
+}    
+
 PRIVATE uint64 top_five_cards_func( uint32 n, uint32 ignored )
 {
     eval_u eval;
@@ -85,6 +95,32 @@ PRIVATE uint64 top_five_cards_func( uint32 n, uint32 ignored )
     n &= ~(1 << eval.eval_t.fourth_card);
     eval.eval_t.fifth_card  = top_card_func(n, 0);
     return eval.eval_n;
+}
+
+PRIVATE uint64 top_five_bits_func( uint32 n, uint32 ignored )
+{
+    uint32 retval, temp;
+
+    temp = top_bit_func( n, 0 );
+    retval = temp;
+    n &= ~temp;
+    
+    temp = top_bit_func( n, 0 );
+    retval |= temp;
+    n &= ~temp;
+    
+    temp = top_bit_func( n, 0 );
+    retval |= temp;
+    n &= ~temp;
+
+    temp = top_bit_func( n, 0 );
+    retval |= temp;
+    n &= ~temp;
+
+    temp = top_bit_func( n, 0 );
+    retval |= temp;
+
+    return retval;
 }
 
 PRIVATE uint64 mask_rank_func( uint32 rank, uint32 ignored )
@@ -178,7 +214,7 @@ PRIVATE uint64 rank_fsm_func( uint32 cur_state, uint32 chunk )
     retval = cur_state;
     switch (cur_state) {
 	case four_of_a_kind:
-	    break;		/* do nothing */
+	    break;              /* do nothing */
 	case full_house:
 	    if (nquads)
 		retval = four_of_a_kind;
@@ -224,6 +260,65 @@ PRIVATE uint64 rank_fsm_func( uint32 cur_state, uint32 chunk )
 	    break;
     }
     return retval;
+}
+
+PRIVATE uint64 three_of_a_kind_value_func( uint32 cards, uint32 ignored )
+{
+    uint64 retval;
+    
+    assert(ignored == 0);
+    retval = top_bit_func(cards, 0);
+    cards ^= retval;
+    retval |= top_bit_func(cards, 0);
+    if (retval)
+	retval |= THREE_OF_A_KIND_VALUE;
+    return retval;
+}
+
+PRIVATE uint64 top_pair_func( uint32 cards, uint32 ignored )
+{
+    uint64 retval;
+
+    assert(ignored == 0);
+    retval = top_bit_func(cards, 0);
+    cards ^= retval;
+    retval |= top_bit_func(cards, 0);
+    return retval;
+}
+
+PRIVATE uint64 pair_value_func( uint32 cards, uint32 ignored )
+{
+    uint64 retval, temp;
+
+    assert(ignored == 0);
+    retval = 0;
+    retval = top_bit_func(cards, 0);
+    cards ^= retval;
+    temp = top_bit_func(cards, 0);
+    retval ^= temp;
+    cards ^= temp;
+    retval |= top_bit_func(cards, 0) | PAIR_VALUE;
+    return retval;
+}
+
+PRIVATE uint64 straight_value_func( uint32 cards, uint32 ignored )
+{
+    uint32 retval, mask;
+
+    assert(ignored == 0);
+    for (retval = 1 << ace, mask = ACE_STRAIGHT_MASK; 
+	    retval != 1 << five && (cards & mask) != mask; 
+	    retval >>= 1, mask >>= 1)
+	;
+    if (retval == 1 << five && (cards & FIVE_STRAIGHT_MASK) != FIVE_STRAIGHT_MASK)
+	retval = 0;
+    return retval ? retval | STRAIGHT_VALUE : 0;
+}
+
+PRIVATE uint64 flush_cards_func( uint32 cards, uint32 ignored )
+{
+    assert(ignored == 0);
+    return is_flush(cards) ? cards : 0;
 }
 
 PRIVATE uint64 cards_to_counts_func( uint32 cards, uint32 ignored )
@@ -330,19 +425,19 @@ PRIVATE int output_table(const table_entry_t *tp)
     return retval;
 }
 
-#define	TABLE_ENTRY(type, name, dim1, dim2) 	\
-    {						\
-	#type,					\
-	#name ## "_table",			\
-	#name ## "_table.c",			\
-	dim1,					\
-	dim2,					\
-	sizeof(type),				\
-	name ## _func				\
+#define TABLE_ENTRY(type, name, dim1, dim2)     \
+    {                                           \
+	#type,                                  \
+	#name ## "_table",                      \
+	#name ## "_table.c",                    \
+	dim1,                                   \
+	dim2,                                   \
+	sizeof(type),                           \
+	name ## _func                           \
     }
 
 
-#define	NELEM(x)	(sizeof(x) / sizeof((x)[0]))
+#define NELEM(x)        (sizeof(x) / sizeof((x)[0]))
 
 int main( int argc, char *argv[] )
 {
@@ -354,10 +449,26 @@ int main( int argc, char *argv[] )
 	TABLE_ENTRY(uint8 , n_bits         , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint8 , straight       , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint32, top_five_cards , 1 << N_RANK, 0),
+	TABLE_ENTRY(uint32, top_five_bits  , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint32, top_card       , 1 << N_RANK, 0),
+	TABLE_ENTRY(uint32, top_bit        , 1 << N_RANK, 0),
 	TABLE_ENTRY(uint64, cards_to_counts, 1 << N_RANK, 0),
 	TABLE_ENTRY(uint8 , str_and_flu    ,      N_HAND, 1 << N_RANK),
 	TABLE_ENTRY(uint8 , rank_fsm       ,      N_HAND, 1 << FSM_SHIFT),
+	TABLE_ENTRY(uint32, three_of_a_kind_value, 1 << N_RANK, 0),
+	TABLE_ENTRY(uint32, top_pair, 1 << N_RANK, 0),
+	TABLE_ENTRY(uint32, pair_value, 1 << N_RANK, 0),
+	TABLE_ENTRY(uint32, flush_cards, 1 << N_RANK, 0),
+#if     !defined(MSDOS)        
+	TABLE_ENTRY(uint32, straight_value, 1 << N_RANK, 0),
+	TABLE_ENTRY(uint32, top_five_bits,  1 << N_RANK, 0),
+#else    
+/* 8.3 naming conventions get in our way */
+	"uint32", "straight_value_table", "strvaltab.c", 1 << N_RANK, 0,
+		sizeof(uint32), straight_value_func,
+	"uint32", "top_five_bits_table", "top5bits.c", 1 << N_RANK, 0,
+		sizeof(uint32), top_five_bits_func,
+#endif
     };
 
     assert(NELEM(tables) <= 64);
@@ -369,12 +480,12 @@ int main( int argc, char *argv[] )
 	for (i = 1; i < argc; ++i) {
 	    for (j = 0; j < NELEM(tables); ++j)
 		if (strcmp(argv[i], tables[j].source_name) == 0)
-/*-->*/		    break;
+/*-->*/             break;
 	    if (j == NELEM(tables)) {
 		fprintf(stderr, "Unknown table: \"%s\" -- "
 				"all arguments ignored\n", argv[i]);
 		retval = 1;
-/*-->*/		goto DONE;
+/*-->*/         goto DONE;
 	    } else
 		to_output |= (1 << j);
 	}
