@@ -24,7 +24,8 @@ char rcsid_mkswitch[] =
 #include "poker.h"
 #include "makeswitch.h"
 #include <stdio.h>
-
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* Number of possible combinations of ranks we might have in a hand. */
 #define RANK_COMBINATIONS (1 << N_RANK)
@@ -45,7 +46,6 @@ int
 main ()
 {
   FILE *fp;
-  int c;
 
   /* Copy the preamble to stdout. */
   fp = fopen ("switch_preamble.c", "r");
@@ -55,8 +55,18 @@ main ()
       exit (-1);
     }
   puts ("/* This file is machine generated -- DO NOT EDIT! */\n");
-  while ((c = getc (fp)) != EOF)
-    putchar (c);
+
+  {
+    struct stat sbuf;
+    char *p;
+
+    fstat (fileno (fp), &sbuf);
+    p = alloca (sbuf.st_size + 1);
+    fread (p, sbuf.st_size, 1, fp);
+    p[sbuf.st_size] = 0;
+    printf (p, CARDS_DEALT);
+  }
+
   fclose (fp);
 
   /* Compute which cases go where. */

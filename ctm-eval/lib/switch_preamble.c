@@ -25,7 +25,7 @@ char rcsid_switch_preamble[] =
 #include "tree_inlines.h"
 
 static inline uint32
-eval_exactly_7_cards (rank_set_t clubs, rank_set_t diamonds, rank_set_t hearts,
+eval_exactly_%d_cards (rank_set_t clubs, rank_set_t diamonds, rank_set_t hearts,
       rank_set_t spades)
 {
   rank_set_t ranks, flush_suit, three_info, all_pairs;

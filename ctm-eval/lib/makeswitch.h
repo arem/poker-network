@@ -21,11 +21,13 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#if 0
 typedef enum
 {
   /* CARDS_DEALT is passed in from Makefile */
   /* CARDS_DEALT = 7 */
 } cards_dealt_t;
+#endif
 
 typedef enum
 {
