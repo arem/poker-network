@@ -104,7 +104,7 @@ static inline uint32 is_straight( uint32 ranks )	/* Keith's */
 }
 
 
-static inline uint32 eval( CardMask cards, int n_cards )
+static inline uint32 eval-bg( CardMask cards, int n_cards )
 {
     eval_u retval, tempeval, tempeval2;
     uint32 ranks, four_mask=0, three_mask=0, two_mask=0, 
