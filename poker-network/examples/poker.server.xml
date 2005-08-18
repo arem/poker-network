@@ -44,7 +44,7 @@
           http="19482" 
           http_ssl="19483" />
 
-  <database name="poker3dtest" host="localhost" user="poker3dtest" password="poker3d" />
+  <database name="pokernetworktest" host="localhost" user="pokernetworktest" password="pokernetwork" />
   <path>/etc/poker-engine ../conf</path> 
   <users temporary="BOT" />
 </server>
