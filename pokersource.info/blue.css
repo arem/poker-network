@@ -1,0 +1,26 @@
+BODY      	{	font-family: Helvetica, Verdana;
+			font-size: 13px; 
+			background: #FFFFFF; 
+			color: #000000
+			margin-left: 0px;
+			margin-right: 0px;
+			margin-top: 0px;
+			margin-bottom: 0px;
+			}
+
+TD.Section  	{ font-size: 13px; font-weight: regular; color: #000000; text-decoration: none }
+
+TD.TopTitle  	{ font-weight: bold; background: #999999 }
+TD.TopBody  	{ font-weight: bold; background: #01559E }
+TD.TopArticle  	{ font-weight: bold; background: #9DAEE8 }
+TD.newstext     { font-family: Helvetica, Verdana; font-size: 13px; background: #c0c0c0 }
+.newstext     { font-family: Helvetica, Verdana; font-size: 7px; background: #c0c0c0 }
+
+A         	{ font-family: Helvetica, Verdana; font-size: 13px; color: #000000 }
+A.TopBody      	{ font-family: Helvetica, Verdana; font-size: 13px; color: #FFFFFF }
+A.Logo      	{ font-family: Bookman, Verdana; font-size: 30px; color: #FFFFFF }
+TD         	{ font-family: Helvetica, Verdana; font-size: 13px; color: #000000 }
+P		{ font-family: Helvetica, Verdana; font-size: 13px; color: #000000 }
+DIV		{ font-family: Helvetica, Verdana; font-size: 13px; color: #000000; }
+div.content  	{ margin: 1em; font-family: Helvetica, Verdana; font-size: 13px; }
+
