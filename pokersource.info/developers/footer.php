@@ -13,12 +13,12 @@
 		<a href="irc://irc.pokersource.info/#pokersource">IRC channel</a><br />
 	      </td>
 	    </tr>
-	    <tr><td class="MenuHeading" align="center">Build farms</td></tr>
+	    <tr><td class="MenuHeading" align="center">Build & Packaging</td></tr>
 	    <tr>
 	      <td align="right">
 		<a href="http://mekensleep.com:17080/pbuilderd/report/">Mekensleep</a><br />
 		<a href="http://qa.debian.org/developer.php?login=loic@debian.org">Debian GNU/Linux</a><br />
-<!--		<a href="http://fedoraproject.org/wiki/ChristopherStone">Fedora</a><br />-->
+		<a href="http://fedoraproject.org/wiki/ChristopherStone">Fedora</a><br />
 	      </td>
 	    </tr>
 	    <tr><td class="MenuHeading" align="center">Hosting</td></tr>
