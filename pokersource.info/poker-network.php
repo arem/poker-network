@@ -1,16 +1,10 @@
-<?xml version="1.0" encoding="iso-8859-1" ?>
-<!DOCTYPE html
-          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en" >
-  <head>
-    <title>PokerSource - poker-network</title>
-  </head>
-  <body>
+<?php
+$root = ".";
+$title = "poker-network";
+require_once('header.php')
+?>
 
-    <div> <!-- The header will be inserted here -->
-      <p />
-      <blockquote>
+<blockquote>
 
 <h3>poker-network: poker server and client library</h3>
 
@@ -46,20 +40,6 @@ sounds such as player P timeouted or player P wins the pot.
 The client based on the user interface library uses GTK. 
 </p>
 
-      </blockquote>
+</blockquote>
 
-    </div> <!-- The footer will be inserted here -->
-    <p class="newstext"> 
-      Updated :
-    <!-- timestamp start -->
-    $Date$ $Author$
-    <!-- timestamp end -->
-    </p>
-
-  </body>
-</html>
-<!--
-Local Variables: ***
-mode: nxml ***
-End: ***
--->
+<?php require_once('footer.php') ?>
