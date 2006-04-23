@@ -18,6 +18,7 @@
 	    <tr>
 	      <td align="right">
 		<a href="<? echo $root ?>/poker-eval.php">poker-eval</a><br />
+		<a href="<? echo $root ?>/pypoker-eval.php">pypoker-eval</a><br />
 		<a href="<? echo $root ?>/poker-engine.php">poker-engine</a><br />
 		<a href="<? echo $root ?>/poker-network.php">poker-network</a><br />
 	      </td>
