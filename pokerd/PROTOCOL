@@ -1,0 +1,118 @@
+The pokerd Protocol
+===================
+
+This protocol is based on the University of Alberta's Online Poker 
+Protocol (v1.1). However this version has slightly less message types.
+For example, the U of A protocol has messages for picking an avatar; 
+this protocol does not presently have that feature as the pokerd server 
+doesn't support it.
+
+The protocol uses messages to send information. Messages contain an ID, 
+size, and payload. The message ID informs the recipient of the type of 
+message that it just received. For example the JOIN_GAME ID is sent 
+by the client to the server to request being added to the next game. The 
+size informs the recipient how much data is in the payload. The size is 
+given in bytes. The size and message ID are integers. All integers are 
+32 bits long and in network byte order. Strings are null terminated. 
+Each message payload has a predefined format which depends on the type 
+of message being sent.
+
+So to recap... all data is sent in a "message." A message has a 4 byte 
+(32 bit) signed integer in network byte order which identifies the type 
+of message. Directly after that is another 4 byte (32 bit) signed 
+integer in network byte order which identifies the size of the payload. 
+The payload is in a predefine format. All strings are null terminated 
+and all integers are 4 byte (32 bit) signed integers in network byte 
+order.
+
+Authentication
+==============
+The client sends a JOIN_GAME message and will get a GOODPASS,
+BADPASS, or BADNICK message in return.
+
+Message ID: 20	Name: JOIN_GAME
+Payload:  String userid       The client's userid (<32 characters)
+Payload:  String passwd       The client's password (<32 characters) 
+Payload:  Int    version      Protocol Version (In this case "1")
+Payload:  String client_name  The name of the client program (optional)
+
+
+
+Message ID: 21  Name: GOODPASS
+Payload: [EMPTY]  The client userid+passwd were accepted
+
+
+
+Message ID: 22  Name: BADPASS
+Payload: [EMPTY]  Wrong Password
+
+
+
+Message ID: 22  Name: BADNICK
+Payload: [EMPTY]  Unknown userid
+
+
+
+Messages Sent from the Server to the Client
+===========================================
+
+Message ID: 50  Name: START_NEW_GAME
+Payload: Int bet_size    Size of the initial bet (10 in a 10-20 game)
+Payload: Int num_players Number of Players Dealt in
+Payload: Int button      Position of the button
+Payload: Int position    Your position (between 0 and num_players-1 inclusive -1 if not dealt in)
+Payload: Int gameid      ID number for this hand
+for each player (0 to num_players-1):
+	Payload: String player_name  userid of the Nth player
+	Payload: Int    bankroll     bankroll of the Nth Player
+	Payload: Int    face         avatar ID (not used; always 0).
+
+
+
+Message ID: 51  Name: HOLE_CARDS
+Payload: Int    who         Which player's hole cards 
+Payload: String hole_cards  Example "Ac Td"
+(Note:  if who is equal to your position, then this is used to send you 
+your hole cards. Otherwise, it is used to reveal a player's hand in a 
+showdown.)
+
+
+
+Message ID: 52  Name: NEW_STAGE
+Payload: Int    round        (FLOP == 1, TURN == 2, RIVER == 3)
+Payload: String board_cards  Example "3h 2c Qd 6s"
+
+
+
+Message ID: 57  Name: NEXT_TO_ACT
+Payload: Int who      Player to act
+Payload: Int to_call  Amount to call
+Payload: Int min_bet  Smallest bet allowed (-1 if no more raises allowed)
+Payload: Int min_bet  Largest bet allowed (-1 if no more raises allowed)
+
+
+
+Message ID: 0, 1, 2, 3  Name: FOLD, CALL, RAISE, BLIND
+Payload: Int who     Player who acted
+Payload: Int amount  amount paid to pot (amount not sent when folding)
+
+
+
+Message ID: 53  Name: WINNERS
+Payload: Int num_winners  Number of winners (>1 if there is a tie)
+for each winner (0 to num_winners-1):
+	Payload: Int who    Position of the Nth winner
+	Payload: Int share  Amount won
+
+
+
+Message ID: 43  Name: INFORMATION
+Payload: String info  Informational message sent from the server
+
+
+
+Messages Sent from the Client to the Server
+===========================================
+
+Message ID: 30  Name: ACTION
+Payload: Int action  (FOLD == 0, CHECK/CALL == 1, BET/RAISE == 2)

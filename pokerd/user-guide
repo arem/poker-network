@@ -1,0 +1,216 @@
+             _                _ 
+ _ __   ___ | | _____ _ __ __| |
+| '_ \ / _ \| |/ / _ \ '__/ _` |
+| |_) | (_) |   <  __/ | | (_| |
+| .__/ \___/|_|\_\___|_|  \__,_|
+|_|                             
+
+by  Thomas Cort
+
+--------------------------------------------------------------------------
+
+USER DOCUMENTATION
+
+
+Table of Contents
+
+1.0 User guide
+
+2.0 Build Instructions
+
+3.0 Content of the submission
+
+4.0 Program Overview
+
+5.0 Testing Comments
+
+6.0 Known Bugs
+
+7.0 Near Future Improvements
+7.1 Far Future Improvements
+
+--------------------------------------------------------------------------
+
+1.0 USER GUIDE
+
+The following command will start a server which hosts poker games on
+port 9999: 
+
+./pokerd
+
+Below is a list of command line options that will modify the operation
+of the server. Usage is identical to assignment specification.
+
+Command Line Options
+--------------------
+--debug                 || -d            = run in foreground
+--log                   || -l            = log using syslog
+--port (port)           || -p (port)     = tcp port
+--configfile (filename) || -c (filename) = configuration
+--help                  || -h            = display help message
+--dbusername (username)                  = username for db server
+--dbpassword (password)                  = password for db server
+--dbhostname (hostname)                  = hostname for db server
+--dbdatabase (database)                  = database for db server
+
+--------------------------------------------------------------------------
+
+2.0 Build Instructions
+
+To compile this program you need the following libraries installed:
+	pthread, pq, z, crypt, nsl, m, poker-eval, gsl, gslcblas, ssl
+
+The libraries should be provided by the following packages or the
+following package's dependencies:
+	OpenSSL                (openssl.org) (BSD-style License)
+	GNU Scientific Library (gnu.org/software/gsl)  (GNU GPL)
+	poker-eval             (pokersource.sf.net)    (GNU GPL)
+	MySQL                  (mysql.org)             (GNU GPL)
+
+To compile this program you need the following tools installed:
+	make, gcc, bison, flex
+
+Make Options
+------------
+make [all]            Build all
+make warn             Include Warnings
+make optimize         Enable optimizations and nothing else
+make debug            Include Debugging Info and Warnings
+make help             Display this help
+
+You'll need to setup the database prior to running the server. You can
+do this by executing the following command from the pokerd src directory:
+	psql pokerd pokerd < pokerd.sql
+After you execute the SQL you will have two player accounts, player1 and
+player2 with the password 'secret'. You will probably want to add 
+player accounts. Currently there is no tool to do this. For now add them
+with the following SQL query: 
+	INSERT INTO users (username,passwd) VALUES ('username',md5('passwd'));
+
+--------------------------------------------------------------------------
+
+3. Content of Package
+
+Files
+=====
+auth.[c|h]              User authentication
+byte.[c|h]              Byte Array Functions
+ChangeLog		Lists changes between versions
+conf.[c|h]              Read Configuration Function
+config.[l|y]            Parser/Scanner for Config
+daemon.[c|h]            Daemonizes the server
+db.[c|h]                Database Access
+deck.[c|h]              Deck of Cards
+eval.[c|h]              Evaluates Hands to Find the Winner
+LICENSE                 GNU GPL
+log.[c|h]               Logging Facility
+main.c                  Main program
+Makefile                Makefile
+md5.[c|h]               MD5 Checksum Functions
+monitor.[c|h]           Thread Monitor
+net.[c|h]               Re-usable Network Operations
+poker.[c|h]             Game Logic
+pokerd.sql              SQL Tables / Schema
+pokerserv.[c|h]         Manage Network Connections
+PROTOCOL                Network Protocol Docs
+README                  This file
+rand.[c|h]              Random Number Generation
+sig.[c|h]               Singal Handlers
+time.[c|h]              Time and Data Functions
+user-guide              User Guide
+
+--------------------------------------------------------------------------
+
+4.0 Program Overview
+
+Configuration
+
+There are a number of ways to configure the server. First, you can change
+the system defaults in the conf.c file. Second, you can use command line
+switches (see above). Third, you can create a configuration file called
+".pokerd". That file contains a set of keys and values. The possible
+keys are: dbusername, dbpassword, dbhostname, dbdatabase, 
+port, debug, log. An example configuration lines is "port=9999".
+
+How it works
+
+The execution begins in main.c All of the internal structures are
+initialized and things get configured. After that control moves to 
+pokerserv.c This part of the code handles incoming connections. A
+new thread is created that runs the actual games (deals, etc) and the
+main thread creates a socket and waits for activity. Once a new player
+connects a thread is created to authenticate that player. Once 
+the player is authenticated the authentication thread dies at the
+end of auth.c. The thread handling the game play will know about
+the new player the next time it looks at the 'users' database table.
+The users' socket descriptor is stored there. When there are 0 or 1
+players the server does a loop in poker.c where it checks the database
+for new users and then sleeps. Once there are enough users to play
+a game (2) the game begins. If there are >10 players only 10 get dealt
+in. The rest of the players just get to view the action. Stats are kept
+in the database to ensure that everyone gets a chance to play. When
+a signal is recieved a flag is set and the threads exit as soon as
+possible. There is a counter in monitor.c that ensures all of the
+threads are dead before the server exits.
+
+Using the Program
+
+Using the server is pretty simple. You just type ./pokerd and it goes.
+If you want to see what it is doing use the -d switch to stop it
+from going into the background. You can also look at the database tables
+to see how well or how poorly players are doing.
+
+To stop the program just send it a QUIT signal. kill -3 [pid_of_pokerd]
+You can also type ctrl+c if pokerd is in interactive mode (ie pokerd -d)
+
+There isn't much in the way of client software at the moment. You can
+download a simple text based client for testing out the
+server software at the following URL: http://tomcort.com/poker 
+The contribution of a graphical client would be rewarded with beer. 
+E-mail linuxgeek@gmail.com if you've got one.
+
+--------------------------------------------------------------------------
+
+5.0 Testing Comments
+
+Very little testing has been done, so please use this code at your
+own risk. From what I can tell using a memory profiling program called
+valgrind there aren't any memory leaks. The server also doesn't randomly
+lock up or crash during normal operation. However, I haven't purposely
+given it a lot of bad input.
+
+I have created a simple text based client and it seems to work rather 
+well for testing things. The code is on here tomcort.com/poker. Please 
+test this program. If you find a problem try to isolate it and
+then send me a bug report (linuxgeek@gmail.com). Accepted patches will 
+be rewarded with beer at the Lion in Lennoxville, Quebec.
+
+--------------------------------------------------------------------------
+
+6.0 Known Bugs
+
+There are no known bugs to note at this time.
+
+--------------------------------------------------------------------------
+
+7.0 Near Future Improvements
+
+Include PHP code for a stats web page
+More Logging/Stats (log every action, log hole cards, etc)
+Man Pages
+Autotool (./configure scripts)
+Player management tool (add / remove players)
+
+7.1 Far Future Improvements
+
+Multiple concurrent games (tables)
+Other poker variants (no limit, 5 card draw, 7 card stud, etc)
+Log Analysis (player modelling)
+
+Overall code cleanup - a lot of the code in poker.c deals with clients 
+that disconnect or fail to respond. I'd like to come up with a cleaner 
+solution. Any ideas? Also, a lot of lines of code are used for logging. 
+I was thinking of creating a new "logit" function that takes printf 
+style parameters loggit(char *,...);
+
+--------------------------------------------------------------------------
