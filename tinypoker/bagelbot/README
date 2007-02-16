@@ -1,0 +1,21 @@
+Trivial client for pokerd -- this toy bot will connect to a pokerd 
+server, join a game, and fold every hand. The game logic goes in
+play.c (look for the line with the text "YOUR CODE HERE"). There
+isn't a config file reader yet, you need to hardcode the username
+and password into main.c.
+
+Files
+=====
+byte.[c|h]		Byte Array Functions
+COPYING			GNU GPL version 2 or later
+Makefile		Makefile
+main.c			Main program
+net.[c|h]		Re-usable Network Operations
+PROTOCOL		Description of the client server protocol
+play.[c|h]		Game Logic
+README			This file
+
+Collaborators
+============= 
+Name:	Thomas Cort 
+E-Mail:	code@member.fsf.org
