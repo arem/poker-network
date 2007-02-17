@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "conf.h"
 #include "play.h"
 #include "net.h"
 #include "byte.h"
@@ -27,8 +28,8 @@ int authenticate() {
 
         ba = new_byte_array(32);
 
-        byte_array_append_string(ba,"player1");	/* User */
-        byte_array_append_string(ba,"secret");	/* Pass */
+        byte_array_append_string(ba,user);	/* User */
+        byte_array_append_string(ba,pass);	/* Pass */
         byte_array_append_int(ba,1);
         byte_array_append_string(ba,"BagelBot");/* User-agent */
 
@@ -45,7 +46,26 @@ int authenticate() {
 }
 
 int main() {
-        connect_to_server("localhost", 9999);
+        /* Set the default config file path */
+	configfile = (char*) malloc((strlen("/etc/bagelbot.conf") + 2) * sizeof(char));
+	if (!configfile) {
+		printf("malloc() failed!\n");
+		return 255;
+	}
+	bzero(configfile,(strlen("/etc/bagelbot.conf") + 2) * sizeof(char));
+	snprintf(configfile,strlen("/etc/bagelbot.conf") + 1,"/etc/bagelbot.conf");
+
+	configure();
+
+	if (!host || !pass || !port || !user) {
+		printf("Could not determine one or more configuration setting.\n");
+		free_config();
+		return 255;
+	} else {
+		printf("Connecting to %s:%d as %s\n",host,port,user);
+	}
+
+        connect_to_server(host,port);
 
         if (authenticate()) {
                 printf("Authenticated!\n");
@@ -55,5 +75,6 @@ int main() {
         }
 
         disconnect_from_server();
+	free_config();
 	return 0;
 }

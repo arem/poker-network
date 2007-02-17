@@ -26,6 +26,7 @@
 #include <netinet/in.h>
 
 #include "byte.h"
+#include "conf.h"
 
 extern int snprintf(char *str, size_t size, const char *format, ...);
 
@@ -39,11 +40,13 @@ struct byte_array *new_byte_array(int capacity) {
 
 	if ((ba = (struct byte_array *) malloc(sizeof(struct byte_array))) == NULL) {
 		perror("malloc");
+		free_config();
 		exit(1);
 	}
 
 	if ((ba->data = (char *) malloc(sizeof(char)*capacity)) == NULL) {
 		perror("malloc");
+		free_config();
 		exit(1);
 	}
 
@@ -171,6 +174,7 @@ char *byte_array_read_string(struct byte_array *ba) {
 
 	if ((str = (char *) malloc(temp->size)) == NULL) {
 		perror("malloc");
+		free_config();
 		exit(1);
 	}
 
@@ -190,6 +194,7 @@ char *byte_array_get_bytes(struct byte_array *ba) {
 
 	if ((data = (char *)malloc(ba->size)) == NULL) {
 		perror("malloc");
+		free_config();
 		exit(1);
 	}
 

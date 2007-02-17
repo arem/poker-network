@@ -10,12 +10,12 @@
 Trivial client for pokerd -- this toy bot will connect to a pokerd 
 server, join a game, and fold every hand. It is intended to be a base 
 for building a bot. The game logic goes in play.c (look for the line 
-with the text "YOUR CODE HERE"). There isn't a config file reader yet, 
-you need to hardcode the username and password into main.c.
+with the text "YOUR CODE HERE").
 
 Files
 =====
 AUTHORS			A list of people who wrote this code
+bagelbot.conf		Sample config file
 byte.[c|h]		Byte Array Functions
 ChangeLog		A list of changes since 17-Feb-2007
 CMakeLists.txt		CMake file

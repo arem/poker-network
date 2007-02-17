@@ -19,6 +19,7 @@
 
 #include "net.h"
 #include "byte.h"
+#include "conf.h"
 
 /**
  *  struct byte_array *read_message(int sd, int *type)
@@ -55,6 +56,7 @@ struct byte_array *read_message(int *type) {
 	if (size > 0) {
 		if ((data = (char *) malloc(size)) == NULL) {
 			perror("malloc");
+			free_config();
 			exit(1);
 		}
 
@@ -127,6 +129,7 @@ void connect_to_server(char *hostname, int port) {
 
 	if (!(he = gethostbyname(hostname))) {
 		perror("gethostbyname");
+		free_config();
 		exit(1);
 	}
 
@@ -135,11 +138,13 @@ void connect_to_server(char *hostname, int port) {
 
 	if (!(sd = socket(AF_INET, SOCK_STREAM, 0))) {
 		perror("socket");
+		free_config();
 		exit(1);
 	}
 
 	if (connect(sd, (struct sockaddr *) &sin, sizeof(sin))) {
 		perror("connect");
+		free_config();
 		exit(1);
 	}
 }

@@ -16,5 +16,34 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 PROJECT(bagelbot)
-ADD_EXECUTABLE(bagelbot byte.c  main.c  net.c  play.c)
-INSTALL(PROGRAMS bagelbot DESTINATION bin)
+
+SET (libdirs /usr/lib /usr/local/lib /usr/lib32 /usr/local/lib32 /usr/lib64 /usr/local/lib64)
+
+#############################################
+# libconfuse checks
+#############################################
+
+FIND_PATH(CONFUSE_INCLUDE_DIR confuse.h /usr/include /usr/local/include)
+
+IF (CONFUSE_INCLUDE_DIR)
+  MESSAGE(STATUS "Found confuse headers in ${CONFUSE_INCLUDE_DIR}")
+ELSE (CONFUSE_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "confuse.h not found.")
+ENDIF (CONFUSE_INCLUDE_DIR)
+
+FIND_LIBRARY(LIBCONFUSE confuse ${libdirs})
+
+IF (LIBCONFUSE)
+  MESSAGE(STATUS "Found libconfuse: ${LIBCONFUSE}")
+ELSE (LIBCONFUSE)
+  MESSAGE (FATAL_ERROR "libconfuse not found.")
+ENDIF (LIBCONFUSE)
+
+#############################################
+# Put everything together
+#############################################
+
+ADD_EXECUTABLE(bagelbot byte.c conf.c main.c net.c play.c)
+TARGET_LINK_LIBRARIES(bagelbot ${LIBCONFUSE})
+INSTALL(PROGRAMS bagelbot DESTINATION /usr/bin)
+INSTALL(FILES bagelbot.conf DESTINATION /etc PERMISSIONS OWNER_WRITE OWNER_READ)
