@@ -1,0 +1,18 @@
+Compiling from source
+=====================
+
+You need the following to build the binary...
+
+	cmake	http://cmake.org
+	make	http://www.gnu.org/software/make
+	gcc	http://gcc.gnu.org
+
+There isn't a configuration file reader/parser (yet), so you have to 
+edit main.c and hard code your username and password (eek!). This should 
+be fixed soon.
+
+Configure, compile, install...
+
+	$ cmake .
+	$ make
+	# make install
