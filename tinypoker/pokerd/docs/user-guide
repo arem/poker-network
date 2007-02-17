@@ -195,6 +195,9 @@ There are no known bugs to note at this time.
 
 7.0 Near Future Improvements
 
+Use libdaemon to replace sig.c, time.c, log.c, and daemon.c.
+Use libconfuse to replace conf.c, config.l, config.y
+
 Include PHP code for a stats web page
 More Logging/Stats (log every action, log hole cards, etc)
 Man Pages
@@ -209,8 +212,6 @@ Log Analysis (player modelling)
 
 Overall code cleanup - a lot of the code in poker.c deals with clients 
 that disconnect or fail to respond. I'd like to come up with a cleaner 
-solution. Any ideas? Also, a lot of lines of code are used for logging. 
-I was thinking of creating a new "logit" function that takes printf 
-style parameters loggit(char *,...);
+solution. Any ideas?
 
 --------------------------------------------------------------------------

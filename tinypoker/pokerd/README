@@ -19,12 +19,15 @@ net.[c|h]		Re-usable Network Operations
 poker.[c|h]		Game Logic
 pokerd.sql		SQL Tables / Schema
 pokerserv.[c|h]		Manage Network Connections
-PROTOCOL		Network Protocol Docs
 README			This file
 rand.[c|h]		Random Number Generation
 sig.[c|h]		Singal Handlers
 time.[c|h]		Time and Data Functions
-user-guide		User Guide
+
+docs/
+ db-schema.dia		Diagram showing the database schema
+ PROTOCOL		Network Protocol Docs
+ user-guide		User Guide
 
 Collaborators
 ============= 
