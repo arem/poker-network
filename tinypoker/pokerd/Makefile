@@ -1,4 +1,4 @@
-# Copyright (C) 2005, 2006 Thomas Cort
+# Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
 #
 # This file is part of pokerd.
 #
@@ -19,7 +19,7 @@
 CC     = gcc
 CFLAGS = 
 INCLUDE= -I/usr/include/poker-eval -I/usr/include/mysql
-LIBDIR = -L/usr/lib
+LIBDIR = -L/usr/lib -L/usr/lib32 -L/usr/lib64 -L/usr/lib/mysql -L/usr/lib32/mysql -L/usr/lib64/mysql
 LIBS   = -lpthread -lmysqlclient -lz -lcrypt -lnsl -lm -lgsl -lgslcblas -lpoker-eval -lssl
 
 LEX    = flex

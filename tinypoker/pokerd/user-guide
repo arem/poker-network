@@ -5,7 +5,7 @@
 | .__/ \___/|_|\_\___|_|  \__,_|
 |_|                             
 
-by  Thomas Cort
+by  Thomas Cort <code@member.fsf.org>
 
 --------------------------------------------------------------------------
 
@@ -167,7 +167,7 @@ There isn't much in the way of client software at the moment. You can
 download a simple text based client for testing out the
 server software at the following URL: http://tomcort.com/poker 
 The contribution of a graphical client would be rewarded with beer. 
-E-mail linuxgeek@gmail.com if you've got one.
+E-mail code@member.fsf.org if you've got one.
 
 --------------------------------------------------------------------------
 
@@ -182,7 +182,7 @@ given it a lot of bad input.
 I have created a simple text based client and it seems to work rather 
 well for testing things. The code is on here tomcort.com/poker. Please 
 test this program. If you find a problem try to isolate it and
-then send me a bug report (linuxgeek@gmail.com). Accepted patches will 
+then send me a bug report (code@member.fsf.org). Accepted patches will 
 be rewarded with beer at the Lion in Lennoxville, Quebec.
 
 --------------------------------------------------------------------------

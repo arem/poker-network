@@ -3,13 +3,13 @@ Files
 auth.[c|h]		User authentication
 byte.[c|h]		Byte Array Functions
 ChangeLog               Lists changes between versions
+COPYING			GNU GPL version 2 or later
 conf.[c|h]		Read Configuration Function
 config.[l|y]		Parser/Scanner for Config
 daemon.[c|h]		Daemonizes the server
 db.[c|h]		Database Access
 deck.[c|h]		Deck of Cards
 eval.[c|h]		Evaluates Hands to Find the Winner
-LICENSE			GNU GPL
 log.[c|h]		Logging Facility
 main.c			Main program
 Makefile		Makefile
@@ -28,5 +28,5 @@ user-guide		User Guide
 
 Collaborators
 ============= 
-Name:    Thomas Cort 
-E-Mail: linuxgeek@gmail.com
+Name:	Thomas Cort 
+E-Mail:	code@member.fsf.org

@@ -2,7 +2,7 @@
 %{
 
 /*
- * Copyright (C) 2005, 2006 Thomas Cort
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
  * This file is part of pokerd.
  *
