@@ -42,12 +42,19 @@ MYSQL *db;
  *  connects to a MySQL Database
  */
 void db_connect() {
+	char my_true = 1;
 
 	/* multiple threads cannot share a single MYSQL*, so we have to control sharing */
 	pthread_mutex_lock(&db_lock);
 
 	db = (MYSQL *) malloc(sizeof(MYSQL));
 	mysql_init(db);
+
+	/* enable auto re-connect */
+	if (mysql_options(db, MYSQL_OPT_RECONNECT, &my_true)) {
+		logit((char *)mysql_error(db));
+		exit(1);
+	}
 
 	/* connect */
 	if (!mysql_real_connect(db,dbhostname,dbusername,dbpassword,dbdatabase,0,NULL,0)) {
