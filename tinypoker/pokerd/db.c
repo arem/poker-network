@@ -51,13 +51,10 @@ void db_connect() {
 	mysql_init(db);
 
 	/* enable auto re-connect */
-	if (mysql_options(db, MYSQL_OPT_RECONNECT, &my_true)) {
-		logit((char *)mysql_error(db));
-		exit(1);
-	}
+	mysql_options(db, MYSQL_OPT_RECONNECT, &my_true);
 
 	/* connect */
-	if (!mysql_real_connect(db,dbhostname,dbusername,dbpassword,dbdatabase,0,NULL,0)) {
+	if (!mysql_real_connect(db,dbhostname,dbusername,dbpassword,dbdatabase,0,NULL,CLIENT_INTERACTIVE)) {
 		logit((char *)mysql_error(db));
 		exit(1);
 	}
