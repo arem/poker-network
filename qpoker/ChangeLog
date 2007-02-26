@@ -1,0 +1,9 @@
+2007-02-26  Johan Euphrosine  <proppy@aminche.com>
+
+	*  split qpoker2d.py into qpoker.py and qpokerwidget.py
+	*  added test for qpokerwidget.py
+
+2007-02-26  Johan Euphrosine  <proppy@aminche.com>
+
+	*  initial import
+

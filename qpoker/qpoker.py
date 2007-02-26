@@ -1,8 +1,5 @@
 import sys
 import string
-from PyQt4.QtGui import QApplication, QWidget, QGraphicsScene, QGraphicsView, QGraphicsTextItem
-from PyQt4.QtSvg import QGraphicsSvgItem
-from PyQt4.QtOpenGL import QGLWidget, QGLFormat, QGL
 import qt4reactor
 qt4reactor.install()
 from twisted.internet import reactor
@@ -12,58 +9,27 @@ from pokerui.pokerdisplay import PokerDisplay
 from pokerui.pokerrenderer import PokerRenderer
 from pokerui.pokerinterface import PokerInterface
 from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START
-
-class GraphicsView(QGraphicsView):
-    def keyPressEvent(self, event):
-        if event.text() == "q":
-            self.scale(1.1, 1.1)
-        elif event.text() == "a":
-            self.scale(0.9, 0.9)
+from qpokerwidget import QPokerWidget
+from PyQt4.QtGui import QApplication
 
 class DummyPokerDisplay(PokerDisplay):
     def __init__(self, *args, **kwargs):
         PokerDisplay.__init__(self, *args, **kwargs)
-        self.scene = QGraphicsScene()
-        self.chat = QGraphicsTextItem()
-        self.chat.setFlag(QGraphicsTextItem.ItemIsMovable, True)
-        self.table = QGraphicsSvgItem("table.svg")
-        self.table.setFlag(QGraphicsSvgItem.ItemIsMovable, True)
-        self.board = []
-        for i in range(5):
-            card = QGraphicsSvgItem("svg-cards.svg", self.table)
-            card.setElementId("back")
-            card.setFlag(QGraphicsSvgItem.ItemIsMovable, True)
-            card.scale(0.5, 0.5)
-            self.board.append(card)
-        self.scene.addItem(self.chat)
-        self.scene.addItem(self.table)
-        self.view = GraphicsView()
-        self.view.setScene(self.scene)
-        self.view.resize(800, 600)
-        self.view.show()
-
+        self.widget = QPokerWidget()
+        self.widget.show()
     def render(self, packet):
         print "PokerDisplay2D::render: " + str(packet)
         if packet.type == PACKET_POKER_CHAT:
             message = packet.message
             message = message.replace('\n', '')
-            self.chat.setPlainText(message)
+            self.widget.renderChat(message)
         elif packet.type == PACKET_POKER_BOARD_CARDS:
             game = self.factory.getGame(packet.game_id)
             board = game.eval.card2string(packet.cards)
-            def card2SvgElement(card):
-                cardsuit2svg = {"d" : "diamond", "c" : "club", "s" : "spade", "h" : "heart"}
-                cardvalue2svg = {"Q" : "queen", "K" : "king", "J" : "jack", "T" : "10", "A" : "1"}
-                return (cardvalue2svg.has_key(card[0]) and cardvalue2svg[card[0]] or card[0]) + "_" + cardsuit2svg[card[1]]
-            for i in range(len(board)):
-                elementId = card2SvgElement(board[i])
-                self.board[i].setElementId(elementId)
+            self.widget.renderBoard(board)
         elif packet.type == PACKET_POKER_START:
-            for card in self.board:
-                card.setElementId("back")
+            self.widget.renderStart()
             
-        #PokerPlayer2D::render: type = POKER_BOARD_CARDS(62) serial = 0 game_id = 100 cards = [36, 0, 5]
-        #PokerPlayer2D::render: type = POKER_CHAT(86) serial = 0 game_id = 100 message = Dealer: BOTbytpet checks 
 class DummyPokerRenderer(PokerRenderer):
     def __init__(self, *args, **kwargs):
         PokerRenderer.__init__(self, *args, **kwargs)
