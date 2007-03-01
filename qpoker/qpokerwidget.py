@@ -1,7 +1,7 @@
 import sys
 import unittest
 from PyQt4.QtGui import QApplication, QWidget, QGraphicsScene, QGraphicsView, QGraphicsTextItem
-from PyQt4.QtSvg import QGraphicsSvgItem
+from PyQt4.QtSvg import QGraphicsSvgItem, QSvgRenderer
 from PyQt4.QtOpenGL import QGLWidget, QGLFormat, QGL
 
 def card2SvgElement(card):
@@ -14,17 +14,20 @@ def card2SvgElement(card):
 class QPokerWidget(QWidget):
     def __init__(self, parent = None):
         QWidget.__init__(self, parent)
+        self.renderer = QSvgRenderer("poker.svg")
         self.scene = QGraphicsScene()
         self.chat = QGraphicsTextItem()
-        self.chat.setFlag(QGraphicsTextItem.ItemIsMovable, True)
-        self.table = QGraphicsSvgItem("table.svg")
-        self.table.setFlag(QGraphicsSvgItem.ItemIsMovable, True)
+        self.table = QGraphicsSvgItem("poker.svg")
+        self.table.setSharedRenderer(self.renderer)
+        self.table.setElementId("table")
+        self.table.setMatrix(self.renderer.matrixForElement("transform_table"))
         self.board = []
         for i in range(5):
-            card = QGraphicsSvgItem("svg-cards.svg", self.table)
+            card = QGraphicsSvgItem("svg-cards.svg")
             card.setElementId("back")
-            card.setFlag(QGraphicsSvgItem.ItemIsMovable, True)
+            card.setMatrix(self.renderer.matrixForElement("transform_card%i" % i))
             card.scale(0.5, 0.5)
+            self.scene.addItem(card)
             self.board.append(card)
         self.scene.addItem(self.chat)
         self.scene.addItem(self.table)
