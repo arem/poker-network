@@ -14,22 +14,43 @@ class QPokerWidgetTestCase(unittest.TestCase):
         self.widget = QPokerWidget()
     def tearDown(self):
         self.widget = None
+    def testWidgetDefaultState(self):
+        for card in self.widget.board:
+            self.assertEquals(False, card.isVisible())
     def testRenderChat(self):
         self.widget.renderChat("salut les aminches")
-        self.assertEquals("salut les aminches", str(self.widget.chat.toPlainText()))
+        self.assertEquals("salut les aminches", str(self.widget.chat.text()))
     def testRenderBoard(self):
-        cards = ("As", "2c", "Qh", "Jd", "Ts")
-        ids = ("1_spade", "2_club", "queen_heart", "jack_diamond", "10_spade")
-        map(lambda card, id: self.assertEquals(id, card2SvgElement(card)), cards, ids)
+        cards = ("As", "2c", "Qh", "Jd")
+        ids = ("1_spade", "2_club", "queen_heart", "jack_diamond")
+        map(lambda card, id: self.assertEquals(id, card2SvgElement(card)), cards, ids)            
         self.widget.renderBoard(cards)
-        map(lambda id, svgItem: self.assertEquals(id, svgItem.elementId()), ids, self.widget.board)
+        for i in range(len(cards)):
+            item = self.widget.board[i]
+            id = ids[i]
+            self.assertEquals(True, item.isVisible())
+            self.assertEquals(id, item.elementId())
+        for i in range(len(cards), len(self.widget.board)):
+            item = self.widget.board[i]
+            self.assertEquals(False, item.isVisible())
+            self.assertEquals('back', item.elementId())
     def testRenderEmptyBoard(self):
         cards = []
         self.widget.renderBoard(cards)
+        map(lambda svgItem: self.assertEquals(False, svgItem.isVisible()), self.widget.board)
         map(lambda svgItem: self.assertEquals('back', svgItem.elementId()), self.widget.board)
     def testRenderStart(self):
         self.widget.renderStart()
+        map(lambda svgItem: self.assertEquals(False, svgItem.isVisible()), self.widget.board)
         map(lambda svgItem: self.assertEquals('back', svgItem.elementId()), self.widget.board)
+    def testRenderPlayerArrive(self):
+        self.widget.renderPlayerArrive(0, "playerName")
+        self.assertEquals('playerName', self.widget.names[0].text())
+        self.assertEquals(True, self.widget.names[0].isVisible())
+    def testRenderPlayerLeave(self):
+        self.widget.renderPlayerLeave(0)
+        self.assertEquals('', self.widget.names[0].text())
+        self.assertEquals(False, self.widget.names[0].isVisible())
     def testKeyPressEventZoomIn(self):
         matrix = self.widget.view.matrix()
         matrix.scale(1.1, 1.1)
