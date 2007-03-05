@@ -15,10 +15,12 @@
    sodipodi:version="0.32"
    inkscape:version="0.45"
    version="1.0"
-   sodipodi:docbase="/home/proppy/Desktop/20070228/qpoker"
+   sodipodi:docbase="/home/proppy/Desktop/20070305/qpoker"
    sodipodi:docname="poker.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    sodipodi:modified="true">
+  <defs
+     id="defs16" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -30,17 +32,17 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.88695652"
-     inkscape:cx="359.00996"
-     inkscape:cy="399.95206"
+     inkscape:cx="434.76738"
+     inkscape:cy="463.41047"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="svg2"
      width="800px"
      height="600px"
      showgrid="true"
-     inkscape:window-width="910"
-     inkscape:window-height="626"
-     inkscape:window-x="10"
-     inkscape:window-y="97" />
+     inkscape:window-width="1200"
+     inkscape:window-height="1525"
+     inkscape:window-x="0"
+     inkscape:window-y="25" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -55,7 +57,7 @@
   <g
      inkscape:label="table"
      inkscape:groupmode="layer"
-     id="layer1"
+     id="layer_table"
      style="display:none">
     <rect
        style="opacity:0.467033;fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1"
@@ -70,12 +72,12 @@
   </g>
   <g
      inkscape:groupmode="layer"
-     id="layer3"
+     id="layer_card"
      inkscape:label="card"
      style="display:none">
     <rect
        style="opacity:0.467033;fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect29206"
+       id="card"
        width="91.323532"
        height="125.34313"
        x="0"
@@ -85,7 +87,22 @@
   </g>
   <g
      inkscape:groupmode="layer"
-     id="layer2"
+     id="layer_seat"
+     inkscape:label="seat"
+     style="display:none">
+    <rect
+       style="opacity:0.467033;fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1"
+       id="seat"
+       width="85.122551"
+       height="84.895828"
+       x="0"
+       y="0"
+       rx="2.4123471"
+       ry="2.5238502" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer_game"
      inkscape:label="game"
      style="display:inline">
     <use
@@ -102,7 +119,7 @@
        style="display:inline"
        x="0"
        y="0"
-       xlink:href="#rect29206"
+       xlink:href="#card"
        id="transform_card0"
        transform="translate(148.67647,230)"
        width="800"
@@ -113,7 +130,7 @@
        width="800"
        transform="translate(248.67647,230)"
        id="transform_card1"
-       xlink:href="#rect29206"
+       xlink:href="#card"
        y="0"
        x="0"
        style="display:inline"
@@ -122,7 +139,7 @@
        style="display:inline"
        x="0"
        y="0"
-       xlink:href="#rect29206"
+       xlink:href="#card"
        id="transform_card2"
        transform="translate(348.67647,230)"
        width="800"
@@ -133,7 +150,7 @@
        width="800"
        transform="translate(448.67647,230)"
        id="transform_card3"
-       xlink:href="#rect29206"
+       xlink:href="#card"
        y="0"
        x="0"
        style="display:inline"
@@ -142,11 +159,111 @@
        style="display:inline"
        x="0"
        y="0"
-       xlink:href="#rect29206"
+       xlink:href="#card"
        id="transform_card4"
        transform="translate(548.67647,230)"
        width="800"
        height="600"
        inkscape:label="#use29217" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#seat"
+       id="seat_0"
+       transform="translate(217.43872,35.104172)"
+       width="800"
+       height="600"
+       inkscape:label="#use2176" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(354.87745,35.104172)"
+       id="seat_1"
+       xlink:href="#seat"
+       y="0"
+       x="0"
+       style="display:inline"
+       inkscape:label="#use2178" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#seat"
+       id="seat_2"
+       transform="translate(492.31617,35.104172)"
+       width="800"
+       height="600"
+       inkscape:label="#use2180" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(700,163.10417)"
+       id="seat_3"
+       xlink:href="#seat"
+       y="0"
+       x="0"
+       style="display:inline"
+       inkscape:label="#use2182" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#seat"
+       id="seat_4"
+       transform="translate(700,343.10417)"
+       width="800"
+       height="600"
+       inkscape:label="#use2184" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(504.87745,471)"
+       id="seat_5"
+       xlink:href="#seat"
+       y="0"
+       x="0"
+       style="display:inline"
+       inkscape:label="#use2186" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#seat"
+       id="seat_6"
+       transform="translate(354.87745,471)"
+       width="800"
+       height="600"
+       inkscape:label="#use2188" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(204.87745,471)"
+       id="seat_7"
+       xlink:href="#seat"
+       y="0"
+       x="0"
+       style="display:inline"
+       inkscape:label="#use2190" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#seat"
+       id="seat_8"
+       transform="translate(14,343.10417)"
+       width="800"
+       height="600"
+       inkscape:label="#use2192" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(14,163.10417)"
+       id="seat_9"
+       xlink:href="#seat"
+       y="0"
+       x="0"
+       style="display:inline"
+       inkscape:label="#use2194" />
   </g>
 </svg>
