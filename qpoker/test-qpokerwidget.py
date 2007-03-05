@@ -68,6 +68,17 @@ class QPokerWidgetTestCase(unittest.TestCase):
         self.widget.renderPotReset()
         self.assertEquals('', self.widget.pots[0].text())
         self.assertEquals(False, self.widget.pots[0].isVisible())
+    def testRenderPosition(self):
+        position = 1
+        self.widget.renderPosition(position)
+        for i in range(10):
+            if i == position:
+                self.assertEquals('seat_inposition', str(self.widget.seats[i].elementId()))
+            else:
+                self.assertEquals('seat', str(self.widget.seats[i].elementId()))
+        self.widget.renderPositionReset()
+        for seat in self.widget.seats:
+            self.assertEquals('seat', str(seat.elementId()))
     def testKeyPressEventZoomIn(self):
         matrix = self.widget.view.matrix()
         matrix.scale(1.1, 1.1)

@@ -124,6 +124,16 @@ class QPokerWidget(QWidget):
         for pot in self.pots:
             pot.setText("")
             pot.hide()
+    def renderPosition(self, seatInPosition):
+        for i in range(len(self.seats)):
+            seat = self.seats[i]
+            if i == seatInPosition:
+                seat.setElementId("seat_inposition")
+            else:
+                seat.setElementId("seat")
+    def renderPositionReset(self):
+        for seat in self.seats:
+            seat.setElementId("seat")
     def keyPressEvent(self, event):
         if event.text() == "q":
             self.view.scale(1.1, 1.1)

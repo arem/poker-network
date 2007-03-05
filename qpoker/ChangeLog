@@ -1,5 +1,6 @@
 2007-03-05  Johan Euphrosine  <proppy@aminche.com>
-
+	
+	*  added position display
 	*  added pot chips display
 	*  added bet chips display
 	*  added hierarchy for seat widget, using transform for name and money label
