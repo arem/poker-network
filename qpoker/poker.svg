@@ -33,7 +33,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.254346"
      inkscape:cx="410.71185"
-     inkscape:cy="220.69515"
+     inkscape:cy="220.29654"
      inkscape:document-units="px"
      inkscape:current-layer="layer_game"
      width="800px"
@@ -407,6 +407,87 @@
        transform="translate(44.877449,410)"
        id="transform_seat9"
        xlink:href="#seat"
+       y="0"
+       x="0"
+       style="display:inline" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(210,361.0919)"
+       id="transform_pot7"
+       xlink:href="#bet"
+       y="0"
+       x="0"
+       style="display:inline" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#bet"
+       id="transform_pot5"
+       transform="translate(248.9081,362.1838)"
+       width="800"
+       height="600" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(288.9081,362.1838)"
+       id="transform_pot3"
+       xlink:href="#bet"
+       y="0"
+       x="0"
+       style="display:inline" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#bet"
+       id="transform_pot1"
+       transform="translate(328.9081,362.1838)"
+       width="800"
+       height="600" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(368.9081,362.1838)"
+       id="transform_pot0"
+       xlink:href="#bet"
+       y="0"
+       x="0"
+       style="display:inline" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#bet"
+       id="transform_pot2"
+       transform="translate(408.9081,362.1838)"
+       width="800"
+       height="600" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(448.9081,362.1838)"
+       id="transform_pot4"
+       xlink:href="#bet"
+       y="0"
+       x="0"
+       style="display:inline" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#bet"
+       id="transform_pot6"
+       transform="translate(488.9081,362.1838)"
+       width="800"
+       height="600" />
+    <use
+       height="600"
+       width="800"
+       transform="translate(528.9081,362.1838)"
+       id="transform_pot8"
+       xlink:href="#bet"
        y="0"
        x="0"
        style="display:inline" />
