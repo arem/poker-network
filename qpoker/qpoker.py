@@ -8,7 +8,7 @@ from pokernetwork.pokernetworkconfig import Config
 from pokerui.pokerdisplay import PokerDisplay
 from pokerui.pokerrenderer import PokerRenderer
 from pokerui.pokerinterface import PokerInterface
-from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START
+from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS
 from qpokerwidget import QPokerWidget
 from PyQt4.QtGui import QApplication
 
@@ -17,6 +17,7 @@ class DummyPokerDisplay(PokerDisplay):
         PokerDisplay.__init__(self, *args, **kwargs)
         self.widget = QPokerWidget()
         self.widget.show()
+        self.serial2seat = {}
     def render(self, packet):
         print "PokerDisplay2D::render: " + str(packet)
         if packet.type == PACKET_POKER_CHAT:
@@ -29,6 +30,14 @@ class DummyPokerDisplay(PokerDisplay):
             self.widget.renderBoard(board)
         elif packet.type == PACKET_POKER_START:
             self.widget.renderStart()
+        elif packet.type == PACKET_POKER_PLAYER_ARRIVE:
+            self.serial2seat[packet.serial] = packet.seat
+            self.widget.renderPlayerArrive(packet.seat, packet.name)
+        elif packet.type == PACKET_POKER_PLAYER_LEAVE:
+            del self.serial2seat[packet.serial]
+            self.widget.renderPlayerLeave(packet.seat)
+        elif packet.type == PACKET_POKER_PLAYER_CHIPS:
+            self.widget.renderPlayerChips(self.serial2seat[packet.serial], packet.money)
             
 class DummyPokerRenderer(PokerRenderer):
     def __init__(self, *args, **kwargs):

@@ -54,10 +54,17 @@ class QPokerWidget(QWidget):
             self.scene.addItem(card)
             self.board.append(card)
         self.names = []
+        self.moneys = []
         for i in range(10):
             name = QGraphicsSimpleTextItem()
+            name.setMatrix(self.renderer.matrixForElement("transform_seat%i" % i))
             self.scene.addItem(name)
             self.names.append(name)
+            money = QGraphicsSimpleTextItem()
+            money.setMatrix(self.renderer.matrixForElement("transform_seat%i" % i))
+            money.translate(0, 20)
+            self.scene.addItem(money)
+            self.moneys.append(money)
         self.view = QGraphicsView(self)
         self.view.setScene(self.scene)
         self.view.resize(800, 600)
@@ -83,6 +90,10 @@ class QPokerWidget(QWidget):
     def renderPlayerLeave(self, seat):
         self.names[seat].setText('')
         self.names[seat].hide()
+        self.moneys[seat].hide()
+    def renderPlayerChips(self, seat, money):
+        self.moneys[seat].setText(str(money))
+        self.moneys[seat].show()
     def keyPressEvent(self, event):
         if event.text() == "q":
             self.view.scale(1.1, 1.1)
@@ -98,5 +109,7 @@ if __name__ == '__main__':
             self.i = ((self.i) + 1) % 6
     app = QApplication(sys.argv)
     widget = QInteractivePokerWidget()
+    for i in range(10):
+        widget.renderPlayerArrive(i, "toto%i" % i)
     widget.show()
     sys.exit(app.exec_())
