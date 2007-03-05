@@ -1,3 +1,7 @@
+2007-03-05  Johan Euphrosine  <proppy@aminche.com>
+
+	*  added hierarchy for seat widget, using transform for name and money label
+
 2007-05-05  Johan Euphrosine  <proppy@aminche.com>
 
 	*  added player name and money display

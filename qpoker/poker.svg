@@ -87,6 +87,22 @@
   </g>
   <g
      inkscape:groupmode="layer"
+     id="layer_label"
+     inkscape:label="label"
+     style="display:none">
+    <rect
+       style="opacity:0.467033;fill:#c83737;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1;display:inline"
+       id="label"
+       width="65"
+       height="18.387354"
+       x="0"
+       y="0"
+       rx="2.9403598"
+       ry="2.5238502"
+       inkscape:label="#label" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
      id="layer_seat"
      inkscape:label="seat"
      style="display:none">
@@ -121,22 +137,6 @@
          x="0"
          style="display:inline" />
     </g>
-  </g>
-  <g
-     inkscape:groupmode="layer"
-     id="layer_label"
-     inkscape:label="label"
-     style="display:none">
-    <rect
-       style="opacity:0.467033;fill:#c83737;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1;display:inline"
-       id="label"
-       width="65"
-       height="18.387354"
-       x="0"
-       y="0"
-       rx="2.9403598"
-       ry="2.5238502"
-       inkscape:label="#label" />
   </g>
   <g
      inkscape:groupmode="layer"

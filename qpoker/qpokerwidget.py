@@ -53,16 +53,22 @@ class QPokerWidget(QWidget):
             card.hide()
             self.scene.addItem(card)
             self.board.append(card)
+        self.seats = []
         self.names = []
         self.moneys = []
         for i in range(10):
-            name = QGraphicsSimpleTextItem()
-            name.setMatrix(self.renderer.matrixForElement("transform_seat%i" % i))
+            seat = QGraphicsSvgItem()
+            seat.setSharedRenderer(self.renderer)
+            seat.setElementId("seat")
+            seat.setMatrix(self.renderer.matrixForElement("transform_seat%i" % i))
+            self.scene.addItem(seat)
+            self.seats.append(seat)
+            name = QGraphicsSimpleTextItem(seat)
+            name.setMatrix(self.renderer.matrixForElement("seat_name"))
             self.scene.addItem(name)
             self.names.append(name)
-            money = QGraphicsSimpleTextItem()
-            money.setMatrix(self.renderer.matrixForElement("transform_seat%i" % i))
-            money.translate(0, 20)
+            money = QGraphicsSimpleTextItem(seat)
+            money.setMatrix(self.renderer.matrixForElement("seat_money"))
             self.scene.addItem(money)
             self.moneys.append(money)
         self.view = QGraphicsView(self)
@@ -111,5 +117,6 @@ if __name__ == '__main__':
     widget = QInteractivePokerWidget()
     for i in range(10):
         widget.renderPlayerArrive(i, "toto%i" % i)
+        widget.renderPlayerChips(i, "20000")
     widget.show()
     sys.exit(app.exec_())
