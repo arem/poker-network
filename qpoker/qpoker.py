@@ -9,6 +9,8 @@ from pokerui.pokerdisplay import PokerDisplay
 from pokerui.pokerrenderer import PokerRenderer
 from pokerui.pokerinterface import PokerInterface
 from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS
+from pokernetwork.pokerclientpackets import PACKET_POKER_POT_CHIPS, PACKET_POKER_CHIPS_POT_RESET
+from pokerengine.pokerchips import PokerChips
 from qpokerwidget import QPokerWidget
 from PyQt4.QtGui import QApplication
 
@@ -38,7 +40,12 @@ class DummyPokerDisplay(PokerDisplay):
             self.widget.renderPlayerLeave(packet.seat)
         elif packet.type == PACKET_POKER_PLAYER_CHIPS:
             self.widget.renderPlayerChips(self.serial2seat[packet.serial], packet.money, packet.bet)
-            
+        elif packet.type == PACKET_POKER_POT_CHIPS:
+            game = self.factory.getGame(packet.game_id)
+            pots = game.getPots()
+            self.widget.renderPot(packet.index, pots['pots'][packet.index][0])
+        elif packet.type == PACKET_POKER_CHIPS_POT_RESET:
+            self.widget.renderPotReset()
 class DummyPokerRenderer(PokerRenderer):
     def __init__(self, *args, **kwargs):
         PokerRenderer.__init__(self, *args, **kwargs)

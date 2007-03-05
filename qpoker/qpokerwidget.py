@@ -76,6 +76,12 @@ class QPokerWidget(QWidget):
             bet.setMatrix(self.renderer.matrixForElement("transform_bet%i" % i))
             self.scene.addItem(bet)
             self.bets.append(bet)
+        self.pots = []
+        for i in range(9):
+            pot = QGraphicsSimpleTextItem()
+            pot.setMatrix(self.renderer.matrixForElement("transform_pot%i" %i))
+            self.scene.addItem(pot)
+            self.pots.append(pot)
         self.view = QGraphicsView(self)
         self.view.setScene(self.scene)
         self.view.resize(800, 600)
@@ -111,6 +117,13 @@ class QPokerWidget(QWidget):
             self.bets[seat].hide()
         self.moneys[seat].setText(str(money))
         self.moneys[seat].show()
+    def renderPot(self, index, amount):
+        self.pots[index].setText(str(amount))
+        self.pots[index].show()
+    def renderPotReset(self):
+        for pot in self.pots:
+            pot.setText("")
+            pot.hide()
     def keyPressEvent(self, event):
         if event.text() == "q":
             self.view.scale(1.1, 1.1)
