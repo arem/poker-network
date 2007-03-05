@@ -1,10 +1,14 @@
-2007-03-05  Johan Euphrosine  <proppy@johan-euphrosines-computer.local>
+2007-05-05  Johan Euphrosine  <proppy@aminche.com>
 
-	* card hide/show refactor
-	* card animation
-	* player arrive packet handling
+	*  added player name and money display
 
-2007-03-01  Johan Euphrosine  <proppy@proppy-desktop>
+2007-03-03  Johan Euphrosine  <proppy@aminche.com>
+
+	*  card hide/show refactor
+	*  card animation
+	*  player arrive packet handling
+
+2007-03-01  Johan Euphrosine  <proppy@aminche.com>
 
 	*  added layer for layout and fixed card position
 
