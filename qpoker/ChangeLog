@@ -1,3 +1,9 @@
+2007-03-05  Johan Euphrosine  <proppy@johan-euphrosines-computer.local>
+
+	* card hide/show refactor
+	* card animation
+	* player arrive packet handling
+
 2007-03-01  Johan Euphrosine  <proppy@proppy-desktop>
 
 	*  added layer for layout and fixed card position
