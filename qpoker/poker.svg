@@ -20,7 +20,40 @@
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    sodipodi:modified="true">
   <defs
-     id="defs16" />
+     id="defs16">
+    <filter
+       inkscape:collect="always"
+       x="-0.51579569"
+       width="2.0315914"
+       y="-0.51717318"
+       height="2.0343464"
+       id="filter3761">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="21.952923"
+         id="feGaussianBlur3763" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       x="-0.099866826"
+       width="1.1997337"
+       y="-0.10013353"
+       height="1.2002671"
+       id="filter4114">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="4.2504595"
+         id="feGaussianBlur4116" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter4118">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.8500919"
+         id="feGaussianBlur4120" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -31,11 +64,11 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.254346"
-     inkscape:cx="410.71185"
-     inkscape:cy="220.29654"
+     inkscape:zoom="3.5478262"
+     inkscape:cx="92.254927"
+     inkscape:cy="521.55313"
      inkscape:document-units="px"
-     inkscape:current-layer="layer_game"
+     inkscape:current-layer="layer_seat_inposition"
      width="800px"
      height="600px"
      showgrid="true"
@@ -119,6 +152,45 @@
   </g>
   <g
      inkscape:groupmode="layer"
+     id="layer_seat_inposition"
+     inkscape:label="seat_inposition"
+     style="display:inline">
+    <g
+       style="display:inline"
+       id="seat_inposition"
+       transform="translate(-0.122551,0)">
+      <rect
+         style="opacity:0.46700003;fill:#360000;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1"
+         id="seat_inposition_background"
+         width="85.122551"
+         height="84.895828"
+         x="0"
+         y="0"
+         rx="2.4123471"
+         ry="2.5238502"
+         inkscape:label="#seat_inposition_background" />
+      <use
+         style="display:inline"
+         x="0"
+         y="0"
+         xlink:href="#label"
+         id="seat_inposition_name"
+         transform="translate(10,40)"
+         width="800"
+         height="600" />
+      <use
+         style="display:inline"
+         x="0"
+         y="0"
+         xlink:href="#label"
+         id="seat_inposition_money"
+         transform="translate(10,61.612646)"
+         width="800"
+         height="600" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
      id="layer_seat"
      inkscape:label="seat"
      style="display:none">
@@ -133,7 +205,7 @@
          height="84.895828"
          width="85.122551"
          id="seat_background"
-         style="opacity:0.467033;fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:0.46700003;fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.04299998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:24.344, 12.172;stroke-dashoffset:0;stroke-opacity:1" />
       <use
          height="600"
          width="800"
@@ -158,7 +230,7 @@
      inkscape:groupmode="layer"
      id="layer_game"
      inkscape:label="game"
-     style="display:inline">
+     style="display:none">
     <use
        style="display:inline"
        x="0"
