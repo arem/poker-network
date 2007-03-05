@@ -37,7 +37,7 @@ class DummyPokerDisplay(PokerDisplay):
             del self.serial2seat[packet.serial]
             self.widget.renderPlayerLeave(packet.seat)
         elif packet.type == PACKET_POKER_PLAYER_CHIPS:
-            self.widget.renderPlayerChips(self.serial2seat[packet.serial], packet.money)
+            self.widget.renderPlayerChips(self.serial2seat[packet.serial], packet.money, packet.bet)
             
 class DummyPokerRenderer(PokerRenderer):
     def __init__(self, *args, **kwargs):

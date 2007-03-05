@@ -52,10 +52,15 @@ class QPokerWidgetTestCase(unittest.TestCase):
         self.assertEquals('', self.widget.names[0].text())
         self.assertEquals(False, self.widget.names[0].isVisible())
         self.assertEquals(False, self.widget.moneys[0].isVisible())
+        self.assertEquals(False, self.widget.bets[0].isVisible())
     def testRenderPlayerChips(self):
-        self.widget.renderPlayerChips(0, 10000)
+        self.widget.renderPlayerChips(0, 10000, 100)
         self.assertEquals('10000', self.widget.moneys[0].text())
         self.assertEquals(True, self.widget.moneys[0].isVisible())
+        self.assertEquals('100', self.widget.bets[0].text())
+        self.assertEquals(True, self.widget.bets[0].isVisible())
+        self.widget.renderPlayerChips(0, 10000, 0)
+        self.assertEquals(False, self.widget.bets[0].isVisible())
     def testKeyPressEventZoomIn(self):
         matrix = self.widget.view.matrix()
         matrix.scale(1.1, 1.1)
