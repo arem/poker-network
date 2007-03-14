@@ -8,7 +8,7 @@ from pokernetwork.pokernetworkconfig import Config
 from pokerui.pokerdisplay import PokerDisplay
 from pokerui.pokerrenderer import PokerRenderer
 from pokerui.pokerinterface import PokerInterface
-from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS, PACKET_POKER_POSITION
+from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS, PACKET_POKER_POSITION, PacketPokerSeat
 from pokernetwork.pokerclientpackets import PACKET_POKER_POT_CHIPS, PACKET_POKER_CHIPS_POT_RESET
 from pokerengine.pokerchips import PokerChips
 from qpokerwidget import QPokerWidget
@@ -18,8 +18,14 @@ class DummyPokerDisplay(PokerDisplay):
     def __init__(self, *args, **kwargs):
         PokerDisplay.__init__(self, *args, **kwargs)
         self.widget = QPokerWidget()
+        self.widget.seatClicked = lambda seat: self.seatClicked(seat)
         self.widget.show()
         self.serial2seat = {}
+    def seatClicked(self, seat):
+        protocol = self.protocol
+        self.renderer.getSeat(PacketPokerSeat(game_id = protocol.getCurrentGameId(),
+                                              serial = protocol.getSerial(),
+                                              seat = seat))
     def render(self, packet):
         print "PokerDisplay2D::render: " + str(packet)
         if packet.type == PACKET_POKER_CHAT:

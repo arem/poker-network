@@ -31,6 +31,12 @@ class AnimatedGraphicsSvgItem(QGraphicsSvgItem):
         self.timeline.start()
         QGraphicsSvgItem.show(self)
 
+class SeatItem(QGraphicsSvgItem):
+    event = lambda: None
+    def mousePressEvent(self, event):
+        callback = self.event
+        callback()
+        
 class QPokerWidget(QWidget):
     def __init__(self, parent = None):
         QWidget.__init__(self, parent)
@@ -58,7 +64,11 @@ class QPokerWidget(QWidget):
         self.moneys = []
         self.bets = []
         for i in range(10):
-            seat = QGraphicsSvgItem()
+            seat = SeatItem()
+            def seatClickedEvent(seat = i):                
+                seatClickedCallback = self.seatClicked
+                seatClickedCallback(seat)
+            seat.event = seatClickedEvent
             seat.setSharedRenderer(self.renderer)
             seat.setElementId("seat")
             seat.setMatrix(self.renderer.matrixForElement("transform_seat%i" % i))
@@ -139,6 +149,7 @@ class QPokerWidget(QWidget):
             self.view.scale(1.1, 1.1)
         elif event.text() == "a":
             self.view.scale(0.9, 0.9)
+    seatClicked = lambda seat: None
 
 if __name__ == '__main__':
     class QInteractivePokerWidget(QPokerWidget):
@@ -149,8 +160,12 @@ if __name__ == '__main__':
             self.i = ((self.i) + 1) % 6
     app = QApplication(sys.argv)
     widget = QInteractivePokerWidget()
+
+    def seatClickedCallback(seat):
+        print seat
+    widget.seatClicked = seatClickedCallback
     for i in range(10):
         widget.renderPlayerArrive(i, "toto%i" % i)
-        widget.renderPlayerChips(i, "20000")
+        widget.renderPlayerChips(i, "20000", "100")
     widget.show()
     sys.exit(app.exec_())

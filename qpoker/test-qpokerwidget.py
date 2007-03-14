@@ -89,6 +89,13 @@ class QPokerWidgetTestCase(unittest.TestCase):
         matrix.scale(0.9, 0.9)
         self.widget.keyPressEvent(KeyPressEventMockup('a'))
         self.assertEquals(matrix, self.widget.view.matrix())
+    def testSeatClickedEvent(self):
+        self.seatClicked = None
+        def f(seat):
+            self.seatClicked = seat
+        self.widget.seatClicked = f
+        self.widget.seats[0].mousePressEvent(None)
+        self.assertEquals(0, self.seatClicked)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
