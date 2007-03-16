@@ -1,6 +1,6 @@
 import sys
 import unittest
-from PyQt4.QtGui import QApplication, QWidget, QGraphicsScene, QGraphicsView, QGraphicsSimpleTextItem, QGraphicsItemAnimation
+from PyQt4.QtGui import QApplication, QWidget, QGraphicsScene, QGraphicsView, QGraphicsSimpleTextItem, QGraphicsItemAnimation, QMatrix
 from PyQt4.QtCore import QTimeLine, QPointF
 from PyQt4.QtSvg import QGraphicsSvgItem, QSvgRenderer
 from PyQt4.QtOpenGL import QGLWidget, QGLFormat, QGL
@@ -13,8 +13,8 @@ def card2SvgElement(card):
     return (cardvalue2svg.has_key(card[0]) and cardvalue2svg[card[0]] or card[0]) + "_" + cardsuit2svg[card[1]]
 
 class AnimatedGraphicsSvgItem(QGraphicsSvgItem):
-    def __init__(self, file):
-        QGraphicsSvgItem.__init__(self, file)
+    def __init__(self, file, parent = None):
+        QGraphicsSvgItem.__init__(self, file, parent)
         self.animation = QGraphicsItemAnimation()
         self.animation.setItem(self)
         self.timeline = QTimeLine(300)
@@ -36,6 +36,12 @@ class SeatItem(QGraphicsSvgItem):
     def mousePressEvent(self, event):
         callback = self.event
         callback()
+
+class ActionItem(QGraphicsSimpleTextItem):
+    event = lambda: None
+    def mousePressEvent(self, event):
+        callback = self.event
+        callback()
         
 class QPokerWidget(QWidget):
     def __init__(self, parent = None):
@@ -51,10 +57,13 @@ class QPokerWidget(QWidget):
         self.scene.addItem(self.table)
         self.board = []
         for i in range(5):
-            card = AnimatedGraphicsSvgItem("svg-cards.svg")
+            card = AnimatedGraphicsSvgItem("svg-cards.svg", self.table)
             card.setElementId("back")
-            card.setMatrix(self.renderer.matrixForElement("transform_card%i" % i))
-            card.setFlag(QGraphicsSvgItem.ItemIsMovable, True)
+            parent = self.renderer.matrixForElement("transform_table")
+            child = self.renderer.matrixForElement("transform_card%i" % i)
+            cardMatrix = child.translate(-parent.dx(), -parent.dy())
+            card.setMatrix(cardMatrix)
+            #card.setFlag(QGraphicsSvgItem.ItemIsMovable, True)
             card.scale(0.5, 0.5)
             card.hide()
             self.scene.addItem(card)
@@ -95,6 +104,26 @@ class QPokerWidget(QWidget):
         self.view = QGraphicsView(self)
         self.view.setScene(self.scene)
         self.view.resize(800, 600)
+        self.fold = ActionItem()
+        self.fold.setText("fold")
+        self.fold.setPos(0, 550)
+        self.scene.addItem(self.fold)
+        self.fold.event = lambda: self.foldClicked()
+        self.check = ActionItem()
+        self.check.setText("check")
+        self.check.setPos(50, 550)
+        self.scene.addItem(self.check)
+        self.check.event = lambda: self.checkClicked()
+        self.call = ActionItem()
+        self.call.setText("call")
+        self.call.setPos(100, 550)
+        self.scene.addItem(self.call)
+        self.call.event = lambda: self.callClicked()
+        self.bet = ActionItem()
+        self.bet.setText("bet")
+        self.bet.setPos(150, 550)
+        self.scene.addItem(self.bet)
+        self.bet.event = lambda: self.betClicked()
     def renderChat(self, message):
         self.chat.setText(message)
     def renderBoard(self, cards):
@@ -150,6 +179,10 @@ class QPokerWidget(QWidget):
         elif event.text() == "a":
             self.view.scale(0.9, 0.9)
     seatClicked = lambda seat: None
+    foldClicked = lambda: None
+    checkClicked = lambda: None
+    callClicked = lambda: None
+    betClicked = lambda: None
 
 if __name__ == '__main__':
     class QInteractivePokerWidget(QPokerWidget):

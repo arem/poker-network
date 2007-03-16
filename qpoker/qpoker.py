@@ -8,7 +8,7 @@ from pokernetwork.pokernetworkconfig import Config
 from pokerui.pokerdisplay import PokerDisplay
 from pokerui.pokerrenderer import PokerRenderer
 from pokerui.pokerinterface import PokerInterface
-from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS, PACKET_POKER_POSITION, PacketPokerSeat
+from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS, PACKET_POKER_POSITION, PacketPokerSeat, PacketPokerFold, PacketPokerCheck, PacketPokerCall, PacketPokerRaise
 from pokernetwork.pokerclientpackets import PACKET_POKER_POT_CHIPS, PACKET_POKER_CHIPS_POT_RESET
 from pokerengine.pokerchips import PokerChips
 from qpokerwidget import QPokerWidget
@@ -19,6 +19,10 @@ class DummyPokerDisplay(PokerDisplay):
         PokerDisplay.__init__(self, *args, **kwargs)
         self.widget = QPokerWidget()
         self.widget.seatClicked = lambda seat: self.seatClicked(seat)
+        self.widget.foldClicked = lambda: self.foldClicked()
+        self.widget.checkClicked = lambda: self.checkClicked()
+        self.widget.callClicked = lambda: self.callClicked()
+        self.widget.betClicked = lambda: self.betClicked()
         self.widget.show()
         self.serial2seat = {}
     def seatClicked(self, seat):
@@ -26,6 +30,18 @@ class DummyPokerDisplay(PokerDisplay):
         self.renderer.getSeat(PacketPokerSeat(game_id = protocol.getCurrentGameId(),
                                               serial = protocol.getSerial(),
                                               seat = seat))
+    def foldClicked(self):
+        protocol = self.protocol
+        self.renderer.interactorSelected(PacketPokerFold(game_id = protocol.getCurrentGameId(), serial = protocol.getSerial()))            
+    def checkClicked(self):
+        protocol = self.protocol
+        self.renderer.interactorSelected(PacketPokerCheck(game_id = protocol.getCurrentGameId(), serial = protocol.getSerial()))
+    def callClicked(self):
+        protocol = self.protocol
+        self.renderer.interactorSelected(PacketPokerCall(game_id = protocol.getCurrentGameId(), serial = protocol.getSerial()))
+    def betClicked(self):
+        protocol = self.protocol
+        self.renderer.interactorSelected(PacketPokerRaise(game_id = protocol.getCurrentGameId(),serial = protocol.getSerial(), amount = 0))
     def render(self, packet):
         print "PokerDisplay2D::render: " + str(packet)
         if packet.type == PACKET_POKER_CHAT:
@@ -57,6 +73,7 @@ class DummyPokerDisplay(PokerDisplay):
                 self.widget.renderPositionReset()
             else:
                 self.widget.renderPosition(self.serial2seat[packet.serial])
+
 class DummyPokerRenderer(PokerRenderer):
     def __init__(self, *args, **kwargs):
         PokerRenderer.__init__(self, *args, **kwargs)
@@ -74,7 +91,9 @@ class DummyPokerInterface(PokerInterface):
         elif args[0] == "chat":
             pass
         elif args[0] == "buy_in":
-            pass
+            if args[1] == 'params':
+                (min, max) = args[2:4]
+                reactor.callLater(0, lambda: self.event("buy_in", max))
         elif args[0] == "sit_actions":
             pass
         elif args[0] == "cashier":
@@ -84,6 +103,8 @@ class DummyPokerInterface(PokerInterface):
         elif args[0] == "lobby":
             if args[1] == "info":
                 reactor.callLater(0, lambda: self.event("lobby", "join", "100"))
+        elif args[0] == "check_warning":
+            reactor.callLater(0, lambda: self.event("check_warning", "fold"))
         else:
             print "*ERROR* command not implemented"
             raise UserWarning
@@ -113,4 +134,3 @@ if __name__ == '__main__':
     client = DummyPokerClientFactory()
     reactor.connectTCP("poker-tst.pok3d.free.tld", 19380, client)
     reactor.run()
-

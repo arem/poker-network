@@ -96,6 +96,34 @@ class QPokerWidgetTestCase(unittest.TestCase):
         self.widget.seatClicked = f
         self.widget.seats[0].mousePressEvent(None)
         self.assertEquals(0, self.seatClicked)
+    def testFoldClickedEvent(self):
+        self.foldClicked = None
+        def f():
+            self.foldClicked = True
+        self.widget.foldClicked = f
+        self.widget.fold.mousePressEvent(None)
+        self.assertEquals(True, self.foldClicked)
+    def testCheckClickedEvent(self):
+        self.checkClicked = None
+        def f():
+            self.checkClicked = True
+        self.widget.checkClicked = f
+        self.widget.check.mousePressEvent(None)
+        self.assertEquals(True, self.checkClicked)
+    def testCallClickedEvent(self):
+        self.callClicked = None
+        def f():
+            self.callClicked = True
+        self.widget.callClicked = f
+        self.widget.call.mousePressEvent(None)
+        self.assertEquals(True, self.callClicked)
+    def testBetClickedEvent(self):
+        self.betClicked = None
+        def f():
+            self.betClicked = True
+        self.widget.betClicked = f
+        self.widget.bet.mousePressEvent(None)
+        self.assertEquals(True, self.betClicked)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
