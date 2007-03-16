@@ -136,11 +136,7 @@ class DummyPokerInterface(PokerInterface):
             raise UserWarning
         
 class DummyPokerClientFactory(PokerClientFactory):
-    def __init__(self):
-        settings = Config([''])
-        settings.load('poker2d-test.xml')
-        config = Config([''])
-        config.load('client.xml')
+    def __init__(self, settings, config):
         self.verbose = 5
         PokerClientFactory.__init__(self, settings = settings, config = config)
         self.display = DummyPokerDisplay(settings = settings,
@@ -156,6 +152,11 @@ class DummyPokerClientFactory(PokerClientFactory):
         return protocol
 
 if __name__ == '__main__':
-    client = DummyPokerClientFactory()
-    reactor.connectTCP("poker-tst.pok3d.free.tld", 19380, client)
+    settings = Config([''])
+    settings.load('qpoker.xml')
+    config = Config([''])
+    config.load('client.xml')
+    (host, port) = settings.headerGet("/settings/servers").split(" ")[0].split(":")
+    client = DummyPokerClientFactory(settings, config)
+    reactor.connectTCP(host, int(port), client)
     reactor.run()
