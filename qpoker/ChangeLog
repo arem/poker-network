@@ -1,5 +1,7 @@
 2007-03-16  Johan Euphrosine  <proppy@aminche.com>
 
+	* added debian packaging
+	* added distutils packaging
 	* packaging fix
 
 2007-03-15  Johan Euphrosine  <proppy@aminche.com>
