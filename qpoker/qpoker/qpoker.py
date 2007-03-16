@@ -38,7 +38,7 @@ from pokerui.pokerinterface import PokerInterface
 from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS, PACKET_POKER_POSITION, PacketPokerSeat, PacketPokerFold, PacketPokerCheck, PacketPokerCall, PacketPokerRaise
 from pokernetwork.pokerclientpackets import PACKET_POKER_POT_CHIPS, PACKET_POKER_CHIPS_POT_RESET
 from pokerengine.pokerchips import PokerChips
-from qpoker.qpokerwidget import QPokerWidget
+from qpokerwidget import QPokerWidget
 from PyQt4.QtGui import QApplication
 
 class DummyPokerDisplay(PokerDisplay):
