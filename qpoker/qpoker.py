@@ -130,7 +130,6 @@ class DummyPokerClientFactory(PokerClientFactory):
         return protocol
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
     client = DummyPokerClientFactory()
     reactor.connectTCP("poker-tst.pok3d.free.tld", 19380, client)
     reactor.run()
