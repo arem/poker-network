@@ -70,12 +70,12 @@ class ActionItem(QGraphicsSimpleTextItem):
         callback()
         
 class QPokerWidget(QWidget):
-    def __init__(self, parent = None):
+    def __init__(self, dataDir = "", parent = None):
         QWidget.__init__(self, parent)
-        self.renderer = QSvgRenderer("poker.svg")
+        self.renderer = QSvgRenderer(dataDir + "poker.svg")
         self.scene = QGraphicsScene()
         self.chat = QGraphicsSimpleTextItem()
-        self.table = QGraphicsSvgItem("poker.svg")
+        self.table = QGraphicsSvgItem(dataDir + "poker.svg")
         self.table.setSharedRenderer(self.renderer)
         self.table.setElementId("table")
         self.table.setMatrix(self.renderer.matrixForElement("transform_table"))
@@ -83,7 +83,7 @@ class QPokerWidget(QWidget):
         self.scene.addItem(self.table)
         self.board = []
         for i in range(5):
-            card = AnimatedGraphicsSvgItem("svg-cards.svg", self.table)
+            card = AnimatedGraphicsSvgItem(dataDir + "svg-cards.svg", self.table)
             card.setElementId("back")
             parent = self.renderer.matrixForElement("transform_table")
             child = self.renderer.matrixForElement("transform_card%i" % i)

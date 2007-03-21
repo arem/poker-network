@@ -32,6 +32,6 @@ setup(name='qpoker',
       platforms=['linux'],
       scripts=['bin/qpoker'],
       packages=['qpoker'],
-      data_files=[('share/qpoker', ['poker.svg', 'svg-cards.svg', 'client.xml']),
+      data_files=[('share/qpoker', ['poker.svg', 'svg-cards.svg', 'client.xml', 'qpoker.xml']),
                   ('share/man/man1', ['qpoker.1'])]
       )

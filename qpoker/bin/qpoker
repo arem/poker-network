@@ -28,4 +28,4 @@
 from qpoker import qpoker
 
 if __name__ == '__main__':
-   qpoker.run()
+   qpoker.run("/usr/share/qpoker/qpoker.xml", "/usr/share/qpoker/client.xml", "/usr/share/qpoker/")

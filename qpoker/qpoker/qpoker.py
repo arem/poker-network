@@ -44,7 +44,7 @@ from PyQt4.QtGui import QApplication
 class DummyPokerDisplay(PokerDisplay):
     def __init__(self, *args, **kwargs):
         PokerDisplay.__init__(self, *args, **kwargs)
-        self.widget = QPokerWidget()
+        self.widget = QPokerWidget(kwargs["dataDir"])
         self.widget.seatClicked = lambda seat: self.seatClicked(seat)
         self.widget.foldClicked = lambda: self.foldClicked()
         self.widget.checkClicked = lambda: self.checkClicked()
@@ -137,11 +137,12 @@ class DummyPokerInterface(PokerInterface):
             raise UserWarning
         
 class DummyPokerClientFactory(PokerClientFactory):
-    def __init__(self, settings, config):
+    def __init__(self, settings, config, dataDir):
         self.verbose = 5
         PokerClientFactory.__init__(self, settings = settings, config = config)
         self.display = DummyPokerDisplay(settings = settings,
                                          config = config,
+                                         dataDir = dataDir,
                                          factory = self)
         self.renderer = DummyPokerRenderer(self)
         self.interface = DummyPokerInterface()
@@ -152,15 +153,15 @@ class DummyPokerClientFactory(PokerClientFactory):
         self.renderer.setProtocol(protocol)
         return protocol
 
-def run():
-    settings = Config([''])
-    settings.load('qpoker.xml')
-    config = Config([''])
-    config.load('client.xml')
+def run(settingsFile, configFile, dataDir):
+    settings = Config([""])
+    settings.load(settingsFile)
+    config = Config([""])
+    config.load(configFile)
     (host, port) = settings.headerGet("/settings/servers").split(" ")[0].split(":")
-    client = DummyPokerClientFactory(settings, config)
+    client = DummyPokerClientFactory(settings, config, dataDir)
     reactor.connectTCP(host, int(port), client)
     reactor.run()
     
 if __name__ == '__main__':
-    run()
+    run("qpoker.xml", "client.xml", "./")

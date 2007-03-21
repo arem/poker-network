@@ -1,3 +1,7 @@
+2007-03-21  Johan Euphrosine  <proppy@aminche.com>
+
+	* packaging fix: config and data dir
+
 2007-03-16  Johan Euphrosine  <proppy@aminche.com>
 
 	* added debian packaging
