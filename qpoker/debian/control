@@ -8,7 +8,7 @@ Standards-Version: 3.7.2
 
 Package: python-qpoker
 Architecture: any
-Depends: ${python:Depends}, python-qt4 (>= 4.1), libqt4-gui (>= 4.1)
+Depends: ${python:Depends}, python-qt4 (>= 4.1), python-poker-network (>= 1.0.32)
 Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
 Description: qpoker display the poker table in cute (Qt) way, by extensive use of animation and scalable vector graphics.

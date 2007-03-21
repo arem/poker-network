@@ -29,7 +29,6 @@ import unittest
 from PyQt4.QtGui import QApplication, QWidget, QGraphicsScene, QGraphicsView, QGraphicsSimpleTextItem, QGraphicsItemAnimation, QMatrix
 from PyQt4.QtCore import QTimeLine, QPointF
 from PyQt4.QtSvg import QGraphicsSvgItem, QSvgRenderer
-from PyQt4.QtOpenGL import QGLWidget, QGLFormat, QGL
 
 def card2SvgElement(card):
     if card == None:
