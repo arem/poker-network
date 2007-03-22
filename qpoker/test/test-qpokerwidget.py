@@ -26,6 +26,8 @@
 
 import sys
 import unittest
+sys.path.insert(0, "qpoker")
+
 from qpokerwidget import QPokerWidget, card2SvgElement
 from PyQt4.QtGui import QApplication
 
