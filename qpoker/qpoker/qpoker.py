@@ -35,7 +35,7 @@ from pokernetwork.pokernetworkconfig import Config
 from pokerui.pokerdisplay import PokerDisplay
 from pokerui.pokerrenderer import PokerRenderer
 from pokerui.pokerinterface import PokerInterface
-from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS, PACKET_POKER_POSITION, PacketPokerSeat, PacketPokerFold, PacketPokerCheck, PacketPokerCall, PacketPokerRaise
+from pokernetwork.pokerpackets import PACKET_POKER_CHAT, PACKET_POKER_BOARD_CARDS, PACKET_POKER_START, PACKET_POKER_PLAYER_ARRIVE, PACKET_POKER_PLAYER_LEAVE, PACKET_POKER_PLAYER_CHIPS, PACKET_POKER_POSITION, PACKET_POKER_TABLE_LIST, PacketPokerSeat, PacketPokerFold, PacketPokerCheck, PacketPokerCall, PacketPokerRaise
 from pokernetwork.pokerclientpackets import PACKET_POKER_POT_CHIPS, PACKET_POKER_CHIPS_POT_RESET
 from pokerengine.pokerchips import PokerChips
 from qpokerwidget import QPokerWidget
@@ -104,9 +104,11 @@ class DummyPokerDisplay(PokerDisplay):
 class DummyPokerRenderer(PokerRenderer):
     def __init__(self, *args, **kwargs):
         PokerRenderer.__init__(self, *args, **kwargs)
+
 class DummyPokerInterface(PokerInterface):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, factory, *args, **kwargs):
         self.verbose = 5
+        self.factory = factory
         PokerInterface.__init__(self, *args, **kwargs)
     def command(self, *args):
         print "DummyPokerInterface.command %s" % str(args)
@@ -128,8 +130,17 @@ class DummyPokerInterface(PokerInterface):
         elif args[0] == "tournaments":
             pass
         elif args[0] == "lobby":
-            if args[1] == "info":
-                reactor.callLater(0, lambda: self.event("lobby", "join", "100"))
+            if args[1] == "holdem":
+                id, name = "100", "One"
+                if len(sys.argv) > 1:
+                    name = sys.argv[1]
+                    rows = args[3]
+                    ids = args[4:len(args):12]
+                    names = args[6:len(args):12]
+                    name2id = dict(zip(names, ids))
+                    if name2id.has_key(name):
+                        id = name2id[name]
+                reactor.callLater(0, lambda: self.event("lobby", "join", id))
         elif args[0] == "check_warning":
             reactor.callLater(0, lambda: self.event("check_warning", "fold"))
         else:
@@ -145,7 +156,7 @@ class DummyPokerClientFactory(PokerClientFactory):
                                          dataDir = dataDir,
                                          factory = self)
         self.renderer = DummyPokerRenderer(self)
-        self.interface = DummyPokerInterface()
+        self.interface = DummyPokerInterface(self)
         self.renderer.interfaceReady(self.interface)
     def buildProtocol(self, addr):
         protocol = PokerClientFactory.buildProtocol(self, addr)
