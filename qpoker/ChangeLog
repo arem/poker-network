@@ -1,3 +1,8 @@
+2007-03-22  Johan Euphrosine  <proppy@aminche.com>
+
+	* fixed test
+	* take table name as argument
+
 2007-03-21  Johan Euphrosine  <proppy@aminche.com>
 
 	* packaging fix: config and data dir
