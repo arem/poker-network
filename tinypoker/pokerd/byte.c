@@ -34,8 +34,6 @@
 
 #include "byte.h"
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
-
 /**
  *  struct byte_array *new_byte_array(int capacity)
  *

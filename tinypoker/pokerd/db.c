@@ -23,7 +23,7 @@
 #include "poker.h"
 #include "net.h"
 #include "conf.h"
-#include "auth.h"
+#include "pokerserv.h"
 
 #include <libdaemon/dlog.h>
 #include <mysql/mysql.h>

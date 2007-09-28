@@ -19,11 +19,11 @@
  */
 
 #include "db.h"
-#include "auth.h"
 #include "sig.h"
 #include "net.h"
 #include "byte.h"
 #include "poker.h"
+#include "pokerserv.h"
 #include "monitor.h"
 
 #include <libdaemon/dlog.h>
@@ -36,7 +36,80 @@
 #include <pthread.h>
 #include <sys/socket.h>
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
+/**
+ * Attempts to authenticate a user connected to the socket void_sd.
+ * If a read from void_sd doesn't yield a message of type JOIN_GAME or
+ * the authentication fails, the user is disconnected. If everything is
+ * ok, then the user stays connected and joins the games.
+ * @param void_sd the socket descriptor of the current player.
+ */
+void authenticate(void *void_sd) {
+	int type, sd;
+	char *username, *password;
+	struct byte_array *ba;
+
+	sd = *((int *)void_sd);
+	free(void_sd);
+
+	ba = read_message(sd,&type);
+
+	if (!ba || type != JOIN_GAME) {
+		if (ba) {
+			byte_array_destroy(ba);
+			ba = NULL;
+		}
+
+		/* don't worry if write_message fails   */
+		/* we are closing the connection anyway */
+		ba = new_byte_array(1);
+		write_message(sd,BADPASS,ba);
+		daemon_log(LOG_WARNING, "[SEND] BADPASS %s",username);
+		shutdown(sd, SHUT_RDWR); /* Disconnect the user */
+		close(sd);
+
+		monitor_dec();
+		pthread_exit(NULL);
+		return; /* we should never get here */
+	}
+
+	username = byte_array_read_string(ba);
+	password = byte_array_read_string(ba);
+	byte_array_destroy(ba);
+
+	ba = new_byte_array(1);
+
+	/* we have this lock so that the game thread doesn't get confused when 
+  	   it tries to select players from the database. This also blocks multiple
+	   concurrent login attempts from the same user */
+	pthread_mutex_lock(&auth_lock);
+
+	if (!db_auth(sd,username,password)) {
+		/* don't worry if write_message fails   */
+		/* we are closing the connection anyway */
+		write_message(sd,BADPASS,ba);
+		daemon_log(LOG_WARNING,"[SEND] BADPASS %s",username);
+		shutdown(sd, SHUT_RDWR);
+		close(sd);
+	} else {
+		write_message(sd,GOODPASS,ba);
+		daemon_log(LOG_INFO,"[SEND] GOODPASS %s",username);
+	}
+
+	byte_array_destroy(ba);
+
+	free(username);
+	free(password);
+
+	/* Don't unlock until after we send info msg so that poker playing thread
+	   doesn't write to the socket while we are writing the info msg */
+	pthread_mutex_unlock(&auth_lock);
+
+	/* thread ends here              */
+	/* another thread runs the games */
+	/* we just auth and add players  */
+	monitor_dec();
+	pthread_exit(NULL);
+}
 
 /**
  * main function for the poker server
