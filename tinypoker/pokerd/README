@@ -10,7 +10,6 @@ daemon.[c|h]		Daemonizes the server
 db.[c|h]		Database Access
 deck.[c|h]		Deck of Cards
 eval.[c|h]		Evaluates Hands to Find the Winner
-log.[c|h]		Logging Facility
 main.c			Main program
 Makefile		Makefile
 md5.[c|h]		MD5 Checksum Functions
@@ -22,7 +21,6 @@ pokerserv.[c|h]		Manage Network Connections
 README			This file
 rand.[c|h]		Random Number Generation
 sig.[c|h]		Singal Handlers
-time.[c|h]		Time and Data Functions
 
 docs/
  db-schema.dia		Diagram showing the database schema

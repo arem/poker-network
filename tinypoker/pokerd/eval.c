@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "log.h"
 #include "poker.h"
 #include "eval.h"
 #include "deck.h"
+#include <libdaemon/dlog.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -52,10 +52,7 @@ static void eval_init() {
 			card[0] = card2str(game_info.players[i].hole[0]);
 
 			if (StdDeck_stringToCard(card[0], &c) == 0) {
-				char buf[128];
-				bzero(buf,128);
-				snprintf(buf,127,"[EVAL] %s",strerror(errno));
-				logit(buf);
+				daemon_log(LOG_INFO,"[EVAL] %s",strerror(errno));
 				exit(1);
 			}
 
@@ -66,10 +63,7 @@ static void eval_init() {
 			card[1] = card2str(game_info.players[i].hole[1]);
 
 			if (StdDeck_stringToCard(card[1], &c) == 0) {
-				char buf[128];
-				bzero(buf,128);
-				snprintf(buf,127,"[EVAL] %s",strerror(errno));
-				logit(buf);
+				daemon_log(LOG_INFO,"[EVAL] %s",strerror(errno));
 				exit(1);
 			}
 
@@ -89,10 +83,7 @@ static void eval_init() {
 		x = card2str(game_info.board[i]);
 
 		if (StdDeck_stringToCard(x, &c) == 0) {
-			char buf[128];
-			bzero(buf,128);
-			snprintf(buf,127,"[EVAL] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_INFO,"[EVAL] %s",strerror(errno));
 			exit(1);
 		}
 

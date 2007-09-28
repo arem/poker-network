@@ -20,10 +20,10 @@
 
 #define _XOPEN_SOURCE 500
 
+#include <libdaemon/dlog.h>
 #include <pthread.h>
 #include <unistd.h>
 
-#include "log.h"
 #include "monitor.h"
 
 extern void pthread_yield();
@@ -73,7 +73,7 @@ void monitor_wait() {
 	while(1) {
 		pthread_mutex_lock(&mon_lock);
 
-		logit("[WAIT] Threads need to die");
+		daemon_log(LOG_INFO, "[WAIT] Threads need to die");
 
 		if (!cnt) {
 			/* Do NOT release lock; we don't want any more threads starting */

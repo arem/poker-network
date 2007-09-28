@@ -20,7 +20,8 @@
 
 #include "rand.h"
 #include "deck.h"
-#include "log.h"
+
+#include <libdaemon/dlog.h>
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
@@ -57,10 +58,7 @@ char *card2str(struct card *c) {
 	char *str;
 
 	if ((str = (char *) malloc(3)) == NULL) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[DECK] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[DECK] %s",strerror(errno));
 		exit(1);
 	}
 

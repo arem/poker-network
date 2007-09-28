@@ -20,10 +20,10 @@
 
 #include "poker.h"
 #include "db.h"
-#include "log.h"
 #include "net.h"
 #include "byte.h"
 
+#include <libdaemon/dlog.h>
 #include <strings.h>
 
 extern int snprintf(char *str, size_t size, const char *format, ...);
@@ -44,26 +44,17 @@ int passivesocket(int port) {
 	sin.sin_port        = (unsigned short)htons(port);
 
 	if ((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[SOCK] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 		exit(1);
 	}
     
 	if (bind(sd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[SOCK] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 		exit(1);
 	}
 
 	if (listen(sd, 64) < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[SOCK] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 		exit(1);
     	}
 
@@ -92,22 +83,16 @@ struct byte_array *read_message(int sd, int *type) {
 		poll(&p,1,15000); /* 15 second timeout */
 
 		if (p.revents != POLLIN) {
-			char buf[128];
 			errno = ENODATA;
 			db_player_kill(sd);
-			bzero(buf,128);
-			snprintf(buf,127,"[SOCK] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 			return NULL;
 		}
 
 
 		if (recv(sd,((char *)(type))+i,1,0) < 0) {
-			char buf[128];
 			db_player_kill(sd);
-			bzero(buf,128);
-			snprintf(buf,127,"[SOCK] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 			return NULL;
 		}
 	}
@@ -119,21 +104,15 @@ struct byte_array *read_message(int sd, int *type) {
 		poll(&p,1,10000); /* 10 second timeout */
 
 		if (p.revents != POLLIN) {
-			char buf[128];
 			errno = ENODATA;
 			db_player_kill(sd);
-			bzero(buf,128);
-			snprintf(buf,127,"[SOCK] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 			return NULL;
 		}
 
 		if (recv(sd,((char *)(&size))+i,1,0) < 0) {
-			char buf[128];
 			db_player_kill(sd);
-			bzero(buf,128);
-			snprintf(buf,127,"[SOCK] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 			return NULL;
 		}
 	}
@@ -142,7 +121,7 @@ struct byte_array *read_message(int sd, int *type) {
 
 	/* limit messages to 8k */
 	if (size > 8192) {
-		logit("[ERRR] EXTREMELY LONG MSG DISCARDED");
+		daemon_log(LOG_ERR,"[ERRR] EXTREMELY LONG MSG DISCARDED");
 		db_player_kill(sd);
 		return NULL;
 	}
@@ -150,10 +129,7 @@ struct byte_array *read_message(int sd, int *type) {
 	/* grab message data */
 	if (size > 0) {
 		if ((data = (char *) malloc(size)) == NULL) {
-			char buf[128];
-			bzero(buf,128);
-			snprintf(buf,127,"[SOCK] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 			exit(1);
 		}
 
@@ -161,23 +137,17 @@ struct byte_array *read_message(int sd, int *type) {
 			poll(&p,1,10000); /* 10 second timeout */
 
 			if (p.revents != POLLIN) {
-				char buf[128];
 				errno = ENODATA;
 				db_player_kill(sd);
-				bzero(buf,128);
-				snprintf(buf,127,"[SOCK] %s",strerror(errno));
-				logit(buf);
+				daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 				free(data);
 				return NULL;
 			}
 
 
 			if (recv(sd,data+i,1,0) < 0) {
-				char buf[128];
 				db_player_kill(sd);
-				bzero(buf,128);
-				snprintf(buf,127,"[SOCK] %s",strerror(errno));
-				logit(buf);
+				daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 				free(data);
 				return NULL;
 			}
@@ -226,32 +196,23 @@ void write_message(int sd, int type, struct byte_array *ba) {
 	size = htonl(ba->size);
 
 	if (send(sd, (char *)&type, 4, 0) < 0) {
-		char buf[128];
-		bzero(buf,128);
 		db_player_kill(sd);
-		snprintf(buf,127,"[SOCK] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR, "[SOCK] %s",strerror(errno));
 		free(data);
 		return;
 	}
 
 	if (send(sd, (char *)&size, 4, 0) < 0) {
-		char buf[128];
-		bzero(buf,128);
 		db_player_kill(sd);
-		snprintf(buf,127,"[SOCK] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 		free(data);
 		return;
 	}
 
 	if (ba->size > 0) {
 		if (send(sd, data, ba->size, 0) < 0) {
-			char buf[128];
-			bzero(buf,128);
 			db_player_kill(sd);
-			snprintf(buf,127,"[SOCK] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 			free(data);
 			return;
 		}

@@ -23,10 +23,10 @@
 #include "sig.h"
 #include "net.h"
 #include "byte.h"
-#include "log.h"
 #include "poker.h"
 #include "monitor.h"
 
+#include <libdaemon/dlog.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,10 +69,7 @@ int pokermain(int port) {
 	client_addr_len = sizeof(client_addr);
 
 	if ((master = passivesocket(port)) < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[SOCK] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 		exit(1);
 	}
 
@@ -84,10 +81,7 @@ int pokermain(int port) {
 	/* create a thread to play the game */
 	monitor_inc();
 	if (pthread_create(&tt2,&ta2,(void* (*) (void*))play, (void*)NULL) != 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[THRD] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[THRD] %s",strerror(errno));
 		monitor_dec();
 		exit(1);
 	}
@@ -105,13 +99,11 @@ int pokermain(int port) {
 		}
 
 		if ((slave = accept(master, (struct sockaddr*)&client_addr, &client_addr_len)) < 0) {
-			char buf[128];
-			if (errno == EINTR)
+			if (errno == EINTR) {
 				continue;
+			}
 
-			bzero(buf,128);
-			snprintf(buf,127,"[SOCK] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[SOCK] %s",strerror(errno));
 			exit(1);
 		}
 
@@ -122,10 +114,7 @@ int pokermain(int port) {
 
 		monitor_inc();
 		if (pthread_create(&tt,&ta,(void* (*) (void*))authenticate, (void*)slavep) != 0) {
-			char buf[128];
-			bzero(buf,128);
-			snprintf(buf,127,"[THRD] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_INFO,"[THRD] %s",strerror(errno));
 			monitor_dec();
 			exit(1);
 		}

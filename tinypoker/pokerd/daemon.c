@@ -18,8 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "log.h"
 #include "daemon.h"
+
+#include <libdaemon/dlog.h>
 #include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,24 +42,18 @@ void write_pid_file() {
 	snprintf(pid,15,"%d\n",getpid());
 
 	if ((fd = open("pid",O_WRONLY|O_TRUNC|O_CREAT,S_IRUSR|S_IWUSR)) < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[FILE] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[FILE] %s",strerror(errno));
+		return;
         }
 
 	if (write(fd,pid,strlen(pid)) < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[FILE] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[FILE] %s",strerror(errno));
+		return;
 	}
 
 	if (close(fd) < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[FILE] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[FILE] %s",strerror(errno));
+		return;
 	}
 }
 
@@ -75,30 +70,21 @@ void cd_working_dir() {
 	/* create a working directory if one doesn't exist */
 	if ((fd = stat("./working",&s)) == -1) {
 		if (mkdir("./working",S_IRWXU) < 0) {
-			char buf[128];
-			bzero(buf,128);
-			snprintf(buf,127,"[FILE] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[FILE] %s",strerror(errno));
 		}
 	} else if (fd < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[FILE] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[FILE] %s",strerror(errno));
 	}
 
 	/* check for pid file */
 	memset(&s,0,sizeof(struct stat));
 	if (stat("./working/pid",&s) < -1) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[FILE] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[FILE] %s",strerror(errno));
 	}
 
 	/* if pid has some data, then exit */
 	if (s.st_size > 0) {
-                logit("server already running!\n");
+                daemon_log(LOG_ERR, "server already running!");
                 exit(1);
         }
 
@@ -115,14 +101,9 @@ void cd_working_dir() {
 void daemonize() {
 
 	int fd, child_pid = fork();
-	char buf[129];
-	buf[128]='\0';
 
 	if (child_pid < 0) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[PROC] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[PROC] %s",strerror(errno));
 		exit(1);
 	} else if (child_pid > 0)
 		exit(0);

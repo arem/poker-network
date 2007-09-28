@@ -20,7 +20,7 @@ CC     = gcc
 CFLAGS = 
 INCLUDE= -I/usr/include/poker-eval -I/usr/include/mysql
 LIBDIR = -L/usr/lib -L/usr/lib32 -L/usr/lib64 -L/usr/lib/mysql -L/usr/lib32/mysql -L/usr/lib64/mysql
-LIBS   = -lpthread -lmysqlclient -lz -lcrypt -lnsl -lm -lgsl -lgslcblas -lpoker-eval -lssl
+LIBS   = -lpthread -lmysqlclient -lz -lcrypt -lnsl -lm -lgsl -lgslcblas -lpoker-eval -lssl -ldaemon
 
 LEX    = flex
 YACC   = bison
@@ -44,8 +44,8 @@ LEXSPEC  = config.l
 YACCSPEC = config.y
 
 SOURCES  = $(LEXSPEC:.l=.lex.c) $(YACCSPEC:.y=.y.tab.c) auth.c byte.c conf.c \
-	daemon.c db.c deck.c log.c main.c md5.c monitor.c net.c poker.c \
-	pokerserv.c rand.c sig.c time.c eval.c
+	daemon.c db.c deck.c main.c md5.c monitor.c net.c poker.c \
+	pokerserv.c rand.c sig.c eval.c
 
 all optimize main debug warn: $(YACCSPEC:.y=.y.tab.c) $(LEXSPEC:.l=.lex.c) $(SOURCES:.c=.o)
 	$(CC) $(LIBS) $(LIBDIR) $(INCLUDE) $(CFLAGS) -o $(BINARY) $(SOURCES:.c=.o)

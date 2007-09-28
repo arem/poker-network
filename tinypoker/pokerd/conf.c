@@ -18,8 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "log.h"
 #include "conf.h"
+
+#include <libdaemon/dlog.h>
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
@@ -53,13 +54,10 @@ void read_config() {
 	if (configfile[0]) {
 		yyin = fopen(configfile,"r");
 		if (!yyin) {
-			char buf[128];
-			bzero(buf,128);
-			snprintf(buf,127,"[CONF] %s",strerror(errno));
-			logit(buf);
+			daemon_log(LOG_ERR,"[CONF] %s",strerror(errno));
 			exit(1);
 		}
-		logit("[CONF] Parsing config file");
+		daemon_log(LOG_INFO,"[CONF] Parsing config file");
 		yyparse();
 		fclose(yyin);
 	} else {

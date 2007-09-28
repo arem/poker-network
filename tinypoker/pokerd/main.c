@@ -24,11 +24,12 @@
 #include "deck.h"
 #include "daemon.h"
 #include "sig.h"
-#include "log.h"
 #include "pokerserv.h"
 #include "rand.h"
+#include "main.h"
 #include "monitor.h"
 
+#include <libdaemon/dlog.h>
 #include <pthread.h>
 #include <string.h>
 #include <stdio.h>
@@ -40,7 +41,6 @@ extern int snprintf(char *str, size_t size, const char *format, ...);
 
 int main(int argc, char *argv[]) {
 	int option, option_index = 0;
-	char buf[128];
 	struct stat s;
 
 	static struct option long_options[] = {
@@ -61,6 +61,11 @@ int main(int argc, char *argv[]) {
 
 	memset(&s,0,sizeof(struct stat));
 	bzero(configfile,sizeof(configfile));
+
+	if (argc < 1 || !argv || !argv[0]) {
+		daemon_log(LOG_ERR, "Cannot determine program name from argv[0]");
+		return 1;
+	}
 
 	default_config(); /* configure with default settings */
 
@@ -155,34 +160,20 @@ int main(int argc, char *argv[]) {
 		cd_working_dir();
 	}
 
-	if (use_syslog)
-		openlog((argv[0] != NULL ? argv[0] : "pokerd"),LOG_PID,LOG_LOCAL6);
+	daemon_log_ident = daemon_ident_from_argv0(argv[0]);
+
+	if (use_syslog) {
+		daemon_log_use = DAEMON_LOG_SYSLOG;
+	}
 
 	/* Start up Message */
 
-	bzero(buf,128);
-	snprintf(buf,127,"[INFO] pokerd version %s Copyright (C) 2005, 2006 Thomas Cort",version);
-	logit(buf);
-
-	bzero(buf,128);
-	snprintf(buf,127,"[INFO] pokerd comes with ABSOLUTELY NO WARRANTY; for details");
-	logit(buf);
-
-	bzero(buf,128);
-	snprintf(buf,127,"[INFO] please read the GNU GPL (http://www.gnu.org/licenses/gpl.txt)");
-	logit(buf);
-
-	bzero(buf,128);
-	snprintf(buf,127,"[INFO] pokerd is free software, and you are welcome to redistribute");
-	logit(buf);
-
-	bzero(buf,128);
-	snprintf(buf,127,"[INFO] it under certain conditions; for details please read the");
-	logit(buf);
-
-	bzero(buf,128);
-	snprintf(buf,127,"[INFO] GNU General Public License (http://www.gnu.org/licenses/gpl.txt)");
-	logit(buf);
+	daemon_log(LOG_INFO,"[INFO] pokerd version %s Copyright (C) 2005, 2006, 2007 Thomas Cort",version);
+	daemon_log(LOG_INFO,"[INFO] pokerd comes with ABSOLUTELY NO WARRANTY; for details");
+	daemon_log(LOG_INFO,"[INFO] please read the GNU GPL (http://www.gnu.org/licenses/gpl.txt)");
+	daemon_log(LOG_INFO,"[INFO] pokerd is free software, and you are welcome to redistribute");
+	daemon_log(LOG_INFO,"[INFO] it under certain conditions; for details please read the");
+	daemon_log(LOG_INFO,"[INFO] GNU General Public License (http://www.gnu.org/licenses/gpl.txt)");
 
 
 	db_players_kill(); /* set all Sock Descs to zero in the database */

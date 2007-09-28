@@ -22,7 +22,7 @@
  * This file is loosely based upon, but not copied from ByteArray.c by VASTMIND.COM
  */
 
-#include "log.h"
+#include <libdaemon/dlog.h>
 
 #include <errno.h>
 #include <stdio.h>
@@ -44,18 +44,13 @@ extern int snprintf(char *str, size_t size, const char *format, ...);
 struct byte_array *new_byte_array(int capacity) {
 	struct byte_array *ba;
 
-	char buf[128];
-	bzero(buf,128);
-
 	if ((ba = (struct byte_array *) malloc(sizeof(struct byte_array))) == NULL) {
-		snprintf(buf,128,"[ERRR] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
 		exit(1);
 	}
 
 	if ((ba->data = (char *) malloc(sizeof(char)*capacity)) == NULL) {
-		snprintf(buf,128,"[ERRR] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
 		exit(1);
 	}
 
@@ -151,9 +146,6 @@ char *byte_array_read_string(struct byte_array *ba) {
 	struct byte_array *temp;
 	char *str, c;
 
-	char buf[128];
-	bzero(buf,128);
-
 	if (!ba)
 		return NULL;
 
@@ -185,8 +177,7 @@ char *byte_array_read_string(struct byte_array *ba) {
 	byte_array_append_bytes(temp, 1, &c);
 
 	if ((str = (char *) malloc(temp->size)) == NULL) {
-		snprintf(buf,128,"[ERRR] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
 		exit(1);
 	}
 
@@ -202,14 +193,10 @@ char *byte_array_read_string(struct byte_array *ba) {
  *  return all of the data
  */
 char *byte_array_get_bytes(struct byte_array *ba) {
-	char buf[128];
 	char *data;
 
-	bzero(buf,128);
-
 	if ((data = (char *)malloc(ba->size)) == NULL) {
-		snprintf(buf,128,"[ERRR] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
 		exit(1);
 	}
 

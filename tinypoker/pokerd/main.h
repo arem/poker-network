@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2007 Thomas Cort <code@member.fsf.org>
  *
  * This file is part of pokerd.
  *
@@ -18,16 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __LOG_H
-#define __LOG_H
-
-#include <stdio.h>
-#include <syslog.h>
+#ifndef __MAIN_H
+#define __MAIN_H
 
 int use_syslog;
-
-void open_logs();
-void logit(char *);
-void close_logs();
 
 #endif

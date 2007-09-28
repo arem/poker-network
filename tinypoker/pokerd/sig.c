@@ -18,8 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <libdaemon/dlog.h>
+
 #include "sig.h"
-#include "log.h"
 
 /**
  *  void got_signal(int)
@@ -29,13 +30,13 @@ void got_signal(int sig) {
 
 	switch (sig) {
 		case SIGKILL:
-			logit("[SGNL] SIGKILL");
+			daemon_log(LOG_INFO,"[SGNL] SIGKILL");
 			break;
 		case SIGQUIT:
-			logit("[SGNL] SIGQUIT");
+			daemon_log(LOG_INFO,"[SGNL] SIGQUIT");
 			break;
 		case SIGINT:
-			logit("[SGNL] SIGINT");
+			daemon_log(LOG_INFO,"[SGNL] SIGINT");
 			break;
 	}
 }

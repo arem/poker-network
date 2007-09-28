@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <libdaemon/dlog.h>
 #include <unistd.h>
 #include <string.h>
 #include <strings.h>
@@ -28,7 +29,6 @@
 #include "byte.h"
 #include "db.h"
 #include "poker.h"
-#include "log.h"
 #include "sig.h"
 #include "monitor.h"
 #include "deck.h"
@@ -44,8 +44,9 @@ extern int snprintf(char *str, size_t size, const char *format, ...);
  */
 int pot_size() {
 	int i, pot = 0;
-	for (i = 0; i < game_info.num_players; i++)
+	for (i = 0; i < game_info.num_players; i++) {
 		pot += game_info.players[i].amt_in;
+	}
 	return pot;
 }
 
@@ -120,7 +121,7 @@ void begin() {
 		if (done) return;
 	} while (game_info.num_players < 2);
 
-	logit("[SEND] START_NEW_GAME");
+	daemon_log(LOG_INFO,"[SEND] START_NEW_GAME");
 	for (i = 0; i < game_info.num_players; i++) {
 
 		if (game_info.players[i].sd != DISCONNECTED && game_info.players[i].sd != FD) {
@@ -197,12 +198,11 @@ void deal() {
 					byte_array_destroy(ba);
 
 					/* log the deal */
-					snprintf(buf, 128, "[SEND] HOLE_CARDS %s %c%c %c%c", game_info.players[i].username,
+					daemon_log(LOG_INFO, "[SEND] HOLE_CARDS %s %c%c %c%c", game_info.players[i].username,
 									game_info.players[i].hole[0]->rank,
 									game_info.players[i].hole[0]->suit,
 									game_info.players[i].hole[1]->rank,
 									game_info.players[i].hole[1]->suit);
-					logit(buf);
 				}
 			}
 		}
@@ -267,9 +267,6 @@ int all_even() {
 void bet() {
 	int i, betting_allowed = 3, action_on = 0, action, bet_amt;
 	struct byte_array *ba;
-	char buf[128];
-
-	bzero(buf,128);
 
 	/* Pay the blinds if needed */
 	if (game_info.stage == PREFLOP) {
@@ -336,8 +333,7 @@ void bet() {
 
 			write_message_all(NEXT_TO_ACT,ba);
 
-			snprintf(buf,127,"[SEND] NEXT_TO_ACT %s %d",game_info.players[action_on].username,action_on);
-			logit(buf);
+			daemon_log(LOG_INFO,"[SEND] NEXT_TO_ACT %s %d",game_info.players[action_on].username,action_on);
 
 			byte_array_destroy(ba);
 
@@ -355,8 +351,7 @@ void bet() {
 				write_message_all(FOLD,ba);
 				byte_array_destroy(ba);
 
-				snprintf(buf,127,"[SEND] FOLD %s",game_info.players[action_on].username);
-				logit(buf);
+				daemon_log(LOG_INFO,"[SEND] FOLD %s",game_info.players[action_on].username);
 
 			} else {
 
@@ -371,8 +366,7 @@ void bet() {
 						write_message_all(FOLD,ba);
 						byte_array_destroy(ba);
 
-						snprintf(buf,127,"[SEND] FOLD %s",game_info.players[action_on].username);
-						logit(buf);
+						daemon_log(LOG_INFO,"[SEND] FOLD %s",game_info.players[action_on].username);
 						break;
 
 					case CALL:
@@ -388,8 +382,7 @@ void bet() {
 						write_message_all(CALL,ba);
 						byte_array_destroy(ba);
 
-						snprintf(buf,127,"[SEND] CALL %s",game_info.players[action_on].username);
-						logit(buf);
+						daemon_log(LOG_INFO,"[SEND] CALL %s",game_info.players[action_on].username);
 						break;
 
 					case RAISE:
@@ -415,8 +408,7 @@ void bet() {
 							write_message_all(RAISE,ba);
 							byte_array_destroy(ba);
 
-							snprintf(buf,127,"[SEND] RAISE %s",game_info.players[action_on].username);
-							logit(buf);
+							daemon_log(LOG_INFO,"[SEND] RAISE %s",game_info.players[action_on].username);
 
 							betting_allowed--;
 
@@ -435,8 +427,7 @@ void bet() {
 							write_message_all(CALL,ba);
 							byte_array_destroy(ba);
 
-							snprintf(buf,127,"[SEND] CALL %s",game_info.players[action_on].username);
-							logit(buf);
+							daemon_log(LOG_INFO,"[SEND] CALL %s",game_info.players[action_on].username);
 
 						}
 						break;
@@ -445,8 +436,7 @@ void bet() {
 					default:
 						/* Invalid Message */
 
-						snprintf(buf,127,"[ERRR] Invalid Message %s",game_info.players[action_on].username);
-						logit(buf);
+						daemon_log(LOG_ERR,"[ERRR] Invalid Message %s",game_info.players[action_on].username);
 
 						byte_array_destroy(ba);
 						game_info.players[action_on].folded = FD;
@@ -457,8 +447,7 @@ void bet() {
 						write_message_all(FOLD,ba);
 						byte_array_destroy(ba);
 
-						snprintf(buf,127,"[SEND] FOLD %s",game_info.players[action_on].username);
-						logit(buf);
+						daemon_log(LOG_INFO,"[SEND] FOLD %s",game_info.players[action_on].username);
 
 						break;
 				} /* end switch */
@@ -482,7 +471,6 @@ void bet() {
 void flop() {
 	char buf[128];
 	struct byte_array *ba;
-
 	bzero(buf,128);
 
 	game_info.stage = FLOP;
@@ -510,12 +498,11 @@ void flop() {
 	write_message_all(NEW_STAGE,ba);
 	byte_array_destroy(ba);
 
-	snprintf(buf,128,"[SEND] NEW_STAGE FLOP %c%c %c%c %c%c",
+	daemon_log(LOG_INFO,"[SEND] NEW_STAGE FLOP %c%c %c%c %c%c",
 		game_info.board[0]->rank,game_info.board[0]->suit,
 		game_info.board[1]->rank,game_info.board[1]->suit,
 		game_info.board[2]->rank,game_info.board[2]->suit
 	);
-	logit(buf);
 
 }
 
@@ -550,14 +537,12 @@ void turn() {
 	write_message_all(NEW_STAGE,ba);
 	byte_array_destroy(ba);
 
-	snprintf(buf,128,"[SEND] NEW_STAGE TURN %c%c %c%c %c%c %c%c",
+	daemon_log(LOG_INFO,"[SEND] NEW_STAGE TURN %c%c %c%c %c%c %c%c",
 		game_info.board[0]->rank,game_info.board[0]->suit,
 		game_info.board[1]->rank,game_info.board[1]->suit,
 		game_info.board[2]->rank,game_info.board[2]->suit,
 		game_info.board[3]->rank,game_info.board[3]->suit
 	);
-
-	logit(buf);
 }
 
 /**
@@ -592,7 +577,7 @@ void river() {
 	write_message_all(NEW_STAGE,ba);
 	byte_array_destroy(ba);
 
-	snprintf(buf,128,"[SEND] NEW_STAGE RIVER %c%c %c%c %c%c %c%c %c%c",
+	daemon_log(LOG_INFO,"[SEND] NEW_STAGE RIVER %c%c %c%c %c%c %c%c %c%c",
 		game_info.board[0]->rank,game_info.board[0]->suit,
 		game_info.board[1]->rank,game_info.board[1]->suit,
 		game_info.board[2]->rank,game_info.board[2]->suit,
@@ -600,7 +585,6 @@ void river() {
 		game_info.board[4]->rank,game_info.board[4]->suit
 	);
 
-	logit(buf);
 }
 
 /**
@@ -632,8 +616,7 @@ void showdown() {
 			write_message_all(HOLE_CARDS,ba);
 			byte_array_destroy(ba);
 
-			snprintf(buf,127,"[SEND] HOLE_CARDS %d %s",i,cards);
-			logit(buf);
+			daemon_log(LOG_INFO,"[SEND] HOLE_CARDS %d %s",i,cards);
 		}
 	}
 
@@ -648,9 +631,6 @@ void showdown() {
 void winners() {
 	int i, pot;
 	struct byte_array *ba;
-	char buf[128];
-
-	bzero(buf,128);
 
 	pot = pot_size();
 
@@ -669,8 +649,7 @@ void winners() {
 	ba = new_byte_array(40);
 	byte_array_append_int(ba, game_info.winners);
 
-	snprintf(buf,50,"[SEND] WINNERS %d",game_info.winners);
-	logit(buf);
+	daemon_log(LOG_INFO,"[SEND] WINNERS %d",game_info.winners);
 
 	if (game_info.winners == 1) {
 		/* if 1 winner, then we don't have to divide the pot */
@@ -682,9 +661,7 @@ void winners() {
 
 				game_info.players[i].bankroll += pot;
 
-				bzero(buf,128);
-				snprintf(buf,128,"[SEND] WINNERS %s %d",game_info.players[i].username,pot);
-				logit(buf);
+				daemon_log(LOG_INFO,"[SEND] WINNERS %s %d",game_info.players[i].username,pot);
 				break;
 			}
 		}
@@ -699,9 +676,7 @@ void winners() {
 
 					game_info.players[i].bankroll += pot/game_info.winners;
 
-					bzero(buf,128);
-					snprintf(buf,128,"[SEND] WINNERS %s %d",game_info.players[i].username,pot/game_info.winners);
-					logit(buf);
+					daemon_log(LOG_INFO,"[SEND] WINNERS %s %d",game_info.players[i].username,pot/game_info.winners);
 				}
 			}
 		} else {
@@ -719,10 +694,7 @@ void winners() {
 
 					extra = 0; /* only one player (the 1st player) gets extra */
 
-                                        bzero(buf,128);
-                                        snprintf(buf,128,"[SEND] WINNERS %s %d",game_info.players[i].username,pot/game_info.winners+extra);
-                                        logit(buf);
-
+                                        daemon_log(LOG_INFO,"[SEND] WINNERS %s %d",game_info.players[i].username,pot/game_info.winners+extra);
 				}
 			}
 		}

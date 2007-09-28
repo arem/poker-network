@@ -62,10 +62,11 @@ To compile this program you need the following libraries installed:
 
 The libraries should be provided by the following packages or the
 following package's dependencies:
-	OpenSSL                (openssl.org) (BSD-style License)
-	GNU Scientific Library (gnu.org/software/gsl)  (GNU GPL)
-	poker-eval             (pokersource.sf.net)    (GNU GPL)
-	MySQL                  (mysql.org)             (GNU GPL)
+	OpenSSL                (openssl.org)                   (BSD-style License)
+	GNU Scientific Library (gnu.org/software/gsl)                   (GNU  GPL)
+	poker-eval             (pokersource.sf.net)                     (GNU  GPL)
+	MySQL                  (mysql.org)                              (GNU  GPL)
+	libdaemon              (0pointer.de/lennart/projects/libdaemon) (GNU LGPL)
 
 To compile this program you need the following tools installed:
 	make, gcc, bison, flex

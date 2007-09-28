@@ -19,8 +19,8 @@
  */
 
 #include "md5.h"
-#include "log.h"
 
+#include <libdaemon/dlog.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,18 +43,12 @@ char *md5str(char *str) {
 	int i;
 
 	if ((md = (unsigned char *) malloc(16)) == NULL) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[MD5S] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[MD5S] %s",strerror(errno));
 		exit(1);
 	}
 
 	if ((result = (char *) malloc(33)) == NULL) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[MD5S] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_ERR,"[MD5S] %s",strerror(errno));
 		exit(1);
 	}
 
@@ -63,8 +57,9 @@ char *md5str(char *str) {
 	MD5_Final(md, &c);
 
 	/* convert message digest to C string */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < 16; i++) {
 		snprintf(result+(i*2),3,"%.2x",md[i]);
+	}
 
 	free(md);
 	return result;

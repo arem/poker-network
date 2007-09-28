@@ -23,9 +23,9 @@
 #include "poker.h"
 #include "net.h"
 #include "conf.h"
-#include "log.h"
 #include "auth.h"
 
+#include <libdaemon/dlog.h>
 #include <mysql/mysql.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,11 +55,11 @@ void db_connect() {
 
 	/* connect */
 	if (!mysql_real_connect(db,dbhostname,dbusername,dbpassword,dbdatabase,0,NULL,CLIENT_INTERACTIVE)) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *) mysql_error(db));
 		exit(1);
 	}
 
-	logit("[DBDB] Connected");
+	daemon_log(LOG_INFO,"[DBDB] Connected");
 }
 
 /**
@@ -90,7 +90,7 @@ int db_auth(int sd, char* username, char* password) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	res = mysql_store_result(db);
@@ -109,7 +109,7 @@ int db_auth(int sd, char* username, char* password) {
 			snprintf(query,255,"UPDATE users SET sd = %d WHERE username LIKE '%s'",sd,safe_username);
 			db_connect();
 			if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-				logit((char *)mysql_error(db));
+				daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 				exit(1);
 			}
 			db_disconnect();
@@ -149,7 +149,7 @@ void db_add_players() {
 	db_connect();
 
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		pthread_mutex_unlock(&auth_lock);
 		exit(1);
 	}
@@ -195,7 +195,7 @@ void db_add_players() {
 	db_connect();
 
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		pthread_mutex_unlock(&auth_lock);
 		exit(1);
 	}
@@ -227,7 +227,7 @@ void db_store_bankroll(char *username, int bankroll) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -247,7 +247,7 @@ void db_store_last_game(char *username) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -266,7 +266,7 @@ void db_player_kill(int sd) {
 	snprintf(query,255,"UPDATE users SET sd = 0 WHERE sd = %d",sd);
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -293,7 +293,7 @@ void db_player_kill(int sd) {
 		}
 	}
 
-	logit(query);
+	daemon_log(LOG_INFO, "[DBDB] %s", query);
 	shutdown(sd,SHUT_RDWR);
 	close(sd);
 }
@@ -312,7 +312,7 @@ void db_inc_games_played() {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -332,7 +332,7 @@ void db_inc_wins(char *username) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -352,7 +352,7 @@ void db_inc_ties(char *username) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -372,7 +372,7 @@ void db_inc_loses(char *username) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -392,7 +392,7 @@ void db_inc_folds(char *username) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -412,7 +412,7 @@ void db_inc_user_games_played(char *username) {
 
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -436,7 +436,7 @@ int db_get_games_played() {
 
 	db_connect();		
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 
@@ -464,7 +464,7 @@ void db_players_kill() {
 	snprintf(query,255,"UPDATE users SET sd = 0");
 	db_connect();
 	if (mysql_real_query(db,query,(unsigned int) strlen(query))) {
-		logit((char *)mysql_error(db));
+		daemon_log(LOG_ERR, "[DBDB] %s", (char *)mysql_error(db));
 		exit(1);
 	}
 	db_disconnect();
@@ -478,6 +478,6 @@ void db_players_kill() {
 void db_disconnect() {
 	mysql_close(db);
 	free(db);
-	logit("[DBDB] Disconnected");
+	daemon_log(LOG_INFO, "[DBDB] Disconnected");
 	pthread_mutex_unlock(&db_lock);
 }

@@ -23,9 +23,18 @@
 
 #include <pthread.h>
 
-/* used to block against multiple logins */
+/**
+ * used to block against multiple concurrent login attempts.
+ */
 pthread_mutex_t auth_lock;
 
+/**
+ * Attempts to authenticate a user connected to the socket void_sd.
+ * If a read from void_sd doesn't yield a message of type JOIN_GAME or
+ * the authentication fails, the user is disconnected. If everything is
+ * ok, then the user stays connected and joins the games.
+ * @param void_sd the socket descriptor of the current player.
+ */
 void authenticate(void *void_sd);
 
 #endif

@@ -23,9 +23,9 @@
 #include "net.h"
 #include "db.h"
 #include "poker.h"
-#include "log.h"
 #include "monitor.h"
 
+#include <libdaemon/dlog.h>
 #include <string.h>
 #include <strings.h>
 #include <stdio.h>
@@ -34,23 +34,40 @@
 
 int snprintf(char *str, size_t size, const char *format, ...);
 
+/**
+ * Attempts to authenticate a user connected to the socket void_sd.
+ * If a read from void_sd doesn't yield a message of type JOIN_GAME or
+ * the authentication fails, the user is disconnected. If everything is
+ * ok, then the user stays connected and joins the games.
+ * @param void_sd the socket descriptor of the current player.
+ */
 void authenticate(void *void_sd) {
 	int type, sd;
 	char *username, *password;
 	struct byte_array *ba;
-	char logstr[256];
 
 	sd = *((int *)void_sd);
 	free(void_sd);
 
-	bzero(logstr,256);
-
 	ba = read_message(sd,&type);
 
-	if (!ba) {
-		/* no need to destroy ba; it is NULL */
+	if (!ba || type != JOIN_GAME) {
+		if (ba) {
+			byte_array_destroy(ba);
+			ba = NULL;
+		}
+
+		/* don't worry if write_message fails   */
+		/* we are closing the connection anyway */
+		ba = new_byte_array(1);
+		write_message(sd,BADPASS,ba);
+		daemon_log(LOG_WARNING, "[SEND] BADPASS %s",username);
+		shutdown(sd, SHUT_RDWR); /* Disconnect the user */
+		close(sd);
+
 		monitor_dec();
-		return;
+		pthread_exit(NULL);
+		return; /* we should never get here */
 	}
 
 	username = byte_array_read_string(ba);
@@ -61,24 +78,22 @@ void authenticate(void *void_sd) {
 
 	/* we have this lock so that the game thread doesn't get confused when 
   	   it tries to select players from the database. This also blocks multiple
-	   login attempts from the same user  */
+	   concurrent login attempts from the same user */
 	pthread_mutex_lock(&auth_lock);
 
 	if (!db_auth(sd,username,password)) {
 		/* don't worry if write_message fails   */
 		/* we are closing the connection anyway */
 		write_message(sd,BADPASS,ba);
-		snprintf(logstr,255,"[SEND] BADPASS %s",username);
+		daemon_log(LOG_WARNING,"[SEND] BADPASS %s",username);
 		shutdown(sd, SHUT_RDWR);
 		close(sd);
 	} else {
 		write_message(sd,GOODPASS,ba);
-		snprintf(logstr,255,"[SEND] GOODPASS %s",username);
+		daemon_log(LOG_INFO,"[SEND] GOODPASS %s",username);
 	}
 
 	byte_array_destroy(ba);
-
-	logit(logstr);
 
 	free(username);
 	free(password);

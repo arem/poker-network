@@ -19,15 +19,18 @@
  */
 
 #include "rand.h"
-#include "log.h"
 
+#include <libdaemon/dlog.h>
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
 #include <stdio.h>
 #include <gsl/gsl_rng.h>
 
-gsl_rng *r;  /* random number generator */
+/**
+ * random number generator
+ */
+gsl_rng *r;
 
 extern int snprintf(char *str, size_t size, const char *format, ...);
 
@@ -44,10 +47,7 @@ void rand_init() {
 	T = gsl_rng_ranlux;
 
 	if ((r = gsl_rng_alloc(T)) == NULL) {
-		char buf[128];
-		bzero(buf,128);
-		snprintf(buf,127,"[RAND] %s",strerror(errno));
-		logit(buf);
+		daemon_log(LOG_INFO,"[RAND] %s",strerror(errno));
 		exit(1);
 	}
 }

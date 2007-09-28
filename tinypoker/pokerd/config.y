@@ -20,22 +20,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <libdaemon/dlog.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
 #include "conf.h"
-#include "log.h"
+#include "main.h"
 
 extern int yylex (void);
 extern int snprintf(char *str, size_t size, const char *format, ...);
 
 void yyerror (char* str) {
-	char logstr[256];
-	bzero(logstr,256);
-	snprintf(logstr,255,"configfile: %s on line %d\n",str,lineno);
-	logit(logstr);
+	daemon_log(LOG_ERR,"configfile: %s on line %d\n",str,lineno);
 	exit(1);
 }
 
