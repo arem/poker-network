@@ -31,11 +31,7 @@
 #include <poker-eval/poker_defs.h>
 #include <poker-eval/inlines/eval.h>
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
-
-
 /* this code is based on an example program that came with the poker-eval package */
-
 
 int gNCommon, gNDead, gNPlayers;
 CardMask gDeadCards, gCommonCards, gPlayerCards[MAX_PLAYERS];

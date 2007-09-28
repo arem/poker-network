@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "md5.h"
 #include "db.h"
 #include "poker.h"
 #include "net.h"
@@ -31,10 +30,47 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-
-int snprintf(char *str, size_t size, const char *format, ...);
+#include <errno.h>
+#include <unistd.h>
+#include <openssl/md5.h>
 
 MYSQL *db;
+
+extern int snprintf(char *str, size_t size, const char *format, ...);
+
+/**
+ *  char *md5str(char *str)
+ *
+ *  computes md5 digest for a given string
+ */
+char *md5str(char *str) {
+	unsigned char *md;
+	char *result;
+	MD5_CTX c;
+	int i;
+
+	if ((md = (unsigned char *) malloc(16)) == NULL) {
+		daemon_log(LOG_ERR,"[MD5S] %s",strerror(errno));
+		exit(1);
+	}
+
+	if ((result = (char *) malloc(33)) == NULL) {
+		daemon_log(LOG_ERR,"[MD5S] %s",strerror(errno));
+		exit(1);
+	}
+
+	MD5_Init(&c);
+	MD5_Update(&c, str, strlen(str));
+	MD5_Final(md, &c);
+
+	/* convert message digest to C string */
+	for (i = 0; i < 16; i++) {
+		snprintf(result+(i*2),3,"%.2x",md[i]);
+	}
+
+	free(md);
+	return result;
+}
 
 /**
  *  void db_connect()

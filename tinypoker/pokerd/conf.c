@@ -29,7 +29,6 @@
 #include <stdio.h>
 
 extern int yyparse();
-extern int snprintf(char *str, size_t size, const char *format, ...);
 
 void default_config() {
 	strcpy(dbusername,"pokerd");

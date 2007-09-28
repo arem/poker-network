@@ -26,8 +26,6 @@
 #include <libdaemon/dlog.h>
 #include <strings.h>
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
-
 /**
  *  int passivesocket(int port)
  *

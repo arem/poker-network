@@ -32,8 +32,6 @@
  */
 gsl_rng *r;
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
-
 /**
  *  void rand_init()
  *

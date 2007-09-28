@@ -1,6 +1,5 @@
 Files
 =====
-auth.[c|h]		User authentication
 byte.[c|h]		Byte Array Functions
 ChangeLog               Lists changes between versions
 COPYING			GNU GPL version 2 or later
@@ -12,7 +11,6 @@ deck.[c|h]		Deck of Cards
 eval.[c|h]		Evaluates Hands to Find the Winner
 main.c			Main program
 Makefile		Makefile
-md5.[c|h]		MD5 Checksum Functions
 monitor.[c|h]		Thread Monitor
 net.[c|h]		Re-usable Network Operations
 poker.[c|h]		Game Logic

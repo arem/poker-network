@@ -37,8 +37,6 @@
 #include <syslog.h>
 #include <strings.h>
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
-
 int main(int argc, char *argv[]) {
 	int option, option_index = 0;
 	struct stat s;

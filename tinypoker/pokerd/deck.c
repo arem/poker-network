@@ -30,8 +30,6 @@
 #include <unistd.h>
 #include <stdio.h>
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
-
 struct card deck[52];
 
 int deck_index;

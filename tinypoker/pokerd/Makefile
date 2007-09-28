@@ -44,7 +44,7 @@ LEXSPEC  = config.l
 YACCSPEC = config.y
 
 SOURCES  = $(LEXSPEC:.l=.lex.c) $(YACCSPEC:.y=.y.tab.c) byte.c conf.c \
-	daemon.c db.c deck.c main.c md5.c monitor.c net.c poker.c \
+	daemon.c db.c deck.c main.c monitor.c net.c poker.c \
 	pokerserv.c rand.c sig.c eval.c
 
 all optimize main debug warn: $(YACCSPEC:.y=.y.tab.c) $(LEXSPEC:.l=.lex.c) $(SOURCES:.c=.o)
