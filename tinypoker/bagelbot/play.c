@@ -1,6 +1,6 @@
 /*
  * BagelBot - Trivial client for pokerd
- * Copyright (C) 2005, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <libdaemon/dlog.h>
+#include <strings.h>
+
 #include "play.h"
 #include "byte.h"
 #include "net.h"
-
-#include <strings.h>
 
 void start_new_game(struct byte_array *ba) {
 	int i;
@@ -35,7 +36,7 @@ void start_new_game(struct byte_array *ba) {
 	stage        = PREFLOP;
 	games_played = games_played + 1;
 
-	printf("Begin new game...\n");
+	daemon_log(LOG_INFO, "Begin new game...");
 
 	/* read in the details for each player */
 	for (i = 0; i < num_players; i++) {
@@ -50,7 +51,7 @@ void start_new_game(struct byte_array *ba) {
 		players[i].raises   = 0;
 		players[i].amt_in   = 0;
 
-		printf("\t%d) %s %d\n",i,players[i].username,players[i].bankroll);
+		daemon_log(LOG_INFO, "\t%d) %s %d",i,players[i].username,players[i].bankroll);
 	}
 }
 
@@ -63,9 +64,9 @@ void hole_cards(struct byte_array *ba) {
 		hand[0].suit = hole_cards[1];
 		hand[1].rank = hole_cards[3];
 		hand[1].suit = hole_cards[4];
-		printf("Your hole cards... %s\n",hole_cards);
+		daemon_log(LOG_INFO, "Your hole cards... %s",hole_cards);
 	} else {
-		printf("Their hole cards... %s\n",hole_cards);
+		daemon_log(LOG_INFO, "Their hole cards... %s",hole_cards);
 	}
 
 	free(hole_cards);
@@ -90,21 +91,21 @@ void new_stage(struct byte_array *ba) {
 			/* space            = new_cards[ 5]; */
 			board_cards[2].rank = new_cards[ 6];
 			board_cards[2].suit = new_cards[ 7];
-			printf("Flop: %s\n",new_cards);
+			daemon_log(LOG_INFO, "Flop: %s",new_cards);
 			break;
 
 		case TURN:
 			/* space            = new_cards[ 8]; */
 			board_cards[3].rank = new_cards[ 9];
 			board_cards[3].suit = new_cards[10];
-			printf("Turn: %s\n",new_cards);
+			daemon_log(LOG_INFO, "Turn: %s",new_cards);
 			break;
 
 		case RIVER:
 			/* space            = new_cards[11]; */
 			board_cards[4].rank = new_cards[12];
 			board_cards[4].suit = new_cards[13];
-			printf("River: %s\n",new_cards);
+			daemon_log(LOG_INFO, "River: %s",new_cards);
 			break;
 
 		default:
@@ -115,7 +116,7 @@ void new_stage(struct byte_array *ba) {
 void fold(struct byte_array *ba) {
 	int who = byte_array_read_int(ba);
 	players[who].folded = 1;
-	printf("Fold: %s\n",players[who].username);
+	daemon_log(LOG_INFO, "Fold: %s",players[who].username);
 }
 
 void call(struct byte_array *ba) {
@@ -124,7 +125,7 @@ void call(struct byte_array *ba) {
 
 	players[who].amt_in   += amt;
 	players[who].bankroll -= amt;
-	printf("Call: %s ($%d)\n",players[who].username,amt);
+	daemon_log(LOG_INFO, "Call: %s ($%d)",players[who].username,amt);
 }
 
 void blind(struct byte_array *ba) {
@@ -133,7 +134,7 @@ void blind(struct byte_array *ba) {
 
 	players[who].amt_in   += amt;
 	players[who].bankroll -= amt;
-	printf("Blind: %s ($%d)\n",players[who].username,amt);
+	daemon_log(LOG_INFO, "Blind: %s ($%d)",players[who].username,amt);
 }
 
 void __raise(struct byte_array *ba) {
@@ -143,7 +144,7 @@ void __raise(struct byte_array *ba) {
 	players[who].amt_in   += amt;
 	players[who].bankroll -= amt;
 	players[who].raises   +=   1;
-	printf("Raise: %s ($%d)\n",players[who].username,amt);
+	daemon_log(LOG_INFO, "Raise: %s ($%d)",players[who].username,amt);
 }
 
 void winners(struct byte_array *ba) {
@@ -155,7 +156,7 @@ void winners(struct byte_array *ba) {
 
 		players[who].bankroll += share;
 		players[who].wins++;
-		printf("%s won $%d\n",players[who].username,share);
+		daemon_log(LOG_INFO, "%s won $%d",players[who].username,share);
 	}
 }
 
@@ -170,7 +171,7 @@ void next_to_act(struct byte_array *ba) {
 	max_bet = byte_array_read_int(ba);
 
 	if (next == position) {
-		printf("It is on you... $%d to call, bet size is $%d\n",to_call,min_bet);
+		daemon_log(LOG_INFO, "It is on you... $%d to call, bet size is $%d",to_call,min_bet);
 
 
 		/* YOUR CODE HERE -- set 'action' to one of FOLD CALL or RAISE */

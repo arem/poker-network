@@ -30,8 +30,14 @@ char *pass;
 char *host;
 int   port;
 
+/**
+ * Reads 'configfile' and allocates memory for their values
+ */
 void configure();
 
+/**
+ * Macro to free the user, pass and host (if set).
+ */
 #define free_config()				\
 	if (user) { free(user); user = NULL; } \
 	if (pass) { free(pass); pass = NULL; } \

@@ -1,6 +1,6 @@
 /*
  * BagelBot - Trivial client for pokerd
- * Copyright (C) 2005, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <libdaemon/dlog.h>
+
 #include "net.h"
 #include "byte.h"
 #include "conf.h"
 
 /**
- *  struct byte_array *read_message(int sd, int *type)
- *
- *  read a message and store it in a byte_array
- *  set type
+ * Read a message and store it in a byte_array.
+ * @param type the type of message read from the socket.
+ * @return the message itself.
  */
 struct byte_array *read_message(int *type) {
 	struct byte_array *ba;
@@ -35,7 +36,7 @@ struct byte_array *read_message(int *type) {
 	/* grab message type */
 	for (i = 0; i < 4; i++) {
 		if (recv(sd,((char *)(type))+i,1,0) < 0) {
-			perror("recv");
+			daemon_log(LOG_ERR, "recv %s", strerror(errno));
 			return NULL;
 		}
 	}
@@ -45,7 +46,7 @@ struct byte_array *read_message(int *type) {
 	/* grab message size */
 	for (i = 0; i < 4; i++) {
 		if (recv(sd,((char *)(&size))+i,1,0) < 0) {
-			perror("recv");
+			daemon_log(LOG_ERR, "recv %s", strerror(errno));
 			return NULL;
 		}
 	}
@@ -55,14 +56,14 @@ struct byte_array *read_message(int *type) {
 	/* grab message data */
 	if (size > 0) {
 		if ((data = (char *) malloc(size)) == NULL) {
-			perror("malloc");
+			daemon_log(LOG_ERR, "malloc %s", strerror(errno));
 			free_config();
 			exit(1);
 		}
 
 		for (i = 0; i < size; i++) {
 			if (recv(sd,data+i,1,0) < 0) {
-				perror("recv");
+				daemon_log(LOG_ERR, "recv %s", strerror(errno));
 				free(data);
 				return NULL;
 			}
@@ -79,9 +80,9 @@ struct byte_array *read_message(int *type) {
 }
 
 /**
- *  int write_message(int sd, int type, struct byte_array *)
- *
- *  write a message to sd
+ * Write a message to the socket.
+ * @param type the type of message we're sending.
+ * @param ba the message itself.
  */
 void write_message(int type, struct byte_array *ba) {
 	int size;
@@ -93,20 +94,20 @@ void write_message(int type, struct byte_array *ba) {
 	size = htonl(ba->size);
 
 	if (send(sd, (char *)&type, 4, 0) < 0) {
-		perror("send");
+		daemon_log(LOG_ERR, "send %s", strerror(errno));
 		free(data);
 		return;
 	}
 
 	if (send(sd, (char *)&size, 4, 0) < 0) {
-		perror("send");
+		daemon_log(LOG_ERR, "send %s", strerror(errno));
 		free(data);
 		return;
 	}
 
 	if (ba->size > 0) {
 		if (send(sd, data, ba->size, 0) < 0) {
-			perror("send");
+			daemon_log(LOG_ERR, "send %s", strerror(errno));
 			free(data);
 			return;
 		}
@@ -115,9 +116,9 @@ void write_message(int type, struct byte_array *ba) {
 }
 
 /**
- *  void connect_to_server(char *hostname, int port)
- *
- *  connect to the server
+ * Connect to the server.
+ * @param hostname server to connect to.
+ * @param the TCP port to connect to.
  */
 void connect_to_server(char *hostname, int port) {
 	struct hostent *he;
@@ -128,7 +129,7 @@ void connect_to_server(char *hostname, int port) {
 
 
 	if (!(he = gethostbyname(hostname))) {
-		perror("gethostbyname");
+		daemon_log(LOG_ERR, "gethostbyname %s", strerror(errno));
 		free_config();
 		exit(1);
 	}
@@ -137,22 +138,20 @@ void connect_to_server(char *hostname, int port) {
 	memcpy(&sin.sin_addr, he->h_addr, he->h_length);
 
 	if (!(sd = socket(AF_INET, SOCK_STREAM, 0))) {
-		perror("socket");
+		daemon_log(LOG_ERR, "socket %s", strerror(errno));
 		free_config();
 		exit(1);
 	}
 
 	if (connect(sd, (struct sockaddr *) &sin, sizeof(sin))) {
-		perror("connect");
+		daemon_log(LOG_ERR, "connect %s", strerror(errno));
 		free_config();
 		exit(1);
 	}
 }
 
 /**
- *  void disconnect_from_server()
- *
- *  shutdown & close the connection with the server 
+ *  Shutdown and close the connection with the server .
  */
 void disconnect_from_server() {
 	shutdown(sd,SHUT_RDWR);

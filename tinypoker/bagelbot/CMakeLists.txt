@@ -20,6 +20,26 @@ PROJECT(bagelbot)
 SET (libdirs /usr/lib /usr/local/lib /usr/lib32 /usr/local/lib32 /usr/lib64 /usr/local/lib64)
 
 #############################################
+# libdaemon checks
+#############################################
+
+FIND_LIBRARY(LIBDAEMON daemon ${libdirs})
+
+IF (LIBDAEMON)
+  MESSAGE(STATUS "Found libdaemon: ${LIBDAEMON}")
+ELSE (LIBDAEMON)
+  MESSAGE (FATAL_ERROR "libdaemon not found.")
+ENDIF (LIBDAEMON)
+
+FIND_PATH(LIBDAEMON_INCLUDE_DIR libdaemon/daemon.h /usr/include /usr/local/include)
+
+IF (LIBDAEMON_INCLUDE_DIR)
+  MESSAGE(STATUS "Found libdaemon/daemon.h in ${LIBDAEMON_INCLUDE_DIR}")
+ELSE (LIBDAEMON_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "libdaemon/daemon.h not found.")
+ENDIF (LIBDAEMON_INCLUDE_DIR)
+
+#############################################
 # libconfuse checks
 #############################################
 
@@ -44,6 +64,6 @@ ENDIF (LIBCONFUSE)
 #############################################
 
 ADD_EXECUTABLE(bagelbot byte.c conf.c main.c net.c play.c)
-TARGET_LINK_LIBRARIES(bagelbot ${LIBCONFUSE})
-INSTALL(PROGRAMS bagelbot DESTINATION /usr/bin)
-INSTALL(FILES bagelbot.conf DESTINATION /etc PERMISSIONS OWNER_WRITE OWNER_READ)
+TARGET_LINK_LIBRARIES(bagelbot ${LIBCONFUSE} ${LIBDAEMON})
+INSTALL(PROGRAMS bagelbot DESTINATION usr/bin)
+INSTALL(FILES bagelbot.conf DESTINATION etc PERMISSIONS OWNER_WRITE OWNER_READ)

@@ -1,6 +1,6 @@
 /*
  * BagelBot - Trivial client for pokerd
- * Copyright (C) 2005, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
  */
 
 #include <getopt.h>
+#include <libdaemon/dlog.h>
 
 #include "conf.h"
 #include "play.h"
@@ -25,6 +26,10 @@
 #include "net.h"
 #include "byte.h"
 
+/**
+ * Send a JOIN_GAME message to the server.
+ * @return 1 for GOODPASS and 0 for failure.
+ */
 int authenticate() {
         int type;
         struct byte_array *ba;
@@ -42,10 +47,11 @@ int authenticate() {
         ba = read_message(&type);
         byte_array_destroy(ba);
 
-        if (type == GOODPASS)
+        if (type == GOODPASS) {
                 return 1;
-        else
+        } else {
                 return 0;
+        }
 }
 
 
@@ -54,20 +60,20 @@ int authenticate() {
  * @param program the name of the program.
  */
 void display_help(char *program) {
-	printf("Usage: %s [options]\n", program);
-	printf("Options:\n");
-	printf("    -h --help        Show this help message\n");
-	printf("    -v --version     Show version information\n");
+	daemon_log(LOG_INFO, "Usage: %s [options]", program);
+	daemon_log(LOG_INFO, "Options:");
+	daemon_log(LOG_INFO, "    -h --help        Show this help message");
+	daemon_log(LOG_INFO, "    -v --version     Show version information");
 }
 
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
 void display_version() {
-	printf("%s v%1.1f\n", PROGRAM, VERSION);
-	printf("Copyright (C) 2005, 2007 Thomas Cort\n");
-	printf("This is free software; see the source for copying conditions.  There is NO\n");
-	printf("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+	daemon_log(LOG_INFO, "%s v%1.1f", PROGRAM, VERSION);
+	daemon_log(LOG_INFO, "Copyright (C) 2005, 2007 Thomas Cort");
+	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
+	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 }
 
 
@@ -121,14 +127,14 @@ int main(int argc, char **argv) {
 	int rc;
 
 	if (argc < 1 || !argv || !argv[0]) {
-		printf("(%u:%s) Cannot determine program name from argv[0]\n", __FILE__, __LINE__);
+		daemon_log(LOG_ERR, "(%u:%s) Cannot determine program name from argv[0]", __FILE__, __LINE__);
 		return 1;
 	}
 
 	/* Set the default config file path */
 	configfile = (char*) malloc((strlen("/etc/bagelbot.conf") + 2) * sizeof(char));
 	if (!configfile) {
-		printf("malloc() failed!\n");
+		daemon_log(LOG_ERR, "malloc() failed!");
 		return 255;
 	}
 	bzero(configfile,(strlen("/etc/bagelbot.conf") + 2) * sizeof(char));
@@ -142,20 +148,20 @@ int main(int argc, char **argv) {
 	}
 
 	if (!host || !pass || !port || !user) {
-		printf("Could not determine one or more configuration setting.\n");
+		daemon_log(LOG_ERR, "Could not determine one or more configuration setting.");
 		free_config();
 		return 255;
 	} else {
-		printf("Connecting to %s:%d as %s\n",host,port,user);
+		daemon_log(LOG_INFO, "Connecting to %s:%d as %s",host,port,user);
 	}
 
         connect_to_server(host,port);
 
         if (authenticate()) {
-                printf("Authenticated!\n");
+                daemon_log(LOG_INFO, "Authenticated!");
                 play();
         } else {
-                printf("Not Authenticated!\n");
+                daemon_log(LOG_ERR, "Not Authenticated!");
         }
 
         disconnect_from_server();

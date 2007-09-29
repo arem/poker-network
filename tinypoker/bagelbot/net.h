@@ -1,6 +1,6 @@
 /*
  * BagelBot - Trivial client for pokerd
- * Copyright (C) 2005, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,10 +40,38 @@
 
 #include "byte.h"
 
+/**
+ * Socket descriptor. This is the socket we use to communicate with the 
+ * server.
+ * @see connect_to_server()
+ * @see disconnect_from_server()
+ */
 int sd;
 
+/**
+ * Read a message and store it in a byte_array.
+ * @param type the type of message read from the socket.
+ * @return the message itself.
+ */
 struct byte_array *read_message(int *type);
+
+/**
+ * Write a message to the socket.
+ * @param type the type of message we're sending.
+ * @param ba the message itself.
+ */
 void write_message(int type, struct byte_array *);
+
+/**
+ * Connect to the server.
+ * @param hostname server to connect to.
+ * @param the TCP port to connect to.
+ */
 void connect_to_server(char *hostname, int port);
+
+/**
+ *  Shutdown and close the connection with the server .
+ */
 void disconnect_from_server();
+
 #endif

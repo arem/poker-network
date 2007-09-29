@@ -1,6 +1,6 @@
 /*
  * BagelBot - Trivial client for pokerd
- * Copyright (C) 2005, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@
 #include <stdio.h>
 
 /*
- * Basic sanity check on the configfile.
- *	- must exist
- *	- must be a regular file
- *	- must have permission no more than 640 (-rw-r-----)
+ * Basic sanity check on the configfile. Rules: file must exist,
+ * file must be a regular file, file must have permission no more
+ * than 640 (-rw-r-----).
+ * @return 1 if the rules are broken, 0 if file is ready to be read.
  */
 int check_config_permissions() {
 	struct stat s;
@@ -58,7 +58,7 @@ int check_config_permissions() {
 	return 0;
 }
 
-/*
+/**
  * Reads 'configfile' and allocates memory for their values
  */
 void configure() {
