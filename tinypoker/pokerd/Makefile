@@ -20,12 +20,7 @@ CC     = gcc
 CFLAGS = 
 INCLUDE= -I/usr/include/poker-eval -I/usr/include/mysql
 LIBDIR = -L/usr/lib -L/usr/lib32 -L/usr/lib64 -L/usr/lib/mysql -L/usr/lib32/mysql -L/usr/lib64/mysql
-LIBS   = -lpthread -lmysqlclient -lz -lcrypt -lnsl -lm -lgsl -lgslcblas -lpoker-eval -lssl -ldaemon
-
-LEX    = flex
-YACC   = bison
-LFLAGS =
-YFLAGS = -d
+LIBS   = -lpthread -lmysqlclient -lz -lcrypt -lnsl -lm -lgsl -lgslcblas -lpoker-eval -lssl -ldaemon -lconfuse
 
 ifeq ($(MAKECMDGOALS), warn)
 CFLAGS = -Wall -pedantic -ansi
@@ -40,18 +35,15 @@ CFLAGS = -g3 -O0
 endif
 
 BINARY   = pokerd
-LEXSPEC  = config.l
-YACCSPEC = config.y
 
-SOURCES  = $(LEXSPEC:.l=.lex.c) $(YACCSPEC:.y=.y.tab.c) byte.c conf.c \
-	daemon.c db.c deck.c main.c monitor.c net.c poker.c \
+SOURCES  = byte.c conf.c daemon.c db.c deck.c main.c monitor.c net.c poker.c \
 	pokerserv.c rand.c sig.c eval.c
 
-all optimize main debug warn: $(YACCSPEC:.y=.y.tab.c) $(LEXSPEC:.l=.lex.c) $(SOURCES:.c=.o)
+all optimize main debug warn: $(SOURCES:.c=.o)
 	$(CC) $(LIBS) $(LIBDIR) $(INCLUDE) $(CFLAGS) -o $(BINARY) $(SOURCES:.c=.o)
 
 clean:
-	rm -rf *.o *.lex.c *.y.tab.? working $(BINARY)
+	rm -rf *.o working $(BINARY)
 
 help:
 	@echo -e "Usage:"
@@ -65,10 +57,3 @@ help:
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(<:.c=.o) -c $<
 
-.SUFFIXES: .l .lex.c
-.l.lex.c:
-	$(LEX) $(LFLAGS) -o$(<:.l=.lex.c) $<
-
-.SUFFIXES: .y .y.tab.c
-.y.y.tab.c:
-	$(YACC) $(YFLAGS) -b $< $<

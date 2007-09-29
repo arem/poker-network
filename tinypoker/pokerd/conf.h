@@ -23,12 +23,11 @@
 
 #include <stdio.h>
 
-char configfile[128];
-char dbusername[128];
-char dbpassword[128];
-char dbhostname[128];
-char dbdatabase[128];
-char version[32];
+char *configfile;
+char *dbusername;
+char *dbpassword;
+char *dbhostname;
+char *dbdatabase;
 
 int port;
 int debug;
@@ -39,4 +38,13 @@ int lineno;
 
 void read_config();
 void default_config();
+
+#define free_config()								\
+	do {									\
+		if (dbusername) { free(dbusername); dbusername = NULL; }	\
+		if (dbpassword) { free(dbpassword); dbpassword = NULL; }	\
+		if (dbhostname) { free(dbhostname); dbhostname = NULL; }	\
+		if (dbdatabase) { free(dbdatabase); dbdatabase = NULL; }	\
+	} while (0)
+
 #endif

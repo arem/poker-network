@@ -20,6 +20,7 @@
 
 #include "conf.h"
 
+#include <confuse.h>
 #include <libdaemon/dlog.h>
 #include <string.h>
 #include <strings.h>
@@ -28,14 +29,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-extern int yyparse();
-
 void default_config() {
+	free_config();
+
+	dbusername = (char*) malloc(sizeof(char)*strlen("pokerd")+1);
+	dbpassword = (char*) malloc(sizeof(char)*strlen("pokerd")+1);
+	dbhostname = (char*) malloc(sizeof(char)*strlen("localhost")+1);
+	dbdatabase = (char*) malloc(sizeof(char)*strlen("pokerd")+1);
+
+	if (!dbusername || !dbpassword || !dbhostname || !dbdatabase) {
+		daemon_log(LOG_ERR,"malloc() FAILED!");
+		exit(1);
+	}
+
+
 	strcpy(dbusername,"pokerd");
 	strcpy(dbpassword,"pokerd");
 	strcpy(dbhostname,"localhost");
 	strcpy(dbdatabase,"pokerd");
-	strcpy(version,"0.2.1");
 
 	debug = 0;
 	port = 9999;
@@ -48,18 +59,20 @@ void default_config() {
  */
 void read_config() {
 
-	/* Check that there is a file name in configfile */
-	/* if not use defaults                           */
-	if (configfile[0]) {
-		yyin = fopen(configfile,"r");
-		if (!yyin) {
-			daemon_log(LOG_ERR,"[CONF] %s",strerror(errno));
-			exit(1);
-		}
-		daemon_log(LOG_INFO,"[CONF] Parsing config file");
-		yyparse();
-		fclose(yyin);
-	} else {
-		default_config();
-	}
+	cfg_opt_t opts[] = {
+		CFG_SIMPLE_STR("dbusername", &dbusername),
+		CFG_SIMPLE_STR("dbpassword", &dbpassword),
+		CFG_SIMPLE_STR("dbhostname", &dbhostname),
+		CFG_SIMPLE_STR("dbdatabase", &dbdatabase),
+		CFG_END()
+       };
+
+	cfg_t *cfg;
+
+	free_config();
+
+	cfg = cfg_init(opts, 0);        /* call libconfuse */
+	cfg_parse(cfg, configfile);
+	cfg_free(cfg);
+
 }

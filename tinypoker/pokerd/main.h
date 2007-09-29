@@ -23,4 +23,6 @@
 
 int use_syslog;
 
+#define VERSION "0.2.1"
+
 #endif

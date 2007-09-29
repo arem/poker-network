@@ -54,11 +54,17 @@ int main(int argc, char *argv[]) {
 		{0       , 0, 0, 0}
 	};
 
+	configfile = NULL;
+	dbusername = dbpassword = dbhostname = dbdatabase = NULL;
+
 	debug      = 0;
 	use_syslog = 1;
 
-	memset(&s,0,sizeof(struct stat));
-	bzero(configfile,sizeof(configfile));
+	configfile = malloc(sizeof(char)*strlen(".pokerd")+1);
+	if (!configfile) {
+		daemon_log(LOG_ERR, "mailloc failed");
+		return 1;
+	}
 
 	if (argc < 1 || !argv || !argv[0]) {
 		daemon_log(LOG_ERR, "Cannot determine program name from argv[0]");
@@ -67,6 +73,8 @@ int main(int argc, char *argv[]) {
 
 	default_config(); /* configure with default settings */
 
+	memset(&s,0,sizeof(struct stat));
+
 	/* try reading default config file ".pokerd" */
 	if (stat(".pokerd",&s) != -1) {
 		/* if no error, then .pokerd exists */
@@ -74,7 +82,7 @@ int main(int argc, char *argv[]) {
 		read_config();
 	}
 
-	bzero(configfile,sizeof(configfile));
+	free(configfile); configfile = NULL;
 
 	while(1) {
 		option = getopt_long (argc, argv, "dlp:hc:",long_options, &option_index);
@@ -120,7 +128,13 @@ int main(int argc, char *argv[]) {
 			/* config */
 			case  5 :
 			case 'c':
+				if (configfile) free(configfile);
+				configfile = (char*) malloc(strlen(optarg)+1);
 				strcpy(configfile,optarg);
+				if (!configfile) {
+					daemon_log(LOG_ERR, "malloc failed");
+					exit(1);
+				}
 				read_config();
 				break;
 
@@ -166,7 +180,7 @@ int main(int argc, char *argv[]) {
 
 	/* Start up Message */
 
-	daemon_log(LOG_INFO,"[INFO] pokerd version %s Copyright (C) 2005, 2006, 2007 Thomas Cort",version);
+	daemon_log(LOG_INFO,"[INFO] pokerd version %s Copyright (C) 2005, 2006, 2007 Thomas Cort", VERSION);
 	daemon_log(LOG_INFO,"[INFO] pokerd comes with ABSOLUTELY NO WARRANTY; for details");
 	daemon_log(LOG_INFO,"[INFO] please read the GNU GPL (http://www.gnu.org/licenses/gpl.txt)");
 	daemon_log(LOG_INFO,"[INFO] pokerd is free software, and you are welcome to redistribute");

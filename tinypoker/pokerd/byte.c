@@ -1,7 +1,6 @@
 /*
+ * BagelBot - Trivial client for pokerd
  * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
- *
- * This file is part of pokerd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/*
- * This file is loosely based upon, but not copied from ByteArray.c by VASTMIND.COM
- */
-
-#include <libdaemon/dlog.h>
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,23 +25,30 @@
 #include <strings.h>
 #include <netinet/in.h>
 
+#include <libdaemon/dlog.h>
+
 #include "byte.h"
+#include "conf.h"
 
 /**
- *  struct byte_array *new_byte_array(int capacity)
- *
- *  create a new byte array with initial capacity of "capacity"
+ * Allocates a new byte array.
+ * @param capacity the maximum allowable size of the byte array.
+ * @return a new byte_array struct.
  */
 struct byte_array *new_byte_array(int capacity) {
 	struct byte_array *ba;
 
-	if ((ba = (struct byte_array *) malloc(sizeof(struct byte_array))) == NULL) {
-		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
+	ba = (struct byte_array *) malloc(sizeof(struct byte_array));
+	if (!ba) {
+		daemon_log(LOG_ERR, "malloc %s", strerror(errno));
+		free_config();
 		exit(1);
 	}
 
-	if ((ba->data = (char *) malloc(sizeof(char)*capacity)) == NULL) {
-		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
+	ba->data = (char *) malloc(sizeof(char) * capacity);
+	if (!ba) {
+		daemon_log(LOG_ERR, "malloc %s", strerror(errno));
+		free_config();
 		exit(1);
 	}
 
@@ -61,14 +61,16 @@ struct byte_array *new_byte_array(int capacity) {
 }
 
 /**
- *  void byte_array_append_bytes(struct byte_array *ba, int size, char *data)
- *
- *  append bytes to the byte array
+ * Append data to the byte array.
+ * @param ba the byte array to append to.
+ * @param size the number of bytes to copy.
+ * @param data the bytes to copy.
  */
 void byte_array_append_bytes(struct byte_array *ba, int size, char *data) {
 
-	if (!ba || !data || !size)
+	if (!ba || !data || !size) {
 		return;
+	}
 
 	/* check if we have enough space */
 	if ((ba->size + size) >= ba->capacity) {
@@ -80,7 +82,6 @@ void byte_array_append_bytes(struct byte_array *ba, int size, char *data) {
 	        ba->data = nba->data;
 	        ba->capacity = nba->capacity;
 	        free(nba);
-
 	}
 
 	memcpy(ba->data + ba->size, data, size);
@@ -88,45 +89,50 @@ void byte_array_append_bytes(struct byte_array *ba, int size, char *data) {
 }
 
 /**
- *  void byte_array_append_string(struct byte_array *ba, char *str)
- *
- *  append a null terminated C String
+ * Append a null terminated C String.
+ * @param ba the byte array to append to.
+ * @param str a null terminated string.
  */
 void byte_array_append_string(struct byte_array *ba, char *str) {
 
-	if (!ba || !str)
+	if (!ba || !str) {
 		return;
+	}
 
 	byte_array_append_bytes(ba,strlen(str)+1,str);
 }
 
 /**
- *  void byte_array_append_int(struct byte_array *ba, int val) 
- *
- *  append a 4-byte int
+ * Append a 4-byte int.
+ * @param ba the byte array to append to.
+ * @param val a 4-byte int in host byte order.
  */
 void byte_array_append_int(struct byte_array *ba, int val) {
 
-	if (!ba)
+	if (!ba) {
 		return;
+	}
 
 	val = htonl(val); /* we use network byte order ints */
 	byte_array_append_bytes(ba, 4, (char *)&val);
 }
 
 /**
- *  int byte_array_read_int(struct byte_array *ba)
- *
- *  read a 4-byte int
+ * Read a 4-byte int.
+ * @param ba the byte array to read from.
+ * @return the 4 byte host order integer read. In case of error -1 is returned; not an ideal solution :(
  */
 int byte_array_read_int(struct byte_array *ba) {
 	int r = 0;
 
-	if (!ba)
+	if (!ba) {
 		return -1;
+	}
 
-	if ((ba->position+4) > ba->size)
+	/* don't read past the end of the data */
+	if ((ba->position+4) > ba->size) {
 		return -1;
+	}
 
 	memcpy(&r, ba->data + ba->position, 4);
 	ba->position += 4;
@@ -136,16 +142,17 @@ int byte_array_read_int(struct byte_array *ba) {
 }
 
 /**
- *  char *byte_array_read_string(struct byte_array *ba)
- *
- *  read a null terminated C String
+ * Read a null terminated C String
+ * @param ba the byte array to read from.
+ * @return a null terminated C String or NULL if an error occurred.
  */
 char *byte_array_read_string(struct byte_array *ba) {
 	struct byte_array *temp;
 	char *str, c;
 
-	if (!ba)
+	if (!ba) {
 		return NULL;
+	}
 
 	temp = new_byte_array(20);
 
@@ -174,8 +181,10 @@ char *byte_array_read_string(struct byte_array *ba) {
 	c = '\0'; /* null terminated */
 	byte_array_append_bytes(temp, 1, &c);
 
-	if ((str = (char *) malloc(temp->size)) == NULL) {
-		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
+	str = (char *) malloc(temp->size);
+	if (!str) {
+		daemon_log(LOG_ERR, "malloc %s", strerror(errno));
+		free_config();
 		exit(1);
 	}
 
@@ -186,15 +195,17 @@ char *byte_array_read_string(struct byte_array *ba) {
 }
 
 /**
- *  byte_array_get_bytes(struct byte_array *ba)
- *
- *  return all of the data
+ * Return all of the data.
+ * @param ba byte array to read from.
+ * @return a copy of ba->data.
  */
 char *byte_array_get_bytes(struct byte_array *ba) {
 	char *data;
 
-	if ((data = (char *)malloc(ba->size)) == NULL) {
-		daemon_log(LOG_ERR,"[ERRR] %s",strerror(errno));
+	data = (char *)malloc(ba->size);
+	if (!data) {
+		daemon_log(LOG_ERR, "malloc %s", strerror(errno));
+		free_config();
 		exit(1);
 	}
 
@@ -204,16 +215,18 @@ char *byte_array_get_bytes(struct byte_array *ba) {
 
 
 /**
- *  void byte_array_destroy(struct byte_array *ba)
- *
- *  free's a byte_array and all of its data
+ * Free's a byte_array and all of its data.
+ * @param ba the byte array to free.
  */
 void byte_array_destroy(struct byte_array *ba) {
 
 	if (ba) {
-		if (ba->data)
+		if (ba->data) {
 			free(ba->data);
+		}
+
 		free(ba);
+		ba = NULL;
 	}
 	/* all other fields are local to the struct */
 }
