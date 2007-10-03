@@ -57,9 +57,6 @@ Command Line Options
 
 2.0 Build Instructions
 
-To compile this program you need the following libraries installed:
-	pthread, pq, z, crypt, nsl, m, poker-eval, gsl, gslcblas, ssl
-
 The libraries should be provided by the following packages or the
 following package's dependencies:
 	OpenSSL                (openssl.org)                   (BSD-style License)
@@ -70,19 +67,15 @@ following package's dependencies:
 	libConfuse             (nongnu.org/confuse)                     (GNU LGPL)
 
 To compile this program you need the following tools installed:
-	make, gcc, bison, flex
+	cmake, make, gcc
 
-Make Options
-------------
-make [all]            Build all
-make warn             Include Warnings
-make optimize         Enable optimizations and nothing else
-make debug            Include Debugging Info and Warnings
-make help             Display this help
+Run the following commands to build 'pokerd':
+	cmake .
+	make
 
 You'll need to setup the database prior to running the server. You can
 do this by executing the following command from the pokerd src directory:
-	psql pokerd pokerd < pokerd.sql
+	mysql -u pokerd -p pokerd < pokerd.sql
 After you execute the SQL you will have two player accounts, player1 and
 player2 with the password 'secret'. You will probably want to add 
 player accounts. Currently there is no tool to do this. For now add them
@@ -95,11 +88,9 @@ with the following SQL query:
 
 Files
 =====
-auth.[c|h]              User authentication
 byte.[c|h]              Byte Array Functions
 ChangeLog		Lists changes between versions
 conf.[c|h]              Read Configuration Function
-config.[l|y]            Parser/Scanner for Config
 daemon.[c|h]            Daemonizes the server
 db.[c|h]                Database Access
 deck.[c|h]              Deck of Cards
@@ -108,7 +99,6 @@ LICENSE                 GNU GPL
 log.[c|h]               Logging Facility
 main.c                  Main program
 Makefile                Makefile
-md5.[c|h]               MD5 Checksum Functions
 monitor.[c|h]           Thread Monitor
 net.[c|h]               Re-usable Network Operations
 poker.[c|h]             Game Logic
@@ -118,7 +108,6 @@ PROTOCOL                Network Protocol Docs
 README                  This file
 rand.[c|h]              Random Number Generation
 sig.[c|h]               Singal Handlers
-time.[c|h]              Time and Data Functions
 user-guide              User Guide
 
 --------------------------------------------------------------------------

@@ -26,7 +26,6 @@
 #include "sig.h"
 #include "pokerserv.h"
 #include "rand.h"
-#include "main.h"
 #include "monitor.h"
 
 #include <libdaemon/dlog.h>
@@ -38,6 +37,7 @@
 #include <strings.h>
 
 int main(int argc, char *argv[]) {
+	int use_syslog;
 	int option, option_index = 0;
 	struct stat s;
 
