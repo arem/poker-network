@@ -13,6 +13,9 @@ for the Computer Science Club[1] at Bishop's University[2] in
 Lennoxville, Quebec, Canada. The project has been dormant for the past 
 couple of years, but development has resumed.
 
+libtinypoker - Implementation of Internet Poker Protocol (IPP) version 2.0.
+See http://www.cs.rochester.edu/u/ferguson/poker/ipp.html
+
 pokerd - a Texas Hold'em poker server designed primarily for poker 
 bots. It handles one 10 player table/game at a time. If more than 10 
 players are connected, players are rotated in and out based on how 

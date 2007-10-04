@@ -1,0 +1,17 @@
+Compiling from source
+=====================
+
+You need the following to build this library...
+
+        cmake           http://cmake.org/
+        make            http://www.gnu.org/software/make/
+        gcc             http://gcc.gnu.org/
+	gnet            http://www.gnetlibrary.org/
+
+Configure, compile, test, install...
+
+        $ cmake .
+        $ make
+	$ make test
+        # make install
+
