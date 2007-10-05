@@ -18,6 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <glib.h>
+#include <gnet.h>
+
 #ifndef __TINYPOKER_H
 #define __TINYPOKER_H
 
@@ -28,8 +34,16 @@
 
 /**
  * The version of the protocol implemented.
+ * Matches "2.0" and "2.0.0". The spec says 2.0, but
+ * the reference implementation uses 2.0.0 :|
  */
-#define REGEX_PROTOCOL_VERSION "2.0"
+#define REGEX_PROTOCOL_VERSION "(2\\.0(\\.0){0,1}){1}"
+
+/**
+ * The maximum size of a message, in characters.
+ * No valid message should ever exceed this.
+ */
+#define MAX_MSG_SIZE (127)
 
 /* Regular expressions used to match message parts */
 
@@ -51,7 +65,7 @@
 /**
  * Name of player (no spaces).
  */
-#define REGEX_NAME "[0-9a-zA-Z_]+"
+#define REGEX_NAME "[0-9a-zA-Z_]{1,32}"
 
 /**
  * Amount of Money
@@ -61,12 +75,12 @@
 /**
  * Whitespace characters used to separate message parts.
  */
-#define REGEX_SPACE "[\t ]+"
+#define REGEX_SPACE "[\\t ]+"
 
 /**
  * Whitespace characters used to separate message parts.
  */
-#define REGEX_INFO "[0-9a-zA-Z/.\t ]+"
+#define REGEX_INFO "[0-9a-zA-Z/.\\t ]+"
 
 /* protocol commands */
 
@@ -80,11 +94,18 @@
  */
 #define CMD_BUYIN "BUYIN"
 
+/**
+ * Server welcome message sent after a client buys in.
+ */
+#define CMD_WELCOME "WELCOME"
+
 /* Regular expressions used to match messages */
 
 #define REGEX_MSG_IPP ("^" CMD_IPP REGEX_SPACE REGEX_PROTOCOL_VERSION REGEX_SPACE REGEX_INFO "$")
 
 #define REGEX_MSG_BUYIN ("^" CMD_BUYIN REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_WELCOME ("^" CMD_WELCOME REGEX_SPACE REGEX_NAME "$")
 
 /* function prototypes */
 
@@ -94,13 +115,49 @@
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-int ipp_validate_msg(char *regex, char *msg);
+gboolean ipp_validate_msg(gchar *regex, gchar *msg);
+
+/**
+ * Validates an arbitrary IPP Messages.
+ * @param msg a message.
+ * @return 1 if msg is valid, 0 if msg is not valid.
+ */
+gboolean ipp_validate_unknown_msg(gchar *msg);
 
 /**
  * Convert the string to upper case and convert multiple spaces to 1 space.
  * Trim leading and trailing white space.
  * @param msg the message, a null terminated string, to transform.
  */
-void ipp_normalize_msg(char *msg);
+void ipp_normalize_msg(gchar *msg);
+
+/**
+ * Connect to a server.
+ * @param hostname the hostname of the server to connect to (example: host.domain.tld).
+ * @param port the port number (example: 9999).
+ * @return a socket or NULL if an error happened.
+ */
+GTcpSocket* ipp_connect(gchar* hostname, gint port);
+
+/**
+ * Disconnect from the server.
+ */
+void ipp_disconnect(GTcpSocket *socket);
+
+
+/**
+ * Read a message from the socket.
+ * @param socket the socket to read from.
+ * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
+ */
+gchar* ipp_read_msg(GTcpSocket *socket);
+
+/**
+ * Send a message to the socket. It will be normalized and validated by this function before sending.
+ * @param socket the socket to read from.
+ * @param msg the message to send.
+ * @return TRUE if msg was sent OK, else FALSE for error.
+ */
+gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg);
 
 #endif

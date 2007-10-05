@@ -16,10 +16,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-SET (libdirs /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/pkg/lib64 /usr/local/lib64 /usr/lib32 /usr/pkg/lib32 /usr/local/lib32)
-SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)
-SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/include/mysql /usr/local/include/mysql /usr/pkg/include/mysql /usr/include/poker-eval /usr/local/include/poker-eval /usr/pkg/include/poker-eval /usr/include/glib-2.0 /usr/local/include/glib-2.0 /usr/pkg/include/glib-2.0 /usr/include/gnet-2.0 /usr/local/include/gnet-2.0 /usr/pkg/include/gnet-2.0 /usr/lib/glib-2.0/include /usr/pkg/lib/glib-2.0/include /usr/local/lib/glib-2.0/include /usr/lib64/glib-2.0/include /usr/pkg/lib64/glib-2.0/include /usr/local/lib64/glib-2.0/include /usr/lib32/glib-2.0/include /usr/pkg/lib32/glib-2.0/include /usr/local/lib32/glib-2.0/include /usr/lib/gnet-2.0/include /usr/pkg/lib/gnet-2.0/include /usr/local/lib/gnet-2.0/include /usr/lib64/gnet-2.0/include /usr/pkg/lib64/gnet-2.0/include /usr/local/lib64/gnet-2.0/include /usr/lib32/gnet-2.0/include /usr/pkg/lib32/gnet-2.0/include /usr/local/lib32/gnet-2.0/include)
-
 #############################################
 # libgnet checks
 #############################################
@@ -81,6 +77,10 @@ ENDIF (LIBGLIB_INCLUDE_DIR2)
 #############################################
 
 INCLUDE_DIRECTORIES(${incdirs} ${LIBGNET_INCLUDE_DIR} ${LIBGLIB_INCLUDE_DIR} ${LIBGNET_INCLUDE_DIR2} ${LIBGLIB_INCLUDE_DIR2})
-ADD_LIBRARY(tinypoker tinypoker.c)
-LINK_LIBRARIES(tinypoker ${LIBGNET} ${LIBGLIB})
-INSTALL(TARGETS tinypoker DESTINATION lib)
+
+ADD_EXECUTABLE(client client.c)
+TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNET} ${LIBGLIB})
+
+ADD_EXECUTABLE(server server.c)
+TARGET_LINK_LIBRARIES(server tinypoker ${LIBGNET} ${LIBGLIB})
+
