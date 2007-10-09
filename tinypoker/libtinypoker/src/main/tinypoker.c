@@ -20,6 +20,7 @@
 
 #include <ctype.h>
 #include <regex.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +40,10 @@ void ipp_normalize_msg(gchar *msg) {
 	gint len, i, j;
 	len = strlen(msg);
 	gchar *pos;
+
+	if (!msg || strlen(msg) < MIN_MSG_SIZE) {
+		return;
+	}
 
 	while ((pos = strchr(msg, '\n'))) {
 		*pos = ' '; /* trim all new lines */
@@ -76,9 +81,13 @@ gboolean ipp_validate_msg(gchar *regex, gchar *msg) {
 	regex_t preg;
 	int ret;
 
+	if (!regex || !msg) {
+		return FALSE;
+	}
+
 	ret = regcomp(&preg, regex, REG_EXTENDED);
 	if (ret) { /* compile the pattern */
-		return 0;
+		return FALSE;
 	}
 
 	/* See if the message matches */
@@ -108,6 +117,10 @@ gboolean ipp_validate_unknown_msg(gchar *msg) {
 		NULL
 	};
 
+	if (!regex || !msg) {
+		return FALSE;
+	}
+
 	for (i = 0; regex[i]; i++) {
 		if (ipp_validate_msg(regex[i], msg)) {
 			is_valid = TRUE;
@@ -135,6 +148,10 @@ GTcpSocket* ipp_connect(gchar* hostname, gint port) {
 	GInetAddr* addr;
 	GTcpSocket* socket;
 
+	if (!hostname || (port < 1 || port > 65535)) {
+		return FALSE;
+	}
+
 	addr = gnet_inetaddr_new (hostname, port);
 	if (!addr) {
 		return NULL; /* cannot resolve host name */
@@ -150,29 +167,80 @@ GTcpSocket* ipp_connect(gchar* hostname, gint port) {
  * Disconnect from the server.
  */
 void ipp_disconnect(GTcpSocket *socket) {
-	gnet_tcp_socket_delete(socket);
+	if (socket) {
+		gnet_tcp_socket_delete(socket);
+	}
 	socket = NULL;
+}
+
+/**
+ * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
+ * @param void_params a __ipp_readln_thread_params structure.
+ */
+void __ipp_readln_thread(void *void_params) {
+	GIOError err;
+	__ipp_readln_thread_params *params;
+	params = (__ipp_readln_thread_params *) void_params;
+
+	err = gnet_io_channel_readline_strdup(params->chan, params->buffer, params->n);
+	if (err != G_IO_ERROR_NONE) {
+		pthread_exit(0);
+	}
+
+	pthread_exit(0);
 }
 
 /**
  * Read a message from the socket.
  * @param socket the socket to read from.
+ * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-gchar* ipp_read_msg(GTcpSocket *socket) {
+gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout) {
+	gint ret;
+	GTimer* clock;
 	gchar *buffer;
 	GIOChannel *chan;
-	GIOError err;
-	gsize n;
+	gsize n = 0;
 	gboolean is_valid;
+	pthread_t reader;
+	pthread_attr_t reader_attr;
+	__ipp_readln_thread_params params;
 
 	chan = gnet_tcp_socket_get_io_channel(socket);
 	if (!chan) {
 		return NULL;
 	}
 
-	err = gnet_io_channel_readline_strdup(chan, &buffer, &n);
-	if (err != G_IO_ERROR_NONE) {
+	params.chan = chan;
+	params.buffer = &buffer;
+	params.n = &n;
+
+	pthread_attr_init(&reader_attr);
+	pthread_attr_setdetachstate(&reader_attr, PTHREAD_CREATE_DETACHED);
+	ret = pthread_create(&reader, &reader_attr, (void* (*) (void*)) __ipp_readln_thread, (void*) &params);
+	if (ret != 0) {
+		pthread_attr_destroy(&reader_attr);
+		return NULL;
+	}
+
+	clock = g_timer_new();
+	do {
+		if (g_timer_elapsed(clock, NULL) > timeout) {
+			break;
+		}
+		pthread_yield();
+	} while (!n);
+	g_timer_stop(clock);
+	g_timer_destroy(clock);
+	clock = NULL;
+
+	pthread_cancel(reader);
+	pthread_attr_destroy(&reader_attr);
+
+	buffer = *(params.buffer);
+
+	if (!n) {
 		return NULL;
 	}
 

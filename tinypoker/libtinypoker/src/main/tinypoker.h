@@ -45,6 +45,26 @@
  */
 #define MAX_MSG_SIZE (127)
 
+/**
+ * The minimum size of a message, in characters.
+ * No valid message should ever be smaller than this this.
+ */
+#define MIN_MSG_SIZE (4)
+
+/**
+ * The number of seconds a client should wait for network input.
+ * This should be much higher than SERVER_READ_TIMEOUT.
+ * @see SERVER_READ_TIMEOUT
+ */
+#define CLIENT_READ_TIMEOUT (600.0)
+
+/**
+ * The number of seconds a server should wait for network input.
+ * This should be much smaller than CLIENT_READ_TIMEOUT.
+ * @see CLIENT_READ_TIMEOUT
+ */
+#define SERVER_READ_TIMEOUT (15.0)
+
 /* Regular expressions used to match message parts */
 
 /**
@@ -148,9 +168,10 @@ void ipp_disconnect(GTcpSocket *socket);
 /**
  * Read a message from the socket.
  * @param socket the socket to read from.
+ * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-gchar* ipp_read_msg(GTcpSocket *socket);
+gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout);
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
@@ -159,5 +180,21 @@ gchar* ipp_read_msg(GTcpSocket *socket);
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
 gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg);
+
+/**
+ * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
+ * Parameters passed to the reader thread.
+ */
+typedef struct __ipp_readln_thread_params {
+	GIOChannel *chan;
+	gchar **buffer;
+	gsize *n;
+} __ipp_readln_thread_params;
+
+/**
+ * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
+ * @param void_params a __ipp_readln_thread_params structure.
+ */
+void __ipp_readln_thread(void *void_params);
 
 #endif

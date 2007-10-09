@@ -77,10 +77,30 @@ ELSE (LIBGLIB_INCLUDE_DIR2)
 ENDIF (LIBGLIB_INCLUDE_DIR2)
 
 #############################################
+# libpthread checks
+#############################################
+
+FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
+
+IF (LIBPTHREAD)
+  MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
+ELSE (LIBPTHREAD)
+  MESSAGE (FATAL_ERROR "libpthread not found.")
+ENDIF (LIBPTHREAD)
+
+FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
+
+IF (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
+ELSE (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "pthread.h not found.")
+ENDIF (LIBPTHREAD_INCLUDE_DIR)
+
+#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${incdirs} ${LIBGNET_INCLUDE_DIR} ${LIBGLIB_INCLUDE_DIR} ${LIBGNET_INCLUDE_DIR2} ${LIBGLIB_INCLUDE_DIR2})
+INCLUDE_DIRECTORIES(${incdirs} ${LIBGNET_INCLUDE_DIR} ${LIBGLIB_INCLUDE_DIR} ${LIBGNET_INCLUDE_DIR2} ${LIBGLIB_INCLUDE_DIR2} ${LIBPTHREAD_INCLUDE_DIR})
 ADD_LIBRARY(tinypoker tinypoker.c)
-LINK_LIBRARIES(tinypoker ${LIBGNET} ${LIBGLIB})
+LINK_LIBRARIES(tinypoker ${LIBGNET} ${LIBGLIB} ${LIBPTHREAD})
 INSTALL(TARGETS tinypoker DESTINATION lib)

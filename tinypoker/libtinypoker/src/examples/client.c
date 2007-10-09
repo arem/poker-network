@@ -33,7 +33,7 @@ int main(int argc, char **argv, char **envp) {
 		return 1;
 	}
 
-	msg = ipp_read_msg(socket);
+	msg = ipp_read_msg(socket, CLIENT_READ_TIMEOUT);
 	if (msg) {
 		g_printf("> %s\n", msg);
 		g_free(msg);
@@ -53,7 +53,7 @@ int main(int argc, char **argv, char **envp) {
 		return 1;
 	}
 
-	msg = ipp_read_msg(socket);
+	msg = ipp_read_msg(socket, CLIENT_READ_TIMEOUT);
 	if (msg) {
 		g_printf("> %s\n", msg);
 		g_free(msg);
