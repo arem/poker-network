@@ -93,6 +93,10 @@ ADD_EXECUTABLE(testValidateCmdWelcome testValidateCmdWelcome.c)
 TARGET_LINK_LIBRARIES(testValidateCmdWelcome tinypoker ${LIBGNET} ${LIBGLIB})
 ADD_TEST(testValidateCmdWelcome ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdWelcome)
 
+ADD_EXECUTABLE(testValidateCmdNewgame testValidateCmdNewgame.c)
+TARGET_LINK_LIBRARIES(testValidateCmdNewgame tinypoker ${LIBGNET} ${LIBGLIB})
+ADD_TEST(testValidateCmdNewgame ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdNewgame)
+
 ADD_EXECUTABLE(testNormalizeMessage testNormalizeMessage.c)
 TARGET_LINK_LIBRARIES(testNormalizeMessage tinypoker ${LIBGNET} ${LIBGLIB})
 ADD_TEST(testNormalizeMessage ${EXECUTABLE_OUTPUT_PATH}/testNormalizeMessage)

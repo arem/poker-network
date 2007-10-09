@@ -116,6 +116,52 @@
  */
 #define REGEX_INFO "[0-9a-zA-Z/.\\t ]+"
 
+/**
+ * Small Blind.
+ */
+#define REGEX_SMALL_BLIND REGEX_AMT
+
+/**
+ * Big Blind.
+ */
+#define REGEX_LARGE_BLIND REGEX_AMT
+
+/**
+ * Raises per round
+ */
+#define REGEX_RAISES_PER_ROUND REGEX_AMT
+
+/**
+ * String used to specify the blinds for a game.
+ */
+#define REGEX_BLINDS REGEX_SMALL_BLIND REGEX_SPACE REGEX_LARGE_BLIND
+
+/**
+ * Type of stud game to play (5 card or 7 card)
+ */
+#define REGEX_STUD_TYPE_SPECIFIER "[57]{1}"
+
+/**
+ * String used to identify a stud game.
+ */
+#define REGEX_STUD_TYPE "STUD"
+
+/**
+ * String used to identify a draw game.
+ */
+#define REGEX_DRAW_TYPE "DRAW"
+
+/**
+ * String used to identify a holdem game.
+ */
+#define REGEX_HOLDEM_TYPE "HOLDEM"
+
+/**
+ * Game Types HOLDEM, DRAW, STUD.
+ * STUD is followed by 5 or 7.
+ */
+#define REGEX_GAME_TYPE "(" REGEX_STUD_TYPE REGEX_SPACE REGEX_STUD_TYPE_SPECIFIER "|" REGEX_DRAW_TYPE "|" REGEX_HOLDEM_TYPE ")"
+
 /* protocol commands */
 
 /**
@@ -133,6 +179,11 @@
  */
 #define CMD_WELCOME "WELCOME"
 
+/**
+ * Sent by the server to start a new game.
+ */
+#define CMD_NEWGAME "NEWGAME"
+
 /* Regular expressions used to match messages */
 
 #define REGEX_MSG_IPP ("^" CMD_IPP REGEX_SPACE REGEX_PROTOCOL_VERSION REGEX_SPACE REGEX_INFO "$")
@@ -140,6 +191,8 @@
 #define REGEX_MSG_BUYIN ("^" CMD_BUYIN REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT "$")
 
 #define REGEX_MSG_WELCOME ("^" CMD_WELCOME REGEX_SPACE REGEX_NAME "$")
+
+#define REGEX_MSG_NEWGAME ("^" CMD_NEWGAME REGEX_SPACE REGEX_GAME_TYPE REGEX_SPACE REGEX_BLINDS REGEX_SPACE REGEX_RAISES_PER_ROUND "$")
 
 /* function prototypes */
 

@@ -110,10 +110,16 @@ gboolean ipp_validate_unknown_msg(gchar *msg) {
 	guint i ;
 	gboolean is_valid = FALSE;
 
+	/*
+	 * TODO: these elements are searched in order from 0..N-1
+	 * Elements should be reordered so that the most
+	 * used are 1st and the least used are last.
+	 */
 	char *regex[] = {
 		REGEX_MSG_IPP,
 		REGEX_MSG_BUYIN,
 		REGEX_MSG_WELCOME,
+		REGEX_MSG_NEWGAME,
 		NULL
 	};
 
