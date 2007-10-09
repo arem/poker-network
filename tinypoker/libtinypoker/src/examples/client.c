@@ -43,7 +43,7 @@ int main(int argc, char **argv, char **envp) {
 	}
 
 	msg = g_strdup("BUYIN TOM 500");
-	rc = ipp_send_msg(socket, msg);
+	rc = ipp_send_msg(socket, msg, CLIENT_WRITE_TIMEOUT);
 	if (rc) {
 		g_printf("< %s\n", msg);
 		g_free(msg);

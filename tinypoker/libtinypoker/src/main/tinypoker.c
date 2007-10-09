@@ -256,16 +256,38 @@ gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout) {
 }
 
 /**
+ * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
+ * @param void_params a __ipp_writeln_thread_params structure.
+ */
+void __ipp_writeln_thread(void *void_params) {
+	GIOError err;
+	__ipp_writeln_thread_params *params;
+	params = (__ipp_writeln_thread_params *) void_params;
+
+	err = gnet_io_channel_writen(params->chan, params->buffer, strlen(params->buffer), params->n);
+	if (err != G_IO_ERROR_NONE) {
+		pthread_exit(0);
+	}
+
+	pthread_exit(0);
+}
+
+/**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
  * @param socket the socket to read from.
  * @param msg the message to send.
+ * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg) {
+gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg, gdouble timeout) {
 	GIOChannel *chan;
-	GIOError err;
+	GTimer* clock;
+	gint ret;
 	gboolean is_valid;
-	gsize n;
+	gsize n = 0;
+	__ipp_writeln_thread_params params;
+	pthread_t writer;
+	pthread_attr_t writer_attr;
 
 	ipp_normalize_msg(msg);
 	is_valid = ipp_validate_unknown_msg(msg);
@@ -283,13 +305,32 @@ gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg) {
 			return FALSE;
 		}
 
-		err = gnet_io_channel_writen(chan, final_msg, strlen(final_msg), &n);
-		if (err != G_IO_ERROR_NONE) {
-			g_free(final_msg);
-			final_msg = NULL;
+		params.chan   = chan;
+		params.buffer = final_msg;
+		params.n      = &n;
+
+		pthread_attr_init(&writer_attr);
+		pthread_attr_setdetachstate(&writer_attr, PTHREAD_CREATE_DETACHED);
+		ret = pthread_create(&writer, &writer_attr, (void* (*) (void*)) __ipp_writeln_thread, (void*) &params);
+		if (ret != 0) {
+			pthread_attr_destroy(&writer_attr);
 			return FALSE;
 		}
-		
+
+		clock = g_timer_new();
+		do {
+			if (g_timer_elapsed(clock, NULL) > timeout) {
+				break;
+			}
+			pthread_yield();
+		} while (!n);
+		g_timer_stop(clock);
+		g_timer_destroy(clock);
+		clock = NULL;
+
+		pthread_cancel(writer);
+		pthread_attr_destroy(&writer_attr);
+
 		if (n == strlen(final_msg)) {
 			g_free(final_msg);
 			final_msg = NULL;
