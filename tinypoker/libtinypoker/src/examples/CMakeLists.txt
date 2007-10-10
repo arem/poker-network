@@ -17,70 +17,52 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 #############################################
-# libgnet checks
+# libpthread checks
 #############################################
 
-FIND_LIBRARY(LIBGNET gnet-2.0 ${libdirs})
+FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
 
-IF (LIBGNET)
-  MESSAGE(STATUS "Found libgnet-2.0: ${LIBGNET}")
-ELSE (LIBGNET)
-  MESSAGE (FATAL_ERROR "libgnet-2.0 not found.")
-ENDIF (LIBGNET)
+IF (LIBPTHREAD)
+  MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
+ELSE (LIBPTHREAD)
+  MESSAGE (FATAL_ERROR "libpthread not found.")
+ENDIF (LIBPTHREAD)
 
-FIND_PATH(LIBGNET_INCLUDE_DIR gnet.h ${incdirs})
+FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
 
-IF (LIBGNET_INCLUDE_DIR)
-  MESSAGE(STATUS "Found gnet.h in ${LIBGNET_INCLUDE_DIR}")
-ELSE (LIBGNET_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "gnet.h not found.")
-ENDIF (LIBGNET_INCLUDE_DIR)
-
-FIND_PATH(LIBGNET_INCLUDE_DIR2 gnetconfig.h ${incdirs})
-
-IF (LIBGNET_INCLUDE_DIR2)
-  MESSAGE(STATUS "Found gnetconfig.h in ${LIBGNET_INCLUDE_DIR2}")
-ELSE (LIBGNET_INCLUDE_DIR2)
-  MESSAGE (FATAL_ERROR "gnetconfig.h not found.")
-ENDIF (LIBGNET_INCLUDE_DIR2)
+IF (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
+ELSE (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "pthread.h not found.")
+ENDIF (LIBPTHREAD_INCLUDE_DIR)
 
 #############################################
-# libglib checks
+# libgnutls checks
 #############################################
 
-FIND_LIBRARY(LIBGLIB glib-2.0 ${libdirs})
+FIND_LIBRARY(LIBGNUTLS gnutls ${libdirs})
 
-IF (LIBGLIB)
-  MESSAGE(STATUS "Found libglib-2.0: ${LIBGLIB}")
-ELSE (LIBGLIB)
-  MESSAGE (FATAL_ERROR "libglib-2.0 not found.")
-ENDIF (LIBGLIB)
+IF (LIBGNUTLS)
+  MESSAGE(STATUS "Found libgnutls: ${LIBGNUTLS}")
+ELSE (LIBGNUTLS)
+  MESSAGE (FATAL_ERROR "libgnutls not found.")
+ENDIF (LIBGNUTLS)
 
-FIND_PATH(LIBGLIB_INCLUDE_DIR glib.h ${incdirs})
+FIND_PATH(LIBGNUTLS_INCLUDE_DIR gnutls/gnutls.h ${incdirs})
 
-IF (LIBGLIB_INCLUDE_DIR)
-  MESSAGE(STATUS "Found glib.h in ${LIBGLIB_INCLUDE_DIR}")
-ELSE (LIBGLIB_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "glib.h not found.")
-ENDIF (LIBGLIB_INCLUDE_DIR)
-
-FIND_PATH(LIBGLIB_INCLUDE_DIR2 glibconfig.h ${incdirs})
-
-IF (LIBGLIB_INCLUDE_DIR2)
-  MESSAGE(STATUS "Found glibconfig.h in ${LIBGLIB_INCLUDE_DIR2}")
-ELSE (LIBGLIB_INCLUDE_DIR2)
-  MESSAGE (FATAL_ERROR "glibconfig.h not found.")
-ENDIF (LIBGLIB_INCLUDE_DIR2)
+IF (LIBGNUTLS_INCLUDE_DIR)
+  MESSAGE(STATUS "Found gnutls/gnutls.h in ${LIBGNUTLS_INCLUDE_DIR}")
+ELSE (LIBGNUTLS_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "gnutls/gnutls.h not found.")
+ENDIF (LIBGNUTLS_INCLUDE_DIR)
 
 #############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${incdirs} ${LIBGNET_INCLUDE_DIR} ${LIBGLIB_INCLUDE_DIR} ${LIBGNET_INCLUDE_DIR2} ${LIBGLIB_INCLUDE_DIR2})
-
 ADD_EXECUTABLE(client client.c)
-TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNET} ${LIBGLIB})
+TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 
 ADD_EXECUTABLE(server server.c)
-TARGET_LINK_LIBRARIES(server tinypoker ${LIBGNET} ${LIBGLIB})
+TARGET_LINK_LIBRARIES(server tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 

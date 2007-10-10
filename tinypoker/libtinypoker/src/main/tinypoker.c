@@ -18,16 +18,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <ctype.h>
+#define _GNU_SOURCE
+
 #include <regex.h>
-#include <pthread.h>
-#include <stdio.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <netdb.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
 #include <string.h>
-#include <glib.h>
-#include <gnet.h>
+#include <sys/mman.h>
+#include <sys/poll.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+
+#include <gnutls/gnutls.h>
+#include <gcrypt.h>
+#include <errno.h>
+#include <pthread.h>
+
+GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 #include "tinypoker.h"
+
+/**
+ * Initializes underlying libraries. This function *must* be called first!
+ */
+void ipp_init() {
+	gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+	gnutls_global_init();
+}
+
+/**
+ * De-initializes underlying libraries. This function *must* be called last!
+ */
+void ipp_exit() {
+	gnutls_global_deinit();
+}
 
 /**
  * Convert the string to upper case.
@@ -36,10 +68,10 @@
  * Should be called before ipp_validate_msg()
  * @param msg the message, a null terminated string, to transform.
  */
-void ipp_normalize_msg(gchar *msg) {
-	gint len, i, j;
+void ipp_normalize_msg(char *msg) {
+	int len, i, j;
 	len = strlen(msg);
-	gchar *pos;
+	char *pos;
 
 	if (!msg || strlen(msg) < MIN_MSG_SIZE) {
 		return;
@@ -77,7 +109,7 @@ void ipp_normalize_msg(gchar *msg) {
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-gboolean ipp_validate_msg(gchar *regex, gchar *msg) {
+int ipp_validate_msg(char *regex, char *msg) {
 	regex_t preg;
 	int ret;
 
@@ -106,9 +138,9 @@ gboolean ipp_validate_msg(gchar *regex, gchar *msg) {
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-gboolean ipp_validate_unknown_msg(gchar *msg) {
-	guint i ;
-	gboolean is_valid = FALSE;
+int ipp_validate_unknown_msg(char *msg) {
+	unsigned int i;
+	int is_valid = FALSE;
 
 	/*
 	 * TODO: these elements are searched in order from 0..N-1
@@ -138,10 +170,18 @@ gboolean ipp_validate_unknown_msg(gchar *msg) {
 }
 
 /**
- * Initializes gnet. This function *must* be called before performing any network operations!
+ * Allocates an empty ipp_socket. Don't forget to free().
+ * @return a malloc()'d ipp_socket structure.
  */
-void ipp_init() {
-	gnet_init();
+ipp_socket *ipp_new_socket() {
+	ipp_socket *sock;
+	sock = (ipp_socket *) malloc(sizeof(ipp_socket));
+	if (!sock) {
+		return NULL;
+	}
+
+	memset(sock, '\0', sizeof(ipp_socket));
+	return sock;
 }
 
 /**
@@ -150,33 +190,89 @@ void ipp_init() {
  * @param port the port number (example: 9999).
  * @return a socket or NULL if an error happened.
  */
-GTcpSocket* ipp_connect(gchar* hostname, gint port) {
-	GInetAddr* addr;
-	GTcpSocket* socket;
+ipp_socket *ipp_connect(char* hostname, int port) {
+	ipp_socket *sock;
+	int ret;
+	const int kx_prio[] = { GNUTLS_KX_ANON_DH, 0 };
+	struct sockaddr_in sin;
+	struct hostent *he;
 
-	if (!hostname || (port < 1 || port > 65535)) {
-		return FALSE;
+	/* TinyPoker -- create an empty socket structure*/
+	sock = ipp_new_socket();
+
+	/* GNU TLS -- initialize the structure */
+	gnutls_anon_allocate_client_credentials(&(sock->anoncred));
+	gnutls_init(&(sock->session), GNUTLS_CLIENT);
+	gnutls_set_default_priority(sock->session);
+	gnutls_kx_set_priority(sock->session, kx_prio);
+	gnutls_credentials_set(sock->session, GNUTLS_CRD_ANON, sock->anoncred);
+
+	/* TCP -- resolve the server's hostname, create a socket descriptor and connect */
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_port = htons((short) port);
+	he = gethostbyname(hostname);
+	if (!ret) {
+		ipp_disconnect(sock);
+		free(sock);
+		return NULL;
 	}
 
-	addr = gnet_inetaddr_new (hostname, port);
-	if (!addr) {
-		return NULL; /* cannot resolve host name */
+	sin.sin_family = he->h_addrtype;
+	memcpy(&sin.sin_addr, he->h_addr, he->h_length);
+	sock->sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (!(sock->sd)) {
+		ipp_disconnect(sock);
+		free(sock);
+		return NULL;
 	}
 
-	socket = gnet_tcp_socket_new (addr);
-	gnet_inetaddr_delete(addr);
+	ret = connect(sock->sd, (struct sockaddr *) &sin, sizeof(sin));
+	if (ret) {
+		ipp_disconnect(sock);
+		free(sock);
+		return NULL;
+	}
 
-	return socket;
+	/* GNU TLS -- handshaking */
+	gnutls_transport_set_ptr(sock->session, (gnutls_transport_ptr_t) sock->sd);
+	ret = gnutls_handshake(sock->session);
+	if (ret < 0) {
+		gnutls_perror(ret);
+		ipp_disconnect(sock);
+		free(sock);
+		return NULL;
+	}
+
+	return sock;
 }
 
 /**
  * Disconnect from the server.
+ * @param sock a socket to disconnect.
  */
-void ipp_disconnect(GTcpSocket *socket) {
-	if (socket) {
-		gnet_tcp_socket_delete(socket);
+void ipp_disconnect(ipp_socket *sock) {
+	if (sock->session) {
+		gnutls_bye(sock->session, GNUTLS_SHUT_RDWR);
 	}
-	socket = NULL;
+
+	if (sock->sd) {
+		/* close the connection */
+		shutdown(sock->sd, SHUT_RDWR);
+		close(sock->sd);
+	}
+
+	if (sock->session) {
+		/* free session data */
+		gnutls_deinit(sock->session);
+	}
+
+	if (sock->anoncred) {
+		/* free credentials */
+		gnutls_anon_free_client_credentials(sock->anoncred);
+	}
+
+	/* set to NULL to prevent double free() and other misuse */
+	memset(sock, '\0', sizeof(ipp_socket));
 }
 
 /**
@@ -184,13 +280,16 @@ void ipp_disconnect(GTcpSocket *socket) {
  * @param void_params a __ipp_readln_thread_params structure.
  */
 void __ipp_readln_thread(void *void_params) {
-	GIOError err;
 	__ipp_readln_thread_params *params;
 	params = (__ipp_readln_thread_params *) void_params;
 
-	err = gnet_io_channel_readline_strdup(params->chan, params->buffer, params->n);
-	if (err != G_IO_ERROR_NONE) {
-		pthread_exit(0);
+	*(params->buffer) = (char*) malloc(sizeof(char) * (MAX_MSG_SIZE+1));
+	if (*(params->buffer)) {
+		memset(*(params->buffer), '\0', (sizeof(char) * (MAX_MSG_SIZE+1)));
+		*(params->n) = gnutls_record_recv(params->sock->session, *(params->buffer), MAX_MSG_SIZE);
+		if (!(*(params->n))) {
+			*(params->n) = -1;
+		}
 	}
 
 	pthread_exit(0);
@@ -198,29 +297,25 @@ void __ipp_readln_thread(void *void_params) {
 
 /**
  * Read a message from the socket.
- * @param socket the socket to read from.
+ * @param sock the socket to read from.
  * @param timeout number of seconds to wait for input.
- * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
+ * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with free().
  */
-gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout) {
-	gint ret;
-	GTimer* clock;
-	gchar *buffer;
-	GIOChannel *chan;
-	gsize n = 0;
-	gboolean is_valid;
+char* ipp_read_msg(ipp_socket *sock, int timeout) {
+	__ipp_readln_thread_params params;
+	char *buffer;
+	int n, is_valid, ret;
 	pthread_t reader;
 	pthread_attr_t reader_attr;
-	__ipp_readln_thread_params params;
+	time_t clock;
 
-	chan = gnet_tcp_socket_get_io_channel(socket);
-	if (!chan) {
-		return NULL;
-	}
+	is_valid = FALSE;
+	buffer = NULL;
+	n = 0;
 
-	params.chan = chan;
+	params.sock   = sock;
 	params.buffer = &buffer;
-	params.n = &n;
+	params.n      = &n;
 
 	pthread_attr_init(&reader_attr);
 	pthread_attr_setdetachstate(&reader_attr, PTHREAD_CREATE_DETACHED);
@@ -230,23 +325,23 @@ gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout) {
 		return NULL;
 	}
 
-	clock = g_timer_new();
+	clock = time(NULL);
 	do {
-		if (g_timer_elapsed(clock, NULL) > timeout) {
+		if ((time(NULL) - clock) > timeout) {
 			break;
 		}
 		pthread_yield();
-	} while (!n);
-	g_timer_stop(clock);
-	g_timer_destroy(clock);
-	clock = NULL;
+	} while(!n);
 
 	pthread_cancel(reader);
 	pthread_attr_destroy(&reader_attr);
 
 	buffer = *(params.buffer);
 
-	if (!n) {
+	if (n < 0) {
+		free(buffer);
+		return NULL;
+	} else if (!n) {
 		return NULL;
 	}
 
@@ -256,7 +351,7 @@ gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout) {
 	if (is_valid) {
 		return buffer;
 	} else {
-		g_free(buffer);
+		free(buffer);
 		return NULL;
 	}
 }
@@ -266,83 +361,67 @@ gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout) {
  * @param void_params a __ipp_writeln_thread_params structure.
  */
 void __ipp_writeln_thread(void *void_params) {
-	GIOError err;
 	__ipp_writeln_thread_params *params;
 	params = (__ipp_writeln_thread_params *) void_params;
-
-	err = gnet_io_channel_writen(params->chan, params->buffer, strlen(params->buffer), params->n);
-	if (err != G_IO_ERROR_NONE) {
-		pthread_exit(0);
-	}
-
+	*(params->n) = gnutls_record_send(params->sock->session, params->buffer, strlen(params->buffer));
 	pthread_exit(0);
 }
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
- * @param socket the socket to read from.
+ * @param sock the socket to read from.
  * @param msg the message to send.
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg, gdouble timeout) {
-	GIOChannel *chan;
-	GTimer* clock;
-	gint ret;
-	gboolean is_valid;
-	gsize n = 0;
+int ipp_send_msg(ipp_socket *sock, char *msg, int timeout) {
 	__ipp_writeln_thread_params params;
+	int is_valid, ret, n;
 	pthread_t writer;
 	pthread_attr_t writer_attr;
+	time_t clock;
+
+	is_valid = FALSE;
+	n = 0;
 
 	ipp_normalize_msg(msg);
 	is_valid = ipp_validate_unknown_msg(msg);
-
 	if (is_valid) {
-		gchar *final_msg;
+		char *final_msg;
 
-		final_msg = g_strndup(msg, strlen(msg) + 1);
+		final_msg = strndup(msg, strlen(msg) + 1);
 		final_msg[strlen(msg)] = '\n';
 
-		chan = gnet_tcp_socket_get_io_channel(socket);
-		if (!chan) {
-			g_free(final_msg);
-			final_msg = NULL;
-			return FALSE;
-		}
-
-		params.chan   = chan;
-		params.buffer = final_msg;
+		params.sock   = sock;
+		params.buffer = msg;
 		params.n      = &n;
 
 		pthread_attr_init(&writer_attr);
 		pthread_attr_setdetachstate(&writer_attr, PTHREAD_CREATE_DETACHED);
+
 		ret = pthread_create(&writer, &writer_attr, (void* (*) (void*)) __ipp_writeln_thread, (void*) &params);
 		if (ret != 0) {
 			pthread_attr_destroy(&writer_attr);
 			return FALSE;
 		}
 
-		clock = g_timer_new();
+		clock = time(NULL);
 		do {
-			if (g_timer_elapsed(clock, NULL) > timeout) {
+			if ((time(NULL) - clock) > timeout) {
 				break;
 			}
 			pthread_yield();
-		} while (!n);
-		g_timer_stop(clock);
-		g_timer_destroy(clock);
-		clock = NULL;
+		} while(!n);
 
 		pthread_cancel(writer);
 		pthread_attr_destroy(&writer_attr);
 
 		if (n == strlen(final_msg)) {
-			g_free(final_msg);
+			free(final_msg);
 			final_msg = NULL;
 			return TRUE;
 		} else {
-			g_free(final_msg);
+			free(final_msg);
 			final_msg = NULL;
 			return FALSE;
 		}
@@ -350,3 +429,4 @@ gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg, gdouble timeout) {
 		return FALSE;
 	}
 }
+

@@ -19,5 +19,8 @@
  */
 
 int main(int argc, char **argv, char **envp) {
+	ipp_init();
+
+	ipp_exit();
 	return 0;
 }

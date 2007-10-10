@@ -1,15 +1,32 @@
-To simplify the network code, speed up the message parser, and
-provide a more robust input validator, TinyPoker will be
+**********************************************************************
+**********************************************************************
+**** WARNING:
+****
+**** This library is under heavy construction. You shouldn't build
+**** applications with it yet as the API is likely to change.
+**********************************************************************
+**********************************************************************
+
+To simplify the network code, speed up the message parser, increase
+security and provide a more robust input validator, TinyPoker will be
 implementing the Internet Poker Protocol (IPP) Version 2.0
 See: http://www.cs.rochester.edu/u/ferguson/poker/ipp.html
+
 This library, libtinypoker, will implement both the client and
 server networking code and protocol functionality. Game logic
 and program configuration will remain outside the library.
 
-Goals:
+Goals
+=====
 
-  Fully implement the Internet Poker Protocol (IPP) Version 2.0.
-  Be interoperable with ippd http://www.cs.rochester.edu/~ferguson/poker/
-  Provide the ability to normalize and validate messages.
-  Support SSL and non-SSL connections.
-  Gracefully handle network problems (bad input, disconnections, etc).
+ - Fully implement the Internet Poker Protocol (IPP) Version 2.0.
+ - Provide the ability to normalize and validate messages.
+ - Gracefully handle network problems (bad input, disconnections, etc).
+ - Fully normalized and validated messages or null from send/recv.
+ - Secure connections.
+
+Plans
+=====
+
+ - Authentication Using X.509 Certificates.
+ - Fully implement the Internet Poker Protocol (IPP) Version 2.0.

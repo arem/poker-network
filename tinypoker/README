@@ -9,7 +9,7 @@
 
 TinyPoker is a collection of poker software written by Thomas Cort. 
 Originally the code was written for a poker bot programming competition 
-for the Computer Science Club[1] at Bishop's University[2] in 
+for the Computer Science Club at Bishop's University in 
 Lennoxville, Quebec, Canada. The project has been dormant for the past 
 couple of years, but development has resumed.
 
@@ -34,8 +34,3 @@ bagelbot - a basic bot designed for use with pokerd. This bot connects
 to the server, joins the game, and folds every chance it gets. It is
 intended to be used as an example for creating a new bots. You just have 
 to add the programming logic to determine to fold, raise, bet, or call.
-
-[1] Computer Science Club -- http://j9.ubishops.ca
-Also see the Computer Science Department -- http://cs.ubishops.ca
-
-[2] Bishop's University -- http://ubishops.ca

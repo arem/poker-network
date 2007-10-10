@@ -21,11 +21,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
-#include <gnet.h>
+#include <gnutls/gnutls.h>
 
 #ifndef __TINYPOKER_H
 #define __TINYPOKER_H
+
+#ifndef TRUE
+#define TRUE (1)
+#endif
+
+#ifndef FALSE
+#define FALSE (0)
+#endif
+
+/**
+ * Structure used to hold network communications information.
+ */
+typedef struct ipp_socket {
+	int sd;
+	gnutls_session_t session;
+	gnutls_anon_client_credentials_t anoncred;
+} ipp_socket;
+
+/**
+ * Allocates an empty ipp_socket. Don't forget to free().
+ * @return a malloc()'d ipp_socket structure.
+ */
+ipp_socket *ipp_new_socket();
 
 /**
  * The name of this library for IPP strings, etc.
@@ -56,28 +78,28 @@
  * This should be much higher than SERVER_READ_TIMEOUT.
  * @see SERVER_READ_TIMEOUT
  */
-#define CLIENT_READ_TIMEOUT (600.0)
+#define CLIENT_READ_TIMEOUT (600)
 
 /**
  * The number of seconds a server should wait for network input.
  * This should be much smaller than CLIENT_READ_TIMEOUT.
  * @see CLIENT_READ_TIMEOUT
  */
-#define SERVER_READ_TIMEOUT (15.0)
+#define SERVER_READ_TIMEOUT (15)
 
 /**
  * The number of seconds a client should wait for network output.
  * This should be much higher than SERVER_WRITE_TIMEOUT.
  * @see SERVER_WRITE_TIMEOUT
  */
-#define CLIENT_WRITE_TIMEOUT (600.0)
+#define CLIENT_WRITE_TIMEOUT (600)
 
 /**
  * The number of seconds a server should wait for network input.
  * This should be much smaller than CLIENT_WRITE_TIMEOUT.
  * @see CLIENT_WRITE_TIMEOUT
  */
-#define SERVER_WRITE_TIMEOUT (15.0)
+#define SERVER_WRITE_TIMEOUT (15)
 
 /* Regular expressions used to match message parts */
 
@@ -197,26 +219,36 @@
 /* function prototypes */
 
 /**
+ * Initializes underlying libraries. This function *must* be called before performing any network operations!
+ */
+void ipp_init();
+
+/**
+ * De-initializes underlying libraries. This function *must* be called last!
+ */
+void ipp_exit();
+
+/**
  * Validates IPP Messages
  * @param regex one of the REGEX constants.
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-gboolean ipp_validate_msg(gchar *regex, gchar *msg);
+int ipp_validate_msg(char *regex, char *msg);
 
 /**
  * Validates an arbitrary IPP Messages.
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-gboolean ipp_validate_unknown_msg(gchar *msg);
+int ipp_validate_unknown_msg(char *msg);
 
 /**
  * Convert the string to upper case and convert multiple spaces to 1 space.
  * Trim leading and trailing white space.
  * @param msg the message, a null terminated string, to transform.
  */
-void ipp_normalize_msg(gchar *msg);
+void ipp_normalize_msg(char *msg);
 
 /**
  * Connect to a server.
@@ -224,39 +256,39 @@ void ipp_normalize_msg(gchar *msg);
  * @param port the port number (example: 9999).
  * @return a socket or NULL if an error happened.
  */
-GTcpSocket* ipp_connect(gchar* hostname, gint port);
+ipp_socket *ipp_connect(char* hostname, int port);
 
 /**
  * Disconnect from the server.
+ * @param sock a socket to disconnect.
  */
-void ipp_disconnect(GTcpSocket *socket);
-
+void ipp_disconnect(ipp_socket *sock);
 
 /**
  * Read a message from the socket.
- * @param socket the socket to read from.
+ * @param sock the socket to read from.
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-gchar* ipp_read_msg(GTcpSocket *socket, gdouble timeout);
+char* ipp_read_msg(ipp_socket *sock, int timeout);
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
- * @param socket the socket to read from.
+ * @param sock the socket to read from.
  * @param msg the message to send.
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-gboolean ipp_send_msg(GTcpSocket *socket, gchar *msg, gdouble timeout);
+int ipp_send_msg(ipp_socket *sock, char *msg, int timeout);
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * Parameters passed to the reader thread.
  */
 typedef struct __ipp_readln_thread_params {
-	GIOChannel *chan;
-	gchar **buffer;
-	gsize *n;
+	ipp_socket *sock;
+	char **buffer;
+	unsigned int *n;
 } __ipp_readln_thread_params;
 
 /**
@@ -270,9 +302,9 @@ void __ipp_readln_thread(void *void_params);
  * Parameters passed to the writer thread.
  */
 typedef struct __ipp_writeln_thread_params {
-	GIOChannel *chan;
-	gchar *buffer;
-	gsize *n;
+	ipp_socket *sock;
+	char *buffer;
+	unsigned int *n;
 } __ipp_writeln_thread_params;
 
 /**

@@ -19,53 +19,62 @@
  */
 
 #include "../main/tinypoker.h"
-
+#include <string.h>
 
 int main(int argc, char **argv, char **envp) {
-	GTcpSocket *socket;
-	gchar* msg;
-	gboolean rc;
-
+	ipp_socket *sock;
+	int rc;
+	char *msg;
 	ipp_init();
-	socket = ipp_connect("localhost", 9898);
-	if (!socket) {
-		g_printf("! connect failed\n");
+
+	sock = ipp_connect("localhost", 9898);
+	if (!sock) {
+		printf("! connect failed\n");
+		ipp_exit();
 		return 1;
 	}
 
-	msg = ipp_read_msg(socket, CLIENT_READ_TIMEOUT);
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
 	if (msg) {
-		g_printf("> %s\n", msg);
-		g_free(msg);
+		printf("> %s\n", msg);
+		free(msg);
 	} else {
-		g_printf("! read error\n");
+		printf("! read error\n");
+		ipp_disconnect(sock);
+		free(sock);
+		ipp_exit();
 		return 1;
 	}
 
-	msg = g_strdup("BUYIN TOM 500");
-	rc = ipp_send_msg(socket, msg, CLIENT_WRITE_TIMEOUT);
+	msg = strdup("BUYIN TOM 500");
+	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);
 	if (rc) {
-		g_printf("< %s\n", msg);
-		g_free(msg);
+		printf("< %s\n", msg);
+		free(msg);
 	} else {
-		g_printf("! send error\n");
-		g_free(msg);
+		printf("! send error\n");
+		free(msg);
+		ipp_disconnect(sock);
+		free(sock);
+		ipp_exit();
 		return 1;
 	}
 
-	msg = ipp_read_msg(socket, CLIENT_READ_TIMEOUT);
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
 	if (msg) {
-		g_printf("> %s\n", msg);
-		g_free(msg);
+		printf("> %s\n", msg);
+		free(msg);
 	} else {
-		g_printf("! read error\n");
+		printf("! read error\n");
+		ipp_disconnect(sock);
+		free(sock);
+		ipp_exit();
 		return 1;
 	}
 
-	if (socket) {
-		gnet_tcp_socket_delete(socket);
-		socket = NULL;
-	}
+	ipp_disconnect(sock);
+	free(sock);
+	ipp_exit();
 
 	return 0;
 }
