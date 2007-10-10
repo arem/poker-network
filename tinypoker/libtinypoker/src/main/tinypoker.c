@@ -280,13 +280,20 @@ void ipp_disconnect(ipp_socket *sock) {
  * @param void_params a __ipp_readln_thread_params structure.
  */
 void __ipp_readln_thread(void *void_params) {
+	int ret;
 	__ipp_readln_thread_params *params;
 	params = (__ipp_readln_thread_params *) void_params;
 
 	*(params->buffer) = (char*) malloc(sizeof(char) * (MAX_MSG_SIZE+1));
 	if (*(params->buffer)) {
 		memset(*(params->buffer), '\0', (sizeof(char) * (MAX_MSG_SIZE+1)));
-		*(params->n) = gnutls_record_recv(params->sock->session, *(params->buffer), MAX_MSG_SIZE);
+
+		do {
+			ret = gnutls_record_recv(params->sock->session, *(params->buffer), MAX_MSG_SIZE);
+		} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
+
+		*(params->n) = ret;
+
 		if (!(*(params->n))) {
 			*(params->n) = -1;
 		}
@@ -361,9 +368,15 @@ char* ipp_read_msg(ipp_socket *sock, int timeout) {
  * @param void_params a __ipp_writeln_thread_params structure.
  */
 void __ipp_writeln_thread(void *void_params) {
+	int ret;
 	__ipp_writeln_thread_params *params;
 	params = (__ipp_writeln_thread_params *) void_params;
-	*(params->n) = gnutls_record_send(params->sock->session, params->buffer, strlen(params->buffer));
+
+	do {
+		ret = gnutls_record_send(params->sock->session, params->buffer, strlen(params->buffer));
+	} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
+
+	*(params->n) = ret;
 	pthread_exit(0);
 }
 
@@ -430,3 +443,110 @@ int ipp_send_msg(ipp_socket *sock, char *msg, int timeout) {
 	}
 }
 
+/**
+ * Main server loop. This function sets up the networking and accepts
+ * incoming connections. For every incoming client, a new thread is 
+ * created and starts executing the function pointed to by func.
+ * @param port TCP/IP port to listen on.
+ * @param func function to call when a new client connects.
+ */
+void ipp_servloop(int port, void (*func)(void*)) {
+	int master, done, slave, rc;
+	struct pollfd p;
+	struct sockaddr_in sin;
+	struct sockaddr_in client_addr;
+	unsigned int client_addr_len;
+	const int kx_prio[] = { GNUTLS_KX_ANON_DH, 0 };
+	gnutls_session_t session;
+	gnutls_dh_params_t dh_params;
+	gnutls_anon_server_credentials_t anoncred;
+
+	gnutls_anon_allocate_server_credentials(&anoncred);
+	gnutls_dh_params_init(&dh_params);
+	gnutls_dh_params_generate2(dh_params, 1024);
+	gnutls_anon_set_server_dh_params(anoncred, dh_params);
+
+	client_addr_len = sizeof(client_addr);
+	memset(&sin, 0, sizeof(sin));
+
+	sin.sin_family      = AF_INET;
+	sin.sin_addr.s_addr = INADDR_ANY;
+	sin.sin_port        = (unsigned short)htons(port);
+
+	master = socket(PF_INET, SOCK_STREAM, 0);
+	if (master < 0) {
+		gnutls_anon_free_server_credentials(anoncred);
+		return;
+	}
+
+	rc = bind(master, (struct sockaddr *)&sin, sizeof(sin));
+	if (rc < 0) {
+		gnutls_anon_free_server_credentials(anoncred);
+		return;
+	}
+
+	rc = listen(master, 64);
+	if (rc < 0) {
+		gnutls_anon_free_server_credentials(anoncred);
+		return;
+	}
+
+	p.fd      = master;
+	p.events  = POLLIN;
+	p.revents = 0;
+
+	done = 0;
+
+	while (!done) {
+		/* Poll master so that we don't block on accept */
+		/* this is done so that when we signal we re-evaluate if !done == true */
+
+		poll(&p,1,30000);  /* 30 second timeout */
+		if (p.revents != POLLIN) { /* no activity */
+			if (done) {
+				break;
+			} else {
+				continue;
+			}
+		}
+
+		slave = accept(master, (struct sockaddr*)&client_addr, &client_addr_len);
+		if (slave < 0) {
+			if (errno == EINTR) {
+				continue;
+			} else {
+				shutdown(master, SHUT_RDWR);
+				close(master);
+				gnutls_anon_free_server_credentials(anoncred);
+				return;
+			}
+		}
+
+		gnutls_init(&session, GNUTLS_SERVER);
+		gnutls_set_default_priority(session);
+		gnutls_kx_set_priority(session, kx_prio);
+		gnutls_credentials_set(session, GNUTLS_CRD_ANON, anoncred);
+		gnutls_dh_set_prime_bits(session, 1024);
+		gnutls_transport_set_ptr(session, (gnutls_transport_ptr_t) slave);
+
+		rc = gnutls_handshake(session);
+		if (rc < 0) {
+			shutdown(slave, SHUT_RDWR);
+			close(slave);
+			gnutls_deinit(session);
+			continue;
+		}
+
+		/* printf("Handshake OK :-D\n"); */
+
+		/* TODO  spawn a new thread here and remove this block */
+		gnutls_bye(session, GNUTLS_SHUT_WR);
+		shutdown(slave, SHUT_RDWR);
+		close(slave);
+		gnutls_deinit(session);
+	}
+
+	shutdown(master, SHUT_RDWR);
+	close(master);
+	gnutls_anon_free_server_credentials(anoncred);
+}

@@ -18,9 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "../main/tinypoker.h"
+
 int main(int argc, char **argv, char **envp) {
 	ipp_init();
-
+	ipp_servloop(9898, NULL);
 	ipp_exit();
 	return 0;
 }

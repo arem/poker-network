@@ -313,4 +313,13 @@ typedef struct __ipp_writeln_thread_params {
  */
 void __ipp_writeln_thread(void *void_params);
 
+/**
+ * Main server loop. This function sets up the networking and accepts
+ * incoming connections. For every incoming client, a new thread is
+ * created and starts executing the function pointed to by func.
+ * @param port TCP/IP port to listen on.
+ * @param func function to call when a new client connects.
+ */
+void ipp_servloop(int port, void (*func)(void*));
+
 #endif
