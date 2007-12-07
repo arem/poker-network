@@ -25,15 +25,17 @@
 
 #define INPUT_SIZE (64)
 
-char *newString() {
+char *newString()
+{
 	char *str;
-	str = (char*) malloc(sizeof(char) * (INPUT_SIZE+1));
+	str = (char *) malloc(sizeof(char) * (INPUT_SIZE + 1));
 	assertNotNull("malloc() failed", str);
-	memset(str, '\0', INPUT_SIZE+1);
+	memset(str, '\0', INPUT_SIZE + 1);
 	return str;
 }
 
-int main() {
+int main()
+{
 	char *str;
 
 	str = newString();
@@ -45,21 +47,21 @@ int main() {
 	str = newString();
 	strncpy(str, "  IPP  2.0  TEST  ", INPUT_SIZE);
 	ipp_normalize_msg(str);
-	printf("'%s'\n",str);
+	printf("'%s'\n", str);
 	assertStringEqual("Normalize failed to properly trim", str, "IPP 2.0 TEST");
 	free(str);
 
 	str = newString();
 	strncpy(str, " IPP 2.0 TEST ", INPUT_SIZE);
 	ipp_normalize_msg(str);
-	printf("'%s'\n",str);
+	printf("'%s'\n", str);
 	assertStringEqual("Normalize failed to properly trim", str, "IPP 2.0 TEST");
 	free(str);
 
 	str = newString();
 	strncpy(str, " IPP 2.0 TEST", INPUT_SIZE);
 	ipp_normalize_msg(str);
-	printf("'%s'\n",str);
+	printf("'%s'\n", str);
 	assertStringEqual("Normalize failed to properly trim", str, "IPP 2.0 TEST");
 	free(str);
 

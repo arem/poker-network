@@ -21,7 +21,8 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int main() {
+int main()
+{
 	assertTrue("Welcome String should be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME BAGELBOT"));
 	assertTrue("Welcome String should be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME Coat_Hanger"));
 

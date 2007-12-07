@@ -256,13 +256,13 @@ void ipp_normalize_msg(char *msg);
  * @param port the port number (example: 9999).
  * @return a socket or NULL if an error happened.
  */
-ipp_socket *ipp_connect(char* hostname, int port);
+ipp_socket *ipp_connect(char *hostname, int port);
 
 /**
  * Disconnect from the server.
  * @param sock a socket to disconnect.
  */
-void ipp_disconnect(ipp_socket *sock);
+void ipp_disconnect(ipp_socket * sock);
 
 /**
  * Read a message from the socket.
@@ -270,7 +270,7 @@ void ipp_disconnect(ipp_socket *sock);
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-char* ipp_read_msg(ipp_socket *sock, int timeout);
+char *ipp_read_msg(ipp_socket * sock, int timeout);
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
@@ -279,7 +279,7 @@ char* ipp_read_msg(ipp_socket *sock, int timeout);
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int ipp_send_msg(ipp_socket *sock, char *msg, int timeout);
+int ipp_send_msg(ipp_socket * sock, char *msg, int timeout);
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
@@ -321,6 +321,6 @@ void __ipp_writeln_thread(void *void_params);
  * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
  */
-void ipp_servloop(int port, void (*callback)(ipp_socket *));
+void ipp_servloop(int port, void (*callback) (ipp_socket *));
 
 #endif

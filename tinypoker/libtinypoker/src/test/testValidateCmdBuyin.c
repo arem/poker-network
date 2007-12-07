@@ -21,7 +21,8 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int main() {
+int main()
+{
 	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
 	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
 

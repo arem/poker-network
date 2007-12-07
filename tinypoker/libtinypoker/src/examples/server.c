@@ -20,7 +20,8 @@
 
 #include "../main/tinypoker.h"
 
-void servloop_callback(ipp_socket *sock) {
+void servloop_callback(ipp_socket * sock)
+{
 	/*
 	 * In this area we would add the socket to some
 	 * internal data structure and/or create a thread
@@ -34,7 +35,8 @@ void servloop_callback(ipp_socket *sock) {
 	free(sock);
 }
 
-int main(int argc, char **argv, char **envp) {
+int main(int argc, char **argv, char **envp)
+{
 	ipp_init();
 	ipp_servloop(9898, servloop_callback);
 	ipp_exit();

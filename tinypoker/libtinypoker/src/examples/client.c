@@ -21,7 +21,8 @@
 #include "../main/tinypoker.h"
 #include <string.h>
 
-int main(int argc, char **argv, char **envp) {
+int main(int argc, char **argv, char **envp)
+{
 	ipp_socket *sock;
 	int rc;
 	char *msg;
