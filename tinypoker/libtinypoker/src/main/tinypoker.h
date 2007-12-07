@@ -315,11 +315,12 @@ void __ipp_writeln_thread(void *void_params);
 
 /**
  * Main server loop. This function sets up the networking and accepts
- * incoming connections. For every incoming client, a new thread is
- * created and starts executing the function pointed to by func.
+ * incoming connections. For every incoming client, a 'callback' is
+ * called. The server blocks and waits for 'callback' to return, so
+ * make 'callback' short and sweet.
  * @param port TCP/IP port to listen on.
- * @param func function to call when a new client connects.
+ * @param callback function to call when a new client connects.
  */
-void ipp_servloop(int port, void (*func)(void*));
+void ipp_servloop(int port, void (*callback)(ipp_socket *));
 
 #endif

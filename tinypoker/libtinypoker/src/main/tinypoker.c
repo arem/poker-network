@@ -142,11 +142,6 @@ int ipp_validate_unknown_msg(char *msg) {
 	unsigned int i;
 	int is_valid = FALSE;
 
-	/*
-	 * TODO: these elements are searched in order from 0..N-1
-	 * Elements should be reordered so that the most
-	 * used are 1st and the least used are last.
-	 */
 	char *regex[] = {
 		REGEX_MSG_IPP,
 		REGEX_MSG_BUYIN,
@@ -445,13 +440,16 @@ int ipp_send_msg(ipp_socket *sock, char *msg, int timeout) {
 
 /**
  * Main server loop. This function sets up the networking and accepts
- * incoming connections. For every incoming client, a new thread is 
- * created and starts executing the function pointed to by func.
+ * incoming connections. For every incoming client, a 'callback' is
+ * called. The server blocks and waits for 'callback' to return, so
+ * make 'callback' short and sweet.
  * @param port TCP/IP port to listen on.
- * @param func function to call when a new client connects.
+ * @param callback function to call when a new client connects.
  */
-void ipp_servloop(int port, void (*func)(void*)) {
+void ipp_servloop(int port, void (*callback)(ipp_socket *)) {
 	int master, done, slave, rc;
+	ipp_socket *ipp_slave;
+
 	struct pollfd p;
 	struct sockaddr_in sin;
 	struct sockaddr_in client_addr;
@@ -537,13 +535,19 @@ void ipp_servloop(int port, void (*func)(void*)) {
 			continue;
 		}
 
-		/* printf("Handshake OK :-D\n"); */
+		ipp_slave = ipp_new_socket();
+		if (!ipp_slave) {
+			shutdown(slave, SHUT_RDWR);
+			close(slave);
+			gnutls_deinit(session);
+			continue;
+		}
 
-		/* TODO  spawn a new thread here and remove this block */
-		gnutls_bye(session, GNUTLS_SHUT_WR);
-		shutdown(slave, SHUT_RDWR);
-		close(slave);
-		gnutls_deinit(session);
+		ipp_slave->sd = slave;
+		ipp_slave->session = session;
+		ipp_slave->anoncred = NULL;
+
+		callback(ipp_slave);
 	}
 
 	shutdown(master, SHUT_RDWR);

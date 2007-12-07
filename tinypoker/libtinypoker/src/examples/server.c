@@ -20,9 +20,23 @@
 
 #include "../main/tinypoker.h"
 
+void servloop_callback(ipp_socket *sock) {
+	/*
+	 * In this area we would add the socket to some
+	 * internal data structure and/or create a thread
+	 * to handle the client connection depending on
+	 * the server architecture.
+	 */
+
+
+	/* TODO: move these when more of the server is complete */
+	ipp_disconnect(sock);
+	free(sock);
+}
+
 int main(int argc, char **argv, char **envp) {
 	ipp_init();
-	ipp_servloop(9898, NULL);
+	ipp_servloop(9898, servloop_callback);
 	ipp_exit();
 	return 0;
 }
