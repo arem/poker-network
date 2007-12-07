@@ -1,0 +1,13 @@
+**********************************************************************
+**********************************************************************
+**** WARNING:
+****
+**** This server is under heavy construction. You shouldn't use it 
+**** yet unless you want to help with development.
+**********************************************************************
+**********************************************************************
+
+tinypokerd will be the tinypoker server. It will use libtinypoker to 
+implement the Internet Poker Protocol (IPP) 2.0 over TLS. The code will 
+be based on some code and experience implementing pokerd. An effort will 
+be made to make the server footprint even smaller.
