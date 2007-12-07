@@ -6,7 +6,7 @@ You need the following to build this library...
         cmake           http://cmake.org/
         make            http://www.gnu.org/software/make/
         gcc             http://gcc.gnu.org/
-	gnet            http://www.gnetlibrary.org/
+	gnutls		http://www.gnu.org/software/gnutls/
 
 Configure, compile, test, install...
 
