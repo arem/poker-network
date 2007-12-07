@@ -47,7 +47,8 @@ int killed;
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
-void display_version() {
+void display_version()
+{
 	daemon_log(LOG_INFO, "tinypokerd v0.1");
 	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007 Thomas Cort");
 	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
@@ -59,7 +60,8 @@ void display_version() {
  * Displays some usage information, command line parameters and whatnot.
  * @param program the name of the program.
  */
-void display_help(char *program) {
+void display_help(char *program)
+{
 	daemon_log(LOG_INFO, "Usage: %s [options]", program);
 	daemon_log(LOG_INFO, "Options:");
 	daemon_log(LOG_INFO, "    -h --help          Show this help message");
@@ -130,7 +132,8 @@ int parse_args(int argc, char **argv)
 	return done;
 }
 
-int main(int argc, char *argv[], char *envp[]) {
+int main(int argc, char *argv[], char *envp[])
+{
 	int fd;
 	int ret;
 	pid_t pid;
