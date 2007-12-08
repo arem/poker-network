@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
  * This file is part of libtinypoker.
  *
@@ -584,6 +584,4 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 	shutdown(master, SHUT_RDWR);
 	close(master);
 	gnutls_anon_free_server_credentials(anoncred);
-
-	printf("Done servloop\n");
 }

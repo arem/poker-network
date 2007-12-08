@@ -20,10 +20,12 @@
 
 #include <gnutls/gnutls.h>
 #include <libdaemon/dlog.h>
+#include <pthread.h>
 #include <signal.h>
 #include <tinypoker.h>
 
 #include "config.h"
+#include "poker.h"
 #include "signal.h"
 
 static void client_connect_callback(ipp_socket * sock)
@@ -36,9 +38,22 @@ static void client_connect_callback(ipp_socket * sock)
 
 int pokerserv()
 {
-	ipp_init();
+	pthread_t dealer_thread;
+	pthread_attr_t dealer_thread_attr;
+
+	/* create a thread to play the game */
+	pthread_attr_init(&dealer_thread_attr);
+	pthread_attr_setdetachstate(&dealer_thread_attr, PTHREAD_CREATE_DETACHED);
+	monitor_inc();
+	if (pthread_create(&dealer_thread, &dealer_thread_attr, play, NULL) != 0) {
+		daemon_log(LOG_ERR, "Couldn't create dealer thread");
+		monitor_dec();
+		raise(SIGQUIT);
+		return -1;
+	}
+
+	/* Start listening for connections */
 	ipp_servloop(port, client_connect_callback);
-	ipp_exit();
 
 	if (!exit_now) {
 		/*

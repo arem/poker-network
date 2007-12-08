@@ -30,6 +30,7 @@
 #include <fcntl.h>
 
 #include "config.h"
+#include "deck.h"
 #include "monitor.h"
 #include "pokerserv.h"
 #include "signal.h"
@@ -219,11 +220,16 @@ int main(int argc, char *argv[], char *envp[])
 		return 1;
 	}
 
-	/* this must run before any threads are created */
-	monitor_init();
-
 	/* Configure */
 	config_parse();
+
+	/* setup tiny poker */
+	ipp_init();
+
+	deck_init();		/* create the deck */
+
+	/* this must run before any threads are created */
+	monitor_init();
 
 	/* Install Signal Handlers */
 	install_signal_handlers();
@@ -232,6 +238,7 @@ int main(int argc, char *argv[], char *envp[])
 	pokerserv();
 
 	monitor_wait();		/* thread cleanup */
+	ipp_exit();
 	config_free();
 	daemon_pid_file_remove();
 

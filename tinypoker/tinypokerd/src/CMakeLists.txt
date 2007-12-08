@@ -49,7 +49,7 @@ FIND_LIBRARY(LIBDAEMON daemon ${libdirs})
 IF (LIBDAEMON)
   MESSAGE(STATUS "Found libdaemon: ${LIBDAEMON}")
 ELSE (LIBDAEMON)
-  MESSAGE (FATAL_ERROR "libdaemon not found.")
+  MESSAGE (FATAL_ERROR "libdaemon not found. See: http://0pointer.de/lennart/projects/libdaemon/")
 ENDIF (LIBDAEMON)
 
 FIND_PATH(LIBDAEMON_INCLUDE_DIR libdaemon/daemon.h ${incdirs})
@@ -57,7 +57,7 @@ FIND_PATH(LIBDAEMON_INCLUDE_DIR libdaemon/daemon.h ${incdirs})
 IF (LIBDAEMON_INCLUDE_DIR)
   MESSAGE(STATUS "Found libdaemon/daemon.h in ${LIBDAEMON_INCLUDE_DIR}")
 ELSE (LIBDAEMON_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "libdaemon/daemon.h not found.")
+  MESSAGE (FATAL_ERROR "libdaemon/daemon.h not found. See: http://0pointer.de/lennart/projects/libdaemon/")
 ENDIF (LIBDAEMON_INCLUDE_DIR)
 
 #############################################
@@ -69,7 +69,7 @@ FIND_LIBRARY(LIBCONFUSE confuse ${libdirs})
 IF (LIBCONFUSE)
   MESSAGE(STATUS "Found libconfuse: ${LIBCONFUSE}")
 ELSE (LIBCONFUSE)
-  MESSAGE (FATAL_ERROR "libconfuse not found.")
+  MESSAGE (FATAL_ERROR "libconfuse not found. See: http://www.nongnu.org/confuse/")
 ENDIF (LIBCONFUSE)
 
 FIND_PATH(LIBCONFUSE_INCLUDE_DIR confuse.h ${incdirs})
@@ -77,7 +77,7 @@ FIND_PATH(LIBCONFUSE_INCLUDE_DIR confuse.h ${incdirs})
 IF (LIBCONFUSE_INCLUDE_DIR)
   MESSAGE(STATUS "Found confuse.h in ${LIBCONFUSE_INCLUDE_DIR}")
 ELSE (LIBCONFUSE_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "confuse.h not found.")
+  MESSAGE (FATAL_ERROR "confuse.h not found. See: http://www.nongnu.org/confuse/")
 ENDIF (LIBCONFUSE_INCLUDE_DIR)
 
 #############################################
@@ -89,7 +89,7 @@ FIND_LIBRARY(LIBTINYPOKER tinypoker ${libdirs})
 IF (LIBTINYPOKER)
   MESSAGE(STATUS "Found libtinypoker: ${LIBTINYPOKER}")
 ELSE (LIBTINYPOKER)
-  MESSAGE (FATAL_ERROR "libtinypoker not found.")
+  MESSAGE (FATAL_ERROR "libtinypoker not found. See: http://tinypoker.org/")
 ENDIF (LIBTINYPOKER)
 
 FIND_PATH(LIBTINYPOKER_INCLUDE_DIR tinypoker.h ${incdirs})
@@ -97,7 +97,7 @@ FIND_PATH(LIBTINYPOKER_INCLUDE_DIR tinypoker.h ${incdirs})
 IF (LIBTINYPOKER_INCLUDE_DIR)
   MESSAGE(STATUS "Found tinypoker.h in ${LIBTINYPOKER_INCLUDE_DIR}")
 ELSE (LIBTINYPOKER_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "tinypoker.h not found.")
+  MESSAGE (FATAL_ERROR "tinypoker.h not found. See: http://tinypoker.org/")
 ENDIF (LIBTINYPOKER_INCLUDE_DIR)
 
 #############################################
@@ -125,7 +125,7 @@ ENDIF (LIBGNUTLS_INCLUDE_DIR)
 #############################################
 
 INCLUDE_DIRECTORIES(${incdirs} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR})
-ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c pokerserv.c)
+ADD_EXECUTABLE(tinypokerd config.c deck.c monitor.c signal.c tinypokerd.c poker.c pokerserv.c)
 TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${LIBGNUTLS})
 
 #############################################

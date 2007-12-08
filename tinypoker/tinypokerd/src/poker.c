@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
- * This file is part of libtinypoker.
+ * This file is part of tinypokerd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../main/tinypoker.h"
-#include "test.h"
+#include <stdlib.h>
 
-int main()
+#include "deck.h"
+#include "signal.h"
+
+void *play(void *arg)
 {
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
 
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, ""));
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN X 1 1"));
-	return PASS;
+	while (!exit_now) {
+		sleep(1);
+		deck_shuffle();
+	}
+
+	monitor_dec();
+	return NULL;
 }
