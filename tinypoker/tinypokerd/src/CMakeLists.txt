@@ -21,6 +21,26 @@ SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)
 SET (incdirs /usr/include /usr/local/include /usr/pkg/include)
 
 #############################################
+# libpthread checks
+#############################################
+
+FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
+
+IF (LIBPTHREAD)
+  MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
+ELSE (LIBPTHREAD)
+  MESSAGE (FATAL_ERROR "libpthread not found. See: http://www.gnu.org/software/libc/")
+ENDIF (LIBPTHREAD)
+
+FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
+
+IF (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
+ELSE (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
+ENDIF (LIBPTHREAD_INCLUDE_DIR)
+
+#############################################
 # libdaemon checks
 #############################################
 
@@ -61,12 +81,52 @@ ELSE (LIBCONFUSE_INCLUDE_DIR)
 ENDIF (LIBCONFUSE_INCLUDE_DIR)
 
 #############################################
+# libtinypoker checks
+#############################################
+
+FIND_LIBRARY(LIBTINYPOKER tinypoker ${libdirs})
+
+IF (LIBTINYPOKER)
+  MESSAGE(STATUS "Found libtinypoker: ${LIBTINYPOKER}")
+ELSE (LIBTINYPOKER)
+  MESSAGE (FATAL_ERROR "libtinypoker not found.")
+ENDIF (LIBTINYPOKER)
+
+FIND_PATH(LIBTINYPOKER_INCLUDE_DIR tinypoker.h ${incdirs})
+
+IF (LIBTINYPOKER_INCLUDE_DIR)
+  MESSAGE(STATUS "Found tinypoker.h in ${LIBTINYPOKER_INCLUDE_DIR}")
+ELSE (LIBTINYPOKER_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "tinypoker.h not found.")
+ENDIF (LIBTINYPOKER_INCLUDE_DIR)
+
+#############################################
+# libgnutls checks
+#############################################
+
+FIND_LIBRARY(LIBGNUTLS gnutls ${libdirs})
+
+IF (LIBGNUTLS)
+  MESSAGE(STATUS "Found libgnutls: ${LIBGNUTLS}")
+ELSE (LIBGNUTLS)
+  MESSAGE (FATAL_ERROR "libgnutls not found. See: http://www.gnu.org/software/gnutls/")
+ENDIF (LIBGNUTLS)
+
+FIND_PATH(LIBGNUTLS_INCLUDE_DIR gnutls/gnutls.h ${incdirs})
+
+IF (LIBGNUTLS_INCLUDE_DIR)
+  MESSAGE(STATUS "Found gnutls/gnutls.h in ${LIBGNUTLS_INCLUDE_DIR}")
+ELSE (LIBGNUTLS_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "gnutls/gnutls.h not found. See: http://www.gnu.org/software/gnutls/")
+ENDIF (LIBGNUTLS_INCLUDE_DIR)
+
+#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${incdirs} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR})
-ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c)
-TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE})
+INCLUDE_DIRECTORIES(${incdirs} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR})
+ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c pokerserv.c)
+TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${LIBGNUTLS})
 
 #############################################
 # Installation

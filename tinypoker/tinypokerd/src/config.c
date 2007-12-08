@@ -20,6 +20,7 @@
 
 #include <confuse.h>
 #include <libdaemon/dlog.h>
+#include <tinypoker.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -75,7 +76,7 @@ void config_free()
 static void config_with_defaults()
 {
 	if (port == 0) {
-		port = DEFAULT_PORT;
+		port = IPP_DEFAULT_PORT;
 	}
 }
 

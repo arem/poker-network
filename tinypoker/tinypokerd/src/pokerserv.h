@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
- * This file is part of libtinypoker.
+ * This file is part of tinypokerd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,27 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../main/tinypoker.h"
+#ifndef __POKERSERV_H
+#define __POKERSERV_H
 
-void servloop_callback(ipp_socket * sock)
-{
-	/*
-	 * In this area we would add the socket to some
-	 * internal data structure and/or create a thread
-	 * to handle the client connection depending on
-	 * the server architecture.
-	 */
+int pokerserv();
 
-
-	/* TODO: move these when more of the server is complete */
-	ipp_disconnect(sock);
-	free(sock);
-}
-
-int main(int argc, char **argv, char **envp)
-{
-	ipp_init();
-	ipp_servloop(9898, servloop_callback);
-	ipp_exit();
-	return 0;
-}
+#endif

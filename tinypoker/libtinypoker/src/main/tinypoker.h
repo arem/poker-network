@@ -55,6 +55,11 @@ ipp_socket *ipp_new_socket();
 #define TINYPOKER "TinyPoker"
 
 /**
+ * The default TCP port to listen on.
+ */
+#define IPP_DEFAULT_PORT (9898)
+
+/**
  * The version of the protocol implemented.
  * Matches "2.0" and "2.0.0". The spec says 2.0, but
  * the reference implementation uses 2.0.0 :|
@@ -85,7 +90,7 @@ ipp_socket *ipp_new_socket();
  * This should be much smaller than CLIENT_READ_TIMEOUT.
  * @see CLIENT_READ_TIMEOUT
  */
-#define SERVER_READ_TIMEOUT (15)
+#define SERVER_READ_TIMEOUT (10)
 
 /**
  * The number of seconds a client should wait for network output.
@@ -95,11 +100,11 @@ ipp_socket *ipp_new_socket();
 #define CLIENT_WRITE_TIMEOUT (600)
 
 /**
- * The number of seconds a server should wait for network input.
+ * The number of seconds a server should wait for network output.
  * This should be much smaller than CLIENT_WRITE_TIMEOUT.
  * @see CLIENT_WRITE_TIMEOUT
  */
-#define SERVER_WRITE_TIMEOUT (15)
+#define SERVER_WRITE_TIMEOUT (10)
 
 /* Regular expressions used to match message parts */
 

@@ -38,6 +38,7 @@ void handle_sigkill(int sig)
 	if (sig == SIGKILL) {
 		exit_now = 1;
 		daemon_log(LOG_INFO, "SIGKILL Caught ; preparing to exit");
+		raise(SIGUSR2);	/* stop ipp_servloop() */
 	}
 }
 
@@ -50,6 +51,7 @@ void handle_sigquit(int sig)
 	if (sig == SIGQUIT) {
 		exit_now = 1;
 		daemon_log(LOG_INFO, "SIGQUIT Caught ; preparing to exit");
+		raise(SIGUSR2);	/* stop ipp_servloop() */
 	}
 }
 
@@ -62,6 +64,7 @@ void handle_sigint(int sig)
 	if (sig == SIGINT) {
 		exit_now = 1;
 		daemon_log(LOG_INFO, "SIGINT Caught ; preparing to exit");
+		raise(SIGUSR2);	/* stop ipp_servloop() */
 	}
 }
 
@@ -74,7 +77,12 @@ void install_signal_handlers()
 	int i;
 
 	for (i = 0; i < 32; i++) {
-		if (i != SIGCHLD && i != SIGQUIT && i != SIGINT && i != SIGKILL) {
+		/*
+		 * Set ignore for all signals except the 3 we handle (SIGKILL, SIGQUIT, SIGINT) and the 1
+		 * libtinypoker handles (SIGUSR2)
+		 */
+
+		if (i != SIGCHLD && i != SIGQUIT && i != SIGINT && i != SIGKILL && i != SIGUSR2) {
 			signal(i, SIG_IGN);
 		}
 	}

@@ -18,29 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#include <gnutls/gnutls.h>
+#include <libdaemon/dlog.h>
+#include <signal.h>
+#include <tinypoker.h>
 
-/**
- * The TCP port to listen on.
- */
-int port;
+#include "config.h"
+#include "signal.h"
 
-/**
- * The default configuration file location.
- */
-#define DEFAULT_CONFIGFILE "tinypokerd.conf"
+static void client_connect_callback(ipp_socket * sock)
+{
+	daemon_log(LOG_INFO, "New Connection");
 
-/**
- * Parses an tinypokerd.conf configuration file.
- */
-void config_parse();
 
-/**
- * Release any resources that hold configuration information.
- * This function effectively resets all configurable values.
- * It should be called at the end of the program.
- */
-void config_free();
+	/* Add client socket to internal data structure here */
+}
 
-#endif
+int pokerserv()
+{
+	ipp_init();
+	ipp_servloop(port, client_connect_callback);
+	ipp_exit();
+
+	if (!exit_now) {
+		/*
+		 * we got here because someone raise()'d a SIGUSR2
+		 * but not a SIGKILL, SIGQUIT, or SIGINT.
+		 */
+		raise(SIGQUIT);
+	}
+
+	return 0;
+}

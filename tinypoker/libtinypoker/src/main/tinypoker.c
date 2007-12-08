@@ -451,6 +451,23 @@ int ipp_send_msg(ipp_socket * sock, char *msg, int timeout)
 }
 
 /**
+ * servloop exit Indicator
+ * 1 for exit now, 0 for continue.
+ */
+static int done;
+
+/**
+ * Set done to 1 when SIGUSR2 is raised.
+ * @param sig signal
+ */
+void __ipp_handle_sigusr2(int sig)
+{
+	if (sig == SIGUSR2) {
+		done = 1;
+	}
+}
+
+/**
  * Main server loop. This function sets up the networking and accepts
  * incoming connections. For every incoming client, a 'callback' is
  * called. The server blocks and waits for 'callback' to return, so
@@ -460,7 +477,7 @@ int ipp_send_msg(ipp_socket * sock, char *msg, int timeout)
  */
 void ipp_servloop(int port, void (*callback) (ipp_socket *))
 {
-	int master, done, slave, rc;
+	int master, slave, rc;
 	ipp_socket *ipp_slave;
 
 	struct pollfd p;
@@ -507,6 +524,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 	p.revents = 0;
 
 	done = 0;
+	signal(SIGUSR2, __ipp_handle_sigusr2);
 
 	while (!done) {
 		/* Poll master so that we don't block on accept */
@@ -566,4 +584,6 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 	shutdown(master, SHUT_RDWR);
 	close(master);
 	gnutls_anon_free_server_credentials(anoncred);
+
+	printf("Done servloop\n");
 }

@@ -31,6 +31,7 @@
 
 #include "config.h"
 #include "monitor.h"
+#include "pokerserv.h"
 #include "signal.h"
 
 /**
@@ -227,8 +228,8 @@ int main(int argc, char *argv[], char *envp[])
 	/* Install Signal Handlers */
 	install_signal_handlers();
 
-	/* TODO: poker stuff here */
-	sleep(10);
+	/* Play some poker until we get a SIGINT, SIGQUIT, or SIGKILL */
+	pokerserv();
 
 	monitor_wait();		/* thread cleanup */
 	config_free();
