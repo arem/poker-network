@@ -1,0 +1,61 @@
+/*
+  TinyPoker.org
+  Copyright (C) 2007 Thomas Cort
+
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.2 or
+  any later version published by the Free Software Foundation; with no
+  Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+  copy of the license is included in the section entitled "GNU Free
+  Documentation License".
+*/
+
+body {
+  font-family: "Trebuchet MS" Verdana, Arial, sans-serif;
+  font-size: 0.9em;
+}
+
+h2 {
+  margin: 0px auto 0px auto;
+  padding: 0px;
+}
+
+h3 {
+  text-decoration: underline;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+#container {
+  width: 760px;
+  margin: 0px auto 0px auto;
+  padding: 0px;
+}
+
+#menu {
+  width: 140px;
+}
+
+#menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#menu li {
+  padding-bottom: 10px;
+  width: 130px;
+  display: block;
+}
+
+div.sidebar-title {
+  font-weight: bold;
+}
+
+pre {
+  background-color: #eeeeee;
+  border: 1px dotted #000000;
+  padding: 10px 0px 10px 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}

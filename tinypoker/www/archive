@@ -1,0 +1,16 @@
+# TinyPoker.org                                       
+# Copyright (C) 2007 Thomas Cort
+#
+# Permission is granted to copy, distribute and/or modify this document
+# under the terms of the GNU Free Documentation License, Version 1.2 or
+# any later version published by the Free Software Foundation; with no
+# Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+# copy of the license is included in the section entitled "GNU Free
+# Documentation License". 
+
+/bin/rm -rf ./tinypoker.org/
+/bin/mkdir ./tinypoker.org
+/bin/cp *.{txt,conf,css} archive build clean ./tinypoker.org/
+/bin/tar -czf tinypoker.org.tar.gz ./tinypoker.org/
+/bin/rm -rf ./tinypoker.org/
+

@@ -1,0 +1,27 @@
+// TinyPoker.org
+// Copyright (C) 2007 Thomas Cort
+//
+// Permission is granted to copy, distribute and/or modify this document
+// under the terms of the GNU Free Documentation License, Version 1.2 or
+// any later version published by the Free Software Foundation; with no
+// Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+// copy of the license is included in the section entitled "GNU Free
+// Documentation License".
+
+Home
+====
+
+Thank you for stopping by and checking out '{siteTitle}'.
+'{siteTitle}' is a collection of poker software written by Thomas Cort. 
+Originally, the code was written for a poker bot programming competition 
+for the http://cs.ubishops.ca/[Computer Science]
+http://j9.ubishops.ca/[Club] at http://www.ubishops.ca/[Bishop's University]
+in http://en.wikipedia.org/wiki/Lennoxville,_Quebec[Lennoxville, Quebec],
+http://www.canada.gc.ca/[Canada] that was held in the fall of 2005. '{siteTitle}'
+development was mostly dormant from then until some time in 2007.
+
+When development resumed in 2007, the author decided to change the underlying
+protocol from one that was used by the University of Alberta to the
+Internet Poker Protocol (IPP), refine the server, develop a complete
+client/server library, reduce the server footprint, and add additional security
+features such as TLS encryption. These enhancements are still in progress.
