@@ -56,9 +56,9 @@ char *card2str(struct card *c)
 {
 	char *str;
 
-	if ((str = (char *) malloc(3)) == NULL) {
+	if ((str = (char *) malloc(sizeof(char) * 3)) == NULL) {
 		daemon_log(LOG_ERR, "[DECK] %s", strerror(errno));
-		exit(1);
+		return NULL;
 	}
 
 	str[0] = c->rank;

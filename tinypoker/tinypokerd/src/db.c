@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
  *
- * This file is part of tinypokerd.
+ * This file is part of pokerd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,39 +18,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#include <libdaemon/dlog.h>
+#include <stdlib.h>
+#include <sqlite3.h>
+
+#include "config.h"
+#include "db.h"
+
+static sqlite3 *db;
 
 /**
- * The TCP port to listen on. Default: 9898
+ * Connects to a SQLite Database
+ * @return 0 if connected, -1 if failed to connect
  */
-int port;
+int db_connect()
+{
+	int rc;
+
+	db = NULL;
+
+	/* connect */
+	rc = sqlite3_open(database, &db);
+	if (rc) {
+		daemon_log(LOG_ERR, "[DBDB] Can't open database: %s", sqlite3_errmsg(db));
+		sqlite3_close(db);
+		return -1;
+	}
+
+	daemon_log(LOG_INFO, "[DBDB] Connected");
+	return 0;
+}
 
 /**
- * Location of the database file. Default: /var/lib/tinypokerd/tinypokerd.db
+ * Close the connection to a SQLite Database
  */
-char *database;
-
-/**
- * The default database file location
- */
-#define DEFAULT_DATABASE "/var/lib/tinypokerd/tinypokerd.db"
-
-/**
- * The default configuration file location.
- */
-#define DEFAULT_CONFIGFILE "/etc/tinypokerd.conf"
-
-/**
- * Parses an tinypokerd.conf configuration file.
- */
-void config_parse();
-
-/**
- * Release any resources that hold configuration information.
- * This function effectively resets all configurable values.
- * It should be called at the end of the program.
- */
-void config_free();
-
-#endif
+void db_disconnect()
+{
+	if (db) {
+		sqlite3_close(db);
+		db = NULL;
+	}
+	daemon_log(LOG_INFO, "[DBDB] Disconnected");
+}

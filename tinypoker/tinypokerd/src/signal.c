@@ -20,6 +20,7 @@
 
 #include <libdaemon/dlog.h>
 #include <signal.h>
+#include <tinypoker.h>
 
 #include "signal.h"
 
@@ -36,9 +37,9 @@ int exit_now;
 void handle_sigkill(int sig)
 {
 	if (sig == SIGKILL) {
+		ipp_servoff();
 		exit_now = 1;
-		daemon_log(LOG_INFO, "SIGKILL Caught ; preparing to exit");
-		raise(SIGUSR2);	/* stop ipp_servloop() */
+		daemon_log(LOG_INFO, "[SIGN] SIGKILL Caught ; preparing to exit");
 	}
 }
 
@@ -49,9 +50,9 @@ void handle_sigkill(int sig)
 void handle_sigquit(int sig)
 {
 	if (sig == SIGQUIT) {
+		ipp_servoff();
 		exit_now = 1;
-		daemon_log(LOG_INFO, "SIGQUIT Caught ; preparing to exit");
-		raise(SIGUSR2);	/* stop ipp_servloop() */
+		daemon_log(LOG_INFO, "[SIGN] SIGQUIT Caught ; preparing to exit");
 	}
 }
 
@@ -62,9 +63,9 @@ void handle_sigquit(int sig)
 void handle_sigint(int sig)
 {
 	if (sig == SIGINT) {
+		ipp_servoff();
 		exit_now = 1;
-		daemon_log(LOG_INFO, "SIGINT Caught ; preparing to exit");
-		raise(SIGUSR2);	/* stop ipp_servloop() */
+		daemon_log(LOG_INFO, "[SIGN] SIGINT Caught ; preparing to exit");
 	}
 }
 
@@ -78,11 +79,10 @@ void install_signal_handlers()
 
 	for (i = 0; i < 32; i++) {
 		/*
-		 * Set ignore for all signals except the 3 we handle (SIGKILL, SIGQUIT, SIGINT) and the 1
-		 * libtinypoker handles (SIGUSR2)
+		 * Set ignore for all signals except the 3 we handle (SIGKILL, SIGQUIT, SIGINT)
 		 */
 
-		if (i != SIGCHLD && i != SIGQUIT && i != SIGINT && i != SIGKILL && i != SIGUSR2) {
+		if (i != SIGCHLD && i != SIGQUIT && i != SIGINT && i != SIGKILL) {
 			signal(i, SIG_IGN);
 		}
 	}

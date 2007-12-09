@@ -115,7 +115,7 @@ int parse_args(int argc, char **argv)
 		case 'k':
 			ret = daemon_pid_file_kill_wait(SIGQUIT, 30);
 			if (ret < 0) {
-				daemon_log(LOG_ERR, "Daemon not killed: (%s)", strerror(errno));
+				daemon_log(LOG_ERR, "[MAIN] Daemon not killed: (%s)", strerror(errno));
 			} else {
 				killed = 1;
 			}
@@ -125,7 +125,7 @@ int parse_args(int argc, char **argv)
 			daemonize = 0;
 			break;
 		default:
-			daemon_log(LOG_ERR, "Unsupported option");
+			daemon_log(LOG_ERR, "[MAIN] Unsupported option");
 			done = 1;
 			break;
 		}
@@ -146,14 +146,14 @@ int main(int argc, char *argv[], char *envp[])
 
 	/* Sanity Checks */
 	if (argc < 1 || !argv || !argv[0]) {
-		daemon_log(LOG_ERR, "(%u:%s) Cannot determine program name from argv[0]\n");
+		daemon_log(LOG_ERR, "[MAIN] Cannot determine program name from argv[0]\n");
 		return 1;
 	}
 
 	daemon_pid_file_ident = daemon_log_ident = daemon_ident_from_argv0(argv[0]);
 
 	if (geteuid() != 0) {
-		daemon_log(LOG_ERR, "You need root privileges to run this application.");
+		daemon_log(LOG_ERR, "[MAIN] You need root privileges to run this application.");
 		return 1;
 	}
 
@@ -165,8 +165,8 @@ int main(int argc, char *argv[], char *envp[])
 
 	pid = daemon_pid_file_is_running();
 	if (pid > 0) {
-		daemon_log(LOG_ERR, "%s is already running (PID => %u)", argv[0], daemon_log_ident, pid);
-		daemon_log(LOG_INFO, "Use `%s -k` to kill the running instance", daemon_log_ident);
+		daemon_log(LOG_ERR, "[MAIN] %s is already running (PID => %u)", argv[0], daemon_log_ident, pid);
+		daemon_log(LOG_INFO, "[MAIN] Use `%s -k` to kill the running instance", daemon_log_ident);
 		return 1;
 	}
 
@@ -195,7 +195,7 @@ int main(int argc, char *argv[], char *envp[])
 
 		ret = chdir("/");
 		if (ret < 0) {
-			daemon_log(LOG_ERR, "Could not chdir() to '/': %s", strerror(errno));
+			daemon_log(LOG_ERR, "[MAIN] Could not chdir() to '/': %s", strerror(errno));
 			return 1;
 		}
 
@@ -203,7 +203,7 @@ int main(int argc, char *argv[], char *envp[])
 		for (fd = 0; fd < getdtablesize(); fd++) {
 			ret = close(fd);
 			if (ret == -1 && errno != EBADF) {
-				daemon_log(LOG_ERR, "Could not close fd #%d: %s", fd, strerror(errno));
+				daemon_log(LOG_ERR, "[MAIN] Could not close fd #%d: %s", fd, strerror(errno));
 				return 1;
 			}
 		}
@@ -216,7 +216,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	ret = daemon_pid_file_create();
 	if (ret < 0) {
-		daemon_log(LOG_ERR, "Could not create PID file: %s", strerror(errno));
+		daemon_log(LOG_ERR, "[MAIN] Could not create PID file: %s", strerror(errno));
 		return 1;
 	}
 
@@ -226,23 +226,34 @@ int main(int argc, char *argv[], char *envp[])
 	/* setup tiny poker */
 	ipp_init();
 
+	daemon_log(LOG_INFO, "[MAIN] libtinypoker initialized");
 	deck_init();		/* create the deck */
-
-	/* this must run before any threads are created */
-	monitor_init();
 
 	/* Install Signal Handlers */
 	install_signal_handlers();
+
+	if (db_connect() == -1) {
+		ipp_exit();
+		config_free();
+		daemon_pid_file_remove();
+		daemon_log(LOG_ERR, "[MAIN] Exiting...");
+		return 1;
+	}
+
+	/* this must run before any threads are created */
+	monitor_init();
 
 	/* Play some poker until we get a SIGINT, SIGQUIT, or SIGKILL */
 	pokerserv();
 
 	monitor_wait();		/* thread cleanup */
+	db_disconnect();
+
 	ipp_exit();
 	config_free();
 	daemon_pid_file_remove();
 
-	daemon_log(LOG_INFO, "Exiting...");
+	daemon_log(LOG_INFO, "[MAIN] Exiting...");
 
 	return 0;
 }

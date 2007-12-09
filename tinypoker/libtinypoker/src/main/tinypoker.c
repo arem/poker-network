@@ -539,6 +539,8 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 			}
 		}
 
+		if (done) break;
+
 		slave = accept(master, (struct sockaddr *) &client_addr, &client_addr_len);
 		if (slave < 0) {
 			if (errno == EINTR) {

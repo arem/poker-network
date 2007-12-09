@@ -67,6 +67,11 @@ static int config_file_exists()
 void config_free()
 {
 	port = 0;
+
+	if (database) {
+		free(database);
+		database = NULL;
+	}
 }
 
 /**
@@ -77,6 +82,10 @@ static void config_with_defaults()
 {
 	if (port == 0) {
 		port = IPP_DEFAULT_PORT;
+	}
+
+	if (database == NULL) {
+		database = strdup(DEFAULT_DATABASE);
 	}
 }
 
@@ -92,27 +101,28 @@ void config_parse()
 	cfg_t *cfg;
 	cfg_opt_t opts[] = {
 		CFG_SIMPLE_INT("port", &port),
+		CFG_SIMPLE_INT("database", &database),
 		CFG_END()
 	};
 
 	cfg = NULL;
 
 	if (!config_file_exists()) {
-		daemon_log(LOG_INFO, "Configuration file '%s' not found.", DEFAULT_CONFIGFILE);
+		daemon_log(LOG_INFO, "[CONF] Configuration file '%s' not found.", DEFAULT_CONFIGFILE);
 		config_with_defaults();
 		return;
 	}
 
 	cfg = cfg_init(opts, 0);
 	if (!cfg) {
-		daemon_log(LOG_ERR, "cfg_init failed!");
+		daemon_log(LOG_ERR, "[CONF] cfg_init failed!");
 		config_with_defaults();
 		return;
 	}
 
 	rc = cfg_parse(cfg, DEFAULT_CONFIGFILE);
 	if (rc == CFG_PARSE_ERROR) {
-		daemon_log(LOG_ERR, "parser error '%s'", DEFAULT_CONFIGFILE);
+		daemon_log(LOG_ERR, "[CONF] parser error '%s'", DEFAULT_CONFIGFILE);
 	}
 
 	if (cfg) {

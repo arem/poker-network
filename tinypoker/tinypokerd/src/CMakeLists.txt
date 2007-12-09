@@ -121,12 +121,32 @@ ELSE (LIBGNUTLS_INCLUDE_DIR)
 ENDIF (LIBGNUTLS_INCLUDE_DIR)
 
 #############################################
+# libsqlite3 checks
+#############################################
+
+FIND_LIBRARY(LIBSQLITE sqlite3 ${libdirs})
+
+IF (LIBSQLITE)
+  MESSAGE(STATUS "Found libsqlite3: ${LIBSQLITE}")
+ELSE (LIBSQLITE)
+  MESSAGE (FATAL_ERROR "libsqlite3 not found. See: http://sqlite.org/")
+ENDIF (LIBSQLITE)
+
+FIND_PATH(LIBSQLITE_INCLUDE_DIR sqlite3.h ${incdirs})
+
+IF (LIBSQLITE_INCLUDE_DIR)
+  MESSAGE(STATUS "Found sqlite3.h in ${LIBSQLITE_INCLUDE_DIR}")
+ELSE (LIBSQLITE_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "sqlite3.h not found. See: http://sqlite.org/")
+ENDIF (LIBSQLITE_INCLUDE_DIR)
+
+#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${incdirs} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR})
-ADD_EXECUTABLE(tinypokerd config.c deck.c monitor.c signal.c tinypokerd.c poker.c pokerserv.c)
-TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${LIBGNUTLS})
+INCLUDE_DIRECTORIES(${incdirs} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBSQLITE_INCLUDE_DIR})
+ADD_EXECUTABLE(tinypokerd config.c db.c deck.c monitor.c signal.c tinypokerd.c poker.c pokerserv.c)
+TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${LIBGNUTLS} ${LIBSQLITE})
 
 #############################################
 # Installation

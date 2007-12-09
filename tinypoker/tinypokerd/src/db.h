@@ -18,39 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef __DB_H
+#define __DB_H
 
-/**
- * The TCP port to listen on. Default: 9898
- */
-int port;
-
-/**
- * Location of the database file. Default: /var/lib/tinypokerd/tinypokerd.db
- */
-char *database;
-
-/**
- * The default database file location
- */
-#define DEFAULT_DATABASE "/var/lib/tinypokerd/tinypokerd.db"
-
-/**
- * The default configuration file location.
- */
-#define DEFAULT_CONFIGFILE "/etc/tinypokerd.conf"
-
-/**
- * Parses an tinypokerd.conf configuration file.
- */
-void config_parse();
-
-/**
- * Release any resources that hold configuration information.
- * This function effectively resets all configurable values.
- * It should be called at the end of the program.
- */
-void config_free();
+int db_connect();
+void db_disconnect();
 
 #endif

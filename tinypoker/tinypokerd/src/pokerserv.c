@@ -56,10 +56,6 @@ int pokerserv()
 	ipp_servloop(port, client_connect_callback);
 
 	if (!exit_now) {
-		/*
-		 * we got here because someone raise()'d a SIGUSR2
-		 * but not a SIGKILL, SIGQUIT, or SIGINT.
-		 */
 		raise(SIGQUIT);
 	}
 
