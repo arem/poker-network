@@ -504,18 +504,21 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 	master = socket(PF_INET, SOCK_STREAM, 0);
 	if (master < 0) {
 		gnutls_anon_free_server_credentials(anoncred);
+		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 
 	rc = bind(master, (struct sockaddr *) &sin, sizeof(sin));
 	if (rc < 0) {
 		gnutls_anon_free_server_credentials(anoncred);
+		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 
 	rc = listen(master, 64);
 	if (rc < 0) {
 		gnutls_anon_free_server_credentials(anoncred);
+		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 
@@ -549,6 +552,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 				shutdown(master, SHUT_RDWR);
 				close(master);
 				gnutls_anon_free_server_credentials(anoncred);
+				gnutls_dh_params_deinit(dh_params);
 				return;
 			}
 		}
@@ -586,4 +590,5 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 	shutdown(master, SHUT_RDWR);
 	close(master);
 	gnutls_anon_free_server_credentials(anoncred);
+	gnutls_dh_params_deinit(dh_params);
 }
