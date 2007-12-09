@@ -1,0 +1,32 @@
+#!/bin/sh
+set -e
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+DAEMON=/usr/sbin/tinypokerd
+
+test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+case "$1" in
+    start)
+	log_daemon_msg "Starting tiny poker server" "tinypokerd"
+	start_daemon $DAEMON
+	log_end_msg $?
+    ;;
+  stop)
+	log_daemon_msg "Stopping tiny poker server" "tinypokerd"
+	$DAEMON --kill
+	log_end_msg $?
+    ;;
+  force-reload|restart)
+    $0 stop
+    $0 start
+    ;;
+  *)
+    echo "Usage: /etc/init.d/tinypokerd {start|stop|restart|force-reload}"
+    exit 1
+    ;;
+esac
+
+exit 0
