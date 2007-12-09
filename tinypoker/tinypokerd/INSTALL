@@ -16,3 +16,10 @@ Configure, compile, test, install...
 	$ make test
         # make install
 
+Additional Installation Instructions
+
+	# cp tinypokerd.conf /etc/tinypokerd.conf
+	# vi /etc/tinypokerd.conf
+	# mkdir -p /var/lib/tinypokerd
+	# cp contrib/ubuntu-gutsy/tinypokerd /etc/init.d/tinypokerd
+	# chmod +x /etc/init.d/tinypokerd
