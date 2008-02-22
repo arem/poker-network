@@ -114,7 +114,7 @@ class DummyPokerInterface(PokerInterface):
         print "DummyPokerInterface.command %s" % str(args)
         if args[0] == "login":
             #call later to allow callback to be attached
-            reactor.callLater(0, lambda: self.event("login", "ok", "testuser", "testpassword", "1"))
+            reactor.callLater(0, lambda: self.event("login", "ok", "testuser123", "testpassword123", "1"))
         elif args[0] == "menu":
             pass
         elif args[0] == "chat":
