@@ -9,7 +9,7 @@
   <muck>yes</muck>
   <auto_post>yes</auto_post>
   <chat max_chars="40" line_length="20"/>
-  <servers>poker-tst.pok3d.free.tld:19380</servers>
+  <servers>poker.pokersource.info:19380</servers>
   <web browser="/usr/bin/firefox">http://localhost/test-poker-web/</web>
   <!-- <web browser="/usr/bin/firefox">http://pok3d-com-01.pok3d.free.tld/</web> -->
   <!-- <web browser="/usr/bin/firefox">http://pok3d-com.pok3d.free.tld/</web> -->
