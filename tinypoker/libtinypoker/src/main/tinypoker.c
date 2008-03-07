@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This file is part of libtinypoker.
  *
@@ -542,7 +542,8 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 			}
 		}
 
-		if (done) break;
+		if (done)
+			break;
 
 		slave = accept(master, (struct sockaddr *) &client_addr, &client_addr_len);
 		if (slave < 0) {
@@ -583,6 +584,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 		ipp_slave->sd = slave;
 		ipp_slave->session = session;
 		ipp_slave->anoncred = NULL;
+		memcpy(&(ipp_slave->addr), &(client_addr), sizeof(struct sockaddr_in));
 
 		callback(ipp_slave);
 	}

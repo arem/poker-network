@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This file is part of tinypokerd.
  *
@@ -52,7 +52,7 @@ int killed;
 void display_version()
 {
 	daemon_log(LOG_INFO, "tinypokerd v0.1");
-	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007 Thomas Cort");
+	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
 	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
 	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 }

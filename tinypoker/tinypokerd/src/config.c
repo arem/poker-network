@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This file is part of tinypokerd.
  *
@@ -108,14 +108,14 @@ void config_parse()
 	cfg = NULL;
 
 	if (!config_file_exists()) {
-		daemon_log(LOG_INFO, "[CONF] Configuration file '%s' not found.", DEFAULT_CONFIGFILE);
+		daemon_log(LOG_INFO, "[CONF] Configuration file '%s' not found. Loading defaults...", DEFAULT_CONFIGFILE);
 		config_with_defaults();
 		return;
 	}
 
 	cfg = cfg_init(opts, 0);
 	if (!cfg) {
-		daemon_log(LOG_ERR, "[CONF] cfg_init failed!");
+		daemon_log(LOG_ERR, "[CONF] cfg_init failed! Loading defaults...");
 		config_with_defaults();
 		return;
 	}

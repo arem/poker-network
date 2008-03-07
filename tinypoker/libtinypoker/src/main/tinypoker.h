@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This file is part of libtinypoker.
  *
@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gnutls/gnutls.h>
+#include <netinet/in.h>
 
 #ifndef __TINYPOKER_H
 #define __TINYPOKER_H
@@ -39,6 +40,7 @@
  */
 typedef struct ipp_socket {
 	int sd;
+	struct sockaddr_in addr;
 	gnutls_session_t session;
 	gnutls_anon_client_credentials_t anoncred;
 } ipp_socket;

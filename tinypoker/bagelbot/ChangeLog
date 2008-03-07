@@ -1,3 +1,7 @@
+2008-03-06  Thomas Cort  <tom@tomcort.com>
+
+	* Update developer e-mail and copyright years.
+
 2007-02-17  Thomas Cort  <code@member.fsf.org>
 
 	* Change build system from GNU make to CMake.

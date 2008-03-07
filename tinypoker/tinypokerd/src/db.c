@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
- * This file is part of pokerd.
+ * This file is part of tinypokerd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

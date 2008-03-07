@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This file is part of tinypokerd.
  *
@@ -30,7 +30,16 @@
 
 static void client_connect_callback(ipp_socket * sock)
 {
-	daemon_log(LOG_INFO, "New Connection");
+	unsigned long a, b, c, d;
+
+	/* We must reimplement inet_ntoa() here because it is not thread safe :| */
+
+	a = (sock->addr.sin_addr.s_addr >> 0) & 0xff;
+	b = (sock->addr.sin_addr.s_addr >> 8) & 0xff;
+	c = (sock->addr.sin_addr.s_addr >> 16) & 0xff;
+	d = (sock->addr.sin_addr.s_addr >> 24) & 0xff;
+
+	daemon_log(LOG_INFO, "[SERV] Connect %lu.%lu.%lu.%lu", a, b, c, d);
 
 
 	/* Add client socket to internal data structure here */
@@ -46,7 +55,7 @@ int pokerserv()
 	pthread_attr_setdetachstate(&dealer_thread_attr, PTHREAD_CREATE_DETACHED);
 	monitor_inc();
 	if (pthread_create(&dealer_thread, &dealer_thread_attr, play, NULL) != 0) {
-		daemon_log(LOG_ERR, "Couldn't create dealer thread");
+		daemon_log(LOG_ERR, "[SERV] Couldn't create dealer thread");
 		monitor_dec();
 		raise(SIGQUIT);
 		return -1;

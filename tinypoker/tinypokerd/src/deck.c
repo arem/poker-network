@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007 Thomas Cort <code@member.fsf.org>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This file is part of tinypokerd.
  *
@@ -78,6 +78,8 @@ void deck_shuffle()
 	int x, y, z, r;
 	struct card temp;
 
+	daemon_log(LOG_DEBUG, "[DECK] Shuffling...");
+
 	for (z = 0; z < 7; z++) {
 		for (x = 0; x < 51; x++) {
 			r = rand();
@@ -98,6 +100,7 @@ void deck_shuffle()
 	/* when get_card is 1st called it will return card 0 */
 	deck_index = 51;
 
+	daemon_log(LOG_DEBUG, "[DECK] Shuffled");
 }
 
 /**
