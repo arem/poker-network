@@ -132,8 +132,10 @@ ipp_socket *ipp_new_socket();
 
 /**
  * Amount of Money
+ * Smaller than max value of a signed 32-bit int.
+ * XXX: 16-bit CPUs/OSes will fail on large amounts.
  */
-#define REGEX_AMT "[0-9]+"
+#define REGEX_AMT "[0-9]{1,9}"
 
 /**
  * Whitespace characters used to separate message parts.
@@ -213,6 +215,12 @@ ipp_socket *ipp_new_socket();
  */
 #define CMD_NEWGAME "NEWGAME"
 
+/**
+ * Sent by the server before play starts to identify a player and their 
+ * starting stake.
+ */
+#define CMD_PLAYER "PLAYER"
+
 /* Regular expressions used to match messages */
 
 #define REGEX_MSG_IPP ("^" CMD_IPP REGEX_SPACE REGEX_PROTOCOL_VERSION REGEX_SPACE REGEX_INFO "$")
@@ -222,6 +230,8 @@ ipp_socket *ipp_new_socket();
 #define REGEX_MSG_WELCOME ("^" CMD_WELCOME REGEX_SPACE REGEX_NAME "$")
 
 #define REGEX_MSG_NEWGAME ("^" CMD_NEWGAME REGEX_SPACE REGEX_GAME_TYPE REGEX_SPACE REGEX_BLINDS REGEX_SPACE REGEX_RAISES_PER_ROUND "$")
+
+#define REGEX_MSG_PLAYER ("^" CMD_PLAYER REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT "$")
 
 /* function prototypes */
 

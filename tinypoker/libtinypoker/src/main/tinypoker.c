@@ -152,6 +152,7 @@ int ipp_validate_unknown_msg(char *msg)
 		REGEX_MSG_BUYIN,
 		REGEX_MSG_WELCOME,
 		REGEX_MSG_NEWGAME,
+		REGEX_MSG_PLAYER,
 		NULL
 	};
 

@@ -79,6 +79,10 @@ ADD_EXECUTABLE(testValidateCmdNewgame testValidateCmdNewgame.c)
 TARGET_LINK_LIBRARIES(testValidateCmdNewgame tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testValidateCmdNewgame ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdNewgame)
 
+ADD_EXECUTABLE(testValidateCmdPlayer testValidateCmdPlayer.c)
+TARGET_LINK_LIBRARIES(testValidateCmdPlayer tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdPlayer ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdPlayer)
+
 ADD_EXECUTABLE(testNormalizeMessage testNormalizeMessage.c)
 TARGET_LINK_LIBRARIES(testNormalizeMessage tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testNormalizeMessage ${EXECUTABLE_OUTPUT_PATH}/testNormalizeMessage)
