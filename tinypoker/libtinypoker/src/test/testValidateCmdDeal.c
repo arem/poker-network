@@ -23,6 +23,9 @@
 
 int main()
 {
+	assertTrue("Deal String should be valid", ipp_validate_msg(REGEX_MSG_DEAL, "DEAL 5H TC"));
+	assertTrue("Deal String should be valid", ipp_validate_msg(REGEX_MSG_DEAL, "DEAL AD JD"));
+	assertTrue("Deal String should be valid", ipp_validate_msg(REGEX_MSG_DEAL, "DEAL 2C 8S"));
 	assertTrue("Deal String should be valid", ipp_validate_msg(REGEX_MSG_DEAL, "DEAL AS 7H"));
 	assertTrue("Deal String should be valid", ipp_validate_msg(REGEX_MSG_DEAL, "DEAL 4H 8C"));
 	assertTrue("Deal String should be valid", ipp_validate_msg(REGEX_MSG_DEAL, "DEAL 5S"));

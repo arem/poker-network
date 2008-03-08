@@ -23,13 +23,13 @@
 
 int main()
 {
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Alpha 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Beta 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Gamma 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
+	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER Alpha 1000"));
+	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER Beta 1000"));
+	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER Gamma 1000"));
+	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER BAGELBOT 1234"));
+	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER Coat_Hanger 1239"));
 
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, ""));
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN X 1 1"));
+	assertFalse("Game Over String should not be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, ""));
+	assertFalse("Game Over String should not be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER X 1 1"));
 	return PASS;
 }

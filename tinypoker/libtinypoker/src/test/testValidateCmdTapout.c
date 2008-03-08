@@ -23,13 +23,15 @@
 
 int main()
 {
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Alpha 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Beta 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Gamma 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
+	assertTrue("Tapout String should be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 5"));
+	assertTrue("Tapout String should be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 0"));
+	assertTrue("Tapout String should be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 1234"));
+	assertTrue("Tapout String should be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 012345678"));
 
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, ""));
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN X 1 1"));
+	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT -1"));
+	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 01234567890123456"));
+	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT S"));
+	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT "));
+	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, ""));
 	return PASS;
 }

@@ -7,7 +7,7 @@
 **********************************************************************
 **********************************************************************
 
-tinypokerd will be the tinypoker server. It will use libtinypoker to 
+tinypokerd is the TinyPoker server. It will use libtinypoker to 
 implement the Internet Poker Protocol (IPP) 2.0 over TLS. The code will 
-be based on some code and experience implementing pokerd. An effort will 
-be made to make the server footprint even smaller.
+be based on the pokerd code base and experience implementing pokerd. An
+effort will be made to make the server footprint even smaller than pokerd.

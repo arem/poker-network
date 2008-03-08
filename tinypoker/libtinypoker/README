@@ -1,12 +1,3 @@
-**********************************************************************
-**********************************************************************
-**** WARNING:
-****
-**** This library is under heavy construction. You shouldn't build
-**** applications with it yet as the API is likely to change.
-**********************************************************************
-**********************************************************************
-
 To simplify the network code, speed up the message parser, increase
 security and provide a more robust input validator, TinyPoker will be
 implementing the Internet Poker Protocol (IPP) Version 2.0
@@ -22,11 +13,4 @@ Goals
  - Fully implement the Internet Poker Protocol (IPP) Version 2.0.
  - Provide the ability to normalize and validate messages.
  - Gracefully handle network problems (bad input, disconnections, etc).
- - Fully normalized and validated messages or null from send/recv.
- - Secure connections.
-
-Plans
-=====
-
- - Authentication Using X.509 Certificates.
- - Fully implement the Internet Poker Protocol (IPP) Version 2.0.
+ - Provide a secure communications channel between the client and server.

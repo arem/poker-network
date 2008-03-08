@@ -219,7 +219,62 @@ ipp_socket *ipp_new_socket();
 #define REGEX_DRAW_4 "4" REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD
 #define REGEX_DRAW_5 "5" REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD
 
+/**
+ * Draw for cards for 5 Card Draw
+ */
 #define REGEX_DRAW_N "(" REGEX_DRAW_1 "|" REGEX_DRAW_2 "|" REGEX_DRAW_3 "|" REGEX_DRAW_4 "|" REGEX_DRAW_5 ")"
+
+#define REGEX_STRAIGHTFLUSH "STRAIGHTFLUSH"
+#define REGEX_STRAIGHTFLUSH_HANDTYPE REGEX_STRAIGHTFLUSH REGEX_SPACE REGEX_RANK
+
+#define REGEX_FOUROFAKIND "FOUROFAKIND"
+#define REGEX_FOUROFAKIND_HANDTYPE REGEX_FOUROFAKIND REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+
+#define REGEX_FULLHOUSE "FULLHOUSE"
+#define REGEX_FULLHOUSE_HANDTYPE REGEX_FULLHOUSE REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+
+#define REGEX_FLUSH "FLUSH"
+#define REGEX_FLUSH_HANDTYPE REGEX_FLUSH REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+
+#define REGEX_STRAIGHT "STRAIGHT"
+#define REGEX_STRAIGHT_HANDTYPE REGEX_STRAIGHT REGEX_SPACE REGEX_RANK
+
+#define REGEX_THREEOFAKIND "THREEOFAKIND"
+#define REGEX_THREEOFAKIND_HANDTYPE REGEX_THREEOFAKIND REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+
+#define REGEX_TWOPAIR "TWOPAIR"
+#define REGEX_TWOPAIR_HANDTYPE REGEX_TWOPAIR REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+
+#define REGEX_ONEPAIR "ONEPAIR"
+#define REGEX_ONEPAIR_HANDTYPE REGEX_ONEPAIR REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+
+#define REGEX_HIGHCARD "HIGHCARD"
+#define REGEX_HIGHCARD_HANDTYPE REGEX_HIGHCARD REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+
+/**
+ * Declaration of a hand that can be made from a player's cards
+ */
+#define REGEX_HANDTYPE "(" REGEX_STRAIGHTFLUSH_HANDTYPE "|" REGEX_FOUROFAKIND_HANDTYPE "|" REGEX_FULLHOUSE_HANDTYPE "|" REGEX_FLUSH_HANDTYPE "|" REGEX_STRAIGHT_HANDTYPE "|" REGEX_THREEOFAKIND_HANDTYPE "|" REGEX_TWOPAIR_HANDTYPE "|" REGEX_ONEPAIR_HANDTYPE "|" REGEX_HIGHCARD_HANDTYPE ")"
+
+/**
+ * The word blind.
+ */
+#define REGEX_BLIND "BLIND"
+
+/**
+ * The word straddle.
+ */
+#define REGEX_STRADDLE "STRADDLE"
+
+/**
+ * The word owing.
+ */
+#define REGEX_OWING "OWING"
+
+/**
+ * Betting Message
+ */
+#define REGEX_ACTION "(" REGEX_BLIND "|" REGEX_STRADDLE "|" REGEX_OWING ")"
 
 /**
  * Matches a question mark.
@@ -294,7 +349,11 @@ ipp_socket *ipp_new_socket();
 
 /**
  * Sent by the server to ask a player how many cards they wish to draw.
- * or Asks to draw num cards, and lists the cards being traded in.
+ */
+#define CMD_DRAWQ "DRAW" REGEX_QMARK
+
+/**
+ * Asks to draw num cards, and lists the cards being traded in.
  */
 #define CMD_DRAW "DRAW"
 
@@ -307,6 +366,79 @@ ipp_socket *ipp_new_socket();
  * Folds the player for this hand.
  */
 #define CMD_FOLD "FOLD"
+
+/**
+ * Sent by the server to inform a player of a new up (public) card.
+ */
+#define CMD_UP "UP"
+
+/**
+ * Sent by the server to inform a player of a new down (private) card.
+ */
+#define CMD_DOWN "DOWN"
+
+/**
+ * Sent by the server to the player who is required to bet, blind or straddle.
+ */
+#define CMD_ACTIONQ "ACTION" REGEX_QMARK
+
+/**
+ * Makes the blind bet.
+ */
+#define CMD_BLIND REGEX_BLIND
+
+/**
+ * Taps out for the blind bet.
+ */
+#define CMD_TAPOUT "TAPOUT"
+
+/**
+ * Calls the current bet.
+ */
+#define CMD_CALL "CALL"
+
+/**
+ * Raises the current bet.
+ */
+#define CMD_RAISE "RAISE"
+
+/**
+ * Opens the betting by betting amt.
+ */
+#define CMD_OPEN "OPEN"
+
+/**
+ * Makes the straddle bet.
+ */
+#define CMD_STRADDLE REGEX_STRADDLE
+
+/**
+ * Checks the bet (passes without betting).
+ */
+#define CMD_CHECK "CHECK"
+
+/**
+ * Sent by the server to indicate the winner of the hand,
+ * the amount they won, and the winning handtype.
+ */
+#define CMD_WINNER "WINNER"
+
+/**
+ * Sent by the server to indicate a player without enough
+ * money left to stay in the game.
+ */
+#define CMD_BUSTED "BUSTED"
+
+/**
+ * Sent by the server to indicate the final winner of the game.
+ * Also indicates the end of the game.
+ */
+#define CMD_GAMEOVER "GAMEOVER"
+
+/**
+ * Indicates that a player has unexpectedly quit the game.
+ */
+#define CMD_QUIT "QUIT"
 
 /* Regular expressions used to match messages */
 
@@ -334,13 +466,41 @@ ipp_socket *ipp_new_socket();
 
 #define REGEX_MSG_RIVER ("^" CMD_RIVER REGEX_SPACE REGEX_CARD "$")
 
-#define REGEX_MSG_DRAWQ ("^" CMD_DRAW REGEX_QMARK "$")
+#define REGEX_MSG_DRAWQ ("^" CMD_DRAWQ "$")
 
 #define REGEX_MSG_DRAW ("^" CMD_DRAW REGEX_SPACE REGEX_DRAW_N "$")
 
 #define REGEX_MSG_DRAWN ("^" CMD_DRAWN REGEX_SPACE REGEX_DRAW_N "$")
 
 #define REGEX_MSG_FOLD ("^" CMD_FOLD "$")
+
+#define REGEX_MSG_UP ("^" CMD_UP REGEX_SPACE REGEX_CARD "$")
+
+#define REGEX_MSG_DOWN ("^" CMD_DOWN REGEX_SPACE REGEX_CARD "$")
+
+#define REGEX_MSG_ACTION ("^" CMD_ACTIONQ REGEX_SPACE REGEX_ACTION REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_BLIND ("^" CMD_BLIND REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_TAPOUT ("^" CMD_TAPOUT REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_STRADDLE ("^" CMD_STRADDLE REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_CALL ("^" CMD_CALL REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_RAISE ("^" CMD_RAISE REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_OPEN ("^" CMD_OPEN REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_CHECK ("^" CMD_CHECK "$")
+
+#define REGEX_MSG_WINNER ("^" CMD_WINNER REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT REGEX_SPACE REGEX_HANDTYPE "$")
+
+#define REGEX_MSG_BUSTED ("^" CMD_BUSTED REGEX_SPACE REGEX_NAME "$")
+
+#define REGEX_MSG_GAMEOVER ("^" CMD_GAMEOVER REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_QUIT ("^" CMD_QUIT REGEX_SPACE REGEX_NAME "$")
 
 /* function prototypes */
 

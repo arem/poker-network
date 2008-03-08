@@ -23,13 +23,14 @@
 
 int main()
 {
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Alpha 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Beta 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Gamma 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
+	assertTrue("Up String should be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 2D"));
+	assertTrue("Up String should be valid", ipp_validate_msg(REGEX_MSG_UP, "UP KS"));
 
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, ""));
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN X 1 1"));
+	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 7C 2"));
+	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 7C2"));
+	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 9H "));
+	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP "));
+	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP"));
+	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, ""));
 	return PASS;
 }

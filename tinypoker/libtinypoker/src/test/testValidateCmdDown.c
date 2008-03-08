@@ -23,13 +23,14 @@
 
 int main()
 {
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Alpha 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Beta 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Gamma 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
+	assertTrue("Down String should be valid", ipp_validate_msg(REGEX_MSG_DOWN, "DOWN 2D"));
+	assertTrue("Down String should be valid", ipp_validate_msg(REGEX_MSG_DOWN, "DOWN KS"));
 
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, ""));
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN X 1 1"));
+	assertFalse("Down String should not be valid", ipp_validate_msg(REGEX_MSG_DOWN, "DOWN 7C 2"));
+	assertFalse("Down String should not be valid", ipp_validate_msg(REGEX_MSG_DOWN, "DOWN 7C2"));
+	assertFalse("Down String should not be valid", ipp_validate_msg(REGEX_MSG_DOWN, "DOWN 9H "));
+	assertFalse("Down String should not be valid", ipp_validate_msg(REGEX_MSG_DOWN, "DOWN "));
+	assertFalse("Down String should not be valid", ipp_validate_msg(REGEX_MSG_DOWN, "DOWN"));
+	assertFalse("Down String should not be valid", ipp_validate_msg(REGEX_MSG_DOWN, ""));
 	return PASS;
 }

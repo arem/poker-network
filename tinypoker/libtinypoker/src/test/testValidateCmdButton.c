@@ -23,6 +23,9 @@
 
 int main()
 {
+	assertTrue("Button String should be valid", ipp_validate_msg(REGEX_MSG_BUTTON, "BUTTON Alpha"));
+	assertTrue("Button String should be valid", ipp_validate_msg(REGEX_MSG_BUTTON, "BUTTON Beta"));
+	assertTrue("Button String should be valid", ipp_validate_msg(REGEX_MSG_BUTTON, "BUTTON Gamma"));
 	assertTrue("Button String should be valid", ipp_validate_msg(REGEX_MSG_BUTTON, "BUTTON Fred"));
 	assertTrue("Button String should be valid", ipp_validate_msg(REGEX_MSG_BUTTON, "BUTTON TOM"));
 	assertTrue("Button String should be valid", ipp_validate_msg(REGEX_MSG_BUTTON, "BUTTON a"));

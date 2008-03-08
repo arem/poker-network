@@ -23,13 +23,15 @@
 
 int main()
 {
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Alpha 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Beta 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Gamma 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
+	assertTrue("Call String should be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL 5"));
+	assertTrue("Call String should be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL 0"));
+	assertTrue("Call String should be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL 1234"));
+	assertTrue("Call String should be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL 012345678"));
 
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, ""));
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN X 1 1"));
+	assertFalse("Call String should not be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL -1"));
+	assertFalse("Call String should not be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL 01234567890123456"));
+	assertFalse("Call String should not be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL S"));
+	assertFalse("Call String should not be valid", ipp_validate_msg(REGEX_MSG_CALL, "CALL "));
+	assertFalse("Call String should not be valid", ipp_validate_msg(REGEX_MSG_CALL, ""));
 	return PASS;
 }

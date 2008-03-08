@@ -25,6 +25,9 @@ int main()
 {
 	assertTrue("Welcome String should be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME BAGELBOT"));
 	assertTrue("Welcome String should be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME Coat_Hanger"));
+	assertTrue("Welcome String should be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME Alpha"));
+	assertTrue("Welcome String should be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME Beta"));
+	assertTrue("Welcome String should be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME Gamma"));
 
 	assertFalse("Welcome String should not be valid", ipp_validate_msg(REGEX_MSG_WELCOME, ""));
 	assertFalse("Welcome String should not be valid", ipp_validate_msg(REGEX_MSG_WELCOME, "WELCOME "));
