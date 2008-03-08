@@ -111,6 +111,11 @@ ipp_socket *ipp_new_socket();
 /* Regular expressions used to match message parts */
 
 /**
+ * Whitespace characters used to separate message parts.
+ */
+#define REGEX_SPACE "[\\t ]+"
+
+/**
  * Ace, 2, 3, 4, 5, 6, 7, 8, 9, Ten, Jack, Queen, King
  */
 #define REGEX_RANK "[A23456789TJQK]{1}"
@@ -123,7 +128,27 @@ ipp_socket *ipp_new_socket();
 /**
  * Concatenation of rank and suit
  */
-#define REGEX_CARD (REGEX_RANK REGEX_SUIT)
+#define REGEX_CARD REGEX_RANK REGEX_SUIT
+
+/**
+ * Hole Cards given for Texas Holdem
+ */
+#define REGEX_HOLDEM_HOLE_CARDS REGEX_CARD REGEX_SPACE REGEX_CARD
+
+/**
+ * Hole Cards given for 7 Card Stud
+ */
+#define REGEX_STUD_HOLE_CARDS REGEX_CARD
+
+/**
+ * Hole Cards given for 5 Card Draw
+ */
+#define REGEX_DRAW_HOLE_CARDS REGEX_CARD REGEX_SPACE REGEX_CARD
+
+/**
+ * Hole Cards for any game type.
+ */
+#define REGEX_HOLE_CARDS "(" REGEX_DRAW_HOLE_CARDS "|" REGEX_STUD_HOLE_CARDS "|" REGEX_HOLDEM_HOLE_CARDS ")"
 
 /**
  * Name of player (no spaces).
@@ -131,19 +156,14 @@ ipp_socket *ipp_new_socket();
 #define REGEX_NAME "[0-9a-zA-Z_]{1,32}"
 
 /**
- * Amount of Money
+ * Amount of Money or other Non-Negative Amount (i.e. raises per round)
  * Smaller than max value of a signed 32-bit int.
  * XXX: 16-bit CPUs/OSes will fail on large amounts.
  */
 #define REGEX_AMT "[0-9]{1,9}"
 
 /**
- * Whitespace characters used to separate message parts.
- */
-#define REGEX_SPACE "[\\t ]+"
-
-/**
- * Whitespace characters used to separate message parts.
+ * Informational messages.
  */
 #define REGEX_INFO "[0-9a-zA-Z/.\\t ]+"
 
@@ -193,6 +213,19 @@ ipp_socket *ipp_new_socket();
  */
 #define REGEX_GAME_TYPE "(" REGEX_STUD_TYPE REGEX_SPACE REGEX_STUD_TYPE_SPECIFIER "|" REGEX_DRAW_TYPE "|" REGEX_HOLDEM_TYPE ")"
 
+#define REGEX_DRAW_1 "1" REGEX_SPACE REGEX_CARD
+#define REGEX_DRAW_2 "2" REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD
+#define REGEX_DRAW_3 "3" REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD
+#define REGEX_DRAW_4 "4" REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD
+#define REGEX_DRAW_5 "5" REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD
+
+#define REGEX_DRAW_N "(" REGEX_DRAW_1 "|" REGEX_DRAW_2 "|" REGEX_DRAW_3 "|" REGEX_DRAW_4 "|" REGEX_DRAW_5 ")"
+
+/**
+ * Matches a question mark.
+ */
+#define REGEX_QMARK "\\?"
+
 /* protocol commands */
 
 /**
@@ -221,6 +254,60 @@ ipp_socket *ipp_new_socket();
  */
 #define CMD_PLAYER "PLAYER"
 
+/**
+ * Sent by the server at the start of each hand in a game to identify
+ * the player on the button (first to bet).
+ */
+#define CMD_BUTTON "BUTTON"
+
+/**
+ * Sent by the server to remind a player that they have anted the
+ * indicated amt.
+ */
+#define CMD_ANTE "ANTE"
+
+/**
+ * Sent by the server to tell a player their hole cards.
+ */
+#define CMD_DEAL "DEAL"
+
+/**
+ * Sent by the server to tell other players that the
+ * player named name has sent the given msg.
+ */
+#define CMD_FROM "FROM"
+
+/**
+ * Sent by the server in Texas Holdem to announce the first three common cards.
+ */
+#define CMD_FLOP "FLOP"
+
+/**
+ * Sent by the server in Texas Holdem to announce the fourth common card.
+ */
+#define CMD_TURN "TURN"
+
+/**
+ * Sent by the server in Texas Holdem to announce the fifth and last common card.
+ */
+#define CMD_RIVER "RIVER"
+
+/**
+ * Sent by the server to ask a player how many cards they wish to draw.
+ * or Asks to draw num cards, and lists the cards being traded in.
+ */
+#define CMD_DRAW "DRAW"
+
+/**
+ * Sent by the server to indicate the new cards drawn by the player.
+ */
+#define CMD_DRAWN "DRAWN"
+
+/**
+ * Folds the player for this hand.
+ */
+#define CMD_FOLD "FOLD"
+
 /* Regular expressions used to match messages */
 
 #define REGEX_MSG_IPP ("^" CMD_IPP REGEX_SPACE REGEX_PROTOCOL_VERSION REGEX_SPACE REGEX_INFO "$")
@@ -232,6 +319,28 @@ ipp_socket *ipp_new_socket();
 #define REGEX_MSG_NEWGAME ("^" CMD_NEWGAME REGEX_SPACE REGEX_GAME_TYPE REGEX_SPACE REGEX_BLINDS REGEX_SPACE REGEX_RAISES_PER_ROUND "$")
 
 #define REGEX_MSG_PLAYER ("^" CMD_PLAYER REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_BUTTON ("^" CMD_BUTTON REGEX_SPACE REGEX_NAME "$")
+
+#define REGEX_MSG_ANTE ("^" CMD_ANTE REGEX_SPACE REGEX_AMT "$")
+
+#define REGEX_MSG_DEAL ("^" CMD_DEAL REGEX_SPACE REGEX_HOLE_CARDS "$")
+
+#define REGEX_MSG_FROM ("^" CMD_FROM REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_INFO "$")
+
+#define REGEX_MSG_FLOP ("^" CMD_FLOP REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD REGEX_SPACE REGEX_CARD "$")
+
+#define REGEX_MSG_TURN ("^" CMD_TURN REGEX_SPACE REGEX_CARD "$")
+
+#define REGEX_MSG_RIVER ("^" CMD_RIVER REGEX_SPACE REGEX_CARD "$")
+
+#define REGEX_MSG_DRAWQ ("^" CMD_DRAW REGEX_QMARK "$")
+
+#define REGEX_MSG_DRAW ("^" CMD_DRAW REGEX_SPACE REGEX_DRAW_N "$")
+
+#define REGEX_MSG_DRAWN ("^" CMD_DRAWN REGEX_SPACE REGEX_DRAW_N "$")
+
+#define REGEX_MSG_FOLD ("^" CMD_FOLD "$")
 
 /* function prototypes */
 

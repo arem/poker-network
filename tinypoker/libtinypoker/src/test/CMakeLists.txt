@@ -83,6 +83,50 @@ ADD_EXECUTABLE(testValidateCmdPlayer testValidateCmdPlayer.c)
 TARGET_LINK_LIBRARIES(testValidateCmdPlayer tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testValidateCmdPlayer ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdPlayer)
 
+ADD_EXECUTABLE(testValidateCmdButton testValidateCmdButton.c)
+TARGET_LINK_LIBRARIES(testValidateCmdButton tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdButton ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdButton)
+
+ADD_EXECUTABLE(testValidateCmdAnte testValidateCmdAnte.c)
+TARGET_LINK_LIBRARIES(testValidateCmdAnte tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdAnte ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdAnte)
+
+ADD_EXECUTABLE(testValidateCmdDeal testValidateCmdDeal.c)
+TARGET_LINK_LIBRARIES(testValidateCmdDeal tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdDeal ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdDeal)
+
+ADD_EXECUTABLE(testValidateCmdFrom testValidateCmdFrom.c)
+TARGET_LINK_LIBRARIES(testValidateCmdFrom tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdFrom ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdFrom)
+
+ADD_EXECUTABLE(testValidateCmdFlop testValidateCmdFlop.c)
+TARGET_LINK_LIBRARIES(testValidateCmdFlop tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdFlop ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdFlop)
+
+ADD_EXECUTABLE(testValidateCmdTurn testValidateCmdTurn.c)
+TARGET_LINK_LIBRARIES(testValidateCmdTurn tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdTurn ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdTurn)
+
+ADD_EXECUTABLE(testValidateCmdRiver testValidateCmdRiver.c)
+TARGET_LINK_LIBRARIES(testValidateCmdRiver tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdRiver ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdRiver)
+
+ADD_EXECUTABLE(testValidateCmdDraw testValidateCmdDraw.c)
+TARGET_LINK_LIBRARIES(testValidateCmdDraw tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdDraw ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdDraw)
+
+ADD_EXECUTABLE(testValidateCmdDrawn testValidateCmdDrawn.c)
+TARGET_LINK_LIBRARIES(testValidateCmdDrawn tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdDrawn ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdDrawn)
+
+ADD_EXECUTABLE(testValidateCmdDrawQ testValidateCmdDrawQ.c)
+TARGET_LINK_LIBRARIES(testValidateCmdDrawQ tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdDrawQ ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdDrawQ)
+
+ADD_EXECUTABLE(testValidateCmdFold testValidateCmdFold.c)
+TARGET_LINK_LIBRARIES(testValidateCmdFold tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdFold ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdFold)
+
 ADD_EXECUTABLE(testNormalizeMessage testNormalizeMessage.c)
 TARGET_LINK_LIBRARIES(testNormalizeMessage tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testNormalizeMessage ${EXECUTABLE_OUTPUT_PATH}/testNormalizeMessage)

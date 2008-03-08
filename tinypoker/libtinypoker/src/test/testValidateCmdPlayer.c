@@ -23,6 +23,7 @@
 
 int main()
 {
+	assertTrue("Player String should be valid", ipp_validate_msg(REGEX_MSG_PLAYER, "PLAYER Fred 1000"));
 	assertTrue("Player String should be valid", ipp_validate_msg(REGEX_MSG_PLAYER, "PLAYER Scott 0"));
 	assertTrue("Player String should be valid", ipp_validate_msg(REGEX_MSG_PLAYER, "PLAYER x 1"));
 	assertTrue("Player String should be valid", ipp_validate_msg(REGEX_MSG_PLAYER, "PLAYER x 10000"));
