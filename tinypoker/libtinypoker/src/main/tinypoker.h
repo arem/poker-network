@@ -36,6 +36,25 @@
 #endif
 
 /**
+ * Major version number. This is updated when major re-writes or
+ * changes to the API occur requiring implementing programs to be
+ * changed.
+ */
+#define LIBTINYPOKER_MAJOR_VERSION 0
+
+/**
+ * Minor version number. This is updated when new APIs are added
+ * that don't change existing APIs.
+ */
+#define LIBTINYPOKER_MINOR_VERSION 0
+
+/**
+ * Patch version number. This is updated when bugs are fixed that don't
+ * add any new APIs.
+ */
+#define LIBTINYPOKER_PATCH_VERSION 0
+
+/**
  * Structure used to hold network communications information.
  */
 typedef struct ipp_socket {
@@ -496,6 +515,11 @@ void ipp_free_message(ipp_message * msg);
  */
 #define CMD_ERROR "ERROR"
 
+/**
+ * Echo the player's action back to them.
+ */
+#define CMD_OK "OK"
+
 /* Regular expressions used to match messages */
 
 #define REGEX_MSG_IPP ("^" CMD_IPP REGEX_SPACE REGEX_PROTOCOL_VERSION REGEX_SPACE REGEX_INFO "$")
@@ -570,6 +594,8 @@ void ipp_free_message(ipp_message * msg);
 
 #define REGEX_MSG_ERROR ("^" CMD_ERROR REGEX_SPACE REGEX_INFO "$")
 
+#define REGEX_MSG_OK ("^" CMD_OK REGEX_SPACE REGEX_INFO "$")
+
 /* Regular Expressions for all supported message types */
 
 static char *ipp_regex_msg[] = {
@@ -609,6 +635,7 @@ static char *ipp_regex_msg[] = {
 	REGEX_MSG_NO,
 	REGEX_MSG_YES,
 	REGEX_MSG_ERROR,
+	REGEX_MSG_OK,
 	NULL
 };
 
@@ -648,6 +675,7 @@ static char *ipp_regex_msg[] = {
 #define MSG_NO 33
 #define MSG_YES 34
 #define MSG_ERROR 35
+#define MSG_OK 36
 
 /* function prototypes */
 

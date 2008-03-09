@@ -1,7 +1,0 @@
- * Support arbitrarily large values for amounts or document limits.
- * Implement OK command.
- * More restrictive regex for FROM command.
- * Add parse functions (example, ipp_parse_welcome(ipp_message *msg))
- * SSL/TLS Certificates.
- * API Documentation.
- * More unit tests.

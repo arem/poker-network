@@ -207,6 +207,10 @@ ADD_EXECUTABLE(testValidateCmdError testValidateCmdError.c)
 TARGET_LINK_LIBRARIES(testValidateCmdError tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testValidateCmdError ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdError)
 
+ADD_EXECUTABLE(testValidateCmdOk testValidateCmdOk.c)
+TARGET_LINK_LIBRARIES(testValidateCmdOk tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdOk ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdOk)
+
 ADD_EXECUTABLE(testValidateUnknownMsg testValidateUnknownMsg.c)
 TARGET_LINK_LIBRARIES(testValidateUnknownMsg tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testValidateUnknownMsg ${EXECUTABLE_OUTPUT_PATH}/testValidateUnknownMsg)

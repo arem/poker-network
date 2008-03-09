@@ -27,6 +27,7 @@
 #include "config.h"
 #include "poker.h"
 #include "signal.h"
+#include "tinypokerd.h"
 
 static void client_connect_callback(ipp_socket * sock)
 {
@@ -42,12 +43,11 @@ static void client_connect_callback(ipp_socket * sock)
 	d = (sock->addr.sin_addr.s_addr >> 24) & 0xff;
 
 	/* TODO this might not be byte safe -- test on big-endian */
-
 	daemon_log(LOG_INFO, "[SERV] Connect %lu.%lu.%lu.%lu", a, b, c, d);
 
 	msg = ipp_new_message();
 	msg->type = MSG_IPP;
-	msg->payload = strdup("IPP 2.0 TinyPoker/0.0.0");
+	msg->payload = strdup("IPP 2.0 " TINYPOKERD_NAME "/" TINYPOKERD_VERSION);
 
 	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT);
 	if (rc == FALSE) {
