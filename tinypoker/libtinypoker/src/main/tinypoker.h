@@ -46,10 +46,35 @@ typedef struct ipp_socket {
 } ipp_socket;
 
 /**
- * Allocates an empty ipp_socket. Don't forget to free().
+ * Structure used to hold protocol messages.
+ */
+typedef struct ipp_message {
+	int type;
+	char *payload;
+} ipp_message;
+
+/**
+ * Allocates an empty ipp_socket. Don't forget to call ipp_free_socket().
  * @return a malloc()'d ipp_socket structure.
+ * @see ipp_free_socket()
  */
 ipp_socket *ipp_new_socket();
+
+/**
+ * Deallocate an ipp_socket.
+ */
+void ipp_free_socket(ipp_socket * sock);
+
+/**
+ * Allocates an empty ipp_message. Don't forget to ipp_free_message().
+ * @return a malloc()'d ipp_message structure.
+ */
+ipp_message *ipp_new_message();
+
+/**
+ * Deallocate an ipp_message.
+ */
+void ipp_free_message(ipp_message * msg);
 
 /**
  * The name of this library for IPP strings, etc.
@@ -165,7 +190,7 @@ ipp_socket *ipp_new_socket();
 /**
  * Informational messages.
  */
-#define REGEX_INFO "[0-9a-zA-Z/.\\t ]+"
+#define REGEX_INFO "[0-9a-zA-Z/.\\t \\-]+"
 
 /**
  * Small Blind.
@@ -418,6 +443,31 @@ ipp_socket *ipp_new_socket();
 #define CMD_CHECK "CHECK"
 
 /**
+ * Sent by the server to the player being called to show their hand. 
+ */
+#define CMD_SHOWQ "SHOW" REGEX_QMARK
+
+/**
+ * Sent by the client in response to SHOW?
+ */
+#define CMD_SHOW "SHOW"
+
+/**
+ * Sent by the server to remaining players to ask if they can beat the given handtype.
+ */
+#define CMD_BEATQ "BEAT" REGEX_QMARK
+
+/**
+ * Indicates that the player cannot beat the announced hand and must fold.
+ */
+#define CMD_NO "NO"
+
+/**
+ * Indicates that the player can beat the announced hand and announces the better hand.
+ */
+#define CMD_YES "YES"
+
+/**
  * Sent by the server to indicate the winner of the hand,
  * the amount they won, and the winning handtype.
  */
@@ -439,6 +489,12 @@ ipp_socket *ipp_new_socket();
  * Indicates that a player has unexpectedly quit the game.
  */
 #define CMD_QUIT "QUIT"
+
+/**
+ * Sent by the server to the client with a messag eexplaining the nature of the error
+ * Reasons for errors include trying to perform an action that is not permitted.
+ */
+#define CMD_ERROR "ERROR"
 
 /* Regular expressions used to match messages */
 
@@ -494,6 +550,16 @@ ipp_socket *ipp_new_socket();
 
 #define REGEX_MSG_CHECK ("^" CMD_CHECK "$")
 
+#define REGEX_MSG_SHOWQ ("^" CMD_SHOWQ "$")
+
+#define REGEX_MSG_SHOW ("^" CMD_SHOW REGEX_SPACE REGEX_HANDTYPE "$")
+
+#define REGEX_MSG_BEATQ ("^" CMD_BEATQ REGEX_SPACE REGEX_HANDTYPE "$")
+
+#define REGEX_MSG_NO ("^" CMD_NO "$")
+
+#define REGEX_MSG_YES ("^" CMD_YES REGEX_SPACE REGEX_HANDTYPE "$")
+
 #define REGEX_MSG_WINNER ("^" CMD_WINNER REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT REGEX_SPACE REGEX_HANDTYPE "$")
 
 #define REGEX_MSG_BUSTED ("^" CMD_BUSTED REGEX_SPACE REGEX_NAME "$")
@@ -501,6 +567,87 @@ ipp_socket *ipp_new_socket();
 #define REGEX_MSG_GAMEOVER ("^" CMD_GAMEOVER REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT "$")
 
 #define REGEX_MSG_QUIT ("^" CMD_QUIT REGEX_SPACE REGEX_NAME "$")
+
+#define REGEX_MSG_ERROR ("^" CMD_ERROR REGEX_SPACE REGEX_INFO "$")
+
+/* Regular Expressions for all supported message types */
+
+static char *ipp_regex_msg[] = {
+	REGEX_MSG_IPP,
+	REGEX_MSG_BUYIN,
+	REGEX_MSG_WELCOME,
+	REGEX_MSG_NEWGAME,
+	REGEX_MSG_PLAYER,
+	REGEX_MSG_BUTTON,
+	REGEX_MSG_ANTE,
+	REGEX_MSG_DEAL,
+	REGEX_MSG_FROM,
+	REGEX_MSG_FLOP,
+	REGEX_MSG_TURN,
+	REGEX_MSG_RIVER,
+	REGEX_MSG_DRAWQ,
+	REGEX_MSG_DRAW,
+	REGEX_MSG_DRAWN,
+	REGEX_MSG_FOLD,
+	REGEX_MSG_UP,
+	REGEX_MSG_DOWN,
+	REGEX_MSG_ACTION,
+	REGEX_MSG_BLIND,
+	REGEX_MSG_TAPOUT,
+	REGEX_MSG_STRADDLE,
+	REGEX_MSG_CALL,
+	REGEX_MSG_RAISE,
+	REGEX_MSG_OPEN,
+	REGEX_MSG_CHECK,
+	REGEX_MSG_WINNER,
+	REGEX_MSG_BUSTED,
+	REGEX_MSG_GAMEOVER,
+	REGEX_MSG_QUIT,
+	REGEX_MSG_SHOWQ,
+	REGEX_MSG_SHOW,
+	REGEX_MSG_BEATQ,
+	REGEX_MSG_NO,
+	REGEX_MSG_YES,
+	REGEX_MSG_ERROR,
+	NULL
+};
+
+#define MSG_IPP 0
+#define MSG_BUYIN 1
+#define MSG_WELCOME 2
+#define MSG_NEWGAME 3
+#define MSG_PLAYER 4
+#define MSG_BUTTON 5
+#define MSG_ANTE 6
+#define MSG_DEAL 7
+#define MSG_FROM 8
+#define MSG_FLOP 9
+#define MSG_TURN 10
+#define MSG_RIVER 11
+#define MSG_DRAWQ 12
+#define MSG_DRAW 13
+#define MSG_DRAWN 14
+#define MSG_FOLD 15
+#define MSG_UP 16
+#define MSG_DOWN 17
+#define MSG_ACTION 18
+#define MSG_BLIND 19
+#define MSG_TAPOUT 20
+#define MSG_STRADDLE 21
+#define MSG_CALL 22
+#define MSG_RAISE 23
+#define MSG_OPEN 24
+#define MSG_CHECK 25
+#define MSG_WINNER 26
+#define MSG_BUSTED 27
+#define MSG_GAMEOVER 28
+#define MSG_QUIT 29
+#define MSG_SHOWQ 30
+#define MSG_SHOW 31
+#define MSG_BEATQ 32
+#define MSG_NO 33
+#define MSG_YES 34
+#define MSG_ERROR 35
 
 /* function prototypes */
 
@@ -525,7 +672,7 @@ int ipp_validate_msg(char *regex, char *msg);
 /**
  * Validates an arbitrary IPP Messages.
  * @param msg a message.
- * @return 1 if msg is valid, 0 if msg is not valid.
+ * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
  */
 int ipp_validate_unknown_msg(char *msg);
 
@@ -556,7 +703,7 @@ void ipp_disconnect(ipp_socket * sock);
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-char *ipp_read_msg(ipp_socket * sock, int timeout);
+ipp_message *ipp_read_msg(ipp_socket * sock, int timeout);
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
@@ -565,7 +712,7 @@ char *ipp_read_msg(ipp_socket * sock, int timeout);
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int ipp_send_msg(ipp_socket * sock, char *msg, int timeout);
+int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout);
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!

@@ -25,7 +25,7 @@ int main(int argc, char **argv, char **envp)
 {
 	ipp_socket *sock;
 	int rc;
-	char *msg;
+	ipp_message *msg;
 	ipp_init();
 
 	sock = ipp_connect("localhost", 9898);
@@ -36,45 +36,60 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
-	if (msg) {
-		printf("> %s\n", msg);
-		free(msg);
+	if (msg && msg->payload && msg->type == MSG_IPP) {
+		printf("> %s\n", msg->payload);
+		ipp_free_message(msg);
+		msg = NULL;
 	} else {
 		printf("! read error\n");
 		ipp_disconnect(sock);
-		free(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
 		ipp_exit();
 		return 1;
 	}
 
-	msg = strdup("BUYIN TOM 500");
+	msg = ipp_new_message();
+	msg->type = MSG_BUYIN;
+	msg->payload = strdup("BUYIN TOM 500");
 	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);
 	if (rc) {
-		printf("< %s\n", msg);
-		free(msg);
+		printf("< %s\n", msg->payload);
+		ipp_free_message(msg);
+		msg = NULL;
 	} else {
 		printf("! send error\n");
-		free(msg);
+		ipp_free_message(msg);
 		ipp_disconnect(sock);
-		free(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
 		ipp_exit();
 		return 1;
 	}
 
 	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
-	if (msg) {
-		printf("> %s\n", msg);
-		free(msg);
+	if (msg && msg->payload && msg->type == MSG_WELCOME) {
+		printf("> %s\n", msg->payload);
+		ipp_free_message(msg);
+		msg = NULL;
 	} else {
 		printf("! read error\n");
 		ipp_disconnect(sock);
-		free(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
 		ipp_exit();
 		return 1;
 	}
 
 	ipp_disconnect(sock);
-	free(sock);
+	ipp_free_socket(sock);
+	sock = NULL;
 	ipp_exit();
 
 	return 0;

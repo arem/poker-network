@@ -1,0 +1,70 @@
+// TinyPoker.org
+// Copyright (C) 2007 Thomas Cort
+//
+// Permission is granted to copy, distribute and/or modify this document
+// under the terms of the GNU Free Documentation License, Version 1.2 or
+// any later version published by the Free Software Foundation; with no
+// Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+// copy of the license is included in the section entitled "GNU Free
+// Documentation License".
+
+Server Docs
+===========
+
+Command Line Arguments
+----------------------
+
+List of Command Line Options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[frame="all", grid="all"]
+`--------------`---------------`---------------`---------------------------
+*short option*  *long option*   *argument*      *description*
+-h              --help          no              Show a help message
+-v              --version       no              Show version information
+-k              --kill          no              Kill the running instance
+-f              --foreground    no              Run in the foreground
+---------------------------------------------------------------------------
+
+Example Commands
+~~~~~~~~~~~~~~~~
+
+.Start the Tiny Poker Daemon
+--------------------------------------
+ # /usr/sbin/tinypokerd
+--------------------------------------
+
+.Stop a running Tiny Poker Daemon
+--------------------------------------
+ # /usr/sbin/tinypokerd --kill
+--------------------------------------
+
+.Run in the Foreground (i.e. do not daemonize)
+--------------------------------------
+ # /usr/sbin/tinypokerd --foreground
+--------------------------------------
+
+
+Configuration File
+------------------
+
+List of Configuration Options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[frame="all", grid="all"]
+`--------------`---------------`---------------------------------------------------`----------------------------------
+*key*           *value*         *description*                                       *default*
+port            1-65535         Specify the port for the HTTP server.               9898
+database        /path/to/db     Specify the location of the SQLite database file.   /var/lib/tinypokerd/tinypokerd.db
+----------------------------------------------------------------------------------------------------------------------
+
+Example Configuration File
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+./etc/tinypokerd.conf
+--------------------------------------
+# This is a comment
+
+port = 1234
+database = /home/tinypoker/database.db
+--------------------------------------

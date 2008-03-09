@@ -11,15 +11,26 @@
 Download
 ========
 
-{siteTitle} Server
-------------------
+libtinypoker
+------------
 
-'Not available yet'.
+*libtinypoker* is a small client/server library that implements the
+Internet Poker Protocol (IPP) 2.0 over TLS. It is licensed under the
+terms of the http://tinypoker.org/gpl-2.html[GNU General Public License version 2 or Later].
+The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].
 
-{siteTitle} Bot
----------------
+ * 'No releases yet'.
 
-'Not available yet'.
+tinypokerd
+----------
+
+*tinypokerd* is a small poker server. It is licensed under the 
+terms of the http://tinypoker.org/gpl-2.html[GNU General Public License version 2 or Later].
+It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse],
+http://0pointer.de/lennart/projects/libdaemon/[libdaemon] and
+http://sqlite.org/[SQLite].
+
+ * 'No releases yet'.
 
 The Entire {siteTitle} Website
 ------------------------------
@@ -31,6 +42,8 @@ copy of this documentation. The specially formatted text is
 the transparent copy. The transparent copy can be downloaded
 with the link below. Some scripts for transforming the transparent
 copy into the opaque copy with the *asciidoc* program are also
-included. The *asciidoc* program is free software.
+included. The *asciidoc* program is free software. The website
+and its scripts are licensed under the terms of the
+http://tinypoker.org/gfdl-1.2.html[GNU Free Documentation License version 1.2 or Later].
 
  * http://tinypoker.org/tinypoker.org.tar.gz[Full Transparent Copy and Scripts] (Last Published: {localdate} {localtime})

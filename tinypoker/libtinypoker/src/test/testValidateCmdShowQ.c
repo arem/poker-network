@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
- * This file is part of tinypokerd.
+ * This file is part of libtinypoker.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,46 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <libdaemon/dlog.h>
-#include <stdlib.h>
-#include <sqlite3.h>
+#include "../main/tinypoker.h"
+#include "test.h"
 
-#include "config.h"
-#include "db.h"
-
-static sqlite3 *db;
-
-/**
- * Connects to a SQLite Database
- * @return 0 if connected, -1 if failed to connect
- */
-int db_connect()
+int main()
 {
-	int rc;
+	assertTrue("ShowQ String should be valid", ipp_validate_msg(REGEX_MSG_SHOWQ, "SHOW?"));
 
-	db = NULL;
-
-	/* connect */
-	rc = sqlite3_open(database, &db);
-	if (rc) {
-		daemon_log(LOG_ERR, "[DBDB] Can't open database (%s): %s", database, sqlite3_errmsg(db));
-		sqlite3_close(db);
-		db = NULL;
-		return -1;
-	}
-
-	daemon_log(LOG_INFO, "[DBDB] Connected");
-	return 0;
-}
-
-/**
- * Close the connection to a SQLite Database
- */
-void db_disconnect()
-{
-	if (db) {
-		sqlite3_close(db);
-		db = NULL;
-	}
-	daemon_log(LOG_INFO, "[DBDB] Disconnected");
+	assertFalse("ShowQ String should not be valid", ipp_validate_msg(REGEX_MSG_SHOWQ, "SHW?"));
+	assertFalse("ShowQ String should not be valid", ipp_validate_msg(REGEX_MSG_SHOWQ, "SHOW??"));
+	assertFalse("ShowQ String should not be valid", ipp_validate_msg(REGEX_MSG_SHOWQ, " SHOW?"));
+	assertFalse("ShowQ String should not be valid", ipp_validate_msg(REGEX_MSG_SHOWQ, "SHOW? "));
+	assertFalse("ShowQ String should not be valid", ipp_validate_msg(REGEX_MSG_SHOWQ, ""));
+	return PASS;
 }

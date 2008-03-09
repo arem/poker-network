@@ -41,6 +41,7 @@ int main()
 	str = newString();
 	strncpy(str, "IPP 2.0 XoXoX", INPUT_SIZE);
 	ipp_normalize_msg(str);
+	printf("'%s'\n", str);
 	assertStringEqual("Normalize failed to properly toupper()", str, "IPP 2.0 XOXOX");
 	free(str);
 
@@ -60,6 +61,13 @@ int main()
 
 	str = newString();
 	strncpy(str, " IPP 2.0 TEST", INPUT_SIZE);
+	ipp_normalize_msg(str);
+	printf("'%s'\n", str);
+	assertStringEqual("Normalize failed to properly trim", str, "IPP 2.0 TEST");
+	free(str);
+
+	str = newString();
+	strncpy(str, "IPP 2.0 TEST ", INPUT_SIZE);
 	ipp_normalize_msg(str);
 	printf("'%s'\n", str);
 	assertStringEqual("Normalize failed to properly trim", str, "IPP 2.0 TEST");

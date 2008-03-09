@@ -72,7 +72,7 @@ void ipp_exit()
  */
 void ipp_normalize_msg(char *msg)
 {
-	int len, i, j;
+	int len, start, end, i, j;
 	len = strlen(msg);
 	char *pos;
 
@@ -81,25 +81,27 @@ void ipp_normalize_msg(char *msg)
 	}
 
 	while ((pos = strchr(msg, '\n'))) {
-		*pos = ' ';	/* trim all new lines */
+		*pos = ' ';	/* replace new lines with white space */
 	}
 
-	j = 0;			/* Trim leading white space */
-	while ((msg[j] == ' ' || msg[j] == '\t') && (j < len)) {
-		j++;
+	/* find start */
+	for (start = 0; start < len && (msg[start] == ' ' || msg[start] == '\t'); start++) {
+		/* do nothing */ ;
+	}
+
+	/* find end */
+	for (end = len - 1; end > 0 && (msg[end] == ' ' || msg[end] == '\t'); end--) {
+		/* do nothing */
 	}
 
 	/* Trim whitespace as we go. Convert everything to upper case. */
-	for (i = 0; j < len && i < len; i++, j++) {
+	for (i = 0, j = start; i < len && j <= end; i++, j++) {
 		msg[i] = toupper(msg[j]);
-		if ((msg[i] == ' ' || msg[i] == '\t') && (msg[j + 1] == ' ' || msg[j + 1] == '\t')) {
+
+		/* Collapse white space */
+		if ((msg[j] == ' ' || msg[j] == '\t') && (msg[j + 1] == ' ' || msg[j + 1] == '\t')) {
 			i--;
 		}
-	}
-
-	/* Trim that last whitespace character not caught by the 'for' loop */
-	if (i > 0 && (msg[i - 1] == ' ' || msg[i - 1] == '\t')) {
-		i--;
 	}
 
 	msg[i] = '\0';
@@ -140,54 +142,20 @@ int ipp_validate_msg(char *regex, char *msg)
 /**
  * Validates an arbitrary IPP Messages.
  * @param msg a message.
- * @return 1 if msg is valid, 0 if msg is not valid.
+ * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
  */
 int ipp_validate_unknown_msg(char *msg)
 {
 	unsigned int i;
-	int is_valid = FALSE;
+	int is_valid = -1;
 
-	char *regex[] = {
-		REGEX_MSG_IPP,
-		REGEX_MSG_BUYIN,
-		REGEX_MSG_WELCOME,
-		REGEX_MSG_NEWGAME,
-		REGEX_MSG_PLAYER,
-		REGEX_MSG_BUTTON,
-		REGEX_MSG_ANTE,
-		REGEX_MSG_DEAL,
-		REGEX_MSG_FROM,
-		REGEX_MSG_FLOP,
-		REGEX_MSG_TURN,
-		REGEX_MSG_RIVER,
-		REGEX_MSG_DRAWQ,
-		REGEX_MSG_DRAW,
-		REGEX_MSG_DRAWN,
-		REGEX_MSG_FOLD,
-		REGEX_MSG_UP,
-		REGEX_MSG_DOWN,
-		REGEX_MSG_ACTION,
-		REGEX_MSG_BLIND,
-		REGEX_MSG_TAPOUT,
-		REGEX_MSG_STRADDLE,
-		REGEX_MSG_CALL,
-		REGEX_MSG_RAISE,
-		REGEX_MSG_OPEN,
-		REGEX_MSG_CHECK,
-		REGEX_MSG_WINNER,
-		REGEX_MSG_BUSTED,
-		REGEX_MSG_GAMEOVER,
-		REGEX_MSG_QUIT,
-		NULL
-	};
-
-	if (!regex || !msg) {
+	if (!ipp_regex_msg || !msg) {
 		return FALSE;
 	}
 
-	for (i = 0; regex[i]; i++) {
-		if (ipp_validate_msg(regex[i], msg)) {
-			is_valid = TRUE;
+	for (i = 0; ipp_regex_msg[i]; i++) {
+		if (ipp_validate_msg(ipp_regex_msg[i], msg)) {
+			is_valid = i;
 			break;
 		}
 	}
@@ -196,7 +164,7 @@ int ipp_validate_unknown_msg(char *msg)
 }
 
 /**
- * Allocates an empty ipp_socket. Don't forget to free().
+ * Allocates an empty ipp_socket. Don't forget to ipp_free_socket().
  * @return a malloc()'d ipp_socket structure.
  */
 ipp_socket *ipp_new_socket()
@@ -209,6 +177,46 @@ ipp_socket *ipp_new_socket()
 
 	memset(sock, '\0', sizeof(ipp_socket));
 	return sock;
+}
+
+/**
+ * Deallocate an ipp_socket.
+ */
+void ipp_free_socket(ipp_socket * sock)
+{
+	if (sock) {
+		free(sock);
+	}
+}
+
+/**
+ * Allocates an empty ipp_message. Don't forget to ipp_free_message().
+ * @return a malloc()'d ipp_message structure.
+ */
+ipp_message *ipp_new_message()
+{
+	ipp_message *msg;
+	msg = (ipp_message *) malloc(sizeof(ipp_message));
+	if (!msg) {
+		return NULL;
+	}
+
+	memset(msg, '\0', sizeof(ipp_message));
+	return msg;
+}
+
+/**
+ * Deallocate an ipp_message.
+ */
+void ipp_free_message(ipp_message * msg)
+{
+	if (msg) {
+		if (msg->payload) {
+			free(msg->payload);
+			msg->payload = NULL;
+		}
+		free(msg);
+	}
 }
 
 /**
@@ -338,7 +346,7 @@ void __ipp_readln_thread(void *void_params)
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with free().
  */
-char *ipp_read_msg(ipp_socket * sock, int timeout)
+ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
 {
 	__ipp_readln_thread_params params;
 	char *buffer;
@@ -386,8 +394,17 @@ char *ipp_read_msg(ipp_socket * sock, int timeout)
 	ipp_normalize_msg(buffer);
 
 	is_valid = ipp_validate_unknown_msg(buffer);
-	if (is_valid) {
-		return buffer;
+	if (is_valid > -1) {
+		ipp_message *msg;
+		msg = ipp_new_message();
+		if (msg) {
+			msg->type = is_valid;
+			msg->payload = buffer;
+			return msg;
+		} else {
+			free(buffer);
+			return NULL;
+		}
 	} else {
 		free(buffer);
 		return NULL;
@@ -419,7 +436,7 @@ void __ipp_writeln_thread(void *void_params)
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int ipp_send_msg(ipp_socket * sock, char *msg, int timeout)
+int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 {
 	__ipp_writeln_thread_params params;
 	int is_valid, ret, n;
@@ -430,16 +447,24 @@ int ipp_send_msg(ipp_socket * sock, char *msg, int timeout)
 	is_valid = FALSE;
 	n = 0;
 
-	ipp_normalize_msg(msg);
-	is_valid = ipp_validate_unknown_msg(msg);
-	if (is_valid) {
+	ipp_normalize_msg(msg->payload);
+	is_valid = ipp_validate_unknown_msg(msg->payload);
+	if (is_valid > -1 && is_valid == msg->type) {
+		int len;
 		char *final_msg;
 
-		final_msg = strndup(msg, strlen(msg) + 1);
-		final_msg[strlen(msg)] = '\n';
+		len = strlen(msg->payload);
+		final_msg = malloc(sizeof(char) * (len + 2));
+		if (final_msg == NULL) {
+			return FALSE;
+		}
+
+		memset(final_msg, '\0', len + 2);
+		strncpy(final_msg, msg->payload, len + 2);
+		final_msg[len] = '\n';
 
 		params.sock = sock;
-		params.buffer = msg;
+		params.buffer = final_msg;
 		params.n = &n;
 
 		pthread_attr_init(&writer_attr);
@@ -471,6 +496,7 @@ int ipp_send_msg(ipp_socket * sock, char *msg, int timeout)
 			final_msg = NULL;
 			return FALSE;
 		}
+
 	} else {
 		return FALSE;
 	}

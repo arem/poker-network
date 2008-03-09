@@ -183,6 +183,34 @@ ADD_EXECUTABLE(testValidateCmdWinner testValidateCmdWinner.c)
 TARGET_LINK_LIBRARIES(testValidateCmdWinner tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testValidateCmdWinner ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdWinner)
 
+ADD_EXECUTABLE(testValidateCmdShowQ testValidateCmdShowQ.c)
+TARGET_LINK_LIBRARIES(testValidateCmdShowQ tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdShowQ ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdShowQ)
+
+ADD_EXECUTABLE(testValidateCmdShow testValidateCmdShow.c)
+TARGET_LINK_LIBRARIES(testValidateCmdShow tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdShow ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdShow)
+
+ADD_EXECUTABLE(testValidateCmdNo testValidateCmdNo.c)
+TARGET_LINK_LIBRARIES(testValidateCmdNo tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdNo ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdNo)
+
+ADD_EXECUTABLE(testValidateCmdYes testValidateCmdYes.c)
+TARGET_LINK_LIBRARIES(testValidateCmdYes tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdYes ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdYes)
+
+ADD_EXECUTABLE(testValidateCmdBeatQ testValidateCmdBeatQ.c)
+TARGET_LINK_LIBRARIES(testValidateCmdBeatQ tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdBeatQ ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdBeatQ)
+
+ADD_EXECUTABLE(testValidateCmdError testValidateCmdError.c)
+TARGET_LINK_LIBRARIES(testValidateCmdError tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateCmdError ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdError)
+
+ADD_EXECUTABLE(testValidateUnknownMsg testValidateUnknownMsg.c)
+TARGET_LINK_LIBRARIES(testValidateUnknownMsg tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testValidateUnknownMsg ${EXECUTABLE_OUTPUT_PATH}/testValidateUnknownMsg)
+
 ADD_EXECUTABLE(testNormalizeMessage testNormalizeMessage.c)
 TARGET_LINK_LIBRARIES(testNormalizeMessage tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testNormalizeMessage ${EXECUTABLE_OUTPUT_PATH}/testNormalizeMessage)
