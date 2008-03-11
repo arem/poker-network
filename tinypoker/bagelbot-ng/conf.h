@@ -1,5 +1,5 @@
 /*
- * BagelBot - Trivial client for pokerd
+ * bagelbot-ng - Trivial client for tinypokerd
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,9 +26,8 @@
 
 char *configfile;
 char *user;
-char *pass;
 char *host;
-int   port;
+int port;
 
 /**
  * Reads 'configfile' and allocates memory for their values
@@ -36,11 +35,10 @@ int   port;
 void configure();
 
 /**
- * Macro to free the user, pass and host (if set).
+ * Macro to free the user and host (if set).
  */
 #define free_config()				\
 	if (user) { free(user); user = NULL; } \
-	if (pass) { free(pass); pass = NULL; } \
 	if (host) { free(host); host = NULL; }
 
 #endif

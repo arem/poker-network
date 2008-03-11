@@ -206,15 +206,81 @@ ipp_message *ipp_new_message()
 }
 
 /**
+ * Parses msg->payload into msg->parsed.
+ * @param msg an IPP message
+ */
+void ipp_parse_msg(ipp_message * msg) {
+	int tokcnt, i, j;
+	char delim = ' ';
+	char *s, *t;
+
+	if ((msg == NULL || msg->payload == NULL || msg->parsed != NULL) && msg->type >= 0) {
+		return;
+	}
+
+	tokcnt = 1;
+	for (i = 0; msg->payload[i]; i++) {
+		if (msg->payload[i] == delim) {
+			tokcnt++;
+		}
+	}
+
+	msg->parsed = (char **) malloc(sizeof(char*) * (tokcnt + 1));
+	if (!(msg->parsed)) {
+		/* malloc failed */
+		return;
+	}
+
+	memset(msg->parsed, '\0', sizeof(char*) * (tokcnt + 1));
+	s = msg->payload;
+	for (i = 0; i < tokcnt; i++) {
+		t = strchr(s, delim);
+		if (t) {
+			msg->parsed[i] = (char *) malloc(((t-s) + (sizeof(char) * 1)));
+			if (!(msg->parsed[i])) {
+				/* malloc() failed */
+				for (j = 0; msg->parsed[j]; j++) {
+					free(msg->parsed[j]);
+					msg->parsed[j];
+				}
+				free(msg->parsed);
+				msg->parsed = NULL;
+				return;
+			}
+
+			memset(msg->parsed[i], '\0', ((t-s) + (sizeof(char) * 1)));
+			memcpy(msg->parsed[i], s, t-s);
+		} else {
+			msg->parsed[i] = strdup(s);
+		}
+
+		t++;
+		s = t;
+	}
+}
+
+/**
  * Deallocate an ipp_message.
  */
 void ipp_free_message(ipp_message * msg)
 {
+	int i;
+
 	if (msg) {
 		if (msg->payload) {
 			free(msg->payload);
 			msg->payload = NULL;
 		}
+
+		if (msg->parsed) {
+			for (i = 0; msg->parsed[i] != NULL; i++) {
+				free(msg->parsed[i]);
+				msg->parsed[i] = NULL;
+			}
+			free(msg->parsed);
+			msg->parsed = NULL;
+		}
+
 		free(msg);
 	}
 }
@@ -400,6 +466,7 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
 		if (msg) {
 			msg->type = is_valid;
 			msg->payload = buffer;
+			ipp_parse_msg(msg);
 			return msg;
 		} else {
 			free(buffer);

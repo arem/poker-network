@@ -32,6 +32,7 @@
 static void client_connect_callback(ipp_socket * sock)
 {
 	ipp_message *msg;
+	char *user;
 	int rc;
 	unsigned long a, b, c, d;
 
@@ -43,7 +44,7 @@ static void client_connect_callback(ipp_socket * sock)
 	d = (sock->addr.sin_addr.s_addr >> 24) & 0xff;
 
 	/* TODO this might not be byte safe -- test on big-endian */
-	daemon_log(LOG_INFO, "[SERV] Connect %lu.%lu.%lu.%lu", a, b, c, d);
+	daemon_log(LOG_INFO, "[SERV] [CONN] %lu.%lu.%lu.%lu", a, b, c, d);
 
 	msg = ipp_new_message();
 	msg->type = MSG_IPP;
@@ -58,14 +59,14 @@ static void client_connect_callback(ipp_socket * sock)
 		sock = NULL;
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] |%s| sent to %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
+		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
 	}
 
 	ipp_free_message(msg);
 	msg = NULL;
 
 	msg = ipp_read_msg(sock, SERVER_READ_TIMEOUT);
-	if (msg == NULL) {
+	if (msg == NULL || msg->type != MSG_BUYIN || msg->payload == NULL) {
 		daemon_log(LOG_ERR, "[SERV] Could not read BUYIN message from %lu.%lu.%lu.%lu", a, b, c, d);
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
@@ -74,15 +75,28 @@ static void client_connect_callback(ipp_socket * sock)
 		msg = NULL;
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] Read |%s| from %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
+		daemon_log(LOG_INFO, "[SERV] [RECV] |%s| from %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
 	}
+
+	user = strdup(msg->parsed[1]);
+	daemon_log(LOG_INFO, "[SERV] %lu.%lu.%lu.%lu is |%s|", a, b, c, d, user);
 
 	ipp_free_message(msg);
 	msg = NULL;
 
 	msg = ipp_new_message();
 	msg->type = MSG_WELCOME;
-	msg->payload = strdup("WELCOME anonymous");
+	msg->payload = (char *) malloc(sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2));
+	if (!(msg->payload)) {
+		daemon_log(LOG_ERR, "[SERV] malloc failed");
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+	}
+	memset(msg->payload, '\0', (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2)));
+	snprintf(msg->payload, (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 1)), "%s%s", "WELCOME ", user);
 
 	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT);
 	if (rc == FALSE) {
@@ -94,7 +108,7 @@ static void client_connect_callback(ipp_socket * sock)
 		msg = NULL;
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] |%s| sent to %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
+		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
 	}
 
 	ipp_free_message(msg);
@@ -103,6 +117,13 @@ static void client_connect_callback(ipp_socket * sock)
 	daemon_log(LOG_INFO, "[SERV] Handshake Complete");
 
 	/* TODO Add client socket to internal data structure here */
+	free(user);
+	user = NULL;
+
+	/* TODO: remove this. it is just here for testing */
+	ipp_disconnect(sock);
+	ipp_free_socket(sock);
+	sock = NULL;
 }
 
 int pokerserv()

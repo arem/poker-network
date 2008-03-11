@@ -52,6 +52,14 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	msg = ipp_new_message();
+	if (!msg) {
+		printf("! malloc failed\n");
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		return 1;
+	}
+
 	msg->type = MSG_BUYIN;
 	msg->payload = strdup("BUYIN TOM 500");
 	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);

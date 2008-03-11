@@ -127,6 +127,10 @@ ADD_EXECUTABLE(testValidateCmdFold testValidateCmdFold.c)
 TARGET_LINK_LIBRARIES(testValidateCmdFold tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testValidateCmdFold ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdFold)
 
+ADD_EXECUTABLE(testParseMessage testParseMessage.c)
+TARGET_LINK_LIBRARIES(testParseMessage tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testParseMessage ${EXECUTABLE_OUTPUT_PATH}/testParseMessage)
+
 ADD_EXECUTABLE(testValidateCmdUp testValidateCmdUp.c)
 TARGET_LINK_LIBRARIES(testValidateCmdUp tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testValidateCmdUp ${EXECUTABLE_OUTPUT_PATH}/testValidateCmdUp)

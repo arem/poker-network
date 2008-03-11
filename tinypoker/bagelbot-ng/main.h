@@ -1,5 +1,5 @@
 /*
- * BagelBot - Trivial client for pokerd
+ * bagelbot-ng - Trivial client for tinypokerd
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
-#define PROGRAM "BagelBot"
+#define PROGRAM "bagelbot-ng"
 #define VERSION (1.0)
 
 #endif

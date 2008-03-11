@@ -70,6 +70,7 @@ typedef struct ipp_socket {
 typedef struct ipp_message {
 	int type;
 	char *payload;
+	char **parsed;
 } ipp_message;
 
 /**
@@ -89,6 +90,12 @@ void ipp_free_socket(ipp_socket * sock);
  * @return a malloc()'d ipp_message structure.
  */
 ipp_message *ipp_new_message();
+
+/**
+ * Parses msg->payload into msg->parsed
+ * @param msg an IPP message
+ */
+void ipp_parse_msg(ipp_message * msg);
 
 /**
  * Deallocate an ipp_message.

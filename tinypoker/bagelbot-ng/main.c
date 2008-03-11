@@ -1,5 +1,5 @@
 /*
- * BagelBot - Trivial client for pokerd
+ * bagelbot-ng - Trivial client for tinypokerd
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,39 +19,92 @@
 
 #include <getopt.h>
 #include <libdaemon/dlog.h>
+#include <tinypoker.h>
 
 #include "conf.h"
 #include "play.h"
 #include "main.h"
-#include "net.h"
-#include "byte.h"
 
 /**
- * Send a JOIN_GAME message to the server.
- * @return 1 for GOODPASS and 0 for failure.
+ * Handshake with the server.
+ * @return a connected socket or NULL.
  */
-int authenticate() {
-        int type;
-        struct byte_array *ba;
+ipp_socket *handshake()
+{
+	int rc;
+	ipp_socket *sock;
+	ipp_message *msg;
 
-        ba = new_byte_array(32);
+	sock = ipp_connect(host, port);
+	if (sock == NULL) {
+		daemon_log(LOG_ERR, "[HAND] ipp_connect() failed");
+		return NULL;
+	}
 
-        byte_array_append_string(ba,user);	/* User */
-        byte_array_append_string(ba,pass);	/* Pass */
-        byte_array_append_int(ba,1);
-        byte_array_append_string(ba,"BagelBot");/* User-agent */
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
+	if (!msg || msg->type != MSG_IPP) {
+		ipp_free_message(msg);
+		msg = NULL;
+		ipp_free_socket(sock);
+		sock = NULL;
+		return NULL;
+	}
 
-        write_message(JOIN_GAME,ba);
-        byte_array_destroy(ba);
+	daemon_log(LOG_INFO, "[HAND] [RECV] %s", msg->payload);
+	ipp_free_message(msg);
+	msg = NULL;
 
-        ba = read_message(&type);
-        byte_array_destroy(ba);
+	msg = ipp_new_message();
+	if (!msg) {
+		daemon_log(LOG_ERR, "[HAND] malloc failed");
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		return NULL;
+	}
 
-        if (type == GOODPASS) {
-                return 1;
-        } else {
-                return 0;
-        }
+	msg->type = MSG_BUYIN;
+	msg->payload = (char *) malloc(sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 2));
+	if (!(msg->payload)) {
+		daemon_log(LOG_ERR, "[HAND] malloc failed");
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		return NULL;
+	}
+	memset(msg->payload, '\0', (sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 2)));
+	snprintf(msg->payload, (sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 1)), "%s%s%s", "BUYIN ", user, " 100");
+
+	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);
+	if (!rc) {
+		daemon_log(LOG_ERR, "[HAND] send failed");
+		ipp_free_message(msg);
+		msg = NULL;
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		return NULL;
+	}
+
+	daemon_log(LOG_INFO, "[HAND] [SEND] %s", msg->payload);
+	ipp_free_message(msg);
+	msg = NULL;
+
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
+	if (!msg || msg->type != MSG_WELCOME) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+
+	daemon_log(LOG_INFO, "[HAND] [RECV] %s", msg->payload);
+	ipp_free_message(msg);
+	msg = NULL;
+
+	return sock;
 }
 
 
@@ -59,7 +112,8 @@ int authenticate() {
  * Displays some usage information, command line parameters and whatnot.
  * @param program the name of the program.
  */
-void display_help(char *program) {
+void display_help(char *program)
+{
 	daemon_log(LOG_INFO, "Usage: %s [options]", program);
 	daemon_log(LOG_INFO, "Options:");
 	daemon_log(LOG_INFO, "    -h --help        Show this help message");
@@ -69,9 +123,10 @@ void display_help(char *program) {
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
-void display_version() {
+void display_version()
+{
 	daemon_log(LOG_INFO, "%s v%1.1f", PROGRAM, VERSION);
-	daemon_log(LOG_INFO, "Copyright (C) 2005, 2007 Thomas Cort");
+	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
 	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
 	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 }
@@ -83,12 +138,13 @@ void display_version() {
  * @param argv The command line arguments.
  * @return Returns 0 on success and non-zero when we want the program to terminate.
  */
-int parse_args(int argc, char **argv) {
+int parse_args(int argc, char **argv)
+{
 	int option_index = 0, done = 0, c;
 
 	static struct option long_options[] = {
-		{      "help",       no_argument, 0, 'h'},
-		{   "version",       no_argument, 0, 'v'},
+		{"help", no_argument, 0, 'h'},
+		{"version", no_argument, 0, 'v'},
 		{0, 0, 0, 0}
 	};
 
@@ -99,18 +155,18 @@ int parse_args(int argc, char **argv) {
 		}
 
 		switch (c) {
-			case 'h':
-				display_help(argv[0]);
-				done = 1;
-				break;
-			case 'v':
-				display_version();
-				done = 1;
-				break;
-			default:
-				display_help(argv[0]);
-				done = 1;
-				break;
+		case 'h':
+			display_help(argv[0]);
+			done = 1;
+			break;
+		case 'v':
+			display_version();
+			done = 1;
+			break;
+		default:
+			display_help(argv[0]);
+			done = 1;
+			break;
 		}
 	}
 
@@ -123,7 +179,9 @@ int parse_args(int argc, char **argv) {
  * @param argv The command line arguments.
  * @return Returns 0 on success and non-zero when we want the program to terminate.
  */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
+	ipp_socket *sock;
 	int rc;
 
 	if (argc < 1 || !argv || !argv[0]) {
@@ -132,13 +190,13 @@ int main(int argc, char **argv) {
 	}
 
 	/* Set the default config file path */
-	configfile = (char*) malloc((strlen("/etc/bagelbot.conf") + 2) * sizeof(char));
+	configfile = (char *) malloc((strlen("/etc/bagelbot-ng.conf") + 2) * sizeof(char));
 	if (!configfile) {
 		daemon_log(LOG_ERR, "malloc() failed!");
 		return 255;
 	}
-	bzero(configfile,(strlen("/etc/bagelbot.conf") + 2) * sizeof(char));
-	snprintf(configfile,strlen("/etc/bagelbot.conf") + 1,"/etc/bagelbot.conf");
+	bzero(configfile, (strlen("/etc/bagelbot-ng.conf") + 2) * sizeof(char));
+	snprintf(configfile, strlen("/etc/bagelbot-ng.conf") + 1, "/etc/bagelbot-ng.conf");
 
 	configure();
 
@@ -147,24 +205,28 @@ int main(int argc, char **argv) {
 		return rc;
 	}
 
-	if (!host || !pass || !port || !user) {
-		daemon_log(LOG_ERR, "Could not determine one or more configuration setting.");
+	if (!host || !port || !user) {
+		daemon_log(LOG_ERR, "[MAIN] Could not determine one or more configuration setting from '%s'", configfile);
 		free_config();
 		return 255;
 	} else {
-		daemon_log(LOG_INFO, "Connecting to %s:%d as %s",host,port,user);
+		daemon_log(LOG_INFO, "[MAIN] Connecting to %s:%d as %s", host, port, user);
 	}
 
-        connect_to_server(host,port);
+	ipp_init();
 
-        if (authenticate()) {
-                daemon_log(LOG_INFO, "Authenticated!");
-                play();
-        } else {
-                daemon_log(LOG_ERR, "Not Authenticated!");
-        }
+	if ((sock = handshake())) {
+		daemon_log(LOG_INFO, "[MAIN] Handshake OK");
+		play(sock);
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+	} else {
+		daemon_log(LOG_ERR, "[MAIN] Handshake Failed!");
+	}
 
-        disconnect_from_server();
+	ipp_exit();
+
 	free_config();
 	return 0;
 }

@@ -1,4 +1,4 @@
-#  BagelBot - Trivial client for pokerd
+#  bagelbot-ng - Trivial client for tinypokerd
 #  Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
 # 
 #  This program is free software; you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-PROJECT(bagelbot)
+PROJECT(bagelbot-ng)
 
 SET (libdirs /usr/lib /usr/local/lib /usr/lib32 /usr/local/lib32 /usr/lib64 /usr/local/lib64)
 
@@ -60,10 +60,71 @@ ELSE (LIBCONFUSE)
 ENDIF (LIBCONFUSE)
 
 #############################################
+# libtinypoker checks
+#############################################
+
+FIND_LIBRARY(LIBTINYPOKER tinypoker ${libdirs})
+
+IF (LIBTINYPOKER)
+  MESSAGE(STATUS "Found libtinypoker: ${LIBTINYPOKER}")
+ELSE (LIBTINYPOKER)
+  MESSAGE (FATAL_ERROR "libtinypoker not found. See: http://tinypoker.org/")
+ENDIF (LIBTINYPOKER)
+
+FIND_PATH(LIBTINYPOKER_INCLUDE_DIR tinypoker.h ${incdirs})
+
+IF (LIBTINYPOKER_INCLUDE_DIR)
+  MESSAGE(STATUS "Found tinypoker.h in ${LIBTINYPOKER_INCLUDE_DIR}")
+ELSE (LIBTINYPOKER_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "tinypoker.h not found. See: http://tinypoker.org/")
+ENDIF (LIBTINYPOKER_INCLUDE_DIR)
+
+#############################################
+# libpthread checks
+#############################################
+
+FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
+
+IF (LIBPTHREAD)
+  MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
+ELSE (LIBPTHREAD)
+  MESSAGE (FATAL_ERROR "libpthread not found. See: http://www.gnu.org/software/libc/")
+ENDIF (LIBPTHREAD)
+
+FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
+
+IF (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
+ELSE (LIBPTHREAD_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
+ENDIF (LIBPTHREAD_INCLUDE_DIR)
+
+#############################################
+# libgnutls checks
+#############################################
+
+FIND_LIBRARY(LIBGNUTLS gnutls ${libdirs})
+
+IF (LIBGNUTLS)
+  MESSAGE(STATUS "Found libgnutls: ${LIBGNUTLS}")
+ELSE (LIBGNUTLS)
+  MESSAGE (FATAL_ERROR "libgnutls not found. See: http://www.gnu.org/software/gnutls/")
+ENDIF (LIBGNUTLS)
+
+FIND_PATH(LIBGNUTLS_INCLUDE_DIR gnutls/gnutls.h ${incdirs})
+
+IF (LIBGNUTLS_INCLUDE_DIR)
+  MESSAGE(STATUS "Found gnutls/gnutls.h in ${LIBGNUTLS_INCLUDE_DIR}")
+ELSE (LIBGNUTLS_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "gnutls/gnutls.h not found. See: http://www.gnu.org/software/gnutls/")
+ENDIF (LIBGNUTLS_INCLUDE_DIR)
+
+#############################################
 # Put everything together
 #############################################
 
-ADD_EXECUTABLE(bagelbot byte.c conf.c main.c net.c play.c)
-TARGET_LINK_LIBRARIES(bagelbot ${LIBCONFUSE} ${LIBDAEMON})
-INSTALL(PROGRAMS bagelbot DESTINATION usr/bin)
-INSTALL(FILES bagelbot.conf DESTINATION etc PERMISSIONS OWNER_WRITE OWNER_READ)
+INCLUDE_DIRECTORIES(${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR})
+ADD_EXECUTABLE(bagelbot-ng conf.c main.c play.c)
+TARGET_LINK_LIBRARIES(bagelbot-ng ${LIBCONFUSE} ${LIBDAEMON} ${LIBTINYPOKER} ${LIBGNUTLS} ${LIBPTHREAD})
+INSTALL(PROGRAMS bagelbot-ng DESTINATION usr/bin)
+INSTALL(FILES bagelbot-ng.conf DESTINATION etc PERMISSIONS OWNER_WRITE OWNER_READ)
