@@ -21,14 +21,11 @@
 #ifndef __DECK_H
 #define __DECK_H
 
-struct card {
-	char rank;
-	char suit;
-};
+#include <tinypoker.h>
 
 void deck_init();
 void deck_shuffle();
 
-struct card *get_card();
-char *card2str(struct card *c);
+ipp_card *get_card();
+char *card2str(ipp_card * c);
 #endif

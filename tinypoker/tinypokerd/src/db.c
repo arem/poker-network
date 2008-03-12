@@ -25,6 +25,9 @@
 #include "config.h"
 #include "db.h"
 
+/**
+ * Database Structure.
+ */
 static sqlite3 *db;
 
 /**

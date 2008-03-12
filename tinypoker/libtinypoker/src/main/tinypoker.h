@@ -54,6 +54,49 @@
  */
 #define LIBTINYPOKER_PATCH_VERSION 0
 
+/* TODO Support for Stud and Draw */
+#define HOLDEM_HOLE_CARDS 2
+#define HOLDEM_PLAYERS_PER_TABLE 8
+#define HOLDEM_BOARD_CARDS 5
+
+/**
+ * Stage of the Hold'em Hand.
+ */
+enum holdem_stage {
+	PREFLOP,
+	FLOP,
+	TURN,
+	RIVER
+};
+
+/**
+ * Enumerate the possible card suits.
+ */
+enum card_suit {
+	CLUBS = 'C',
+	DIAMONDS = 'D',
+	HEARTS = 'H',
+	SPADES = 'S'
+};
+
+/**
+ * Enumerate the possible card ranks.
+ */
+enum card_rank {
+	TWO = '2',
+	THREE = '3',
+	FOUR = '4',
+	FIVE = '5',
+	SIX = '6',
+	SEVEN = '7',
+	EIGHT = '8',
+	NINE = '9',
+	TEN = 'T',
+	JACK = 'J',
+	KING = 'K',
+	ACE = 'A'
+};
+
 /**
  * Structure used to hold network communications information.
  */
@@ -72,6 +115,44 @@ typedef struct ipp_message {
 	char *payload;
 	char **parsed;
 } ipp_message;
+
+/**
+ * Structure used to hold a playing card.
+ */
+typedef struct ipp_card {
+	enum card_rank rank;
+	enum card_suit suit;
+} ipp_card;
+
+/**
+ * Structure used to hold a poker player.
+ * Some fields aren't used in some contexts.
+ *   the server may know all players' hole cards.
+ *   the client may only know his/her hole cards.
+ */
+typedef struct ipp_player {
+	char *name;		/* player name given at handshake */
+	ipp_socket *sock;	/* communications socket */
+
+	/* TODO Support for Stud and Draw */
+	ipp_card *hole[HOLDEM_HOLE_CARDS];	/* two hole cards */
+	int bankroll;		/* amount of money this player has */
+	int amt_in;		/* amount into the pot from this player */
+	int still_in;		/* TRUE if still in the hand, FALSE if folded, disconnected, etc. */
+} ipp_player;
+
+/**
+ * Structure used to hold a poker table.
+ */
+typedef struct ipp_table {
+	int num_players;
+	int amt_to_call;
+	enum holdem_stage stage;
+
+	/* TODO Support for Stud and Draw */
+	ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
+	ipp_card *board[HOLDEM_BOARD_CARDS];
+} ipp_table;
 
 /**
  * Allocates an empty ipp_socket. Don't forget to call ipp_free_socket().
@@ -101,6 +182,39 @@ void ipp_parse_msg(ipp_message * msg);
  * Deallocate an ipp_message.
  */
 void ipp_free_message(ipp_message * msg);
+
+/**
+ * Allocates an empty ipp_card. Don't forget to ipp_free_card().
+ * @return a malloc()'d ipp_card structure.
+ */
+ipp_card *ipp_new_card();
+
+/**
+ * Deallocate an ipp_card.
+ */
+void ipp_free_card(ipp_card * card);
+
+/**
+ * Allocates an empty ipp_player. Don't forget to ipp_free_player().
+ * @return a malloc()'d ipp_card structure.
+ */
+ipp_player *ipp_new_player();
+
+/**
+ * Deallocates an ipp_player.
+ */
+void ipp_free_player(ipp_player * player);
+
+/**
+ * Allocates an empty ipp_table. Don't for get to ipp_free_table().
+ * @return a malloc()'d ipp_table structure.
+ */
+ipp_table *ipp_new_table();
+
+/**
+ * Deallocates an ipp_table.
+ */
+void ipp_free_table(ipp_table * table);
 
 /**
  * The name of this library for IPP strings, etc.

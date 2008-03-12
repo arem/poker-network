@@ -23,6 +23,6 @@
 
 #include "play.h"
 
-void play(ipp_socket *sock)
+void play(ipp_socket * sock)
 {
 }

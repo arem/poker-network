@@ -27,32 +27,34 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include <tinypoker.h>
+
 #include "deck.h"
 
-struct card deck[52];
+ipp_card deck[52];
 
 int deck_index;
 
-char suits[4] = { 's', 'd', 'c', 'h' };
+char suits[4] = { 'S', 'D', 'C', 'H' };
 char ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
 
 /**
- *  struct card *get_card()
+ *  ipp_card *get_card()
  *
  *  get the top card off the deck
  */
-struct card *get_card()
+ipp_card *get_card()
 {
 	deck_index = (deck_index + 1) % 52;
 	return &deck[deck_index];
 }
 
 /**
- *  char *card2str(struct card *c)
+ *  char *card2str(ipp_card *c)
  *
  *  gives a null terminated string representation of a card c (ex: "9d\0")
  */
-char *card2str(struct card *c)
+char *card2str(ipp_card * c)
 {
 	char *str;
 
@@ -76,7 +78,7 @@ char *card2str(struct card *c)
 void deck_shuffle()
 {
 	int x, y, z, r;
-	struct card temp;
+	ipp_card temp;
 
 	daemon_log(LOG_DEBUG, "[DECK] Shuffling...");
 

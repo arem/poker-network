@@ -29,8 +29,17 @@
 #include "signal.h"
 #include "tinypokerd.h"
 
+/**
+ * Handle incoming connections.
+ * @param sock client socket.
+ */
 static void client_connect_callback(ipp_socket * sock)
 {
+	/*
+	 * Note: this function causes the server loop to block.
+	 * Don't do anything too fancy or time intensive in here.
+	 */
+
 	ipp_message *msg;
 	char *user;
 	int rc;

@@ -185,6 +185,7 @@ ipp_socket *ipp_new_socket()
 void ipp_free_socket(ipp_socket * sock)
 {
 	if (sock) {
+		ipp_disconnect(sock);
 		free(sock);
 	}
 }
@@ -209,7 +210,8 @@ ipp_message *ipp_new_message()
  * Parses msg->payload into msg->parsed.
  * @param msg an IPP message
  */
-void ipp_parse_msg(ipp_message * msg) {
+void ipp_parse_msg(ipp_message * msg)
+{
 	int tokcnt, i, j;
 	char delim = ' ';
 	char *s, *t;
@@ -225,18 +227,18 @@ void ipp_parse_msg(ipp_message * msg) {
 		}
 	}
 
-	msg->parsed = (char **) malloc(sizeof(char*) * (tokcnt + 1));
+	msg->parsed = (char **) malloc(sizeof(char *) * (tokcnt + 1));
 	if (!(msg->parsed)) {
 		/* malloc failed */
 		return;
 	}
 
-	memset(msg->parsed, '\0', sizeof(char*) * (tokcnt + 1));
+	memset(msg->parsed, '\0', sizeof(char *) * (tokcnt + 1));
 	s = msg->payload;
 	for (i = 0; i < tokcnt; i++) {
 		t = strchr(s, delim);
 		if (t) {
-			msg->parsed[i] = (char *) malloc(((t-s) + (sizeof(char) * 1)));
+			msg->parsed[i] = (char *) malloc(((t - s) + (sizeof(char) * 1)));
 			if (!(msg->parsed[i])) {
 				/* malloc() failed */
 				for (j = 0; msg->parsed[j]; j++) {
@@ -248,8 +250,8 @@ void ipp_parse_msg(ipp_message * msg) {
 				return;
 			}
 
-			memset(msg->parsed[i], '\0', ((t-s) + (sizeof(char) * 1)));
-			memcpy(msg->parsed[i], s, t-s);
+			memset(msg->parsed[i], '\0', ((t - s) + (sizeof(char) * 1)));
+			memcpy(msg->parsed[i], s, t - s);
 		} else {
 			msg->parsed[i] = strdup(s);
 		}
@@ -286,6 +288,138 @@ void ipp_free_message(ipp_message * msg)
 }
 
 /**
+ * Allocates an empty ipp_card. Don't forget to ipp_free_card().
+ * @return a malloc()'d ipp_card structure.
+ */
+ipp_card *ipp_new_card()
+{
+	ipp_card *card;
+
+	card = (ipp_card *) malloc(sizeof(ipp_card));
+	if (card == NULL) {
+		return NULL;
+	}
+
+	memset(card, '\0', sizeof(ipp_card));
+	return card;
+}
+
+/**
+ * Deallocate an ipp_card.
+ */
+void ipp_free_card(ipp_card * card)
+{
+	if (card) {
+		free(card);
+	}
+}
+
+/**
+ * Allocates an empty ipp_player. Don't forget to ipp_free_player().
+ * @return a malloc()'d ipp_card structure.
+ */
+ipp_player *ipp_new_player()
+{
+	ipp_player *player;
+
+	player = (ipp_player *) malloc(sizeof(ipp_player));
+	if (player == NULL) {
+		return NULL;
+	}
+
+	memset(player, '\0', sizeof(ipp_player));
+	return player;
+}
+
+/**
+ * Deallocates an ipp_player.
+ */
+void ipp_free_player(ipp_player * player)
+{
+	if (player) {
+		if (player->name) {
+			free(player->name);
+			player->name = NULL;
+		}
+
+		if (player->sock) {
+			ipp_disconnect(player->sock);
+			ipp_free_socket(player->sock);
+			player->sock = NULL;
+		}
+
+		if (player->hole[0]) {
+			ipp_free_card(player->hole[0]);
+			player->hole[0] = NULL;
+		}
+
+		if (player->hole[1]) {
+			ipp_free_card(player->hole[1]);
+			player->hole[1] = NULL;
+		}
+
+		player->bankroll = 0;
+		player->amt_in = 0;
+		player->still_in = 0;
+
+		free(player);
+	}
+}
+
+/**
+ * Allocates an empty ipp_table. Don't for get to ipp_free_table().
+ * @return a malloc()'d ipp_table structure.
+ */
+ipp_table *ipp_new_table()
+{
+	ipp_table *table;
+
+	table = (ipp_table *) malloc(sizeof(ipp_table));
+	if (table == NULL) {
+		return NULL;
+	}
+
+	memset(table, '\0', sizeof(ipp_table));
+	return table;
+}
+
+/**
+ * Deallocates an ipp_table.
+ */
+void ipp_free_table(ipp_table * table)
+{
+	int i;
+
+	if (table) {
+		if (table->players) {
+			for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
+				if (table->players[i]) {
+					ipp_free_player(table->players[i]);
+					table->players[i] = NULL;
+				}
+			}
+		}
+
+
+		if (table->board) {
+			for (i = 0; i < HOLDEM_BOARD_CARDS; i++) {
+				if (table->board[i]) {
+					ipp_free_card(table->board[i]);
+					table->board[i] = NULL;
+				}
+			}
+		}
+
+		table->num_players = 0;
+		table->amt_to_call = 0;
+		table->stage = 0;
+
+		free(table);
+		table = NULL;
+	}
+}
+
+/**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
  * @param port the port number (example: 9999).
@@ -315,7 +449,7 @@ ipp_socket *ipp_connect(char *hostname, int port)
 	he = gethostbyname(hostname);
 	if (!ret) {
 		ipp_disconnect(sock);
-		free(sock);
+		ipp_free_socket(sock);
 		return NULL;
 	}
 
@@ -324,14 +458,14 @@ ipp_socket *ipp_connect(char *hostname, int port)
 	sock->sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (!(sock->sd)) {
 		ipp_disconnect(sock);
-		free(sock);
+		ipp_free_socket(sock);
 		return NULL;
 	}
 
 	ret = connect(sock->sd, (struct sockaddr *) &sin, sizeof(sin));
 	if (ret) {
 		ipp_disconnect(sock);
-		free(sock);
+		ipp_free_socket(sock);
 		return NULL;
 	}
 
@@ -341,7 +475,7 @@ ipp_socket *ipp_connect(char *hostname, int port)
 	if (ret < 0) {
 		gnutls_perror(ret);
 		ipp_disconnect(sock);
-		free(sock);
+		ipp_free_socket(sock);
 		return NULL;
 	}
 
