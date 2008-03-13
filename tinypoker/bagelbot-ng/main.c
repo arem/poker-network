@@ -35,7 +35,9 @@ ipp_socket *handshake()
 	ipp_socket *sock;
 	ipp_message *msg;
 
-	sock = ipp_connect(host, port);
+	daemon_log(LOG_INFO, "[HAND] [CONN] %s %d", host, port);
+
+	sock = ipp_connect(host, port, "ca.pem");
 	if (sock == NULL) {
 		daemon_log(LOG_ERR, "[HAND] ipp_connect() failed");
 		return NULL;

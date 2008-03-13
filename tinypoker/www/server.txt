@@ -1,5 +1,5 @@
 // TinyPoker.org
-// Copyright (C) 2007 Thomas Cort
+// Copyright (C) 2007, 2008 Thomas Cort
 //
 // Permission is granted to copy, distribute and/or modify this document
 // under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -68,3 +68,33 @@ Example Configuration File
 port = 1234
 database = /home/tinypoker/database.db
 --------------------------------------
+
+SSL/TLS Certificates
+--------------------
+
+.ca.tmpl
+--------------------------------
+cn = Dummy Certificate Authority
+ca
+cert_signing_key
+--------------------------------
+
+.localhost.tmpl
+---------------------------------
+organization = Dummy Organization
+cn = localhost
+tls_www_server
+encryption_key
+signing_key
+dns_name = localhost
+---------------------------------
+
+------------------------------------------
+ $ certtool --generate-privkey > ca-key.pem
+ $ certtool --generate-privkey > key.pem
+ $ certtool --generate-self-signed --load-privkey ca-key.pem \
+       --template ca.tmpl --outfile ca.pem
+ $ certtool --generate-certificate --load-privkey key.pem \
+       --load-ca-certificate ca.pem --load-ca-privkey ca-key.pem \
+       --template localhost.tmpl --outfile cert.pem
+------------------------------------------

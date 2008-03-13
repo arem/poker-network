@@ -152,7 +152,7 @@ int pokerserv()
 	}
 
 	/* Start listening for connections */
-	ipp_servloop(port, client_connect_callback);
+	ipp_servloop(port, client_connect_callback, "ca.pem", "crl.pem", "cert.pem", "key.pem");
 
 	if (!exit_now) {
 		raise(SIGQUIT);

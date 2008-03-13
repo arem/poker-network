@@ -52,6 +52,7 @@ GCRY_THREAD_OPTION_PTHREAD_IMPL;
 void ipp_init()
 {
 	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+	gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
 	gnutls_global_init();
 }
 
@@ -420,16 +421,101 @@ void ipp_free_table(ipp_table * table)
 }
 
 /**
+ * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
+ * Checks a certificate to make sure it is valid.
+ * @param session GNU TLS Session.
+ * @param hostname the hostname of the server connected to.
+ */
+int __ipp_verify_cert(gnutls_session session, const char *hostname) {
+	unsigned int status;
+	const gnutls_datum *cert_list;
+	unsigned int cert_list_size;
+	int ret, i, valid;
+	gnutls_x509_crt cert;
+
+	ret = gnutls_certificate_verify_peers2(session, &status);
+	if (ret < 0) {
+		/* gnutls_certificate_verify_peers2 failed */
+		return FALSE;
+	}
+
+	if (status & GNUTLS_CERT_INVALID) {
+		/* The certificate is not trusted */
+		return FALSE;
+	}
+
+	if (status & GNUTLS_CERT_SIGNER_NOT_FOUND) {
+		/* The certificate hasn't got a known issuer */
+		return FALSE;
+	}
+
+	if (status & GNUTLS_CERT_REVOKED) {
+		/* The certificate has been revoked */
+		return FALSE;
+	}
+
+	if (gnutls_certificate_type_get(session) != GNUTLS_CRT_X509) {
+		/* The certificate is not an x509 certificate */
+		return FALSE;
+	}
+
+	cert_list = gnutls_certificate_get_peers(session, &cert_list_size);
+	if (cert_list == NULL || cert_list_size == 0) {
+		/* No certificate was found */
+		return FALSE;
+	}
+
+	for (i = 0; i < cert_list_size; i++) {
+		valid = 1;
+
+		if (gnutls_x509_crt_init(&cert) < 0) {
+			/* init error */
+			return FALSE;
+		}
+
+		if (gnutls_x509_crt_import(cert, &cert_list[i], GNUTLS_X509_FMT_DER) < 0) {
+			/* error parsing certificate */
+			valid = 0;
+		}
+
+		if (gnutls_x509_crt_get_expiration_time(cert) < time(0)) {
+			/* Certificate has expired */
+			valid = 0;
+		}
+
+		if (gnutls_x509_crt_get_activation_time(cert) > time(0)) {
+			/* Certificate is not yet activated */
+			valid = 0;
+		}
+
+		if (!gnutls_x509_crt_check_hostname(cert, hostname)) {
+			/* Certificate doesn't match hostname */
+			valid = 0;
+		}
+
+		gnutls_x509_crt_deinit(cert);
+
+		if (!valid) {
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+/**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
  * @param port the port number (example: 9999).
+ * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket *ipp_connect(char *hostname, int port)
+ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
 {
 	ipp_socket *sock;
 	int ret;
-	const int kx_prio[] = { GNUTLS_KX_ANON_DH, 0 };
+	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
+	const char *err;
 	struct sockaddr_in sin;
 	struct hostent *he;
 
@@ -437,11 +523,12 @@ ipp_socket *ipp_connect(char *hostname, int port)
 	sock = ipp_new_socket();
 
 	/* GNU TLS -- initialize the structure */
-	gnutls_anon_allocate_client_credentials(&(sock->anoncred));
+	gnutls_certificate_allocate_credentials(&(sock->x509_cred));
+	gnutls_certificate_set_x509_trust_file(sock->x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
 	gnutls_init(&(sock->session), GNUTLS_CLIENT);
 	gnutls_set_default_priority(sock->session);
 	gnutls_kx_set_priority(sock->session, kx_prio);
-	gnutls_credentials_set(sock->session, GNUTLS_CRD_ANON, sock->anoncred);
+	gnutls_credentials_set(sock->session, GNUTLS_CRD_CERTIFICATE, sock->x509_cred);
 
 	/* TCP -- resolve the server's hostname, create a socket descriptor and connect */
 	memset(&sin, 0, sizeof(sin));
@@ -479,6 +566,14 @@ ipp_socket *ipp_connect(char *hostname, int port)
 		return NULL;
 	}
 
+	ret = __ipp_verify_cert(sock->session, hostname);
+	if (ret == 0) {
+		/* can't verify cert */
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		return NULL;
+	}
+
 	return sock;
 }
 
@@ -503,9 +598,8 @@ void ipp_disconnect(ipp_socket * sock)
 		gnutls_deinit(sock->session);
 	}
 
-	if (sock->anoncred) {
-		/* free credentials */
-		gnutls_anon_free_client_credentials(sock->anoncred);
+	if (sock->x509_cred) {
+		gnutls_certificate_free_credentials(sock->x509_cred);
 	}
 
 	/* set to NULL to prevent double free() and other misuse */
@@ -727,25 +821,33 @@ void __ipp_handle_sigusr2(int sig)
  * make 'callback' short and sweet.
  * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
+ * @param ca_file Certificate Authority
+ * @param crl_file CRL
+ * @param cert_file SSL/TLS Certificate File
+ * @param key_file Private Key
  */
-void ipp_servloop(int port, void (*callback) (ipp_socket *))
+void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
 {
-	int master, slave, rc;
+	int master, slave, rc, optval;
 	ipp_socket *ipp_slave;
 
 	struct pollfd p;
 	struct sockaddr_in sin;
 	struct sockaddr_in client_addr;
 	unsigned int client_addr_len;
-	const int kx_prio[] = { GNUTLS_KX_ANON_DH, 0 };
+	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
 	gnutls_session_t session;
 	gnutls_dh_params_t dh_params;
-	gnutls_anon_server_credentials_t anoncred;
+	gnutls_certificate_credentials_t x509_cred;
 
-	gnutls_anon_allocate_server_credentials(&anoncred);
+	gnutls_certificate_allocate_credentials(&x509_cred);
+	gnutls_certificate_set_x509_trust_file(x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
+	gnutls_certificate_set_x509_crl_file(x509_cred, crl_file, GNUTLS_X509_FMT_PEM);
+	gnutls_certificate_set_x509_key_file(x509_cred, cert_file, key_file, GNUTLS_X509_FMT_PEM);
+
 	gnutls_dh_params_init(&dh_params);
 	gnutls_dh_params_generate2(dh_params, 1024);
-	gnutls_anon_set_server_dh_params(anoncred, dh_params);
+	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
 	client_addr_len = sizeof(client_addr);
 	memset(&sin, 0, sizeof(sin));
@@ -756,21 +858,23 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 
 	master = socket(PF_INET, SOCK_STREAM, 0);
 	if (master < 0) {
-		gnutls_anon_free_server_credentials(anoncred);
+		gnutls_certificate_free_credentials(x509_cred);
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 
+	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (int));
+
 	rc = bind(master, (struct sockaddr *) &sin, sizeof(sin));
 	if (rc < 0) {
-		gnutls_anon_free_server_credentials(anoncred);
+		gnutls_certificate_free_credentials(x509_cred);
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 
 	rc = listen(master, 64);
 	if (rc < 0) {
-		gnutls_anon_free_server_credentials(anoncred);
+		gnutls_certificate_free_credentials(x509_cred);
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
@@ -795,8 +899,9 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 			}
 		}
 
-		if (done)
+		if (done) {
 			break;
+		}
 
 		slave = accept(master, (struct sockaddr *) &client_addr, &client_addr_len);
 		if (slave < 0) {
@@ -805,7 +910,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 			} else {
 				shutdown(master, SHUT_RDWR);
 				close(master);
-				gnutls_anon_free_server_credentials(anoncred);
+				gnutls_certificate_free_credentials(x509_cred);
 				gnutls_dh_params_deinit(dh_params);
 				return;
 			}
@@ -814,10 +919,10 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 		gnutls_init(&session, GNUTLS_SERVER);
 		gnutls_set_default_priority(session);
 		gnutls_kx_set_priority(session, kx_prio);
-		gnutls_credentials_set(session, GNUTLS_CRD_ANON, anoncred);
-		gnutls_dh_set_prime_bits(session, 1024);
-		gnutls_transport_set_ptr(session, (gnutls_transport_ptr_t) slave);
+		gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, x509_cred);
+		gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
 
+		gnutls_transport_set_ptr(session, (gnutls_transport_ptr_t) slave);
 		rc = gnutls_handshake(session);
 		if (rc < 0) {
 			shutdown(slave, SHUT_RDWR);
@@ -836,7 +941,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 
 		ipp_slave->sd = slave;
 		ipp_slave->session = session;
-		ipp_slave->anoncred = NULL;
+		ipp_slave->x509_cred = NULL;
 		memcpy(&(ipp_slave->addr), &(client_addr), sizeof(struct sockaddr_in));
 
 		callback(ipp_slave);
@@ -844,6 +949,6 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 
 	shutdown(master, SHUT_RDWR);
 	close(master);
-	gnutls_anon_free_server_credentials(anoncred);
+	gnutls_certificate_free_credentials(x509_cred);
 	gnutls_dh_params_deinit(dh_params);
 }

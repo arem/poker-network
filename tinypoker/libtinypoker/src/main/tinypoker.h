@@ -104,7 +104,7 @@ typedef struct ipp_socket {
 	int sd;
 	struct sockaddr_in addr;
 	gnutls_session_t session;
-	gnutls_anon_client_credentials_t anoncred;
+	gnutls_certificate_credentials_t x509_cred;
 } ipp_socket;
 
 /**
@@ -833,12 +833,20 @@ int ipp_validate_unknown_msg(char *msg);
 void ipp_normalize_msg(char *msg);
 
 /**
+ * Checks a certificate to make sure it is valid.
+ * @param session GNU TLS Session.
+ * @param hostname the hostname of the server connected to.
+ */
+int __ipp_verify_cert(gnutls_session session, const char *hostname);
+
+/**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
  * @param port the port number (example: 9999).
+ * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket *ipp_connect(char *hostname, int port);
+ipp_socket *ipp_connect(char *hostname, int port, char *ca_file);
 
 /**
  * Disconnect from the server.
@@ -902,7 +910,11 @@ void __ipp_writeln_thread(void *void_params);
  * make 'callback' short and sweet.
  * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
+ * @param ca_file Certificate Authority
+ * @param crl_file CRL
+ * @param cert_file SSL/TLS Certificate File
+ * @param key_file Private Key
  */
-void ipp_servloop(int port, void (*callback) (ipp_socket *));
+void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
 
 #endif
