@@ -60,6 +60,7 @@ ENDIF (LIBGNUTLS_INCLUDE_DIR)
 # Put everything together
 #############################################
 
+INCLUDE_DIRECTORIES(${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR})
 ADD_EXECUTABLE(client client.c)
 TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 

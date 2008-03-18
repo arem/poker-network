@@ -518,6 +518,8 @@ ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
 	const char *err;
 	struct sockaddr_in sin;
 	struct hostent *he;
+	gnutls_transport_ptr_t ptr;
+	long gnutls_sock;
 
 	/* TinyPoker -- create an empty socket structure */
 	sock = ipp_new_socket();
@@ -557,7 +559,9 @@ ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
 	}
 
 	/* GNU TLS -- handshaking */
-	gnutls_transport_set_ptr(sock->session, (gnutls_transport_ptr_t) sock->sd);
+	gnutls_sock = sock->sd;
+	ptr = (gnutls_transport_ptr_t) gnutls_sock;
+	gnutls_transport_set_ptr(sock->session, ptr);
 	ret = gnutls_handshake(sock->session);
 	if (ret < 0) {
 		gnutls_perror(ret);
@@ -839,6 +843,8 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 	gnutls_session_t session;
 	gnutls_dh_params_t dh_params;
 	gnutls_certificate_credentials_t x509_cred;
+	gnutls_transport_ptr_t ptr;
+	long gnutls_sock;
 
 	gnutls_certificate_allocate_credentials(&x509_cred);
 	gnutls_certificate_set_x509_trust_file(x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
@@ -922,7 +928,9 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 		gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, x509_cred);
 		gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
 
-		gnutls_transport_set_ptr(session, (gnutls_transport_ptr_t) slave);
+		gnutls_sock = slave;
+		ptr = (gnutls_transport_ptr_t) gnutls_sock;
+		gnutls_transport_set_ptr(session, ptr);
 		rc = gnutls_handshake(session);
 		if (rc < 0) {
 			shutdown(slave, SHUT_RDWR);

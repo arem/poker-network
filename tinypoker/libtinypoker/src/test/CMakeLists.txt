@@ -60,6 +60,8 @@ ENDIF (LIBGNUTLS_INCLUDE_DIR)
 # Put everything together
 #############################################
 
+INCLUDE_DIRECTORIES(${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR})
+
 INCLUDE(CTest)
 ENABLE_TESTING()
 
