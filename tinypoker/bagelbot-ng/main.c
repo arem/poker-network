@@ -192,13 +192,13 @@ int main(int argc, char **argv)
 	}
 
 	/* Set the default config file path */
-	configfile = (char *) malloc((strlen("/etc/bagelbot-ng.conf") + 2) * sizeof(char));
+	configfile = (char *) malloc((strlen("bagelbot-ng.conf") + 2) * sizeof(char));
 	if (!configfile) {
 		daemon_log(LOG_ERR, "malloc() failed!");
 		return 255;
 	}
-	bzero(configfile, (strlen("/etc/bagelbot-ng.conf") + 2) * sizeof(char));
-	snprintf(configfile, strlen("/etc/bagelbot-ng.conf") + 1, "/etc/bagelbot-ng.conf");
+	bzero(configfile, (strlen("bagelbot-ng.conf") + 2) * sizeof(char));
+	snprintf(configfile, strlen("bagelbot-ng.conf") + 1, "bagelbot-ng.conf");
 
 	configure();
 

@@ -222,9 +222,14 @@ void ipp_free_table(ipp_table * table);
 #define TINYPOKER "TinyPoker"
 
 /**
- * The default TCP port to listen on.
+ * The default server port for plain text communications.
  */
-#define IPP_DEFAULT_PORT (9898)
+#define IPP_SERVER_PORT_PLAIN (9898)
+
+/**
+ * The default server port for TLS protected communications.
+ */
+#define IPP_SERVER_PORT_TLS (9899)
 
 /**
  * The version of the protocol implemented.

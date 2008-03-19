@@ -32,6 +32,15 @@ http://sqlite.org/[SQLite].
 
  * 'No releases yet'.
 
+bagelbot-ng
+-----------
+
+*bagelbot-ng* is a trivial client for *tinypokerd*. It will connect to a
+server, join a game, and fold every hand. It is intended
+to be a base for building a poker bot.
+
+ * 'No releases yet'.
+
 The Entire {siteTitle} Website
 ------------------------------
 

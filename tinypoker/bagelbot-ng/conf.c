@@ -32,39 +32,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/*
- * Basic sanity check on the configfile. Rules: file must exist,
- * file must be a regular file, file must have permission no more
- * than 640 (-rw-r-----).
- * @return 1 if the rules are broken, 0 if file is ready to be read.
- */
-int check_config_permissions()
-{
-	struct stat s;
-
-	if (!configfile || !configfile[0]) {
-		daemon_log(LOG_ERR, "Configfile path not set");
-		return 1;
-	}
-
-	if (stat(configfile, &s) < 0) {
-		daemon_log(LOG_ERR, "Could not stat config file");
-		return 1;
-	}
-
-	if (!S_ISREG(s.st_mode)) {
-		daemon_log(LOG_ERR, "Config file '%s' is not a regular file", configfile);
-		return 1;
-	}
-
-	if (s.st_mode & (S_IXUSR | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)) {
-		daemon_log(LOG_ERR, "Config file '%s' has a bad mode", configfile);
-		return 1;
-	}
-
-	return 0;
-}
-
 /**
  * Reads 'configfile' and allocates memory for their values
  */
@@ -81,10 +48,6 @@ void configure()
 
 	user = host = NULL;
 	port = 0;
-
-	if (check_config_permissions()) {
-		return;
-	}
 
 	cfg = cfg_init(opts, 0);	/* call libconfuse */
 	cfg_parse(cfg, configfile);

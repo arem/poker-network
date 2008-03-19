@@ -8,11 +8,146 @@
 // copy of the license is included in the section entitled "GNU Free
 // Documentation License".
 
-Server Docs
-===========
+Server Setup
+============
 
-Command Line Arguments
+This document explains how to build, configure and run the TinyPoker server,
+*tinypokerd*.
+
+Install the Dependencies
+------------------------
+
+TinyPoker makes use of several software libraries. Each one must be installed
+before building and running *tinypokerd*. A complete list can be found
+http://tinypoker.org/dependencies.html[here].
+
+Obtain the Source Code
 ----------------------
+
+The next step is to get a copy of the *libtinypoker* and *tinypokerd* source code.
+This can be done by checking out a fresh copy from
+http://tinypoker.org/subversion.html[subversion] or by
+http://tinypoker.org/download.html[downloading] the latest release.
+
+Build and Install libtinypoker
+------------------------------
+
+.Configure, make and install
+--------------------------------------
+ $ cmake .
+ $ make
+ # make install
+--------------------------------------
+
+Build and Install tinypokerd
+----------------------------
+
+.Configure, make and install
+--------------------------------------
+ $ cmake .
+ $ make
+ # make install
+--------------------------------------
+
+Generate X.509 Certificates
+---------------------------
+
+*tinypokerd* uses TLS to secure client/server communications.
+This is not a standard part of the Internet Poker Protocol, but
+it adds a layer of security that preventing players from snooping
+on each other with packet sniffers. Later in this document, we will
+show how to setup a proxy server with stunnel that will allow
+unmodified legacy clients to connect.
+
+For *tinypokerd* to work, it needs a server side certificate. You can
+obtain a certificate from a trusted certificate authority or you can create your own
+certificate authority and sign your own certificates. The example below
+demonstrates how to create your own certificate authority and sign your
+own certificates using the *certtool* program that comes with
+http://www.gnu.org/software/gnutls/[GNU TLS].
+
+.ca.tmpl
+--------------------------------
+cn = Dummy Certificate Authority
+ca
+cert_signing_key
+--------------------------------
+
+.localhost.tmpl
+---------------------------------
+organization = Dummy Organization
+cn = localhost
+tls_www_server
+encryption_key
+signing_key
+dns_name = localhost
+---------------------------------
+
+------------------------------------------
+ $ certtool --generate-privkey > ca-key.pem
+ $ certtool --generate-privkey > key.pem
+ $ certtool --generate-self-signed --load-privkey ca-key.pem \
+       --template ca.tmpl --outfile ca.pem
+ $ certtool --generate-certificate --load-privkey key.pem \
+       --load-ca-certificate ca.pem --load-ca-privkey ca-key.pem \
+       --template localhost.tmpl --outfile cert.pem
+------------------------------------------
+
+Legacy Client Support (Optional)
+--------------------------------
+
+With *tinypokerd*, all client/server communications are secured with TLS. Most
+Internet Poker Protocol clients written before Tiny Poker do not support TLS.
+You can use a program called http://www.stunnel.org/[stunnel] to act as a proxy
+server, allowing older IPP clients to connect to *tinypokerd* without any changes.
+
+After you have stunnel installed on the client machine, create a stunnel configuration
+file (see example below) and start stunnel.
+
+./etc/stunnel/stunnel.conf
+-------------
+client = yes
+CAfile = /path/to/ca.pem
+
+[ipp]
+        accept = 127.0.0.1:9898
+        connect = server.example.org:9899
+-------------
+
+Change *CAfile* to point to the certificate authority certificate you created above.
+Change *server.example.org* to point to the host running *tinypokerd*. Point the
+legacy client application to *localhost* port 9898.
+
+Configuration File
+------------------
+
+The *tinypokerd* configuration file provides the server with operating
+parameters. The defaults should work fine in most use cases. Below is a
+list of every possible configuration option.
+
+List of Configuration Options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[frame="all", grid="all"]
+`--------------`---------------`---------------------------------------------------`----------------------------------
+*key*           *value*         *description*                                       *default*
+port            1-65535         Specify the port for the HTTP server.               9899
+database        /path/to/db     Specify the location of the SQLite database file.   /var/lib/tinypokerd/tinypokerd.db
+----------------------------------------------------------------------------------------------------------------------
+
+Example Configuration File
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+./etc/tinypokerd.conf
+--------------------------------------
+# This is a comment
+
+port = 1234
+database = /home/tinypoker/database.db
+--------------------------------------
+
+Run tinypokerd
+--------------
 
 List of Command Line Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,57 +179,3 @@ Example Commands
  # /usr/sbin/tinypokerd --foreground
 --------------------------------------
 
-
-Configuration File
-------------------
-
-List of Configuration Options
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-[frame="all", grid="all"]
-`--------------`---------------`---------------------------------------------------`----------------------------------
-*key*           *value*         *description*                                       *default*
-port            1-65535         Specify the port for the HTTP server.               9898
-database        /path/to/db     Specify the location of the SQLite database file.   /var/lib/tinypokerd/tinypokerd.db
-----------------------------------------------------------------------------------------------------------------------
-
-Example Configuration File
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-./etc/tinypokerd.conf
---------------------------------------
-# This is a comment
-
-port = 1234
-database = /home/tinypoker/database.db
---------------------------------------
-
-SSL/TLS Certificates
---------------------
-
-.ca.tmpl
---------------------------------
-cn = Dummy Certificate Authority
-ca
-cert_signing_key
---------------------------------
-
-.localhost.tmpl
----------------------------------
-organization = Dummy Organization
-cn = localhost
-tls_www_server
-encryption_key
-signing_key
-dns_name = localhost
----------------------------------
-
-------------------------------------------
- $ certtool --generate-privkey > ca-key.pem
- $ certtool --generate-privkey > key.pem
- $ certtool --generate-self-signed --load-privkey ca-key.pem \
-       --template ca.tmpl --outfile ca.pem
- $ certtool --generate-certificate --load-privkey key.pem \
-       --load-ca-certificate ca.pem --load-ca-privkey ca-key.pem \
-       --template localhost.tmpl --outfile cert.pem
-------------------------------------------

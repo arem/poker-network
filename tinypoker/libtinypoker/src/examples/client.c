@@ -28,7 +28,7 @@ int main(int argc, char **argv, char **envp)
 	ipp_message *msg;
 	ipp_init();
 
-	sock = ipp_connect("localhost", 9898, "ca.pem");
+	sock = ipp_connect("localhost", IPP_SERVER_PORT_TLS, "ca.pem");
 	if (!sock) {
 		printf("! connect failed\n");
 		ipp_exit();

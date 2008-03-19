@@ -81,7 +81,7 @@ void config_free()
 static void config_with_defaults()
 {
 	if (port == 0) {
-		port = IPP_DEFAULT_PORT;
+		port = IPP_SERVER_PORT_TLS;
 	}
 
 	if (database == NULL) {

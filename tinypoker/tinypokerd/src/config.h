@@ -22,7 +22,7 @@
 #define __CONFIG_H
 
 /**
- * The TCP port to listen on. Default: 9898
+ * The TCP port to listen on. Default: 9899
  */
 int port;
 
