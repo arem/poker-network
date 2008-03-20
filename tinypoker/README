@@ -5,7 +5,7 @@
 	   |_|   |_| |_| |_|  \__, | |_|      \___/  |_|\_\  \___| |_|   
 	                      |___/                                      
 	Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
-        GNU GPL v2 or later | OSI Certified Open Source Software
+        GNU GPL v3 or later | OSI Certified Open Source Software
 
 TinyPoker is a collection of poker software written by Thomas Cort. 
 Originally the code was written for a poker bot programming competition 
@@ -18,21 +18,7 @@ See http://www.cs.rochester.edu/u/ferguson/poker/ipp.html
 
 tinypokerd - Internet Poker Protocol (IPP) version 2.0 Server.
 
-pokerd - a Texas Hold'em poker server designed primarily for poker 
-bots. It handles one 10 player table/game at a time. If more than 10 
-players are connected, players are rotated in and out based on how 
-many hands they've played recently. The server stores game results in a
-MySQL database. It is ideal for small programming competitions and 
-simulations.
-
-cbot, cppbot, jbot - basic networking code written in C, C++, and Java. 
-It will allow you connect to a server and send/recv commands. If you are 
-having a bot programming competition with participants who don't know 
-much about network programming, you can give them this so that they 
-don't get bogged down with the network communications part of the 
-project and can focus on the AI.
-
-bagelbot - a basic bot designed for use with pokerd. This bot connects 
+bagelbot-ng - a basic bot designed for use with tinypokerd. This bot connects 
 to the server, joins the game, and folds every chance it gets. It is
 intended to be used as an example for creating a new bots. You just have 
 to add the programming logic to determine to fold, raise, bet, or call.

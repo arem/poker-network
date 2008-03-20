@@ -13,7 +13,6 @@ Configure, compile, test, install...
 
         $ cmake .
         $ make
-	$ make test
         # make install
 
 Additional Installation Instructions

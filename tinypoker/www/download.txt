@@ -16,7 +16,7 @@ libtinypoker
 
 *libtinypoker* is a small client/server library that implements the
 Internet Poker Protocol (IPP) 2.0 over TLS. It is licensed under the
-terms of the http://tinypoker.org/gpl-2.html[GNU General Public License version 2 or Later].
+terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].
 
  * 'No releases yet'.
@@ -25,7 +25,7 @@ tinypokerd
 ----------
 
 *tinypokerd* is a small poker server. It is licensed under the 
-terms of the http://tinypoker.org/gpl-2.html[GNU General Public License version 2 or Later].
+terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse],
 http://0pointer.de/lennart/projects/libdaemon/[libdaemon] and
 http://sqlite.org/[SQLite].
@@ -37,7 +37,9 @@ bagelbot-ng
 
 *bagelbot-ng* is a trivial client for *tinypokerd*. It will connect to a
 server, join a game, and fold every hand. It is intended
-to be a base for building a poker bot.
+to be a base for building a poker bot. It is licensed under the
+terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+It depends on http://tinypoker.org/[libtinypoker].
 
  * 'No releases yet'.
 
