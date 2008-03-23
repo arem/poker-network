@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
- *
- * This file is part of tinypokerd.
- *
- * tinypokerd is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
  * 
- * tinypokerd is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of tinypokerd.
+ * 
+ * tinypokerd is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ * 
+ * tinypokerd is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <errno.h>
@@ -39,17 +39,18 @@
  * Determines if gatewayavd should run in the background (daemonized) or
  * not. If daemonize is 1, then gatewayavd should run in the background.
  */
-int daemonize;
+int		daemonize;
 
 /**
  * Determines if our process killed a running tinypokerd process successfully.
  */
-int killed;
+int		killed;
 
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
-void display_version()
+void
+display_version()
 {
 	daemon_log(LOG_INFO, "%s/%s", TINYPOKERD_NAME, TINYPOKERD_VERSION);
 	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
@@ -62,7 +63,8 @@ void display_version()
  * Displays some usage information, command line parameters and whatnot.
  * @param program the name of the program.
  */
-void display_help(char *program)
+void
+display_help(char *program)
 {
 	daemon_log(LOG_INFO, "Usage: %s [options]", program);
 	daemon_log(LOG_INFO, "Options:");
@@ -78,10 +80,11 @@ void display_help(char *program)
  * @param argv The command line arguments.
  * @return Returns 0 on success and non-zero when we want the program to terminate.
  */
-int parse_args(int argc, char **argv)
+int
+parse_args(int argc, char **argv)
 {
-	int option_index;
-	int done;
+	int		option_index;
+	int		done;
 
 	static struct option long_options[] = {
 		{"help", no_argument, 0, 'h'},
@@ -95,14 +98,13 @@ int parse_args(int argc, char **argv)
 	done = 0;
 
 	while (!done) {
-		int c;
-		int ret;
+		int		c;
+		int		ret;
 
 		c = getopt_long(argc, argv, "hvkf", long_options, &option_index);
 		if (c < 0) {
 			break;
 		}
-
 		switch (c) {
 		case 'h':
 			display_help(argv[0]);
@@ -134,11 +136,12 @@ int parse_args(int argc, char **argv)
 	return done;
 }
 
-int main(int argc, char *argv[], char *envp[])
+int
+main(int argc, char *argv[], char *envp[])
 {
-	int fd;
-	int ret;
-	pid_t pid;
+	int		fd;
+	int		ret;
+	pid_t		pid;
 
 	/* Default Values for Global Variables */
 	daemonize = 1;
@@ -149,27 +152,23 @@ int main(int argc, char *argv[], char *envp[])
 		daemon_log(LOG_ERR, "[MAIN] Cannot determine program name from argv[0]\n");
 		return 1;
 	}
-
 	daemon_pid_file_ident = daemon_log_ident = daemon_ident_from_argv0(argv[0]);
 
 	if (geteuid() != 0) {
 		daemon_log(LOG_ERR, "[MAIN] You need root privileges to run this application.");
 		return 1;
 	}
-
 	/* Command Line Arguements */
 	ret = parse_args(argc, argv);
 	if (ret) {
 		return (killed ? 0 : ret);
 	}
-
 	pid = daemon_pid_file_is_running();
 	if (pid > 0) {
 		daemon_log(LOG_ERR, "[MAIN] %s is already running (PID => %u)", argv[0], daemon_log_ident, pid);
 		daemon_log(LOG_INFO, "[MAIN] Use `%s -k` to kill the running instance", daemon_log_ident);
 		return 1;
 	}
-
 	/* Daemonize */
 	if (daemonize) {
 		/* Configure Logging */
@@ -183,7 +182,6 @@ int main(int argc, char *argv[], char *envp[])
 		} else if (pid > 0) {
 			return 0;
 		}
-
 		setsid();
 
 		pid = fork();
@@ -192,13 +190,11 @@ int main(int argc, char *argv[], char *envp[])
 		} else if (pid > 0) {
 			return 0;
 		}
-
 		ret = chdir("/");
 		if (ret < 0) {
 			daemon_log(LOG_ERR, "[MAIN] Could not chdir() to '/': %s", strerror(errno));
 			return 1;
 		}
-
 		/* close open file descriptors */
 		for (fd = 0; fd < getdtablesize(); fd++) {
 			ret = close(fd);
@@ -213,13 +209,11 @@ int main(int argc, char *argv[], char *envp[])
 		fd = open("/dev/null", O_WRONLY);
 		fd = open("/dev/null", O_WRONLY);
 	}
-
 	ret = daemon_pid_file_create();
 	if (ret < 0) {
 		daemon_log(LOG_ERR, "[MAIN] Could not create PID file: %s", strerror(errno));
 		return 1;
 	}
-
 	/* Configure */
 	config_parse();
 
@@ -239,7 +233,6 @@ int main(int argc, char *argv[], char *envp[])
 		daemon_log(LOG_ERR, "[MAIN] Exiting...");
 		return 1;
 	}
-
 	/* this must run before any threads are created */
 	monitor_init();
 

@@ -2,3 +2,5 @@
  * tinypokerd man page
  * Client authentication with x509 certificates
  * Configurable paths to certificates
+ * i18n
+ * game logs that can be parsed by free software

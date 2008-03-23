@@ -1,30 +1,31 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
- *
- * This file is part of libtinypoker.
- *
- * libtinypoker is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
  * 
- * libtinypoker is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of libtinypoker.
+ * 
+ * libtinypoker is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ * 
+ * libtinypoker is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "../main/tinypoker.h"
 #include <string.h>
 
-int main(int argc, char **argv, char **envp)
+int 
+main(int argc, char **argv, char **envp)
 {
-	ipp_socket *sock;
-	int rc;
-	ipp_message *msg;
+	ipp_socket     *sock;
+	int		rc;
+	ipp_message    *msg;
 	ipp_init();
 
 	sock = ipp_connect("localhost", IPP_SERVER_PORT_TLS, "ca.pem");
@@ -33,7 +34,6 @@ int main(int argc, char **argv, char **envp)
 		ipp_exit();
 		return 1;
 	}
-
 	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
 	if (msg && msg->payload && msg->type == MSG_IPP) {
 		printf("> %s\n", msg->payload);
@@ -58,7 +58,6 @@ int main(int argc, char **argv, char **envp)
 		sock = NULL;
 		return 1;
 	}
-
 	msg->type = MSG_BUYIN;
 	msg->payload = strdup("BUYIN TOM 500");
 	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);

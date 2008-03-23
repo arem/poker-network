@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
- *
- * This file is part of tinypokerd.
- *
- * tinypokerd is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
  * 
- * tinypokerd is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of tinypokerd.
+ * 
+ * tinypokerd is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ * 
+ * tinypokerd is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <gnutls/gnutls.h>
@@ -32,19 +32,23 @@
  * Handle incoming connections.
  * @param sock client socket.
  */
-static void client_connect_callback(ipp_socket * sock)
+static void
+client_connect_callback(ipp_socket * sock)
 {
 	/*
-	 * Note: this function causes the server loop to block.
-	 * Don't do anything too fancy or time intensive in here.
+	 * Note: this function causes the server loop to block. Don't do
+	 * anything too fancy or time intensive in here.
 	 */
 
-	ipp_message *msg;
-	char *user;
-	int rc;
-	unsigned long a, b, c, d;
+	ipp_message    *msg;
+	char           *user;
+	int		rc;
+	unsigned long	a, b, c, d;
 
-	/* We must reimplement inet_ntoa() here because it is not thread safe :| */
+	/*
+	 * We must reimplement inet_ntoa() here because it is not thread safe
+	 * :|
+	 */
 
 	a = (sock->addr.sin_addr.s_addr >> 0) & 0xff;
 	b = (sock->addr.sin_addr.s_addr >> 8) & 0xff;
@@ -94,7 +98,7 @@ static void client_connect_callback(ipp_socket * sock)
 
 	msg = ipp_new_message();
 	msg->type = MSG_WELCOME;
-	msg->payload = (char *) malloc(sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2));
+	msg->payload = (char *)malloc(sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2));
 	if (!(msg->payload)) {
 		daemon_log(LOG_ERR, "[SERV] malloc failed");
 		ipp_disconnect(sock);
@@ -134,10 +138,11 @@ static void client_connect_callback(ipp_socket * sock)
 	sock = NULL;
 }
 
-int pokerserv()
+int
+pokerserv()
 {
-	pthread_t dealer_thread;
-	pthread_attr_t dealer_thread_attr;
+	pthread_t	dealer_thread;
+	pthread_attr_t	dealer_thread_attr;
 
 	/* create a thread to play the game */
 	pthread_attr_init(&dealer_thread_attr);
@@ -149,13 +154,11 @@ int pokerserv()
 		raise(SIGQUIT);
 		return -1;
 	}
-
 	/* Start listening for connections */
 	ipp_servloop(port, client_connect_callback, "ca.pem", "crl.pem", "cert.pem", "key.pem");
 
 	if (!exit_now) {
 		raise(SIGQUIT);
 	}
-
 	return 0;
 }

@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
- *
- * This file is part of libtinypoker.
- *
- * libtinypoker is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
  * 
- * libtinypoker is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of libtinypoker.
+ * 
+ * libtinypoker is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ * 
+ * libtinypoker is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define _GNU_SOURCE
@@ -48,7 +48,8 @@ GCRY_THREAD_OPTION_PTHREAD_IMPL;
 /**
  * Initializes underlying libraries. This function *must* be called first!
  */
-void ipp_init()
+void 
+ipp_init()
 {
 	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
 	gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
@@ -58,7 +59,8 @@ void ipp_init()
 /**
  * De-initializes underlying libraries. This function *must* be called last!
  */
-void ipp_exit()
+void 
+ipp_exit()
 {
 	gnutls_global_deinit();
 }
@@ -70,23 +72,23 @@ void ipp_exit()
  * Should be called before ipp_validate_msg()
  * @param msg the message, a null terminated string, to transform.
  */
-void ipp_normalize_msg(char *msg)
+void 
+ipp_normalize_msg(char *msg)
 {
-	int len, start, end, i, j;
+	int		len       , start, end, i, j;
 	len = strlen(msg);
-	char *pos;
+	char           *pos;
 
 	if (!msg || strlen(msg) < MIN_MSG_SIZE) {
 		return;
 	}
-
 	while ((pos = strchr(msg, '\n'))) {
 		*pos = ' ';	/* replace new lines with white space */
 	}
 
 	/* find start */
 	for (start = 0; start < len && (msg[start] == ' ' || msg[start] == '\t'); start++) {
-		/* do nothing */ ;
+		 /* do nothing */ ;
 	}
 
 	/* find end */
@@ -114,20 +116,19 @@ void ipp_normalize_msg(char *msg)
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-int ipp_validate_msg(char *regex, char *msg)
+int 
+ipp_validate_msg(char *regex, char *msg)
 {
-	regex_t preg;
-	int ret;
+	regex_t		preg;
+	int		ret;
 
 	if (!regex || !msg) {
 		return FALSE;
 	}
-
 	ret = regcomp(&preg, regex, REG_EXTENDED);
 	if (ret) {		/* compile the pattern */
 		return FALSE;
 	}
-
 	/* See if the message matches */
 	ret = regexec(&preg, msg, 0, 0, 0);
 	regfree(&preg);		/* Clean up */
@@ -144,15 +145,15 @@ int ipp_validate_msg(char *regex, char *msg)
  * @param msg a message.
  * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
  */
-int ipp_validate_unknown_msg(char *msg)
+int 
+ipp_validate_unknown_msg(char *msg)
 {
-	unsigned int i;
-	int is_valid = -1;
+	unsigned int	i;
+	int		is_valid = -1;
 
 	if (!ipp_regex_msg || !msg) {
 		return FALSE;
 	}
-
 	for (i = 0; ipp_regex_msg[i]; i++) {
 		if (ipp_validate_msg(ipp_regex_msg[i], msg)) {
 			is_valid = i;
@@ -167,14 +168,14 @@ int ipp_validate_unknown_msg(char *msg)
  * Allocates an empty ipp_socket. Don't forget to ipp_free_socket().
  * @return a malloc()'d ipp_socket structure.
  */
-ipp_socket *ipp_new_socket()
+ipp_socket     *
+ipp_new_socket()
 {
-	ipp_socket *sock;
+	ipp_socket     *sock;
 	sock = (ipp_socket *) malloc(sizeof(ipp_socket));
 	if (!sock) {
 		return NULL;
 	}
-
 	memset(sock, '\0', sizeof(ipp_socket));
 	return sock;
 }
@@ -182,7 +183,8 @@ ipp_socket *ipp_new_socket()
 /**
  * Deallocate an ipp_socket.
  */
-void ipp_free_socket(ipp_socket * sock)
+void 
+ipp_free_socket(ipp_socket * sock)
 {
 	if (sock) {
 		ipp_disconnect(sock);
@@ -194,14 +196,14 @@ void ipp_free_socket(ipp_socket * sock)
  * Allocates an empty ipp_message. Don't forget to ipp_free_message().
  * @return a malloc()'d ipp_message structure.
  */
-ipp_message *ipp_new_message()
+ipp_message    *
+ipp_new_message()
 {
-	ipp_message *msg;
+	ipp_message    *msg;
 	msg = (ipp_message *) malloc(sizeof(ipp_message));
 	if (!msg) {
 		return NULL;
 	}
-
 	memset(msg, '\0', sizeof(ipp_message));
 	return msg;
 }
@@ -210,16 +212,16 @@ ipp_message *ipp_new_message()
  * Parses msg->payload into msg->parsed.
  * @param msg an IPP message
  */
-void ipp_parse_msg(ipp_message * msg)
+void 
+ipp_parse_msg(ipp_message * msg)
 {
-	int tokcnt, i, j;
-	char delim = ' ';
-	char *s, *t;
+	int		tokcnt    , i, j;
+	char		delim = ' ';
+	char           *s, *t;
 
 	if ((msg == NULL || msg->payload == NULL || msg->parsed != NULL) && msg->type >= 0) {
 		return;
 	}
-
 	tokcnt = 1;
 	for (i = 0; msg->payload[i]; i++) {
 		if (msg->payload[i] == delim) {
@@ -227,18 +229,17 @@ void ipp_parse_msg(ipp_message * msg)
 		}
 	}
 
-	msg->parsed = (char **) malloc(sizeof(char *) * (tokcnt + 1));
+	msg->parsed = (char **)malloc(sizeof(char *) * (tokcnt + 1));
 	if (!(msg->parsed)) {
 		/* malloc failed */
 		return;
 	}
-
 	memset(msg->parsed, '\0', sizeof(char *) * (tokcnt + 1));
 	s = msg->payload;
 	for (i = 0; i < tokcnt; i++) {
 		t = strchr(s, delim);
 		if (t) {
-			msg->parsed[i] = (char *) malloc(((t - s) + (sizeof(char) * 1)));
+			msg->parsed[i] = (char *)malloc(((t - s) + (sizeof(char) * 1)));
 			if (!(msg->parsed[i])) {
 				/* malloc() failed */
 				for (j = 0; msg->parsed[j]; j++) {
@@ -249,7 +250,6 @@ void ipp_parse_msg(ipp_message * msg)
 				msg->parsed = NULL;
 				return;
 			}
-
 			memset(msg->parsed[i], '\0', ((t - s) + (sizeof(char) * 1)));
 			memcpy(msg->parsed[i], s, t - s);
 		} else {
@@ -264,16 +264,16 @@ void ipp_parse_msg(ipp_message * msg)
 /**
  * Deallocate an ipp_message.
  */
-void ipp_free_message(ipp_message * msg)
+void 
+ipp_free_message(ipp_message * msg)
 {
-	int i;
+	int		i;
 
 	if (msg) {
 		if (msg->payload) {
 			free(msg->payload);
 			msg->payload = NULL;
 		}
-
 		if (msg->parsed) {
 			for (i = 0; msg->parsed[i] != NULL; i++) {
 				free(msg->parsed[i]);
@@ -282,7 +282,6 @@ void ipp_free_message(ipp_message * msg)
 			free(msg->parsed);
 			msg->parsed = NULL;
 		}
-
 		free(msg);
 	}
 }
@@ -291,15 +290,15 @@ void ipp_free_message(ipp_message * msg)
  * Allocates an empty ipp_card. Don't forget to ipp_free_card().
  * @return a malloc()'d ipp_card structure.
  */
-ipp_card *ipp_new_card()
+ipp_card       *
+ipp_new_card()
 {
-	ipp_card *card;
+	ipp_card       *card;
 
 	card = (ipp_card *) malloc(sizeof(ipp_card));
 	if (card == NULL) {
 		return NULL;
 	}
-
 	memset(card, '\0', sizeof(ipp_card));
 	return card;
 }
@@ -307,7 +306,8 @@ ipp_card *ipp_new_card()
 /**
  * Deallocate an ipp_card.
  */
-void ipp_free_card(ipp_card * card)
+void 
+ipp_free_card(ipp_card * card)
 {
 	if (card) {
 		free(card);
@@ -318,15 +318,15 @@ void ipp_free_card(ipp_card * card)
  * Allocates an empty ipp_player. Don't forget to ipp_free_player().
  * @return a malloc()'d ipp_card structure.
  */
-ipp_player *ipp_new_player()
+ipp_player     *
+ipp_new_player()
 {
-	ipp_player *player;
+	ipp_player     *player;
 
 	player = (ipp_player *) malloc(sizeof(ipp_player));
 	if (player == NULL) {
 		return NULL;
 	}
-
 	memset(player, '\0', sizeof(ipp_player));
 	return player;
 }
@@ -334,30 +334,27 @@ ipp_player *ipp_new_player()
 /**
  * Deallocates an ipp_player.
  */
-void ipp_free_player(ipp_player * player)
+void 
+ipp_free_player(ipp_player * player)
 {
 	if (player) {
 		if (player->name) {
 			free(player->name);
 			player->name = NULL;
 		}
-
 		if (player->sock) {
 			ipp_disconnect(player->sock);
 			ipp_free_socket(player->sock);
 			player->sock = NULL;
 		}
-
 		if (player->hole[0]) {
 			ipp_free_card(player->hole[0]);
 			player->hole[0] = NULL;
 		}
-
 		if (player->hole[1]) {
 			ipp_free_card(player->hole[1]);
 			player->hole[1] = NULL;
 		}
-
 		player->bankroll = 0;
 		player->amt_in = 0;
 		player->still_in = 0;
@@ -370,15 +367,15 @@ void ipp_free_player(ipp_player * player)
  * Allocates an empty ipp_table. Don't for get to ipp_free_table().
  * @return a malloc()'d ipp_table structure.
  */
-ipp_table *ipp_new_table()
+ipp_table      *
+ipp_new_table()
 {
-	ipp_table *table;
+	ipp_table      *table;
 
 	table = (ipp_table *) malloc(sizeof(ipp_table));
 	if (table == NULL) {
 		return NULL;
 	}
-
 	memset(table, '\0', sizeof(ipp_table));
 	return table;
 }
@@ -386,9 +383,10 @@ ipp_table *ipp_new_table()
 /**
  * Deallocates an ipp_table.
  */
-void ipp_free_table(ipp_table * table)
+void 
+ipp_free_table(ipp_table * table)
 {
-	int i;
+	int		i;
 
 	if (table) {
 		if (table->players) {
@@ -399,8 +397,6 @@ void ipp_free_table(ipp_table * table)
 				}
 			}
 		}
-
-
 		if (table->board) {
 			for (i = 0; i < HOLDEM_BOARD_CARDS; i++) {
 				if (table->board[i]) {
@@ -409,7 +405,6 @@ void ipp_free_table(ipp_table * table)
 				}
 			}
 		}
-
 		table->num_players = 0;
 		table->amt_to_call = 0;
 		table->stage = 0;
@@ -425,45 +420,41 @@ void ipp_free_table(ipp_table * table)
  * @param session GNU TLS Session.
  * @param hostname the hostname of the server connected to.
  */
-int __ipp_verify_cert(gnutls_session session, const char *hostname) {
-	unsigned int status;
+int 
+__ipp_verify_cert(gnutls_session session, const char *hostname)
+{
+	unsigned int	status;
 	const gnutls_datum *cert_list;
-	unsigned int cert_list_size;
-	int ret, i, valid;
-	gnutls_x509_crt cert;
+	unsigned int	cert_list_size;
+	int		ret       , i, valid;
+	gnutls_x509_crt	cert;
 
 	ret = gnutls_certificate_verify_peers2(session, &status);
 	if (ret < 0) {
 		/* gnutls_certificate_verify_peers2 failed */
 		return FALSE;
 	}
-
 	if (status & GNUTLS_CERT_INVALID) {
 		/* The certificate is not trusted */
 		return FALSE;
 	}
-
 	if (status & GNUTLS_CERT_SIGNER_NOT_FOUND) {
 		/* The certificate hasn't got a known issuer */
 		return FALSE;
 	}
-
 	if (status & GNUTLS_CERT_REVOKED) {
 		/* The certificate has been revoked */
 		return FALSE;
 	}
-
 	if (gnutls_certificate_type_get(session) != GNUTLS_CRT_X509) {
 		/* The certificate is not an x509 certificate */
 		return FALSE;
 	}
-
 	cert_list = gnutls_certificate_get_peers(session, &cert_list_size);
 	if (cert_list == NULL || cert_list_size == 0) {
 		/* No certificate was found */
 		return FALSE;
 	}
-
 	for (i = 0; i < cert_list_size; i++) {
 		valid = 1;
 
@@ -471,27 +462,22 @@ int __ipp_verify_cert(gnutls_session session, const char *hostname) {
 			/* init error */
 			return FALSE;
 		}
-
 		if (gnutls_x509_crt_import(cert, &cert_list[i], GNUTLS_X509_FMT_DER) < 0) {
 			/* error parsing certificate */
 			valid = 0;
 		}
-
 		if (gnutls_x509_crt_get_expiration_time(cert) < time(0)) {
 			/* Certificate has expired */
 			valid = 0;
 		}
-
 		if (gnutls_x509_crt_get_activation_time(cert) > time(0)) {
 			/* Certificate is not yet activated */
 			valid = 0;
 		}
-
 		if (!gnutls_x509_crt_check_hostname(cert, hostname)) {
 			/* Certificate doesn't match hostname */
 			valid = 0;
 		}
-
 		gnutls_x509_crt_deinit(cert);
 
 		if (!valid) {
@@ -509,16 +495,17 @@ int __ipp_verify_cert(gnutls_session session, const char *hostname) {
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
+ipp_socket     *
+ipp_connect(char *hostname, int port, char *ca_file)
 {
-	ipp_socket *sock;
-	int ret;
-	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
-	const char *err;
+	ipp_socket     *sock;
+	int		ret;
+	const int	kx_prio[] = {GNUTLS_KX_RSA, 0};
+	const char     *err;
 	struct sockaddr_in sin;
 	struct hostent *he;
 	gnutls_transport_ptr_t ptr;
-	long gnutls_sock;
+	long		gnutls_sock;
 
 	/* TinyPoker -- create an empty socket structure */
 	sock = ipp_new_socket();
@@ -531,16 +518,18 @@ ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
 	gnutls_kx_set_priority(sock->session, kx_prio);
 	gnutls_credentials_set(sock->session, GNUTLS_CRD_CERTIFICATE, sock->x509_cred);
 
-	/* TCP -- resolve the server's hostname, create a socket descriptor and connect */
+	/*
+	 * TCP -- resolve the server's hostname, create a socket descriptor
+	 * and connect
+	 */
 	memset(&sin, 0, sizeof(sin));
-	sin.sin_port = htons((short) port);
+	sin.sin_port = htons((short)port);
 	he = gethostbyname(hostname);
 	if (!ret) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		return NULL;
 	}
-
 	sin.sin_family = he->h_addrtype;
 	memcpy(&sin.sin_addr, he->h_addr, he->h_length);
 	sock->sd = socket(AF_INET, SOCK_STREAM, 0);
@@ -549,14 +538,12 @@ ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
 		ipp_free_socket(sock);
 		return NULL;
 	}
-
-	ret = connect(sock->sd, (struct sockaddr *) &sin, sizeof(sin));
+	ret = connect(sock->sd, (struct sockaddr *)&sin, sizeof(sin));
 	if (ret) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		return NULL;
 	}
-
 	/* GNU TLS -- handshaking */
 	gnutls_sock = sock->sd;
 	ptr = (gnutls_transport_ptr_t) gnutls_sock;
@@ -568,7 +555,6 @@ ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
 		ipp_free_socket(sock);
 		return NULL;
 	}
-
 	ret = __ipp_verify_cert(sock->session, hostname);
 	if (ret == 0) {
 		/* can't verify cert */
@@ -576,7 +562,6 @@ ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
 		ipp_free_socket(sock);
 		return NULL;
 	}
-
 	return sock;
 }
 
@@ -584,27 +569,24 @@ ipp_socket *ipp_connect(char *hostname, int port, char *ca_file)
  * Disconnect from the server.
  * @param sock a socket to disconnect.
  */
-void ipp_disconnect(ipp_socket * sock)
+void 
+ipp_disconnect(ipp_socket * sock)
 {
 	if (sock->session) {
 		gnutls_bye(sock->session, GNUTLS_SHUT_RDWR);
 	}
-
 	if (sock->sd) {
 		/* close the connection */
 		shutdown(sock->sd, SHUT_RDWR);
 		close(sock->sd);
 	}
-
 	if (sock->session) {
 		/* free session data */
 		gnutls_deinit(sock->session);
 	}
-
 	if (sock->x509_cred) {
 		gnutls_certificate_free_credentials(sock->x509_cred);
 	}
-
 	/* set to NULL to prevent double free() and other misuse */
 	memset(sock, '\0', sizeof(ipp_socket));
 }
@@ -613,13 +595,14 @@ void ipp_disconnect(ipp_socket * sock)
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_readln_thread_params structure.
  */
-void __ipp_readln_thread(void *void_params)
+void 
+__ipp_readln_thread(void *void_params)
 {
-	int ret;
+	int		ret;
 	__ipp_readln_thread_params *params;
 	params = (__ipp_readln_thread_params *) void_params;
 
-	*(params->buffer) = (char *) malloc(sizeof(char) * (MAX_MSG_SIZE + 1));
+	*(params->buffer) = (char *)malloc(sizeof(char) * (MAX_MSG_SIZE + 1));
 	if (*(params->buffer)) {
 		memset(*(params->buffer), '\0', (sizeof(char) * (MAX_MSG_SIZE + 1)));
 
@@ -633,7 +616,6 @@ void __ipp_readln_thread(void *void_params)
 			*(params->n) = -1;
 		}
 	}
-
 	pthread_exit(0);
 }
 
@@ -643,14 +625,15 @@ void __ipp_readln_thread(void *void_params)
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with free().
  */
-ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
+ipp_message    *
+ipp_read_msg(ipp_socket * sock, int timeout)
 {
 	__ipp_readln_thread_params params;
-	char *buffer;
-	int n, is_valid, ret;
-	pthread_t reader;
-	pthread_attr_t reader_attr;
-	time_t clock;
+	char           *buffer;
+	int		n         , is_valid, ret;
+	pthread_t	reader;
+	pthread_attr_t	reader_attr;
+	time_t		clock;
 
 	is_valid = FALSE;
 	buffer = NULL;
@@ -662,12 +645,11 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
 
 	pthread_attr_init(&reader_attr);
 	pthread_attr_setdetachstate(&reader_attr, PTHREAD_CREATE_DETACHED);
-	ret = pthread_create(&reader, &reader_attr, (void *(*)(void *)) __ipp_readln_thread, (void *) &params);
+	ret = pthread_create(&reader, &reader_attr, (void *(*) (void *))__ipp_readln_thread, (void *)&params);
 	if (ret != 0) {
 		pthread_attr_destroy(&reader_attr);
 		return NULL;
 	}
-
 	clock = time(NULL);
 	do {
 		if ((time(NULL) - clock) > timeout) {
@@ -687,12 +669,11 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
 	} else if (!n) {
 		return NULL;
 	}
-
 	ipp_normalize_msg(buffer);
 
 	is_valid = ipp_validate_unknown_msg(buffer);
 	if (is_valid > -1) {
-		ipp_message *msg;
+		ipp_message    *msg;
 		msg = ipp_new_message();
 		if (msg) {
 			msg->type = is_valid;
@@ -713,9 +694,10 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_writeln_thread_params structure.
  */
-void __ipp_writeln_thread(void *void_params)
+void 
+__ipp_writeln_thread(void *void_params)
 {
-	int ret;
+	int		ret;
 	__ipp_writeln_thread_params *params;
 	params = (__ipp_writeln_thread_params *) void_params;
 
@@ -734,13 +716,14 @@ void __ipp_writeln_thread(void *void_params)
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
+int 
+ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 {
 	__ipp_writeln_thread_params params;
-	int is_valid, ret, n;
-	pthread_t writer;
-	pthread_attr_t writer_attr;
-	time_t clock;
+	int		is_valid  , ret, n;
+	pthread_t	writer;
+	pthread_attr_t	writer_attr;
+	time_t		clock;
 
 	is_valid = FALSE;
 	n = 0;
@@ -748,15 +731,14 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 	ipp_normalize_msg(msg->payload);
 	is_valid = ipp_validate_unknown_msg(msg->payload);
 	if (is_valid > -1 && is_valid == msg->type) {
-		int len;
-		char *final_msg;
+		int		len;
+		char           *final_msg;
 
 		len = strlen(msg->payload);
 		final_msg = malloc(sizeof(char) * (len + 2));
 		if (final_msg == NULL) {
 			return FALSE;
 		}
-
 		memset(final_msg, '\0', len + 2);
 		strncpy(final_msg, msg->payload, len + 2);
 		final_msg[len] = '\n';
@@ -768,12 +750,11 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 		pthread_attr_init(&writer_attr);
 		pthread_attr_setdetachstate(&writer_attr, PTHREAD_CREATE_DETACHED);
 
-		ret = pthread_create(&writer, &writer_attr, (void *(*)(void *)) __ipp_writeln_thread, (void *) &params);
+		ret = pthread_create(&writer, &writer_attr, (void *(*) (void *))__ipp_writeln_thread, (void *)&params);
 		if (ret != 0) {
 			pthread_attr_destroy(&writer_attr);
 			return FALSE;
 		}
-
 		clock = time(NULL);
 		do {
 			if ((time(NULL) - clock) > timeout) {
@@ -804,13 +785,14 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
  * servloop exit Indicator
  * 1 for exit now, 0 for continue.
  */
-static int done;
+static int	done;
 
 /**
  * Set done to 1 when SIGUSR2 is raised.
  * @param sig signal
  */
-void __ipp_handle_sigusr2(int sig)
+void 
+__ipp_handle_sigusr2(int sig)
 {
 	if (sig == SIGUSR2) {
 		done = 1;
@@ -829,21 +811,20 @@ void __ipp_handle_sigusr2(int sig)
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
  */
-void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
-{
-	int master, slave, rc, optval;
-	ipp_socket *ipp_slave;
+void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file){
+	int		master    , slave, rc, optval;
+	ipp_socket     *ipp_slave;
 
-	struct pollfd p;
+	struct pollfd	p;
 	struct sockaddr_in sin;
 	struct sockaddr_in client_addr;
-	unsigned int client_addr_len;
-	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
+	unsigned int	client_addr_len;
+	const int	kx_prio[] = {GNUTLS_KX_RSA, 0};
 	gnutls_session_t session;
 	gnutls_dh_params_t dh_params;
 	gnutls_certificate_credentials_t x509_cred;
 	gnutls_transport_ptr_t ptr;
-	long gnutls_sock;
+	long		gnutls_sock;
 
 	gnutls_certificate_allocate_credentials(&x509_cred);
 	gnutls_certificate_set_x509_trust_file(x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
@@ -859,7 +840,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
-	sin.sin_port = (unsigned short) htons(port);
+	sin.sin_port = (unsigned short)htons(port);
 
 	master = socket(PF_INET, SOCK_STREAM, 0);
 	if (master < 0) {
@@ -867,23 +848,20 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
+	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
 
-	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (int));
-
-	rc = bind(master, (struct sockaddr *) &sin, sizeof(sin));
+	rc = bind(master, (struct sockaddr *)&sin, sizeof(sin));
 	if (rc < 0) {
 		gnutls_certificate_free_credentials(x509_cred);
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
-
 	rc = listen(master, 64);
 	if (rc < 0) {
 		gnutls_certificate_free_credentials(x509_cred);
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
-
 	p.fd = master;
 	p.events = POLLIN;
 	p.revents = 0;
@@ -893,7 +871,10 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 
 	while (!done) {
 		/* Poll master so that we don't block on accept */
-		/* this is done so that when we signal we re-evaluate if !done == true */
+		/*
+		 * this is done so that when we signal we re-evaluate if
+		 * !done == true
+		 */
 
 		poll(&p, 1, 30000);	/* 30 second timeout */
 		if (p.revents != POLLIN) {	/* no activity */
@@ -903,12 +884,10 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 				continue;
 			}
 		}
-
 		if (done) {
 			break;
 		}
-
-		slave = accept(master, (struct sockaddr *) &client_addr, &client_addr_len);
+		slave = accept(master, (struct sockaddr *)&client_addr, &client_addr_len);
 		if (slave < 0) {
 			if (errno == EINTR) {
 				continue;
@@ -920,7 +899,6 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 				return;
 			}
 		}
-
 		gnutls_init(&session, GNUTLS_SERVER);
 		gnutls_set_default_priority(session);
 		gnutls_kx_set_priority(session, kx_prio);
@@ -937,7 +915,6 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 			gnutls_deinit(session);
 			continue;
 		}
-
 		ipp_slave = ipp_new_socket();
 		if (!ipp_slave) {
 			shutdown(slave, SHUT_RDWR);
@@ -945,7 +922,6 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 			gnutls_deinit(session);
 			continue;
 		}
-
 		ipp_slave->sd = slave;
 		ipp_slave->session = session;
 		ipp_slave->x509_cred = NULL;

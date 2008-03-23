@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
- *
- * This file is part of tinypokerd.
- *
- * tinypokerd is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
  * 
- * tinypokerd is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of tinypokerd.
+ * 
+ * tinypokerd is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ * 
+ * tinypokerd is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <libdaemon/dlog.h>
@@ -30,19 +30,20 @@
 
 #include "deck.h"
 
-ipp_card deck[52];
+ipp_card	deck   [52];
 
-int deck_index;
+int		deck_index;
 
-char suits[4] = { 'S', 'D', 'C', 'H' };
-char ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+char		suits     [4] = {'S', 'D', 'C', 'H'};
+char		ranks     [13] = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'};
 
 /**
  *  ipp_card *get_card()
  *
  *  get the top card off the deck
  */
-ipp_card *get_card()
+ipp_card       *
+get_card()
 {
 	deck_index = (deck_index + 1) % 52;
 	return &deck[deck_index];
@@ -53,15 +54,15 @@ ipp_card *get_card()
  *
  *  gives a null terminated string representation of a card c (ex: "9d\0")
  */
-char *card2str(ipp_card * c)
+char           *
+card2str(ipp_card * c)
 {
-	char *str;
+	char           *str;
 
-	if ((str = (char *) malloc(sizeof(char) * 3)) == NULL) {
+	if ((str = (char *)malloc(sizeof(char) * 3)) == NULL) {
 		daemon_log(LOG_ERR, "[DECK] %s", strerror(errno));
 		return NULL;
 	}
-
 	str[0] = c->rank;
 	str[1] = c->suit;
 	str[2] = '\0';
@@ -74,10 +75,11 @@ char *card2str(ipp_card * c)
  *
  *  randomize the order of the cards in the deck (Knuth shuffle)
  */
-void deck_shuffle()
+void
+deck_shuffle()
 {
-	int x, y, z, r;
-	ipp_card temp;
+	int		x         , y, z, r;
+	ipp_card	temp;
 
 	daemon_log(LOG_DEBUG, "[DECK] Shuffling...");
 
@@ -87,7 +89,6 @@ void deck_shuffle()
 			if (r < 0) {	/* force 'r' to be positive */
 				r = 0 - r;
 			}
-
 			/* pick a number between x and 51 (inclusive) */
 			y = (r % (52 - x)) + x;
 
@@ -109,10 +110,12 @@ void deck_shuffle()
  *
  *  initializes a deck
  */
-void deck_init()
+void
+deck_init()
 {
-	int x, y, z = 0;
-	deck_index = 51;	/* when get_card is 1st called it will return card 0 */
+	int		x         , y, z = 0;
+	deck_index = 51;	/* when get_card is 1st called it will return
+				 * card 0 */
 
 	srand(getpid());
 

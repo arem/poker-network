@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
- *
- * This file is part of libtinypoker.
- *
- * libtinypoker is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
  * 
- * libtinypoker is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of libtinypoker.
+ * 
+ * libtinypoker is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ * 
+ * libtinypoker is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -78,6 +78,13 @@ enum card_suit {
 	SPADES = 'S'
 };
 
+enum game_type {
+	UNSPECIFIED = 0,
+	HOLDEM = 1,
+	DRAW = 2,
+	STUD = 3
+};
+
 /**
  * Enumerate the possible card ranks.
  */
@@ -100,28 +107,28 @@ enum card_rank {
  * Structure used to hold network communications information.
  */
 typedef struct ipp_socket {
-	int sd;
+	int		sd;
 	struct sockaddr_in addr;
 	gnutls_session_t session;
 	gnutls_certificate_credentials_t x509_cred;
-} ipp_socket;
+}		ipp_socket;
 
 /**
  * Structure used to hold protocol messages.
  */
 typedef struct ipp_message {
-	int type;
-	char *payload;
-	char **parsed;
-} ipp_message;
+	int		type;
+	char           *payload;
+	char          **parsed;
+}		ipp_message;
 
 /**
  * Structure used to hold a playing card.
  */
 typedef struct ipp_card {
-	enum card_rank rank;
-	enum card_suit suit;
-} ipp_card;
+	enum card_rank	rank;
+	enum card_suit	suit;
+}		ipp_card;
 
 /**
  * Structure used to hold a poker player.
@@ -130,90 +137,92 @@ typedef struct ipp_card {
  *   the client may only know his/her hole cards.
  */
 typedef struct ipp_player {
-	char *name;		/* player name given at handshake */
-	ipp_socket *sock;	/* communications socket */
+	char           *name;	/* player name given at handshake */
+	ipp_socket     *sock;	/* communications socket */
 
 	/* TODO Support for Stud and Draw */
-	ipp_card *hole[HOLDEM_HOLE_CARDS];	/* two hole cards */
-	int bankroll;		/* amount of money this player has */
-	int amt_in;		/* amount into the pot from this player */
-	int still_in;		/* TRUE if still in the hand, FALSE if folded, disconnected, etc. */
-} ipp_player;
+	ipp_card       *hole[HOLDEM_HOLE_CARDS];	/* two hole cards */
+	int		bankroll;	/* amount of money this player has */
+	int		amt_in;	/* amount into the pot from this player */
+	int		still_in;	/* TRUE if still in the hand, FALSE
+					 * if folded, disconnected, etc. */
+}		ipp_player;
 
 /**
  * Structure used to hold a poker table.
  */
 typedef struct ipp_table {
-	int num_players;
-	int amt_to_call;
+	enum game_type	type;
+	int		num_players;
+	int		amt_to_call;
 	enum holdem_stage stage;
 
 	/* TODO Support for Stud and Draw */
-	ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
-	ipp_card *board[HOLDEM_BOARD_CARDS];
-} ipp_table;
+	ipp_player     *players[HOLDEM_PLAYERS_PER_TABLE];
+	ipp_card       *board[HOLDEM_BOARD_CARDS];
+}		ipp_table;
 
 /**
  * Allocates an empty ipp_socket. Don't forget to call ipp_free_socket().
  * @return a malloc()'d ipp_socket structure.
  * @see ipp_free_socket()
  */
-ipp_socket *ipp_new_socket();
+ipp_socket     *ipp_new_socket();
 
 /**
  * Deallocate an ipp_socket.
  */
-void ipp_free_socket(ipp_socket * sock);
+void		ipp_free_socket(ipp_socket * sock);
 
 /**
  * Allocates an empty ipp_message. Don't forget to ipp_free_message().
  * @return a malloc()'d ipp_message structure.
  */
-ipp_message *ipp_new_message();
+ipp_message    *ipp_new_message();
 
 /**
  * Parses msg->payload into msg->parsed
  * @param msg an IPP message
  */
-void ipp_parse_msg(ipp_message * msg);
+void		ipp_parse_msg(ipp_message * msg);
 
 /**
  * Deallocate an ipp_message.
  */
-void ipp_free_message(ipp_message * msg);
+void		ipp_free_message(ipp_message * msg);
 
 /**
  * Allocates an empty ipp_card. Don't forget to ipp_free_card().
  * @return a malloc()'d ipp_card structure.
  */
-ipp_card *ipp_new_card();
+ipp_card       *ipp_new_card();
 
 /**
  * Deallocate an ipp_card.
  */
-void ipp_free_card(ipp_card * card);
+void		ipp_free_card(ipp_card * card);
 
 /**
  * Allocates an empty ipp_player. Don't forget to ipp_free_player().
  * @return a malloc()'d ipp_card structure.
  */
-ipp_player *ipp_new_player();
+ipp_player     *ipp_new_player();
 
 /**
  * Deallocates an ipp_player.
  */
-void ipp_free_player(ipp_player * player);
+void		ipp_free_player(ipp_player * player);
 
 /**
  * Allocates an empty ipp_table. Don't for get to ipp_free_table().
  * @return a malloc()'d ipp_table structure.
  */
-ipp_table *ipp_new_table();
+ipp_table      *ipp_new_table();
 
 /**
  * Deallocates an ipp_table.
  */
-void ipp_free_table(ipp_table * table);
+void		ipp_free_table(ipp_table * table);
 
 /**
  * The name of this library for IPP strings, etc.
@@ -473,7 +482,7 @@ void ipp_free_table(ipp_table * table);
 #define CMD_NEWGAME "NEWGAME"
 
 /**
- * Sent by the server before play starts to identify a player and their 
+ * Sent by the server before play starts to identify a player and their
  * starting stake.
  */
 #define CMD_PLAYER "PLAYER"
@@ -587,7 +596,7 @@ void ipp_free_table(ipp_table * table);
 #define CMD_CHECK "CHECK"
 
 /**
- * Sent by the server to the player being called to show their hand. 
+ * Sent by the server to the player being called to show their hand.
  */
 #define CMD_SHOWQ "SHOW" REGEX_QMARK
 
@@ -723,7 +732,7 @@ void ipp_free_table(ipp_table * table);
 
 /* Regular Expressions for all supported message types */
 
-static char *ipp_regex_msg[] = {
+static char    *ipp_regex_msg[] = {
 	REGEX_MSG_IPP,
 	REGEX_MSG_BUYIN,
 	REGEX_MSG_WELCOME,
@@ -807,12 +816,12 @@ static char *ipp_regex_msg[] = {
 /**
  * Initializes underlying libraries. This function *must* be called before performing any network operations!
  */
-void ipp_init();
+void		ipp_init  ();
 
 /**
  * De-initializes underlying libraries. This function *must* be called last!
  */
-void ipp_exit();
+void		ipp_exit  ();
 
 /**
  * Validates IPP Messages
@@ -820,28 +829,28 @@ void ipp_exit();
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-int ipp_validate_msg(char *regex, char *msg);
+int		ipp_validate_msg(char *regex, char *msg);
 
 /**
  * Validates an arbitrary IPP Messages.
  * @param msg a message.
  * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
  */
-int ipp_validate_unknown_msg(char *msg);
+int		ipp_validate_unknown_msg(char *msg);
 
 /**
  * Convert the string to upper case and convert multiple spaces to 1 space.
  * Trim leading and trailing white space.
  * @param msg the message, a null terminated string, to transform.
  */
-void ipp_normalize_msg(char *msg);
+void		ipp_normalize_msg(char *msg);
 
 /**
  * Checks a certificate to make sure it is valid.
  * @param session GNU TLS Session.
  * @param hostname the hostname of the server connected to.
  */
-int __ipp_verify_cert(gnutls_session session, const char *hostname);
+int		__ipp_verify_cert(gnutls_session session, const char *hostname);
 
 /**
  * Connect to a server.
@@ -850,13 +859,13 @@ int __ipp_verify_cert(gnutls_session session, const char *hostname);
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket *ipp_connect(char *hostname, int port, char *ca_file);
+ipp_socket     *ipp_connect(char *hostname, int port, char *ca_file);
 
 /**
  * Disconnect from the server.
  * @param sock a socket to disconnect.
  */
-void ipp_disconnect(ipp_socket * sock);
+void		ipp_disconnect(ipp_socket * sock);
 
 /**
  * Read a message from the socket.
@@ -864,7 +873,7 @@ void ipp_disconnect(ipp_socket * sock);
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-ipp_message *ipp_read_msg(ipp_socket * sock, int timeout);
+ipp_message    *ipp_read_msg(ipp_socket * sock, int timeout);
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
@@ -873,39 +882,39 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout);
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout);
+int		ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout);
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * Parameters passed to the reader thread.
  */
 typedef struct __ipp_readln_thread_params {
-	ipp_socket *sock;
-	char **buffer;
-	unsigned int *n;
-} __ipp_readln_thread_params;
+	ipp_socket     *sock;
+	char          **buffer;
+	unsigned int   *n;
+}		__ipp_readln_thread_params;
 
 /**
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_readln_thread_params structure.
  */
-void __ipp_readln_thread(void *void_params);
+void		__ipp_readln_thread(void *void_params);
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * Parameters passed to the writer thread.
  */
 typedef struct __ipp_writeln_thread_params {
-	ipp_socket *sock;
-	char *buffer;
-	unsigned int *n;
-} __ipp_writeln_thread_params;
+	ipp_socket     *sock;
+	char           *buffer;
+	unsigned int   *n;
+}		__ipp_writeln_thread_params;
 
 /**
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_readln_thread_params structure.
  */
-void __ipp_writeln_thread(void *void_params);
+void		__ipp_writeln_thread(void *void_params);
 
 /**
  * Main server loop. This function sets up the networking and accepts
@@ -919,6 +928,6 @@ void __ipp_writeln_thread(void *void_params);
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
  */
-void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
+void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
 
 #endif
