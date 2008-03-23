@@ -1,0 +1,46 @@
+.TH "tinypokerd" "8" "0.0.0" "Thomas Cort <tom@tomcort.com>" "tinypoker"
+.SH "NAME"
+.LP 
+tinypokerd \- Implementation of Internet Poker Protocol (IPP) v2.0.
+.SH "SYNOPSIS"
+.LP 
+tinypokerd [\fI\-h\fP | \fI\-v\fP | \fI\-k\fP | \fI\-f\fP]
+.SH "DESCRIPTION"
+.LP 
+tinypokerd is a small and fast poker server written in C. It is licensed under the terms of the GNU General Public License version 3 or Later. It implements the Internet Poker Protocol (IPP) version 2.0 and is compatible with existing IPP software such as ippd, ippplayer and ipphuman. tinypokerd includes additional features like Transport Layer Security (TLS).
+.SH "OPTIONS"
+.LP 
+.TP 
+\fB\-f\fR, \fB\-\-foreground\fR
+Run in the foreground.
+.TP 
+\fB\-k\fR, \fB\-\-kill\fR
+Kill the running instance.
+.TP 
+\fB\-h\fR, \fB\-\-help\fR
+Show a help message.
+.TP 
+\fB\-v\fR, \fB\-\-version\fR
+Show version information
+.SH "FILES"
+.LP 
+\fI/etc/tinypokerd.conf\fP 
+.br 
+\fI/var/lib/tinypokerd/tinypokerd.db\fP 
+.SH "AUTHORS"
+.LP 
+Thomas Cort <tom@tomcort.com>
+.SH "SEE ALSO"
+.LP 
+tinypokerd.conf(5)
+.SH "COPYRIGHT"
+.LP 
+Copyright (C) 2007, 2008 Thomas Cort
+.br 
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front\-Cover Texts, and no Back\-Cover Texts. A
+copy of the license is available at the following URL:
+.IP 
+http://www.gnu.org/licenses/fdl.html

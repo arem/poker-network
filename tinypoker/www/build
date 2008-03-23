@@ -8,7 +8,9 @@
 # copy of the license is included in the section entitled "GNU Free
 # Documentation License". 
 
-if [[ !(-f /usr/bin/asciidoc) ]]
+ASCIIDOC=$(which asciidoc)
+
+if [[ !(-f ${ASCIIDOC}) ]]
 then
 	echo "Install asciidoc!"
 	exit 1
@@ -16,11 +18,11 @@ fi
 
 for PAGE in $(/bin/ls -1 *.txt)
 do
-	/usr/bin/asciidoc \
+	${ASCIIDOC} \
 		--unsafe \
 		--backend=xhtml11 \
 		--conf-file=tinypoker.org.conf \
 		--attribute=siteTitle="TinyPoker" \
-		--attribute=generator="$(/usr/bin/asciidoc --version)" \
+		--attribute=generator="$(${ASCIIDOC} --version)" \
 		${PAGE}
 done
