@@ -502,8 +502,18 @@ ipp_connect(char *hostname, int port, char *ca_file)
 	int		ret;
 	const int	kx_prio[] = {GNUTLS_KX_RSA, 0};
 	const char     *err;
+
+/* IPv4 */
+/*
 	struct sockaddr_in sin;
 	struct hostent *he;
+ */
+
+	/* IPv4 and IPv6 */
+	struct addrinfo *ai;
+	struct addrinfo hints;
+	struct addrinfo *runp;
+
 	gnutls_transport_ptr_t ptr;
 	long		gnutls_sock;
 
@@ -522,6 +532,9 @@ ipp_connect(char *hostname, int port, char *ca_file)
 	 * TCP -- resolve the server's hostname, create a socket descriptor
 	 * and connect
 	 */
+
+/* IPv4 */
+/*
 	memset(&sin, 0, sizeof(sin));
 	sin.sin_port = htons((short)port);
 	he = gethostbyname(hostname);
@@ -544,6 +557,43 @@ ipp_connect(char *hostname, int port, char *ca_file)
 		ipp_free_socket(sock);
 		return NULL;
 	}
+*/
+	/* IPv4 and IPv6 */
+	memset (&hints, '\0', sizeof (hints));
+	hints.ai_flags = AI_ADDRCONFIG;
+	hints.ai_socktype = SOCK_STREAM;
+
+	ret = getaddrinfo(hostname, IPP_SERVICE_NAME, &hints, &ai);
+	if (ret != 0) {
+		ipp_free_socket(sock);
+		return NULL;
+	}
+
+	for (runp = ai; runp != NULL; runp = runp->ai_next) {
+		sock->sd = socket(runp->ai_family, runp->ai_socktype, runp->ai_protocol);
+		if (sock->sd == -1) {
+			continue;
+		}
+
+		ret = connect(sock->sd, runp->ai_addr, runp->ai_addrlen);
+		if (ret != 0) {
+			close(sock->sd);
+			sock->sd = -1;
+			continue;
+		}
+
+		/* if we get here it means we are connected */
+		break;
+	}
+
+	freeaddrinfo (ai);
+
+	/* couldn't connect on any socket :( give up. */
+	if (sock->sd == -1) {
+		ipp_free_socket(sock);
+		return NULL;
+	}
+
 	/* GNU TLS -- handshaking */
 	gnutls_sock = sock->sd;
 	ptr = (gnutls_transport_ptr_t) gnutls_sock;

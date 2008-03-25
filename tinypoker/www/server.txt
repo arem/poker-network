@@ -149,6 +149,17 @@ game_type = 1
 
 --------------------------------------
 
+Add tinypoker to /etc/services
+------------------------------
+
+You must add the following line to your services file.
+
+./etc/services
+--------------------------------------
+tinypoker       9899/tcp
+--------------------------------------
+
+
 Run tinypokerd
 --------------
 

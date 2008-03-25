@@ -240,6 +240,12 @@ void		ipp_free_table(ipp_table * table);
 #define IPP_SERVER_PORT_TLS (9899)
 
 /**
+ * The service name used to determine the TCP port number.
+ * This should be "tinypoker tcp/9899" in /etc/services
+ */
+#define IPP_SERVICE_NAME "tinypoker"
+
+/**
  * The version of the protocol implemented.
  * Matches "2.0" and "2.0.0". The spec says 2.0, but
  * the reference implementation uses 2.0.0 :|
