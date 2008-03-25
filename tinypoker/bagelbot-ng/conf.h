@@ -27,7 +27,6 @@
 char           *configfile;
 char           *user;
 char           *host;
-int		port;
 
 /**
  * Reads 'configfile' and allocates memory for their values

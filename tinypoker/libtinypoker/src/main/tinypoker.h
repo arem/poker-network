@@ -108,11 +108,6 @@ enum card_rank {
  */
 typedef struct ipp_socket {
 	int		sd;
-/* IPv4 */
-/*
-	struct sockaddr_in addr;
-*/
-	/* IPv4 and IPv6 */
 	struct sockaddr_storage sockaddr;
 	socklen_t sockaddrlen;
 
@@ -235,16 +230,6 @@ void		ipp_free_table(ipp_table * table);
  * The name of this library for IPP strings, etc.
  */
 #define TINYPOKER "TinyPoker"
-
-/**
- * The default server port for plain text communications.
- */
-#define IPP_SERVER_PORT_PLAIN (9898)
-
-/**
- * The default server port for TLS protected communications.
- */
-#define IPP_SERVER_PORT_TLS (9899)
 
 /**
  * The service name used to determine the TCP port number.
@@ -873,11 +858,10 @@ int		__ipp_verify_cert(gnutls_session session, const char *hostname);
 /**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
- * @param port the port number (example: 9999).
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket     *ipp_connect(char *hostname, int port, char *ca_file);
+ipp_socket     *ipp_connect(char *hostname, char *ca_file);
 
 /**
  * Disconnect from the server.
@@ -939,13 +923,12 @@ void		__ipp_writeln_thread(void *void_params);
  * incoming connections. For every incoming client, a 'callback' is
  * called. The server blocks and waits for 'callback' to return, so
  * make 'callback' short and sweet.
- * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
  * @param ca_file Certificate Authority
  * @param crl_file CRL
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
  */
-void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
+void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
 
 #endif

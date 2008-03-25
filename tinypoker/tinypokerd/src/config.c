@@ -40,8 +40,6 @@
 void
 config_free()
 {
-	port = 0;
-
 	if (database) {
 		free(database);
 		database = NULL;
@@ -55,9 +53,6 @@ config_free()
 static void
 config_with_defaults()
 {
-	if (port == 0) {
-		port = IPP_SERVER_PORT_TLS;
-	}
 	if (database == NULL) {
 		database = strdup(DEFAULT_DATABASE);
 	}
@@ -78,7 +73,6 @@ config_parse()
 
 	cfg_t          *cfg;
 	cfg_opt_t	opts  [] = {
-		CFG_SIMPLE_INT("port", &port),
 		CFG_SIMPLE_INT("database", &database),
 		CFG_SIMPLE_INT("game_type", &game_type),
 		CFG_END()

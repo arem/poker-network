@@ -23,11 +23,6 @@
 #include <tinypoker.h>
 
 /**
- * The TCP port to listen on. Default: 9899
- */
-int		port;
-
-/**
  * Location of the database file. Default: /var/lib/tinypokerd/tinypokerd.db
  */
 char           *database;

@@ -36,9 +36,9 @@ handshake()
 	ipp_socket     *sock;
 	ipp_message    *msg;
 
-	daemon_log(LOG_INFO, "[HAND] [CONN] %s %d", host, port);
+	daemon_log(LOG_INFO, "[HAND] [CONN] %s %d", host);
 
-	sock = ipp_connect(host, port, "ca.pem");
+	sock = ipp_connect(host, "ca.pem");
 	if (sock == NULL) {
 		daemon_log(LOG_ERR, "[HAND] ipp_connect() failed");
 		return NULL;
@@ -204,12 +204,12 @@ main(int argc, char **argv)
 	if (rc) {
 		return rc;
 	}
-	if (!host || !port || !user) {
+	if (!host || !user) {
 		daemon_log(LOG_ERR, "[MAIN] Could not determine one or more configuration setting from '%s'", configfile);
 		free_config();
 		return 255;
 	} else {
-		daemon_log(LOG_INFO, "[MAIN] Connecting to %s:%d as %s", host, port, user);
+		daemon_log(LOG_INFO, "[MAIN] Connecting to %s as %s", host, user);
 	}
 
 	ipp_init();

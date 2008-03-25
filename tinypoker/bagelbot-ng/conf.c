@@ -41,14 +41,12 @@ configure()
 	cfg_opt_t	opts  [] = {
 		CFG_SIMPLE_STR("user", &user),
 		CFG_SIMPLE_STR("host", &host),
-		CFG_SIMPLE_INT("port", &port),
 		CFG_END()
 	};
 
 	cfg_t          *cfg;
 
 	user = host = NULL;
-	port = 0;
 
 	cfg = cfg_init(opts, 0);/* call libconfuse */
 	cfg_parse(cfg, configfile);

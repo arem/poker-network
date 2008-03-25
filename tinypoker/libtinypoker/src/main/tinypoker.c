@@ -491,25 +491,17 @@ __ipp_verify_cert(gnutls_session session, const char *hostname)
 /**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
- * @param port the port number (example: 9999).
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
 ipp_socket     *
-ipp_connect(char *hostname, int port, char *ca_file)
+ipp_connect(char *hostname, char *ca_file)
 {
 	ipp_socket     *sock;
 	int		ret;
 	const int	kx_prio[] = {GNUTLS_KX_RSA, 0};
 	const char     *err;
 
-/* IPv4 */
-/*
-	struct sockaddr_in sin;
-	struct hostent *he;
- */
-
-	/* IPv4 and IPv6 */
 	struct addrinfo *ai;
 	struct addrinfo hints;
 	struct addrinfo *runp;
@@ -532,33 +524,6 @@ ipp_connect(char *hostname, int port, char *ca_file)
 	 * TCP -- resolve the server's hostname, create a socket descriptor
 	 * and connect
 	 */
-
-/* IPv4 */
-/*
-	memset(&sin, 0, sizeof(sin));
-	sin.sin_port = htons((short)port);
-	he = gethostbyname(hostname);
-	if (!ret) {
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		return NULL;
-	}
-	sin.sin_family = he->h_addrtype;
-	memcpy(&sin.sin_addr, he->h_addr, he->h_length);
-	sock->sd = socket(AF_INET, SOCK_STREAM, 0);
-	if (!(sock->sd)) {
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		return NULL;
-	}
-	ret = connect(sock->sd, (struct sockaddr *)&sin, sizeof(sin));
-	if (ret) {
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		return NULL;
-	}
-*/
-	/* IPv4 and IPv6 */
 	memset (&hints, '\0', sizeof (hints));
 	hints.ai_flags = AI_ADDRCONFIG;
 	hints.ai_socktype = SOCK_STREAM;
@@ -854,27 +819,16 @@ __ipp_handle_sigusr2(int sig)
  * incoming connections. For every incoming client, a 'callback' is
  * called. The server blocks and waits for 'callback' to return, so
  * make 'callback' short and sweet.
- * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
  * @param ca_file Certificate Authority
  * @param crl_file CRL
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
  */
-void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file){
+void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file){
 	int		slave, rc, optval;
 	ipp_socket     *ipp_slave;
 
-/* IPv4 */
-/*
-  	int master;
-	struct pollfd	p;
-	struct sockaddr_in sin;
-	struct sockaddr_in client_addr;
-	unsigned int	client_addr_len;
-*/
-
-	/* IPv4 and IPv6 */
 	struct addrinfo *ai;
 	struct addrinfo hints;
 	struct addrinfo *runp;
@@ -899,17 +853,6 @@ void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, cha
 	gnutls_dh_params_generate2(dh_params, 1024);
 	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
-/* IPv4 */
-/*
-	client_addr_len = sizeof(client_addr);
-	memset(&sin, 0, sizeof(sin));
-
-	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = INADDR_ANY;
-	sin.sin_port = (unsigned short)htons(port);
-*/
-
-	/* IPv4 and IPv6 */
 	memset(&hints, '\0', sizeof (hints));
 	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
 	hints.ai_socktype = SOCK_STREAM;
@@ -919,33 +862,6 @@ void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, cha
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
-
-/* IPv4 */
-/*
-	master = socket(PF_INET, SOCK_STREAM, 0);
-	if (master < 0) {
-		gnutls_certificate_free_credentials(x509_cred);
-		gnutls_dh_params_deinit(dh_params);
-		return;
-	}
-	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
-
-	rc = bind(master, (struct sockaddr *)&sin, sizeof(sin));
-	if (rc < 0) {
-		gnutls_certificate_free_credentials(x509_cred);
-		gnutls_dh_params_deinit(dh_params);
-		return;
-	}
-	rc = listen(master, 64);
-	if (rc < 0) {
-		gnutls_certificate_free_credentials(x509_cred);
-		gnutls_dh_params_deinit(dh_params);
-		return;
-	}
-	p.fd = master;
-	p.events = POLLIN;
-	p.revents = 0;
-*/
 
 	memset(sds, '\0', sizeof(struct pollfd) * IPP_SERVER_MAX_SDS);
 
@@ -995,19 +911,6 @@ void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, cha
 		 * this is done so that when we signal we re-evaluate if
 		 * !done == true
 		 */
-
-/* IPv4 */
-/*
-		poll(&p, 1, 30000);
-		if (p.revents != POLLIN) {
-			if (done) {
-				break;
-			} else {
-				continue;
-			}
-		}
-*/
-		/* IPv4 and IPv6 */
 		rc = poll(sds, nsds, 30000); 
 
 		if (done) {
@@ -1018,11 +921,6 @@ void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, cha
 		if (rc > 0) {
 			for (i = 0; i < nsds; i++) {
 				if (sds[i].revents & POLLIN) {
-/* IPv4 */
-/*
-					slave = accept(master, (struct sockaddr *)&client_addr, &client_addr_len);
-*/
-					/* IPv4 and IPv6 */
 					sockaddrlen = sizeof(struct sockaddr); /* probably not needed */
 					slave = accept(sds[i].fd, (struct sockaddr *) &sockaddr, &sockaddrlen);
 					if (slave < 0) {

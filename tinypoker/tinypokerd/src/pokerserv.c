@@ -17,6 +17,8 @@
  * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <netdb.h>
+#include <sys/socket.h>
 #include <gnutls/gnutls.h>
 #include <libdaemon/dlog.h>
 #include <pthread.h>
@@ -43,28 +45,17 @@ client_connect_callback(ipp_socket * sock)
 	ipp_message    *msg;
 	char           *user;
 	int		rc;
-	unsigned long	a, b, c, d;
+	char		ip[64];
 
-	/*
-	 * We must reimplement inet_ntoa() here because it is not thread safe
-	 * :|
-	 */
-/* IPv4 */
-/*
-	a = (sock->addr.sin_addr.s_addr >> 0) & 0xff;
-	b = (sock->addr.sin_addr.s_addr >> 8) & 0xff;
-	c = (sock->addr.sin_addr.s_addr >> 16) & 0xff;
-	d = (sock->addr.sin_addr.s_addr >> 24) & 0xff;
-*/
+	memset(ip, '\0', sizeof(char) * 64);
+	rc = getnameinfo((struct sockaddr *) &(sock->sockaddr), sock->sockaddrlen, ip, sizeof(char) * 64, NULL, 0, NI_NUMERICHOST);
+	if (rc != 0) {
+		/* something crazy happened where the sockaddr didn't contain a valid address */
+		/* this should never happen, but just in case, we'll handle it */
+		snprintf(ip, 60, "(unknown-ip)");
+	}
 
-	/* For testing */
-	a = 0;
-	b = 0;
-	c = 0;
-	d = 0;
-
-	/* TODO this might not be byte safe -- test on big-endian */
-	daemon_log(LOG_INFO, "[SERV] [CONN] %lu.%lu.%lu.%lu", a, b, c, d);
+	daemon_log(LOG_INFO, "[SERV] [CONN] %s", ip);
 
 	msg = ipp_new_message();
 	msg->type = MSG_IPP;
@@ -72,14 +63,14 @@ client_connect_callback(ipp_socket * sock)
 
 	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT);
 	if (rc == FALSE) {
-		daemon_log(LOG_ERR, "[SERV] Could not send IPP message to %lu.%lu.%lu.%lu", a, b, c, d);
+		daemon_log(LOG_ERR, "[SERV] Could not send IPP message to %s", ip);
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		ipp_free_message(msg);
 		sock = NULL;
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
+		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %s", msg->payload, ip);
 	}
 
 	ipp_free_message(msg);
@@ -87,7 +78,7 @@ client_connect_callback(ipp_socket * sock)
 
 	msg = ipp_read_msg(sock, SERVER_READ_TIMEOUT);
 	if (msg == NULL || msg->type != MSG_BUYIN || msg->payload == NULL) {
-		daemon_log(LOG_ERR, "[SERV] Could not read BUYIN message from %lu.%lu.%lu.%lu", a, b, c, d);
+		daemon_log(LOG_ERR, "[SERV] Could not read BUYIN message from %s", ip);
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
@@ -95,11 +86,11 @@ client_connect_callback(ipp_socket * sock)
 		msg = NULL;
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] [RECV] |%s| from %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
+		daemon_log(LOG_INFO, "[SERV] [RECV] |%s| from %s", msg->payload, ip);
 	}
 
 	user = strdup(msg->parsed[1]);
-	daemon_log(LOG_INFO, "[SERV] %lu.%lu.%lu.%lu is |%s|", a, b, c, d, user);
+	daemon_log(LOG_INFO, "[SERV] %s is |%s|", ip, user);
 
 	ipp_free_message(msg);
 	msg = NULL;
@@ -120,7 +111,7 @@ client_connect_callback(ipp_socket * sock)
 
 	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT);
 	if (rc == FALSE) {
-		daemon_log(LOG_ERR, "[SERV] Could not send WELCOME message to %lu.%lu.%lu.%lu", a, b, c, d);
+		daemon_log(LOG_ERR, "[SERV] Could not send WELCOME message to %s", ip);
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
@@ -128,7 +119,7 @@ client_connect_callback(ipp_socket * sock)
 		msg = NULL;
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %lu.%lu.%lu.%lu", msg->payload, a, b, c, d);
+		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %s", msg->payload, ip);
 	}
 
 	ipp_free_message(msg);
@@ -163,7 +154,7 @@ pokerserv()
 		return -1;
 	}
 	/* Start listening for connections */
-	ipp_servloop(port, client_connect_callback, "ca.pem", "crl.pem", "cert.pem", "key.pem");
+	ipp_servloop(client_connect_callback, "ca.pem", "crl.pem", "cert.pem", "key.pem");
 
 	if (!exit_now) {
 		raise(SIGQUIT);

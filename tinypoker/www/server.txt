@@ -131,7 +131,6 @@ List of Configuration Options
 [frame="all", grid="all"]
 `--------------`---------------`---------------------------------------------------`----------------------------------
 *key*           *value*         *description*                                       *default*
-port            1-65535         Specify the port for the HTTP server.               9899
 database        /path/to/db     Specify the location of the SQLite database file.   /var/lib/tinypokerd/tinypokerd.db
 game_type       1-3             Specify the type of game (holdem, draw or stud).    1
 ----------------------------------------------------------------------------------------------------------------------
@@ -143,7 +142,6 @@ Example Configuration File
 --------------------------------------
 # This is a comment
 
-port = 1234
 database = /home/tinypoker/database.db
 game_type = 1
 
@@ -158,7 +156,6 @@ You must add the following line to your services file.
 --------------------------------------
 tinypoker       9899/tcp
 --------------------------------------
-
 
 Run tinypokerd
 --------------
