@@ -108,7 +108,14 @@ enum card_rank {
  */
 typedef struct ipp_socket {
 	int		sd;
+/* IPv4 */
+/*
 	struct sockaddr_in addr;
+*/
+	/* IPv4 and IPv6 */
+	struct sockaddr_storage sockaddr;
+	socklen_t sockaddrlen;
+
 	gnutls_session_t session;
 	gnutls_certificate_credentials_t x509_cred;
 }		ipp_socket;
@@ -244,6 +251,11 @@ void		ipp_free_table(ipp_table * table);
  * This should be "tinypoker tcp/9899" in /etc/services
  */
 #define IPP_SERVICE_NAME "tinypoker"
+
+/**
+ * The maximum number of server sockets.
+ */
+#define IPP_SERVER_MAX_SDS (8)
 
 /**
  * The version of the protocol implemented.

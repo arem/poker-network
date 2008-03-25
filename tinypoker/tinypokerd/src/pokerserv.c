@@ -49,11 +49,19 @@ client_connect_callback(ipp_socket * sock)
 	 * We must reimplement inet_ntoa() here because it is not thread safe
 	 * :|
 	 */
-
+/* IPv4 */
+/*
 	a = (sock->addr.sin_addr.s_addr >> 0) & 0xff;
 	b = (sock->addr.sin_addr.s_addr >> 8) & 0xff;
 	c = (sock->addr.sin_addr.s_addr >> 16) & 0xff;
 	d = (sock->addr.sin_addr.s_addr >> 24) & 0xff;
+*/
+
+	/* For testing */
+	a = 0;
+	b = 0;
+	c = 0;
+	d = 0;
 
 	/* TODO this might not be byte safe -- test on big-endian */
 	daemon_log(LOG_INFO, "[SERV] [CONN] %lu.%lu.%lu.%lu", a, b, c, d);

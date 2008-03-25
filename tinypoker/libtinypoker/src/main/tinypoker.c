@@ -862,13 +862,27 @@ __ipp_handle_sigusr2(int sig)
  * @param key_file Private Key
  */
 void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file){
-	int		master    , slave, rc, optval;
+	int		slave, rc, optval;
 	ipp_socket     *ipp_slave;
 
+/* IPv4 */
+/*
+  	int master;
 	struct pollfd	p;
 	struct sockaddr_in sin;
 	struct sockaddr_in client_addr;
 	unsigned int	client_addr_len;
+*/
+
+	/* IPv4 and IPv6 */
+	struct addrinfo *ai;
+	struct addrinfo hints;
+	struct addrinfo *runp;
+	struct sockaddr_storage sockaddr;
+	socklen_t sockaddrlen;
+	struct pollfd sds[IPP_SERVER_MAX_SDS];
+	int nsds, i;
+
 	const int	kx_prio[] = {GNUTLS_KX_RSA, 0};
 	gnutls_session_t session;
 	gnutls_dh_params_t dh_params;
@@ -885,13 +899,29 @@ void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, cha
 	gnutls_dh_params_generate2(dh_params, 1024);
 	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
+/* IPv4 */
+/*
 	client_addr_len = sizeof(client_addr);
 	memset(&sin, 0, sizeof(sin));
 
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = (unsigned short)htons(port);
+*/
 
+	/* IPv4 and IPv6 */
+	memset(&hints, '\0', sizeof (hints));
+	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
+	hints.ai_socktype = SOCK_STREAM;
+	rc = getaddrinfo(NULL, IPP_SERVICE_NAME, &hints, &ai);
+	if (rc != 0) {
+		gnutls_certificate_free_credentials(x509_cred);
+		gnutls_dh_params_deinit(dh_params);
+		return;
+	}
+
+/* IPv4 */
+/*
 	master = socket(PF_INET, SOCK_STREAM, 0);
 	if (master < 0) {
 		gnutls_certificate_free_credentials(x509_cred);
@@ -915,6 +945,46 @@ void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, cha
 	p.fd = master;
 	p.events = POLLIN;
 	p.revents = 0;
+*/
+
+	memset(sds, '\0', sizeof(struct pollfd) * IPP_SERVER_MAX_SDS);
+
+	nsds = 0;
+	for (runp = ai; runp != NULL && nsds < IPP_SERVER_MAX_SDS; runp = runp->ai_next) {
+		sds[nsds].fd = socket(runp->ai_family, runp->ai_socktype, runp->ai_protocol);
+		if (sds[nsds].fd == -1) {
+			continue;
+		}
+
+		optval = 1;
+		setsockopt(sds[nsds].fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+
+		rc = bind(sds[nsds].fd, runp->ai_addr, runp->ai_addrlen);
+		if (rc != 0) {
+			close(sds[nsds].fd);
+			sds[nsds].fd = -1;
+			continue;
+		}
+
+		rc = listen(sds[nsds].fd, SOMAXCONN);
+		if (rc != 0) {
+			close(sds[nsds].fd);
+			sds[nsds].fd = -1;
+			continue;
+		}
+
+		sds[nsds].events = POLLIN;
+		sds[nsds].revents = 0;
+		nsds++;
+	}
+
+	freeaddrinfo (ai);
+
+	if (nsds == 0) {
+		gnutls_certificate_free_credentials(x509_cred);
+		gnutls_dh_params_deinit(dh_params);
+		return;
+	}
 
 	done = 0;
 	signal(SIGUSR2, __ipp_handle_sigusr2);
@@ -926,62 +996,94 @@ void		ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, cha
 		 * !done == true
 		 */
 
-		poll(&p, 1, 30000);	/* 30 second timeout */
-		if (p.revents != POLLIN) {	/* no activity */
+/* IPv4 */
+/*
+		poll(&p, 1, 30000);
+		if (p.revents != POLLIN) {
 			if (done) {
 				break;
 			} else {
 				continue;
 			}
 		}
+*/
+		/* IPv4 and IPv6 */
+		rc = poll(sds, nsds, 30000); 
+
 		if (done) {
 			break;
 		}
-		slave = accept(master, (struct sockaddr *)&client_addr, &client_addr_len);
-		if (slave < 0) {
-			if (errno == EINTR) {
-				continue;
-			} else {
-				shutdown(master, SHUT_RDWR);
-				close(master);
-				gnutls_certificate_free_credentials(x509_cred);
-				gnutls_dh_params_deinit(dh_params);
-				return;
+
+		/* check if 1 or more sockets is ready for us */
+		if (rc > 0) {
+			for (i = 0; i < nsds; i++) {
+				if (sds[i].revents & POLLIN) {
+/* IPv4 */
+/*
+					slave = accept(master, (struct sockaddr *)&client_addr, &client_addr_len);
+*/
+					/* IPv4 and IPv6 */
+					sockaddrlen = sizeof(struct sockaddr); /* probably not needed */
+					slave = accept(sds[i].fd, (struct sockaddr *) &sockaddr, &sockaddrlen);
+					if (slave < 0) {
+						if (errno == EINTR) {
+							continue;
+						} else {
+							for (i = 0; i < nsds; i++) {
+								shutdown(sds[i].fd, SHUT_RDWR);
+								close(sds[i].fd);
+							}
+
+							gnutls_certificate_free_credentials(x509_cred);
+							gnutls_dh_params_deinit(dh_params);
+							return;
+						}
+					}
+
+					gnutls_init(&session, GNUTLS_SERVER);
+					gnutls_set_default_priority(session);
+					gnutls_kx_set_priority(session, kx_prio);
+					gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, x509_cred);
+					gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
+
+					gnutls_sock = slave;
+					ptr = (gnutls_transport_ptr_t) gnutls_sock;
+					gnutls_transport_set_ptr(session, ptr);
+					rc = gnutls_handshake(session);
+					if (rc < 0) {
+						shutdown(slave, SHUT_RDWR);
+						close(slave);
+						gnutls_deinit(session);
+						continue;
+					}
+					ipp_slave = ipp_new_socket();
+					if (!ipp_slave) {
+						shutdown(slave, SHUT_RDWR);
+						close(slave);
+						gnutls_deinit(session);
+						continue;
+					}
+
+					ipp_slave->sd = slave;
+					ipp_slave->session = session;
+					ipp_slave->x509_cred = NULL;
+					memcpy(&(ipp_slave->sockaddr), &(sockaddr), sockaddrlen);
+					ipp_slave->sockaddrlen = sockaddrlen;
+
+					callback(ipp_slave);
+				}
+
+				sds[i].revents = 0;
+				sds[i].events = POLLIN;
 			}
 		}
-		gnutls_init(&session, GNUTLS_SERVER);
-		gnutls_set_default_priority(session);
-		gnutls_kx_set_priority(session, kx_prio);
-		gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, x509_cred);
-		gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
-
-		gnutls_sock = slave;
-		ptr = (gnutls_transport_ptr_t) gnutls_sock;
-		gnutls_transport_set_ptr(session, ptr);
-		rc = gnutls_handshake(session);
-		if (rc < 0) {
-			shutdown(slave, SHUT_RDWR);
-			close(slave);
-			gnutls_deinit(session);
-			continue;
-		}
-		ipp_slave = ipp_new_socket();
-		if (!ipp_slave) {
-			shutdown(slave, SHUT_RDWR);
-			close(slave);
-			gnutls_deinit(session);
-			continue;
-		}
-		ipp_slave->sd = slave;
-		ipp_slave->session = session;
-		ipp_slave->x509_cred = NULL;
-		memcpy(&(ipp_slave->addr), &(client_addr), sizeof(struct sockaddr_in));
-
-		callback(ipp_slave);
 	}
 
-	shutdown(master, SHUT_RDWR);
-	close(master);
+	for (i = 0; i < nsds; i++) {
+		shutdown(sds[i].fd, SHUT_RDWR);
+		close(sds[i].fd);
+	}
+
 	gnutls_certificate_free_credentials(x509_cred);
 	gnutls_dh_params_deinit(dh_params);
 }
