@@ -22,10 +22,33 @@
 
 #include <tinypoker.h>
 
+char *x509_ca;
+
 /**
- * Location of the database file. Default: /var/lib/tinypokerd/tinypokerd.db
+ * The default CA file location.
  */
-char           *database;
+#define DEFAULT_X509_CA "/etc/tinypoker/ca.pem"
+
+char *x509_crl;
+
+/**
+ * The default CRL file location.
+ */
+#define DEFAULT_X509_CRL "/etc/tinypoker/crl.pem"
+
+char *x509_cert;
+
+/**
+ * The default certificate location.
+ */
+#define DEFAULT_X509_CERT "/etc/tinypoker/cert.pem"
+
+char *x509_key;
+
+/**
+ * The default private key location.
+ */
+#define DEFAULT_X509_KEY "/etc/tinypoker/key.pem"
 
 /**
  * The type of game we're playing (holdem, draw, stud)
@@ -33,14 +56,9 @@ char           *database;
 enum game_type	game_type;
 
 /**
- * The default database file location
- */
-#define DEFAULT_DATABASE "/var/lib/tinypokerd/tinypokerd.db"
-
-/**
  * The default configuration file location.
  */
-#define DEFAULT_CONFIGFILE "/etc/tinypokerd.conf"
+#define DEFAULT_CONFIGFILE "/etc/tinypoker/tinypokerd.conf"
 
 /**
  * Parses an tinypokerd.conf configuration file.

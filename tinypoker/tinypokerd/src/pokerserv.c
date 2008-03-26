@@ -154,7 +154,7 @@ pokerserv()
 		return -1;
 	}
 	/* Start listening for connections */
-	ipp_servloop(client_connect_callback, "ca.pem", "crl.pem", "cert.pem", "key.pem");
+	ipp_servloop(client_connect_callback, x509_ca, x509_crl, x509_cert, x509_key);
 
 	if (!exit_now) {
 		raise(SIGQUIT);

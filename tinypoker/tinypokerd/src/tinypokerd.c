@@ -146,6 +146,10 @@ main(int argc, char *argv[], char *envp[])
 	/* Default Values for Global Variables */
 	daemonize = 1;
 	killed = 0;
+	x509_ca = NULL;
+	x509_crl = NULL;
+	x509_cert = NULL;
+	x509_key = NULL;
 
 	/* Sanity Checks */
 	if (argc < 1 || !argv || !argv[0]) {
@@ -154,10 +158,6 @@ main(int argc, char *argv[], char *envp[])
 	}
 	daemon_pid_file_ident = daemon_log_ident = daemon_ident_from_argv0(argv[0]);
 
-	if (geteuid() != 0) {
-		daemon_log(LOG_ERR, "[MAIN] You need root privileges to run this application.");
-		return 1;
-	}
 	/* Command Line Arguements */
 	ret = parse_args(argc, argv);
 	if (ret) {
@@ -226,13 +226,6 @@ main(int argc, char *argv[], char *envp[])
 	/* Install Signal Handlers */
 	install_signal_handlers();
 
-	if (db_connect() == -1) {
-		ipp_exit();
-		config_free();
-		daemon_pid_file_remove();
-		daemon_log(LOG_ERR, "[MAIN] Exiting...");
-		return 1;
-	}
 	/* this must run before any threads are created */
 	monitor_init();
 
@@ -240,7 +233,6 @@ main(int argc, char *argv[], char *envp[])
 	pokerserv();
 
 	monitor_wait();		/* thread cleanup */
-	db_disconnect();
 
 	ipp_exit();
 	config_free();

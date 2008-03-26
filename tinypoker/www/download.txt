@@ -14,9 +14,17 @@ Download
 libtinypoker
 ------------
 
-*libtinypoker* is a small client/server library that implements the
-Internet Poker Protocol (IPP) 2.0 over TLS. It is licensed under the
-terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+*libtinypoker* provides application programming interfaces (APIs) to applications
+implementing the Internet Poker Protocol (IPP) Version 2.0. The library
+provides a robust communications framework that allows clients and servers
+to communicate over secure transport layer sockets (TLS) using Internet
+Protocol version 4 (IPv4) and/or Internet Protocol version 6 (IPv6).
+The underlying code is designed to gracefully handle network problems
+such as unexpected disconnections and bad input. IPP message validation,
+normalization and parsing functions are available to developers as are
+several predefined types for representing poker games, players and cards.
+*libtinypoker* is licensed under the terms of the
+http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].
 
  * 'No releases yet'.
@@ -26,9 +34,8 @@ tinypokerd
 
 *tinypokerd* is a small poker server. It is licensed under the 
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse],
-http://0pointer.de/lennart/projects/libdaemon/[libdaemon] and
-http://sqlite.org/[SQLite].
+It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse]
+and http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
 
  * 'No releases yet'.
 

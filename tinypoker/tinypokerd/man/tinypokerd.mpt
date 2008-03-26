@@ -24,9 +24,7 @@ Show a help message.
 Show version information
 .SH "FILES"
 .LP 
-\fI/etc/tinypokerd.conf\fP 
-.br 
-\fI/var/lib/tinypokerd/tinypokerd.db\fP 
+\fI/etc/tinypoker/tinypokerd.conf\fP 
 .SH "AUTHORS"
 .LP 
 Thomas Cort <tom@tomcort.com>

@@ -1,16 +1,23 @@
-To simplify the network code, speed up the message parser, increase
-security and provide a more robust input validator, TinyPoker will be
-implementing the Internet Poker Protocol (IPP) Version 2.0
+	 _ _ _     _   _                         _
+	| (_) |__ | |_(_)_ __  _   _ _ __   ___ | | _____ _ __
+	| | | '_ \| __| | '_ \| | | | '_ \ / _ \| |/ / _ \ '__|
+	| | | |_) | |_| | | | | |_| | |_) | (_) |   <  __/ |
+	|_|_|_.__/ \__|_|_| |_|\__, | .__/ \___/|_|\_\___|_|
+	                       |___/|_|
+	Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
+
+libtinypoker provides application programming interfaces (APIs) to applications
+implementing the Internet Poker Protocol (IPP) Version 2.0. The library
+provides a robust communications framework that allows clients and servers
+to communicate over secure transport layer sockets (TLS) using Internet
+Protocol version 4 (IPv4) and/or Internet Protocol version 6 (IPv6). 
+The underlying code is designed to gracefully handle network problems
+such as unexpected disconnections and bad input. IPP message validation,
+normalization and parsing functions are available to developers as are
+several predefined types for representing poker games, players and cards.
+
+libtinypoker is licensed under the terms of the GNU General Public License
+version 3 or Later. See the 'COPYING' file for more details.
+
+For more information on Internet Poker Protocol version 2.0
 See: http://www.cs.rochester.edu/u/ferguson/poker/ipp.html
-
-This library, libtinypoker, will implement both the client and
-server networking code and protocol functionality. Game logic
-and program configuration will remain outside the library.
-
-Goals
-=====
-
- - Fully implement the Internet Poker Protocol (IPP) Version 2.0.
- - Provide the ability to normalize and validate messages.
- - Gracefully handle network problems (bad input, disconnections, etc).
- - Provide a secure communications channel between the client and server.

@@ -40,10 +40,27 @@
 void
 config_free()
 {
-	if (database) {
-		free(database);
-		database = NULL;
+	if (x509_ca) {
+		free(x509_ca);
+		x509_ca = NULL;
 	}
+
+	if (x509_crl) {
+		free(x509_crl);
+		x509_crl = NULL;
+	}
+
+	if (x509_cert) {
+		free(x509_cert);
+		x509_cert = NULL;
+	}
+
+	if (x509_key) {
+		free(x509_key);
+		x509_key = NULL;
+	}
+
+	game_type = UNSPECIFIED;
 }
 
 /**
@@ -53,11 +70,24 @@ config_free()
 static void
 config_with_defaults()
 {
-	if (database == NULL) {
-		database = strdup(DEFAULT_DATABASE);
-	}
 	if (game_type == UNSPECIFIED) {
 		game_type = HOLDEM;
+	}
+
+	if (x509_ca == NULL) {
+		x509_ca = strdup(DEFAULT_X509_CA);
+	}
+
+	if (x509_crl == NULL) {
+		x509_crl = strdup(DEFAULT_X509_CRL);
+	}
+
+	if (x509_cert == NULL) {
+		x509_cert = strdup(DEFAULT_X509_CERT);
+	}
+
+	if (x509_key == NULL) {
+		x509_key = strdup(DEFAULT_X509_KEY);
 	}
 }
 
@@ -73,7 +103,10 @@ config_parse()
 
 	cfg_t          *cfg;
 	cfg_opt_t	opts  [] = {
-		CFG_SIMPLE_INT("database", &database),
+		CFG_SIMPLE_STR("x509_ca", &x509_ca),
+		CFG_SIMPLE_STR("x509_crl", &x509_crl),
+		CFG_SIMPLE_STR("x509_cert", &x509_cert),
+		CFG_SIMPLE_STR("x509_key", &x509_key),
 		CFG_SIMPLE_INT("game_type", &game_type),
 		CFG_END()
 	};
@@ -95,8 +128,25 @@ config_parse()
 		cfg = NULL;
 	}
 	if (game_type < 0 || game_type > 3) {
-		daemon_log(LOG_ERR, "[CONF] invalid game type, defaulting to holdem");
+		daemon_log(LOG_ERR, "[CONF] game_type not present in config file or invalid, defaulting to holdem");
 		game_type = HOLDEM;
 	}
+
+	if (x509_ca == NULL) {
+		daemon_log(LOG_ERR, "[CONF] x509_ca not present in config file, defaulting to '%s'", DEFAULT_X509_CA);
+	}
+
+	if (x509_crl == NULL) {
+		daemon_log(LOG_ERR, "[CONF] x509_crl not present in config file, defaulting to '%s'", DEFAULT_X509_CRL);
+	}
+
+	if (x509_cert == NULL) {
+		daemon_log(LOG_ERR, "[CONF] x509_cert not present in config file, defaulting to '%s'", DEFAULT_X509_CERT);
+	}
+
+	if (x509_key == NULL) {
+		daemon_log(LOG_ERR, "[CONF] x509_key not present in config file, defaulting to '%s'", DEFAULT_X509_KEY);
+	}
+
 	config_with_defaults();
 }
