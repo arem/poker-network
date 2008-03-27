@@ -39,6 +39,14 @@ and http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
 
  * 'No releases yet'.
 
+tinypokerclient
+---------------
+
+*tinypokerclient* is a graphical *tinypokerd* client. It is licensed under the
+terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+It depends on http://tinypoker.org/[libtinypoker] and
+http://www.wxwidgets.org/[wxWidgets],
+
 bagelbot-ng
 -----------
 

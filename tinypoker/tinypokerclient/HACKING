@@ -1,0 +1,11 @@
+Below are some notes to anyone considering hacking around with the code...
+
+GNOME Human Interface Guidelines 2.0 should be followed as closely as
+possible. See http://library.gnome.org/devel/hig-book/stable/
+Note, I haven't finished reading it myself, so there may be a few things
+that need to be changed.
+
+i18n is important. Always use _("foobar") for strings that get displayed
+to users.
+
+See the 'TODO' file for some pending/outstanding tasks.

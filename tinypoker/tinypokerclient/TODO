@@ -1,0 +1,5 @@
+ * Localization - the application is setup to use wxLocale (GNU gettext)
+                  however, there are no translations yet. Create a 'po/'
+                  directory, get some translations and setup the build
+                  system to do some magic at compile time and install
+                  the translation files.

@@ -52,14 +52,14 @@ Build and Install tinypokerd
 Generate X.509 Certificates
 ---------------------------
 
-*tinypokerd* uses TLS to secure client/server communications.
+*libtinypoker* uses TLS to secure client/server communications.
 This is not a standard part of the Internet Poker Protocol, but
 it adds a layer of security that preventing players from snooping
 on each other with packet sniffers. Later in this document, we will
 show how to setup a proxy server with stunnel that will allow
 unmodified legacy clients to connect.
 
-For *tinypokerd* to work, it needs a server side certificate. You can
+For *libtinypoker* to work, it needs a server side certificate. You can
 obtain a certificate from a trusted certificate authority or you can create your own
 certificate authority and sign your own certificates. The example below
 demonstrates how to create your own certificate authority and sign your

@@ -15,7 +15,6 @@ libtinypoker
 ------------
 
  * http://www.gnu.org/software/gnutls/[GNU TLS] (GNU LGPL v2.1 or Later)
- * http://www.gnu.org/software/libc/[POSIX Threads] (GNU LGPL v2.1 or Later)
 
 tinypokerd
 ----------
@@ -23,6 +22,12 @@ tinypokerd
  * http://tinypoker.org/[libtinypoker] (GNU GPL v3 or Later)
  * http://www.nongnu.org/confuse/[libConfuse] (GNU LGPL v2.1 or Later)
  * http://0pointer.de/lennart/projects/libdaemon/[libdaemon] (GNU LGPL v2.1 or Later)
+
+tinypokerclient
+---------------
+
+ * http://tinypoker.org/[libtinypoker] (GNU GPL v3 or Later)
+ * http://www.wxwidgets.org/[wxWidgets] (wxWindows Licence)
 
 bagelbot-ng
 -----------

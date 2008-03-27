@@ -25,6 +25,10 @@ for representing poker games, players and cards.
  
 tinypokerd - Internet Poker Protocol (IPP) version 2.0 Server.
 
+tinypokerclient - a basic GUI designed for use with tinypokerd. The primary
+purpose is to provide a way for humans to more easily debug poker bots and
+tinypokerd.
+
 bagelbot-ng - a basic bot designed for use with tinypokerd. This bot connects 
 to the server, joins the game, and folds every chance it gets. It is
 intended to be used as an example for creating a new bots. You just have 

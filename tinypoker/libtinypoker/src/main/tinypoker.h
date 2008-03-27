@@ -17,14 +17,18 @@
  * libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef __TINYPOKER_H
+#define __TINYPOKER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gnutls/gnutls.h>
 #include <netinet/in.h>
-
-#ifndef __TINYPOKER_H
-#define __TINYPOKER_H
 
 #ifndef TRUE
 #define TRUE (1)
@@ -931,4 +935,8 @@ void		__ipp_writeln_thread(void *void_params);
  */
 void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

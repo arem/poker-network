@@ -1,0 +1,133 @@
+// TinyPoker.org
+// Copyright (C) 2007, 2008 Thomas Cort <tom@tomcort.com>
+//
+// Permission is granted to copy, distribute and/or modify this document
+// under the terms of the GNU Free Documentation License, Version 1.2 or
+// any later version published by the Free Software Foundation; with no
+// Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+// copy of the license is included in the section entitled "GNU Free
+// Documentation License".
+
+libtinypoker application programming interface
+==============================================
+
+*libtinypoker* provides application programming interfaces
+(APIs) to applications implementing the Internet Poker Protocol (IPP)
+Version 2.0. The library provides a robust communications framework
+that allows clients and servers to communicate over secure transport
+layer sockets (TLS) using Internet Protocol version 4 (IPv4) and/or
+Internet Protocol version 6 (IPv6). The underlying code is designed
+to gracefully handle network problems such as unexpected disconnections
+and bad input. IPP message validation, normalization and parsing
+functions are available to developers as are several predefined types
+for representing poker games, players and cards.
+
+This document will descibe how to use *libtinypoker* in your applications.
+The document also covers installing the library itself.
+
+Install the Dependencies
+------------------------
+
+*libtinypoker* has just one dependency, http://www.gnu.org/software/gnutls/[GNU TLS].
+
+Obtain the Source Code
+----------------------
+
+The next step is to get a copy of the *libtinypoker* source code.
+This can be done by checking out a fresh copy from the http://subversion.tigris.org/[subversion]
+http://tinypoker.org/subversion.html[repository] or by
+http://tinypoker.org/download.html[downloading] the latest release.
+
+Build and Install libtinypoker
+------------------------------
+
+.Configure, make and install
+--------------------------------------
+ $ cmake .
+ $ make
+ # make install
+--------------------------------------
+
+Generate X.509 Certificates
+---------------------------
+
+*libtinypoker* uses TLS to secure client/server communications.
+This is not a standard part of the Internet Poker Protocol, but
+it adds a layer of security that preventing players from snooping
+on each other with packet sniffers. See http://tinypoker.org/server.html[server setup]
+for instructions on setting up a proxy server with stunnel that will allow
+unmodified legacy clients to connect.
+
+For *libtinypoker* to work, it needs a server side certificate. You can
+obtain a certificate from a trusted certificate authority or you can create your own
+certificate authority and sign your own certificates. The example below
+demonstrates how to create your own certificate authority and sign your
+own certificates using the *certtool* program that comes with
+http://www.gnu.org/software/gnutls/[GNU TLS].
+
+.ca.tmpl
+--------------------------------
+cn = Dummy Certificate Authority
+ca
+cert_signing_key
+--------------------------------
+
+.localhost.tmpl
+---------------------------------
+organization = Dummy Organization
+cn = localhost
+tls_www_server
+encryption_key
+signing_key
+dns_name = localhost
+---------------------------------
+
+------------------------------------------
+ $ certtool --generate-privkey > ca-key.pem
+ $ certtool --generate-privkey > key.pem
+ $ certtool --generate-self-signed --load-privkey ca-key.pem \
+       --template ca.tmpl --outfile ca.pem
+ $ certtool --generate-certificate --load-privkey key.pem \
+       --load-ca-certificate ca.pem --load-ca-privkey ca-key.pem \
+       --template localhost.tmpl --outfile cert.pem
+------------------------------------------
+
+Library Initialization and Destruction
+--------------------------------------
+
+Several GNU TLS resources need to be allocated before network
+communications begin and deallocated after network connications
+end. Two functions are provided to accomplish this, *ipp_init()*
+and *ipp_exit()*. The one and only header file needed to use the
+API is *tinypoker.h*.
+
+.test.c
+------------------------------------------
+#include <tinypoker.h>
+
+int main(int argc, char *argv[]) {
+	ipp_init();
+
+	ipp_exit();
+	return 0;
+}
+------------------------------------------
+
+Compilation
+-----------
+
+Compiling a *libtinypoker* application is relatively simple.
+One simply needs to instruct the compiler to link against the
+library and GNU TLS.
+
+------------------------------------------
+ $ gcc -ltinypoker -lgnutls -o test test.c
+------------------------------------------
+
+To be continued
+---------------
+
+This document is being written as *tinypokerclient* and *bagelbot-ng* are
+being developed, so it is still very much a work in progress. If you want
+to go further, take a look at *tinypoker.h*; it is well commented and
+should give you and idea about the functions and structures available.

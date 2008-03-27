@@ -23,6 +23,14 @@ are April 1, 2008 for *libtinypoker* and July 1, 2008 for *tinypokerd*.
 News
 ----
 
+March 26, 2008 - tinypokerclient development started
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Development has begun on *tinypokerclient*. It will provide a
+basic GUI for use with *tinypokerd*. The primary
+purpose will be to provide a way for humans to more easily debug
+poker bots and *tinypokerd*.
+
 March 25, 2008 - libtinypoker now supports IPv6
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
