@@ -16,41 +16,93 @@
 // along with tinypokerclient.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <tinypoker.h>
+
 #include <wx/wx.h>
 #include <wx/intl.h>
+#include <wx/aboutdlg.h>
 
+#include "tpConnectFrame.h"
 #include "tpFrame.h"
+#include "tpLog.h"
 
 tpFrame::tpFrame(const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale): wxFrame((wxFrame *)NULL, -1, title, pos, size), m_locale(locale) {
 	ipp_init();
+	m_sock = NULL;
 
-	wxMenu *menuFile = new wxMenu;
-	menuFile->Append(ID_Exit, _("&Quit"));
+	m_menuFile = new wxMenu;
+	m_menuFile->Append(ID_Connect, _("&New Connection...\tCtrl+N"));
+	m_menuFile->Append(ID_Disconnect, _("&Disconnect\tCtrl+D"));
+	m_menuFile->Enable(ID_Disconnect, false);
+	m_menuFile->AppendSeparator();
+	m_menuFile->Append(ID_Exit, _("&Quit\tCtrl+Q"));
 
 	wxMenu *menuHelp = new wxMenu;
 	menuHelp->Append(ID_About, _("&About"));
 
 	wxMenuBar *menuBar = new wxMenuBar;
-	menuBar->Append(menuFile, _("&File"));
+	menuBar->Append(m_menuFile, _("&File"));
 	menuBar->Append(menuHelp, _("&Help"));
 	SetMenuBar(menuBar);
 
 	CreateStatusBar();
 	SetStatusText(_("Not Connected"));
+
+	m_parent = new wxPanel(this, wxID_ANY);
+	wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
+	m_log = new tpLog(m_parent);
+	vbox->Add(m_log, 1, wxEXPAND | wxALL);
+	m_parent->SetSizer(vbox);
+
+	Centre();
 }
 
 void tpFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
-	wxMessageBox(_("TinyPoker Client 0.0.0\nCopyright © 2008 Thomas Cort <tom@tomcort.com>"), _("About TinyPoker Client"), wxOK | wxICON_INFORMATION);
+	wxAboutDialogInfo info;
+
+	info.SetName(_("TinyPoker Client"));
+	info.SetVersion(_("0.0.0"));
+	info.SetDescription(_("basic GUI designed for use with tinypokerd"));
+	info.SetCopyright(_("(C) 2008 Thomas Cort <tom@tomcort.com>"));
+	info.SetWebSite(_("http://tinypoker.org/"));
+
+	info.AddDeveloper(_("Thomas Cort <tom@tomcort.com>"));
+
+	wxAboutBox(info);
 }
 
-void tpFrame::OnExit(wxCommandEvent& WXUNUSED(event)) {
-	ipp_exit();
+void tpFrame::OnConnect(wxCommandEvent& WXUNUSED(event)) {
+	tpConnectFrame *frame = new tpConnectFrame(this, m_menuFile, _("New Connection..."), wxPoint(-1, -1), wxSize(400,300), m_locale);
 
+	frame->Show(true);
+}
+
+void tpFrame::OnDisconnect(wxCommandEvent& WXUNUSED(event)) {
+	if (m_sock != NULL) {
+		ipp_disconnect(m_sock);
+		ipp_free_socket(m_sock);
+		m_sock = NULL;
+	}
+
+	m_menuFile->Enable(ID_Connect, true);
+	m_menuFile->Enable(ID_Disconnect, false);
+
+	SetStatusText(_("Not Connected"));
+}
+
+void tpFrame::log(const wxString& text) {
+	m_log->log(text);
+}
+
+void tpFrame::OnExit(wxCommandEvent& event) {
 	Close(true);
+	OnDisconnect(event);
+	ipp_exit();
 }
 
 BEGIN_EVENT_TABLE(tpFrame, wxFrame)
 	EVT_MENU(ID_About, tpFrame::OnAbout)
+	EVT_MENU(ID_Connect, tpFrame::OnConnect)
+	EVT_MENU(ID_Disconnect, tpFrame::OnDisconnect)
 	EVT_MENU(ID_Exit,  tpFrame::OnExit)
 END_EVENT_TABLE()
 

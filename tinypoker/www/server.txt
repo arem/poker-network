@@ -94,7 +94,8 @@ dns_name = localhost
 ------------------------------------------
 
 Once you have the certificate files generated, you should copy them to 
-the '/etc/tinypoker/' directory.
+the '/etc/tinypoker/' directory. In that directory, you will also need
+to create an empty file named 'crl.pem'.
 
 Legacy Client Support (Optional)
 --------------------------------
@@ -112,7 +113,7 @@ file (see example below) and start stunnel.
 client = yes
 CAfile = /path/to/ca.pem
 
-[ipp]
+[tinypoker]
         accept = 127.0.0.1:9898
         connect = server.example.org:9899
 -------------

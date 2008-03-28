@@ -587,6 +587,9 @@ ipp_connect(char *hostname, char *ca_file)
 void 
 ipp_disconnect(ipp_socket * sock)
 {
+	if (sock == NULL) {
+		return;
+	}
 	if (sock->session) {
 		gnutls_bye(sock->session, GNUTLS_SHUT_RDWR);
 	}

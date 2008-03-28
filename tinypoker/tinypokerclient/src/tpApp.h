@@ -21,12 +21,16 @@
 #include <wx/wx.h>
 #include <wx/intl.h>
 
+#include "tpFrame.h"
+
 class tpApp: public wxApp {
 	public:
 		virtual bool OnInit();
+		void log(const wxString& text);
 
 	protected:
 		wxLocale m_locale;
+		tpFrame *m_frame;
 };
 
 #endif

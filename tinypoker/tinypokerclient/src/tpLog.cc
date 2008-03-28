@@ -18,22 +18,15 @@
 #include <wx/wx.h>
 #include <wx/intl.h>
 
-#include "tpApp.h"
-#include "tpFrame.h"
+#include "tpLog.h"
 
-#include "tinypokerclient.xpm"
-
-bool tpApp::OnInit() {
-	m_locale.AddCatalog(wxT("tinypokerclient"));
-	m_frame = new tpFrame(_("TinyPoker Client"), wxPoint(50,50), wxSize(450,340), m_locale);
-	SetTopWindow(m_frame);
-
-	m_frame->SetIcon(wxICON(tinypokerclient));
-	m_frame->Show(true);
-
-	return true;
+tpLog::tpLog(wxPanel * parent) : wxPanel(parent, -1, wxPoint(-1, -1), wxSize(-1, -1), wxBORDER_SUNKEN) {
+	wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+	m_lbox = new wxTextCtrl(this, -1, _(""), wxPoint(-1, -1), wxSize(-1, -1), wxTE_MULTILINE);
+	hbox->Add(m_lbox, 1, wxEXPAND);
+	this->SetSizer(hbox);
 }
 
-void tpApp::log(const wxString& text) {
-	m_frame->log(text);
+void tpLog::log(const wxString&  text) {
+	m_lbox->AppendText(text);
 }

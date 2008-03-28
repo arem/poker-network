@@ -18,23 +18,38 @@
 #ifndef __TPFRAME_H
 #define __TPFRAME_H
 
+#include <tinypoker.h>
+
 #include <wx/wx.h>
 #include <wx/intl.h>
+
+#include "tpLog.h"
 
 class tpFrame: public wxFrame {
 	public:
 		tpFrame(const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale);
 
+		void log(const wxString& text);
+
 		void OnAbout(wxCommandEvent& event);
+		void OnConnect(wxCommandEvent& event);
+		void OnDisconnect(wxCommandEvent& event);
 		void OnExit(wxCommandEvent& event);
 
 	private:
 		DECLARE_EVENT_TABLE()
 		wxLocale& m_locale;
+
+		wxPanel *m_parent;
+		wxMenu *m_menuFile;
+		tpLog *m_log;
+		ipp_socket *m_sock;
 };
 
 enum {
 	ID_About = 1,
+	ID_Connect,
+	ID_Disconnect,
 	ID_Exit
 };
 

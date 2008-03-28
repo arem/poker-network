@@ -60,5 +60,5 @@ ENDIF (LIBGNUTLS_INCLUDE_DIR)
 
 INCLUDE_DIRECTORIES(${incdirs} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR})
 INCLUDE(${wxWidgets_USE_FILE})
-ADD_EXECUTABLE(tinypokerclient tpApp.cc tpFrame.cc main.cc)
+ADD_EXECUTABLE(tinypokerclient tpApp.cc tpConnectFrame.cc tpFrame.cc tpLog.cc main.cc)
 TARGET_LINK_LIBRARIES(tinypokerclient ${wxWidgets_LIBRARIES} ${LIBTINYPOKER} ${LIBGNUTLS})

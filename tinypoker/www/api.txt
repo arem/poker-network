@@ -121,7 +121,7 @@ One simply needs to instruct the compiler to link against the
 library and GNU TLS.
 
 ------------------------------------------
- $ gcc -ltinypoker -lgnutls -o test test.c
+ $ gcc -lpthread -ltinypoker -lgnutls -o test test.c
 ------------------------------------------
 
 To be continued

@@ -15,25 +15,29 @@
 // You should have received a copy of the GNU General Public License
 // along with tinypokerclient.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifndef __TPCONNECTFRAME_H
+#define __TPCONNECTFRAME_H
+
 #include <wx/wx.h>
 #include <wx/intl.h>
 
-#include "tpApp.h"
 #include "tpFrame.h"
 
-#include "tinypokerclient.xpm"
+class tpConnectFrame: public wxFrame {
+	public:
+		tpConnectFrame(tpFrame *parent, wxMenu *menuFile, const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale);
 
-bool tpApp::OnInit() {
-	m_locale.AddCatalog(wxT("tinypokerclient"));
-	m_frame = new tpFrame(_("TinyPoker Client"), wxPoint(50,50), wxSize(450,340), m_locale);
-	SetTopWindow(m_frame);
+		void OnConnect(wxCommandEvent& event);
 
-	m_frame->SetIcon(wxICON(tinypokerclient));
-	m_frame->Show(true);
+	private:
+		DECLARE_EVENT_TABLE()
+		tpFrame *m_parent;
+		wxLocale& m_locale;
+		wxMenu *m_menuFile;
+};
 
-	return true;
-}
+enum {
+	ID_ConnectClick = 1
+};
 
-void tpApp::log(const wxString& text) {
-	m_frame->log(text);
-}
+#endif

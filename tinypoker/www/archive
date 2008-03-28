@@ -12,6 +12,6 @@
 /bin/rm -rf ./tinypoker.org/
 /bin/mkdir ./tinypoker.org
 /bin/cp *.{txt,conf,css} archive build clean ./tinypoker.org/
-/usr/local/bin/gtar -czf tinypoker.org.tar.gz ./tinypoker.org/
+/bin/tar -czf tinypoker.org.tar.gz ./tinypoker.org/
 /bin/rm -rf ./tinypoker.org/
 

@@ -18,22 +18,24 @@
 #include <wx/wx.h>
 #include <wx/intl.h>
 
-#include "tpApp.h"
+#include "tpConnectFrame.h"
 #include "tpFrame.h"
 
-#include "tinypokerclient.xpm"
+tpConnectFrame::tpConnectFrame(tpFrame *parent, wxMenu *menuFile, const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale): wxFrame(parent, -1, title, pos, size), m_locale(locale) {
+	m_parent = parent;
+	m_menuFile = menuFile;
 
-bool tpApp::OnInit() {
-	m_locale.AddCatalog(wxT("tinypokerclient"));
-	m_frame = new tpFrame(_("TinyPoker Client"), wxPoint(50,50), wxSize(450,340), m_locale);
-	SetTopWindow(m_frame);
+	m_menuFile->Enable(ID_Connect, false);
+	m_menuFile->Enable(ID_Disconnect, true);
+	m_parent->SetStatusText(_("Connected"));
 
-	m_frame->SetIcon(wxICON(tinypokerclient));
-	m_frame->Show(true);
-
-	return true;
+	Centre();
 }
 
-void tpApp::log(const wxString& text) {
-	m_frame->log(text);
+void tpConnectFrame::OnConnect(wxCommandEvent& event) {
+	Close(true);
 }
+
+BEGIN_EVENT_TABLE(tpConnectFrame, wxFrame)
+	EVT_MENU(ID_ConnectClick, tpConnectFrame::OnConnect)
+END_EVENT_TABLE()
