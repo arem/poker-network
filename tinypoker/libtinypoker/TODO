@@ -1,2 +1,3 @@
  * man pages
  * programming guide
+ * hand evaluator (either a native implementation or wrapper for poker-eval)

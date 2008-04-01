@@ -23,16 +23,16 @@ The underlying code is designed to gracefully handle network problems
 such as unexpected disconnections and bad input. IPP message validation,
 normalization and parsing functions are available to developers as are
 several predefined types for representing poker games, players and cards.
-*libtinypoker* is licensed under the terms of the
+*libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
 http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].
 
- * 'No releases yet'.
+ * http://tinypoker.org/code/libtinypoker-0.0.0.tar.gz[libtinypoker-0.0.0.tar.gz]
 
 tinypokerd
 ----------
 
-*tinypokerd* is a small poker server. It is licensed under the 
+*tinypokerd* is a small poker server. It is free software and is licensed under the 
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse]
 and http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
@@ -42,7 +42,7 @@ and http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
 tinypokerclient
 ---------------
 
-*tinypokerclient* is a graphical *tinypokerd* client. It is licensed under the
+*tinypokerclient* is a graphical *tinypokerd* client. It free software and is licensed under the
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker] and
 http://www.wxwidgets.org/[wxWidgets],
@@ -52,7 +52,7 @@ bagelbot-ng
 
 *bagelbot-ng* is a trivial client for *tinypokerd*. It will connect to a
 server, join a game, and fold every hand. It is intended
-to be a base for building a poker bot. It is licensed under the
+to be a base for building a poker bot. It free software and is licensed under the
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker].
 

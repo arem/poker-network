@@ -33,3 +33,6 @@ bagelbot-ng - a basic bot designed for use with tinypokerd. This bot connects
 to the server, joins the game, and folds every chance it gets. It is
 intended to be used as an example for creating a new bots. You just have 
 to add the programming logic to determine to fold, raise, bet, or call.
+
+For more information on the TinyPoker Project
+See: http://tinypoker.org/

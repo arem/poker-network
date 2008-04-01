@@ -103,6 +103,7 @@ enum card_rank {
 	NINE = '9',
 	TEN = 'T',
 	JACK = 'J',
+	QUEEN = 'Q',
 	KING = 'K',
 	ACE = 'A'
 };

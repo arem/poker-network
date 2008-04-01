@@ -12,16 +12,36 @@ Home
 ====
 
 Thank you for stopping by and checking out '{siteTitle}'.
-'{siteTitle}' is a collection of poker software written by Thomas Cort. 
+'{siteTitle}' is a collection of http://www.gnu.org/philosophy/free-sw.html[free software]
+for poker and is written and maintained by Thomas Cort. 
 The '{siteTitle}' project was founded in 2005 to create a poker server
 and poker bot programming framework. It has evolved since then and is
 currently undergoing a major re-write. The new library, *libtinypoker*,
-is close to being ready for its first release. The new server,
-*tinypokerd*, needs additional game logic. The target release dates
-are April 1, 2008 for *libtinypoker* and July 1, 2008 for *tinypokerd*.
+just had its first release. The new server, *tinypokerd*, needs
+additional game logic. The target release date for *tinypokerd*
+is July 1, 2008.
 
 News
 ----
+
+April 1, 2008 - libtinypoker 0.0.0 Released
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The first release of *libtinypoker* is now available to the public at no cost
+in the http://tinypoker.org/download.html[downloads] section.
+*libtinypoker* provides application programming interfaces (APIs) to applications
+implementing the Internet Poker Protocol (IPP) Version 2.0. The library
+provides a robust communications framework that allows clients and servers
+to communicate over secure transport layer sockets (TLS) using Internet
+Protocol version 4 (IPv4) and/or Internet Protocol version 6 (IPv6).
+The underlying code is designed to gracefully handle network problems
+such as unexpected disconnections and bad input. IPP message validation,
+normalization and parsing functions are available to developers as are
+several predefined types for representing poker games, players and cards.
+*libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
+http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].
+
 
 March 26, 2008 - tinypokerclient development started
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
