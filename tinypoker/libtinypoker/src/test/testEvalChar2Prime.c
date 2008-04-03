@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertEqual("Should have detected the proper value for prime.", IPP_EVAL_S, ipp_eval_char2prime('S'));
 	assertEqual("Should have detected the proper value for prime.", IPP_EVAL_A, ipp_eval_char2prime('A'));
 	assertEqual("Should have detected the proper value for prime.", IPP_EVAL_3, ipp_eval_char2prime('3'));
@@ -31,5 +32,6 @@ main()
 	assertNotEqual("Should not have detected the value for prime.", IPP_EVAL_T, ipp_eval_char2prime('X'));
 	assertNotEqual("Should not have detected the value for prime.", IPP_EVAL_2, ipp_eval_char2prime('3'));
 
+	ipp_exit();
 	return PASS;
 }

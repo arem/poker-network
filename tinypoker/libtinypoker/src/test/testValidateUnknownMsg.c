@@ -20,10 +20,11 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
-	int		msg_type;
+	int msg_type;
+
+	ipp_init();
 
 	msg_type = ipp_validate_unknown_msg("YES STRAIGHTFLUSH J");
 	assertNotEqual("Yes message should be valid", msg_type, -1);
@@ -33,5 +34,6 @@ main()
 	assertNotEqual("Fold message should be valid", msg_type, -1);
 	assertEqual("Fold message should have message type of MSG_FOLD", msg_type, MSG_FOLD);
 
+	ipp_exit();
 	return PASS;
 }

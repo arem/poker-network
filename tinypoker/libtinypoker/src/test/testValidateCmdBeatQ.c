@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("BeatQ String should be valid", ipp_validate_msg(REGEX_MSG_BEATQ, "BEAT? STRAIGHTFLUSH J"));
 	assertTrue("BeatQ String should be valid", ipp_validate_msg(REGEX_MSG_BEATQ, "BEAT? FOUROFAKIND 7 A"));
 	assertTrue("BeatQ String should be valid", ipp_validate_msg(REGEX_MSG_BEATQ, "BEAT? FULLHOUSE Q 3"));
@@ -40,5 +41,7 @@ main()
 	assertFalse("BeatQ String should not be valid", ipp_validate_msg(REGEX_MSG_BEATQ, "B? 9 8 6 2"));
 	assertFalse("BeatQ String should not be valid", ipp_validate_msg(REGEX_MSG_BEATQ, ""));
 	assertFalse("BeatQ String should not be valid", ipp_validate_msg(REGEX_MSG_BEATQ, "BEAT? X 1 1"));
+
+	ipp_exit();
 	return PASS;
 }

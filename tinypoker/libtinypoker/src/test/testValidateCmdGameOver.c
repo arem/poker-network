@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER Alpha 1000"));
 	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER Beta 1000"));
 	assertTrue("Game Over String should be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER Gamma 1000"));
@@ -31,5 +32,7 @@ main()
 
 	assertFalse("Game Over String should not be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, ""));
 	assertFalse("Game Over String should not be valid", ipp_validate_msg(REGEX_MSG_GAMEOVER, "GAMEOVER X 1 1"));
+
+	ipp_exit();
 	return PASS;
 }

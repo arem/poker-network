@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Straddle String should be valid", ipp_validate_msg(REGEX_MSG_STRADDLE, "STRADDLE 5"));
 	assertTrue("Straddle String should be valid", ipp_validate_msg(REGEX_MSG_STRADDLE, "STRADDLE 0"));
 	assertTrue("Straddle String should be valid", ipp_validate_msg(REGEX_MSG_STRADDLE, "STRADDLE 1234"));
@@ -33,5 +34,7 @@ main()
 	assertFalse("Straddle String should not be valid", ipp_validate_msg(REGEX_MSG_STRADDLE, "STRADDLE S"));
 	assertFalse("Straddle String should not be valid", ipp_validate_msg(REGEX_MSG_STRADDLE, "STRADDLE "));
 	assertFalse("Straddle String should not be valid", ipp_validate_msg(REGEX_MSG_STRADDLE, ""));
+
+	ipp_exit();
 	return PASS;
 }

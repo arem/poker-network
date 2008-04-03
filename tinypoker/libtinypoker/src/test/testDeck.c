@@ -19,19 +19,42 @@
 
 #include "../main/tinypoker.h"
 #include "test.h"
+#include <stdio.h>
 
 int main()
 {
+	int i;
+	ipp_deck *deck;
+
 	ipp_init();
 
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Alpha 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Beta 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Gamma 1000"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN BAGELBOT 1234"));
-	assertTrue("Buyin String should be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN Coat_Hanger 1239"));
+	deck = ipp_new_deck();
+	assertNotNull("ipp_new_deck() failed", deck);
 
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, ""));
-	assertFalse("Buyin String should not be valid", ipp_validate_msg(REGEX_MSG_BUYIN, "BUYIN X 1 1"));
+	for (i = 0; i < DECKSIZE; i++) {
+		ipp_card *card;
+		card = ipp_deck_next_card(deck);
+		assertNotNull("ipp_deck_next_card() failed", card);
+		printf("%c%c\n", card->rank, card->suit);
+	}
+
+	ipp_free_deck(deck);
+
+	printf("\n\n--\n\n");
+
+	deck = ipp_new_deck();
+	assertNotNull("ipp_new_deck() failed", deck);
+
+	ipp_shuffle_deck(deck);
+
+	for (i = 0; i < DECKSIZE; i++) {
+		ipp_card *card;
+		card = ipp_deck_next_card(deck);
+		assertNotNull("ipp_deck_next_card() failed", card);
+		printf("%c%c\n", card->rank, card->suit);
+	}
+
+	ipp_free_deck(deck);
 
 	ipp_exit();
 	return PASS;

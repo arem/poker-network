@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Quit String should be valid", ipp_validate_msg(REGEX_MSG_QUIT, "QUIT BAGELBOT"));
 	assertTrue("Quit String should be valid", ipp_validate_msg(REGEX_MSG_QUIT, "QUIT Coat_Hanger"));
 	assertTrue("Quit String should be valid", ipp_validate_msg(REGEX_MSG_QUIT, "QUIT Alpha"));
@@ -34,5 +35,7 @@ main()
 	assertFalse("Quit String should not be valid", ipp_validate_msg(REGEX_MSG_QUIT, "QUIT\n"));
 	assertFalse("Quit String should not be valid", ipp_validate_msg(REGEX_MSG_QUIT, "QUIT \n"));
 	assertFalse("Quit String should not be valid", ipp_validate_msg(REGEX_MSG_QUIT, "QUIT X 1 1"));
+
+	ipp_exit();
 	return PASS;
 }

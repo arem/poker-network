@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertEqual("Should have detected straight.", '5', ipp_eval_straight2char(IPP_EVAL_A * IPP_EVAL_2 * IPP_EVAL_3 * IPP_EVAL_4 * IPP_EVAL_5));
 	assertEqual("Should have detected straight.", '7', ipp_eval_straight2char(IPP_EVAL_3 * IPP_EVAL_4 * IPP_EVAL_5 * IPP_EVAL_6 * IPP_EVAL_7));
 	assertEqual("Should have detected straight.", 'T', ipp_eval_straight2char(IPP_EVAL_6 * IPP_EVAL_7 * IPP_EVAL_8 * IPP_EVAL_9 * IPP_EVAL_T));
@@ -34,5 +35,6 @@ main()
 	assertNotEqual("Should not have detected straight.", 'K', ipp_eval_straight2char(IPP_EVAL_3 * IPP_EVAL_J * IPP_EVAL_K * IPP_EVAL_Q * IPP_EVAL_T));
 	assertNotEqual("Should not have detected straight.", '3', ipp_eval_straight2char(IPP_EVAL_3 * IPP_EVAL_J * IPP_EVAL_K * IPP_EVAL_Q * IPP_EVAL_S));
 
+	ipp_exit();
 	return PASS;
 }

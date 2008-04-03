@@ -20,12 +20,11 @@
 #include "../main/tinypoker.h"
 #include <string.h>
 
-int 
-main(int argc, char **argv, char **envp)
+int main(int argc, char **argv, char **envp)
 {
-	ipp_socket     *sock;
-	int		rc;
-	ipp_message    *msg;
+	ipp_socket *sock;
+	int rc;
+	ipp_message *msg;
 	ipp_init();
 
 	sock = ipp_connect("localhost", "ca.pem");

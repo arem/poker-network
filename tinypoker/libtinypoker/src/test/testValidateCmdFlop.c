@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Flop String should be valid", ipp_validate_msg(REGEX_MSG_FLOP, "FLOP 8C TS QS"));
 	assertTrue("Flop String should be valid", ipp_validate_msg(REGEX_MSG_FLOP, "FLOP KS AS QS"));
 
@@ -32,5 +33,7 @@ main()
 	assertFalse("Flop String should not be valid", ipp_validate_msg(REGEX_MSG_FLOP, "FLOP LOBSTER"));
 	assertFalse("Flop String should not be valid", ipp_validate_msg(REGEX_MSG_FLOP, "FLOP "));
 	assertFalse("Flop String should not be valid", ipp_validate_msg(REGEX_MSG_FLOP, ""));
+
+	ipp_exit();
 	return PASS;
 }

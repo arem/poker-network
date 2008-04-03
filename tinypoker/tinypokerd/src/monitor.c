@@ -29,18 +29,17 @@
 /**
  * Counter for the number of running threads.
  */
-int		cnt;
+int cnt;
 
 /**
  * A lock used to serialize access to cnt.
  */
-pthread_mutex_t	mon_lock;
+pthread_mutex_t mon_lock;
 
 /**
  *  initialize monitor variables
  */
-void
-monitor_init()
+void monitor_init()
 {
 	pthread_mutex_init(&mon_lock, 0);
 	cnt = 0;
@@ -49,8 +48,7 @@ monitor_init()
 /**
  *  increments the thread count
  */
-void
-monitor_inc()
+void monitor_inc()
 {
 	pthread_mutex_lock(&mon_lock);
 	cnt++;
@@ -60,8 +58,7 @@ monitor_inc()
 /**
  *  decrements the thread count
  */
-void
-monitor_dec()
+void monitor_dec()
 {
 	pthread_mutex_lock(&mon_lock);
 	cnt--;
@@ -72,8 +69,7 @@ monitor_dec()
  *  waits until no threads are running
  *  blocks new threads from being created
  */
-void
-monitor_wait()
+void monitor_wait()
 {
 	raise(SIGQUIT);
 

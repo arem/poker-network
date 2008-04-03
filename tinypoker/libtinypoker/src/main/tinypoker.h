@@ -80,77 +80,90 @@ extern "C" {
 /**
  * Stage of the Hold'em Hand.
  */
-enum holdem_stage {
-	PREFLOP,
-	FLOP,
-	TURN,
-	RIVER
-};
+	enum holdem_stage {
+		PREFLOP,
+		FLOP,
+		TURN,
+		RIVER
+	};
 
 /**
  * Enumerate the possible card suits.
  */
-enum card_suit {
-	CLUBS = 'C',
-	DIAMONDS = 'D',
-	HEARTS = 'H',
-	SPADES = 'S'
-};
+	enum card_suit {
+		CLUBS = 'C',
+		DIAMONDS = 'D',
+		HEARTS = 'H',
+		SPADES = 'S'
+	};
 
-enum game_type {
-	UNSPECIFIED = 0,
-	HOLDEM = 1,
-	DRAW = 2,
-	STUD = 3
-};
+	enum game_type {
+		UNSPECIFIED = 0,
+		HOLDEM = 1,
+		DRAW = 2,
+		STUD = 3
+	};
 
 /**
  * Enumerate the possible card ranks.
  */
-enum card_rank {
-	TWO = '2',
-	THREE = '3',
-	FOUR = '4',
-	FIVE = '5',
-	SIX = '6',
-	SEVEN = '7',
-	EIGHT = '8',
-	NINE = '9',
-	TEN = 'T',
-	JACK = 'J',
-	QUEEN = 'Q',
-	KING = 'K',
-	ACE = 'A'
-};
+	enum card_rank {
+		TWO = '2',
+		THREE = '3',
+		FOUR = '4',
+		FIVE = '5',
+		SIX = '6',
+		SEVEN = '7',
+		EIGHT = '8',
+		NINE = '9',
+		TEN = 'T',
+		JACK = 'J',
+		QUEEN = 'Q',
+		KING = 'K',
+		ACE = 'A'
+	};
 
 /**
  * Structure used to hold network communications information.
  */
-typedef struct ipp_socket {
-	int		sd;
-	struct sockaddr_storage sockaddr;
-	socklen_t sockaddrlen;
+	typedef struct ipp_socket {
+		int sd;
+		struct sockaddr_storage sockaddr;
+		socklen_t sockaddrlen;
 
-	gnutls_session_t session;
-	gnutls_certificate_credentials_t x509_cred;
-}		ipp_socket;
+		gnutls_session_t session;
+		gnutls_certificate_credentials_t x509_cred;
+	} ipp_socket;
 
 /**
  * Structure used to hold protocol messages.
  */
-typedef struct ipp_message {
-	int		type;
-	char           *payload;
-	char          **parsed;
-}		ipp_message;
+	typedef struct ipp_message {
+		int type;
+		char *payload;
+		char **parsed;
+	} ipp_message;
 
 /**
  * Structure used to hold a playing card.
  */
-typedef struct ipp_card {
-	enum card_rank	rank;
-	enum card_suit	suit;
-}		ipp_card;
+	typedef struct ipp_card {
+		enum card_rank rank;
+		enum card_suit suit;
+	} ipp_card;
+
+/**
+ * The size of the card deck (number of cards).
+ */
+#define DECKSIZE (52)
+
+/**
+ * Structure used to hold a deck of 52 cards.
+ */
+	typedef struct ipp_deck {
+		int deck_index;
+		ipp_card *cards[DECKSIZE];
+	} ipp_deck;
 
 /**
  * Structure used to hold a poker player.
@@ -158,93 +171,129 @@ typedef struct ipp_card {
  *   the server may know all players' hole cards.
  *   the client may only know his/her hole cards.
  */
-typedef struct ipp_player {
-	char           *name;	/* player name given at handshake */
-	ipp_socket     *sock;	/* communications socket */
+	typedef struct ipp_player {
+		char *name;	/* player name given at handshake */
+		ipp_socket *sock;	/* communications socket */
 
-	/* TODO Support for Stud and Draw */
-	ipp_card       *hole[HOLDEM_HOLE_CARDS];	/* two hole cards */
-	int		bankroll;	/* amount of money this player has */
-	int		amt_in;	/* amount into the pot from this player */
-	int		still_in;	/* TRUE if still in the hand, FALSE
-					 * if folded, disconnected, etc. */
-}		ipp_player;
+		/* TODO Support for Stud and Draw */
+		ipp_card *hole[HOLDEM_HOLE_CARDS];	/* two hole cards */
+		int bankroll;	/* amount of money this player has */
+		int amt_in;	/* amount into the pot from this player */
+		int still_in;	/* TRUE if still in the hand, FALSE
+				 * if folded, disconnected, etc. */
+	} ipp_player;
 
 /**
  * Structure used to hold a poker table.
  */
-typedef struct ipp_table {
-	enum game_type	type;
-	int		num_players;
-	int		amt_to_call;
-	enum holdem_stage stage;
+	typedef struct ipp_table {
+		enum game_type type;
+		int num_players;
+		int amt_to_call;
+		enum holdem_stage stage;
 
-	/* TODO Support for Stud and Draw */
-	ipp_player     *players[HOLDEM_PLAYERS_PER_TABLE];
-	ipp_card       *board[HOLDEM_BOARD_CARDS];
-}		ipp_table;
+		/* TODO Support for Stud and Draw */
+		ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
+		ipp_card *board[HOLDEM_BOARD_CARDS];
+		ipp_deck *deck;
+	} ipp_table;
 
 /**
  * Allocates an empty ipp_socket. Don't forget to call ipp_free_socket().
  * @return a malloc()'d ipp_socket structure.
  * @see ipp_free_socket()
  */
-ipp_socket     *ipp_new_socket();
+	ipp_socket *ipp_new_socket();
 
 /**
  * Deallocate an ipp_socket.
  */
-void		ipp_free_socket(ipp_socket * sock);
+	void ipp_free_socket(ipp_socket * sock);
 
 /**
  * Allocates an empty ipp_message. Don't forget to ipp_free_message().
  * @return a malloc()'d ipp_message structure.
  */
-ipp_message    *ipp_new_message();
+	ipp_message *ipp_new_message();
 
 /**
  * Parses msg->payload into msg->parsed
  * @param msg an IPP message
  */
-void		ipp_parse_msg(ipp_message * msg);
+	void ipp_parse_msg(ipp_message * msg);
 
 /**
  * Deallocate an ipp_message.
  */
-void		ipp_free_message(ipp_message * msg);
+	void ipp_free_message(ipp_message * msg);
 
 /**
  * Allocates an empty ipp_card. Don't forget to ipp_free_card().
  * @return a malloc()'d ipp_card structure.
  */
-ipp_card       *ipp_new_card();
+	ipp_card *ipp_new_card();
 
 /**
  * Deallocate an ipp_card.
  */
-void		ipp_free_card(ipp_card * card);
+	void ipp_free_card(ipp_card * card);
+
+/**
+ * Gives a malloc'd, null terminated string representation of a card c (ex: "9d\0")
+ * @param c the card to represent.
+ * @return a NULL terminated string.
+ */
+	char *ipp_card2str(ipp_card * c);
+
+/**
+ * A deck iterator. Always returns the next card in the deck.
+ * When the end of the deck is reached, it starts back at the
+ * beginning.
+ * @param deck the deck to operate on.
+ * @return the card at (deck_index + 1) % DECKSIZE.
+ */
+	ipp_card *ipp_deck_next_card(ipp_deck * deck);
+
+/**
+ * Allocates an ipp_deck and cards. Sets deck index to 51.
+ * The first call to ipp_deck_next_card() will return card at index 0.
+ * Don't for get to ipp_free_deck().
+ * @return a malloc()'d ipp_deck structure.
+ */
+	ipp_deck *ipp_new_deck();
+
+/**
+ * Randomize the order of the cards in the deck.
+ * @param deck to shuffle.
+ */
+	void ipp_shuffle_deck(ipp_deck *deck);
+
+/**
+ * Deallocates an ipp_deck.
+ */
+	void ipp_free_deck(ipp_deck * deck);
 
 /**
  * Allocates an empty ipp_player. Don't forget to ipp_free_player().
- * @return a malloc()'d ipp_card structure.
+ * @return a malloc()'d ipp_player structure.
  */
-ipp_player     *ipp_new_player();
+	ipp_player *ipp_new_player();
 
 /**
  * Deallocates an ipp_player.
  */
-void		ipp_free_player(ipp_player * player);
+	void ipp_free_player(ipp_player * player);
 
 /**
  * Allocates an empty ipp_table. Don't for get to ipp_free_table().
  * @return a malloc()'d ipp_table structure.
  */
-ipp_table      *ipp_new_table();
+	ipp_table *ipp_new_table();
 
 /**
  * Deallocates an ipp_table.
  */
-void		ipp_free_table(ipp_table * table);
+	void ipp_free_table(ipp_table * table);
 
 /**
  * The name of this library for IPP strings, etc.
@@ -764,55 +813,55 @@ void		ipp_free_table(ipp_table * table);
 
 /* Regular Expressions for all supported message types */
 
-static char    *ipp_regex_msg[] = {
-	REGEX_MSG_IPP,
-	REGEX_MSG_BUYIN,
-	REGEX_MSG_WELCOME,
-	REGEX_MSG_NEWGAME,
-	REGEX_MSG_PLAYER,
-	REGEX_MSG_BUTTON,
-	REGEX_MSG_ANTE,
-	REGEX_MSG_DEAL,
-	REGEX_MSG_FROM,
-	REGEX_MSG_FLOP,
-	REGEX_MSG_TURN,
-	REGEX_MSG_RIVER,
-	REGEX_MSG_DRAWQ,
-	REGEX_MSG_DRAW,
-	REGEX_MSG_DRAWN,
-	REGEX_MSG_FOLD,
-	REGEX_MSG_UP,
-	REGEX_MSG_DOWN,
-	REGEX_MSG_ACTION,
-	REGEX_MSG_BLIND,
-	REGEX_MSG_TAPOUT,
-	REGEX_MSG_STRADDLE,
-	REGEX_MSG_CALL,
-	REGEX_MSG_RAISE,
-	REGEX_MSG_OPEN,
-	REGEX_MSG_CHECK,
-	REGEX_MSG_WINNER,
-	REGEX_MSG_BUSTED,
-	REGEX_MSG_GAMEOVER,
-	REGEX_MSG_QUIT,
-	REGEX_MSG_SHOWQ,
-	REGEX_MSG_SHOW,
-	REGEX_MSG_BEATQ,
-	REGEX_MSG_NO,
-	REGEX_MSG_YES,
-	REGEX_MSG_ERROR,
-	REGEX_MSG_OK,
-	REGEX_MSG_STRAIGHTFLUSH,
-	REGEX_MSG_FOUROFAKIND,
-	REGEX_MSG_FULLHOUSE,
-	REGEX_MSG_FLUSH,
-	REGEX_MSG_STRAIGHT,
-	REGEX_MSG_THREEOFAKIND,
-	REGEX_MSG_TWOPAIR,
-	REGEX_MSG_ONEPAIR,
-	REGEX_MSG_HIGHCARD,
-	NULL
-};
+	static char *ipp_regex_msg[] = {
+		REGEX_MSG_IPP,
+		REGEX_MSG_BUYIN,
+		REGEX_MSG_WELCOME,
+		REGEX_MSG_NEWGAME,
+		REGEX_MSG_PLAYER,
+		REGEX_MSG_BUTTON,
+		REGEX_MSG_ANTE,
+		REGEX_MSG_DEAL,
+		REGEX_MSG_FROM,
+		REGEX_MSG_FLOP,
+		REGEX_MSG_TURN,
+		REGEX_MSG_RIVER,
+		REGEX_MSG_DRAWQ,
+		REGEX_MSG_DRAW,
+		REGEX_MSG_DRAWN,
+		REGEX_MSG_FOLD,
+		REGEX_MSG_UP,
+		REGEX_MSG_DOWN,
+		REGEX_MSG_ACTION,
+		REGEX_MSG_BLIND,
+		REGEX_MSG_TAPOUT,
+		REGEX_MSG_STRADDLE,
+		REGEX_MSG_CALL,
+		REGEX_MSG_RAISE,
+		REGEX_MSG_OPEN,
+		REGEX_MSG_CHECK,
+		REGEX_MSG_WINNER,
+		REGEX_MSG_BUSTED,
+		REGEX_MSG_GAMEOVER,
+		REGEX_MSG_QUIT,
+		REGEX_MSG_SHOWQ,
+		REGEX_MSG_SHOW,
+		REGEX_MSG_BEATQ,
+		REGEX_MSG_NO,
+		REGEX_MSG_YES,
+		REGEX_MSG_ERROR,
+		REGEX_MSG_OK,
+		REGEX_MSG_STRAIGHTFLUSH,
+		REGEX_MSG_FOUROFAKIND,
+		REGEX_MSG_FULLHOUSE,
+		REGEX_MSG_FLUSH,
+		REGEX_MSG_STRAIGHT,
+		REGEX_MSG_THREEOFAKIND,
+		REGEX_MSG_TWOPAIR,
+		REGEX_MSG_ONEPAIR,
+		REGEX_MSG_HIGHCARD,
+		NULL
+	};
 
 #define MSG_IPP 0
 #define MSG_BUYIN 1
@@ -890,25 +939,25 @@ static char    *ipp_regex_msg[] = {
 #define IPP_EVAL_STRAIGHT_K (162490421ll)
 #define IPP_EVAL_STRAIGHT_A (259106347ll)
 
-static int64_t ipp_eval_primes[] = {
-	IPP_EVAL_C, /*  0 */
-	IPP_EVAL_H, /*  1 */
-	IPP_EVAL_D, /*  2 */
-	IPP_EVAL_S, /*  3 */
-	IPP_EVAL_2, /*  4 */
-	IPP_EVAL_3, /*  5 */
-	IPP_EVAL_4, /*  6 */
-	IPP_EVAL_5, /*  7 */
-	IPP_EVAL_6, /*  8 */
-	IPP_EVAL_7, /*  9 */
-	IPP_EVAL_8, /* 10 */
-	IPP_EVAL_9, /* 11 */
-	IPP_EVAL_T, /* 12 */
-	IPP_EVAL_J, /* 13 */
-	IPP_EVAL_Q, /* 14 */
-	IPP_EVAL_K, /* 15 */
-	IPP_EVAL_A  /* 16 */
-};
+	static int64_t ipp_eval_primes[] = {
+		IPP_EVAL_C,	/*  0 */
+		IPP_EVAL_H,	/*  1 */
+		IPP_EVAL_D,	/*  2 */
+		IPP_EVAL_S,	/*  3 */
+		IPP_EVAL_2,	/*  4 */
+		IPP_EVAL_3,	/*  5 */
+		IPP_EVAL_4,	/*  6 */
+		IPP_EVAL_5,	/*  7 */
+		IPP_EVAL_6,	/*  8 */
+		IPP_EVAL_7,	/*  9 */
+		IPP_EVAL_8,	/* 10 */
+		IPP_EVAL_9,	/* 11 */
+		IPP_EVAL_T,	/* 12 */
+		IPP_EVAL_J,	/* 13 */
+		IPP_EVAL_Q,	/* 14 */
+		IPP_EVAL_K,	/* 15 */
+		IPP_EVAL_A	/* 16 */
+	};
 
 #define IPP_EVAL_NPRIMES (17)
 
@@ -917,12 +966,12 @@ static int64_t ipp_eval_primes[] = {
 /**
  * Initializes underlying libraries. This function *must* be called before performing any network operations!
  */
-void		ipp_init  ();
+	void ipp_init();
 
 /**
  * De-initializes underlying libraries. This function *must* be called last!
  */
-void		ipp_exit  ();
+	void ipp_exit();
 
 /**
  * Validates IPP Messages
@@ -930,28 +979,28 @@ void		ipp_exit  ();
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
  */
-int		ipp_validate_msg(char *regex, char *msg);
+	int ipp_validate_msg(char *regex, char *msg);
 
 /**
  * Validates an arbitrary IPP Messages.
  * @param msg a message.
  * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
  */
-int		ipp_validate_unknown_msg(char *msg);
+	int ipp_validate_unknown_msg(char *msg);
 
 /**
  * Convert the string to upper case and convert multiple spaces to 1 space.
  * Trim leading and trailing white space.
  * @param msg the message, a null terminated string, to transform.
  */
-void		ipp_normalize_msg(char *msg);
+	void ipp_normalize_msg(char *msg);
 
 /**
  * Checks a certificate to make sure it is valid.
  * @param session GNU TLS Session.
  * @param hostname the hostname of the server connected to.
  */
-int		__ipp_verify_cert(gnutls_session session, const char *hostname);
+	int __ipp_verify_cert(gnutls_session session, const char *hostname);
 
 /**
  * Connect to a server.
@@ -959,13 +1008,13 @@ int		__ipp_verify_cert(gnutls_session session, const char *hostname);
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket     *ipp_connect(char *hostname, char *ca_file);
+	ipp_socket *ipp_connect(char *hostname, char *ca_file);
 
 /**
  * Disconnect from the server.
  * @param sock a socket to disconnect.
  */
-void		ipp_disconnect(ipp_socket * sock);
+	void ipp_disconnect(ipp_socket * sock);
 
 /**
  * Read a message from the socket.
@@ -973,7 +1022,7 @@ void		ipp_disconnect(ipp_socket * sock);
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-ipp_message    *ipp_read_msg(ipp_socket * sock, int timeout);
+	ipp_message *ipp_read_msg(ipp_socket * sock, int timeout);
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
@@ -982,39 +1031,39 @@ ipp_message    *ipp_read_msg(ipp_socket * sock, int timeout);
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int		ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout);
+	int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout);
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * Parameters passed to the reader thread.
  */
-typedef struct __ipp_readln_thread_params {
-	ipp_socket     *sock;
-	char          **buffer;
-	unsigned int   *n;
-}		__ipp_readln_thread_params;
+	typedef struct __ipp_readln_thread_params {
+		ipp_socket *sock;
+		char **buffer;
+		unsigned int *n;
+	} __ipp_readln_thread_params;
 
 /**
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_readln_thread_params structure.
  */
-void		__ipp_readln_thread(void *void_params);
+	void __ipp_readln_thread(void *void_params);
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * Parameters passed to the writer thread.
  */
-typedef struct __ipp_writeln_thread_params {
-	ipp_socket     *sock;
-	char           *buffer;
-	unsigned int   *n;
-}		__ipp_writeln_thread_params;
+	typedef struct __ipp_writeln_thread_params {
+		ipp_socket *sock;
+		char *buffer;
+		unsigned int *n;
+	} __ipp_writeln_thread_params;
 
 /**
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_readln_thread_params structure.
  */
-void		__ipp_writeln_thread(void *void_params);
+	void __ipp_writeln_thread(void *void_params);
 
 /**
  * Main server loop. This function sets up the networking and accepts
@@ -1027,7 +1076,7 @@ void		__ipp_writeln_thread(void *void_params);
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
  */
-void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
+	void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
 
 /**
  * Maps a product of the prime representation of ranks of cards in the
@@ -1035,35 +1084,35 @@ void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_fil
  * @param str a product of primes that represent a straight.
  * @return a character representing the highest card in the straight.
  */
-char ipp_eval_straight2char(int64_t str);
+	char ipp_eval_straight2char(int64_t str);
 
 /**
  * Maps the prime representation of a rank _or_ suit to a character.
  * @param p the prime number.
  * @return a chacter representing the rank or suit ('C' = clubs, 'T' = 10, '2' = 2, etc).
  */
-char ipp_eval_prime2char(int64_t p);
+	char ipp_eval_prime2char(int64_t p);
 
 /**
  * Maps a character representation of a rank _or_ suit to a prime number.
  * @param c the character ('C' = clubs, 'T' = 10, '2' = 2, etc).
  * @return a prime number used for hand evaluation.
  */
-int64_t ipp_eval_char2prime(char c);
+	int64_t ipp_eval_char2prime(char c);
 
 /**
  * Maps a card to a prime number based representation of the card.
  * @param card the card to map.
  * @return the prime number based representation of the card or 0ll if card is NULL.
  */
-int64_t ipp_eval_card2prime(ipp_card *card);
+	int64_t ipp_eval_card2prime(ipp_card * card);
 
 /**
  * Evaluate a 5 card hand. 
  * @param cards a hand to evaluate.
  * @return an IPP message containing a formated 'handtype' string as the payload and the type as the type.
  */
-ipp_message *ipp_eval(ipp_card *cards[5]);
+	ipp_message *ipp_eval(ipp_card * cards[5]);
 
 /**
  * Comparitor for qsort and other similar sorting functions.
@@ -1071,7 +1120,7 @@ ipp_message *ipp_eval(ipp_card *cards[5]);
  * @param ipp_message_b an ipp_message pointer.
  * @return 1, 0 or -1 if ipp_message_a is greater than, equal to or less than ipp_message_b.
  */
-int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b);
+	int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b);
 
 #endif
 

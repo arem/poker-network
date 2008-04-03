@@ -30,7 +30,8 @@ before proceeding.
 Install the Dependencies
 ------------------------
 
-*libtinypoker* has just one dependency, http://www.gnu.org/software/gnutls/[GNU TLS].
+*libtinypoker* has just two dependencies, http://www.gnu.org/software/gnutls/[GNU TLS]
+and http://www.gnu.org/software/gsl/[GNU Scientific Library].
 
 Obtain the Source Code
 ----------------------
@@ -100,8 +101,9 @@ Library Initialization and Destruction
 Several GNU TLS resources need to be allocated before network
 communications begin and deallocated after network connications
 end. Two functions are provided to accomplish this, *ipp_init()*
-and *ipp_exit()*. The one and only header file needed to use the
-API is *tinypoker.h*.
+and *ipp_exit()*. Additionally, the random number generator is
+allocated and freed in those functions. The one and only header file 
+needed to use the API is *tinypoker.h*.
 
 .test.c
 ------------------------------------------
@@ -123,7 +125,7 @@ One simply needs to instruct the compiler to link against the
 library and GNU TLS.
 
 ------------------------------------------
- $ gcc -lpthread -ltinypoker -lgnutls -o test test.c
+ $ gcc -lpthread -ltinypoker -lgnutls -lgsl -lgslcblas -o test test.c
 ------------------------------------------
 
 To be continued

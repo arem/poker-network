@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Error String should be valid", ipp_validate_msg(REGEX_MSG_ERROR, "ERROR Insufficient funds for BLIND"));
 	assertTrue("Error String should be valid", ipp_validate_msg(REGEX_MSG_ERROR, "ERROR BLIND amount should be 10 not 5"));
 	assertTrue("Error String should be valid", ipp_validate_msg(REGEX_MSG_ERROR, "ERROR Too rich to TAPOUT"));
@@ -33,5 +34,7 @@ main()
 	assertFalse("Error String should not be valid", ipp_validate_msg(REGEX_MSG_ERROR, " ERROR "));
 	assertFalse("Error String should not be valid", ipp_validate_msg(REGEX_MSG_ERROR, "ERROR ~!!@#$%^&*()<><"));
 	assertFalse("Error String should not be valid", ipp_validate_msg(REGEX_MSG_ERROR, ""));
+
+	ipp_exit();
 	return PASS;
 }

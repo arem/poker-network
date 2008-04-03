@@ -24,20 +24,20 @@
 
 #define INPUT_SIZE (64)
 
-char           *
-newString()
+char *newString()
 {
-	char           *str;
-	str = (char *)malloc(sizeof(char) * (INPUT_SIZE + 1));
+	char *str;
+	str = (char *) malloc(sizeof(char) * (INPUT_SIZE + 1));
 	assertNotNull("malloc() failed", str);
 	memset(str, '\0', INPUT_SIZE + 1);
 	return str;
 }
 
-int 
-main()
+int main()
 {
-	char           *str;
+	char *str;
+
+	ipp_init();
 
 	str = newString();
 	strncpy(str, "IPP 2.0 XoXoX", INPUT_SIZE);
@@ -74,5 +74,6 @@ main()
 	assertStringEqual("Normalize failed to properly trim", str, "IPP 2.0 TEST");
 	free(str);
 
+	ipp_exit();
 	return PASS;
 }

@@ -34,18 +34,17 @@
  * Handle incoming connections.
  * @param sock client socket.
  */
-static void
-client_connect_callback(ipp_socket * sock)
+static void client_connect_callback(ipp_socket * sock)
 {
 	/*
 	 * Note: this function causes the server loop to block. Don't do
 	 * anything too fancy or time intensive in here.
 	 */
 
-	ipp_message    *msg;
-	char           *user;
-	int		rc;
-	char		ip[64];
+	ipp_message *msg;
+	char *user;
+	int rc;
+	char ip[64];
 
 	memset(ip, '\0', sizeof(char) * 64);
 	rc = getnameinfo((struct sockaddr *) &(sock->sockaddr), sock->sockaddrlen, ip, sizeof(char) * 64, NULL, 0, NI_NUMERICHOST);
@@ -97,7 +96,7 @@ client_connect_callback(ipp_socket * sock)
 
 	msg = ipp_new_message();
 	msg->type = MSG_WELCOME;
-	msg->payload = (char *)malloc(sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2));
+	msg->payload = (char *) malloc(sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2));
 	if (!(msg->payload)) {
 		daemon_log(LOG_ERR, "[SERV] malloc failed");
 		ipp_disconnect(sock);
@@ -137,11 +136,10 @@ client_connect_callback(ipp_socket * sock)
 	sock = NULL;
 }
 
-int
-pokerserv()
+int pokerserv()
 {
-	pthread_t	dealer_thread;
-	pthread_attr_t	dealer_thread_attr;
+	pthread_t dealer_thread;
+	pthread_attr_t dealer_thread_attr;
 
 	/* create a thread to play the game */
 	pthread_attr_init(&dealer_thread_attr);

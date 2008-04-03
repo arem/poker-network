@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Drawn String should be valid", ipp_validate_msg(REGEX_MSG_DRAWN, "DRAWN 1 AS"));
 	assertTrue("Drawn String should be valid", ipp_validate_msg(REGEX_MSG_DRAWN, "DRAWN 2 AS KS"));
 	assertTrue("Drawn String should be valid", ipp_validate_msg(REGEX_MSG_DRAWN, "DRAWN 3 AS KS QS"));
@@ -36,5 +37,7 @@ main()
 	assertFalse("Drawn String should not be valid", ipp_validate_msg(REGEX_MSG_DRAWN, "DRAWN 2 AS"));
 	assertFalse("Drawn String should not be valid", ipp_validate_msg(REGEX_MSG_DRAWN, "DRAWN 6 AS KS QS JS TS 9S"));
 	assertFalse("Drawn String should not be valid", ipp_validate_msg(REGEX_MSG_DRAWN, ""));
+
+	ipp_exit();
 	return PASS;
 }

@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Server String should be valid", ipp_validate_msg(REGEX_MSG_IPP, "IPP 2.0 TinyPoker/0.0.0"));
 	assertTrue("Server String should be valid", ipp_validate_msg(REGEX_MSG_IPP, "IPP 2.0 Cheese"));
 
@@ -31,5 +32,7 @@ main()
 	assertFalse("Server String should not be valid", ipp_validate_msg(REGEX_MSG_IPP, "IPP 2 TinyPoker/0.0.0"));
 	assertFalse("Server String should not be valid", ipp_validate_msg(REGEX_MSG_IPP, "IPP OK TinyPoker/0.0.0"));
 	assertFalse("Server String should not be valid", ipp_validate_msg(REGEX_MSG_IPP, ""));
+
+	ipp_exit();
 	return PASS;
 }

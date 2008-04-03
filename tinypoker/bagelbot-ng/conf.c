@@ -35,20 +35,19 @@
 /**
  * Reads 'configfile' and allocates memory for their values
  */
-void 
-configure()
+void configure()
 {
-	cfg_opt_t	opts  [] = {
+	cfg_opt_t opts[] = {
 		CFG_SIMPLE_STR("user", &user),
 		CFG_SIMPLE_STR("host", &host),
 		CFG_END()
 	};
 
-	cfg_t          *cfg;
+	cfg_t *cfg;
 
 	user = host = NULL;
 
-	cfg = cfg_init(opts, 0);/* call libconfuse */
+	cfg = cfg_init(opts, 0);	/* call libconfuse */
 	cfg_parse(cfg, configfile);
 	cfg_free(cfg);
 }

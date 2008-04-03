@@ -27,14 +27,13 @@
  * Global variable used to determine if the program should halt. Will it ever halt? Only Alan Turing knows.
  * @see handle_signal()
  */
-int		exit_now;
+int exit_now;
 
 /**
  * Signal handler for SIGKILL
  * @param sig signal to handle.
  */
-void
-handle_sigkill(int sig)
+void handle_sigkill(int sig)
 {
 	if (sig == SIGKILL) {
 		raise(SIGUSR2);
@@ -47,8 +46,7 @@ handle_sigkill(int sig)
  * Signal handler for SIGQUIT
  * @param sig signal to handle.
  */
-void
-handle_sigquit(int sig)
+void handle_sigquit(int sig)
 {
 	if (sig == SIGQUIT) {
 		raise(SIGUSR2);
@@ -61,8 +59,7 @@ handle_sigquit(int sig)
  * Signal handler for SIGINT
  * @param sig signal to handle.
  */
-void
-handle_sigint(int sig)
+void handle_sigint(int sig)
 {
 	if (sig == SIGINT) {
 		raise(SIGUSR2);
@@ -74,11 +71,10 @@ handle_sigint(int sig)
 /**
  *  installs signal handlers (mostly SIG_IGN)
  */
-void
-install_signal_handlers()
+void install_signal_handlers()
 {
 
-	int		i;
+	int i;
 
 	for (i = 0; i < 32; i++) {
 		/*

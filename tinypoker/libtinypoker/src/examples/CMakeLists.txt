@@ -56,10 +56,38 @@ ELSE (LIBGNUTLS_INCLUDE_DIR)
 ENDIF (LIBGNUTLS_INCLUDE_DIR)
 
 #############################################
+# libgsl checks
+#############################################
+
+FIND_LIBRARY(LIBGSL gsl ${libdirs})
+
+IF (LIBGSL)
+  MESSAGE(STATUS "Found libgsl: ${LIBGSL}")
+ELSE (LIBGSL)
+  MESSAGE (FATAL_ERROR "libgsl not found.")
+ENDIF (LIBGSL)
+
+FIND_LIBRARY(LIBGSLCBLAS gslcblas ${libdirs})
+
+IF (LIBGSLCBLAS)
+  MESSAGE(STATUS "Found libgslcblas: ${LIBGSLCBLAS}")
+ELSE (LIBGSLCBLAS)
+  MESSAGE (FATAL_ERROR "libgslcblas not found.")
+ENDIF (LIBGSLCBLAS)
+
+FIND_PATH(LIBGSL_INCLUDE_DIR gsl/gsl_rng.h ${incdirs})
+
+IF (LIBGSL_INCLUDE_DIR)
+  MESSAGE(STATUS "Found gsl/gsl_rng.h in ${LIBGSL_INCLUDE_DIR}")
+ELSE (LIBGSL_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "gsl/gsl_rng.h not found.")
+ENDIF (LIBGSL_INCLUDE_DIR)
+
+#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR})
 ADD_EXECUTABLE(client client.c)
-TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSL} ${LIBGSLCBLAS})
 

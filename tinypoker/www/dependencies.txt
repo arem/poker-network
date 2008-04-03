@@ -15,6 +15,7 @@ libtinypoker
 ------------
 
  * http://www.gnu.org/software/gnutls/[GNU TLS] (GNU LGPL v2.1 or Later)
+ * http://www.gnu.org/software/gsl/[GNU Scientific Library] (GNU GPL v3 or Later)
 
 tinypokerd
 ----------

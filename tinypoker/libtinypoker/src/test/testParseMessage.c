@@ -22,11 +22,12 @@
 
 #include <string.h>
 
-int 
-main()
+int main()
 {
-	ipp_message    *msg;
-	int		i;
+	ipp_message *msg;
+	int i;
+
+	ipp_init();
 
 	msg = ipp_new_message();
 	msg->type = MSG_IPP;
@@ -48,5 +49,7 @@ main()
 
 	ipp_free_message(msg);
 	msg = NULL;
+
+	ipp_exit();
 	return PASS;
 }

@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Blind String should be valid", ipp_validate_msg(REGEX_MSG_BLIND, "BLIND 5"));
 	assertTrue("Blind String should be valid", ipp_validate_msg(REGEX_MSG_BLIND, "BLIND 0"));
 	assertTrue("Blind String should be valid", ipp_validate_msg(REGEX_MSG_BLIND, "BLIND 1234"));
@@ -33,5 +34,7 @@ main()
 	assertFalse("Blind String should not be valid", ipp_validate_msg(REGEX_MSG_BLIND, "BLIND S"));
 	assertFalse("Blind String should not be valid", ipp_validate_msg(REGEX_MSG_BLIND, "BLIND "));
 	assertFalse("Blind String should not be valid", ipp_validate_msg(REGEX_MSG_BLIND, ""));
+
+	ipp_exit();
 	return PASS;
 }

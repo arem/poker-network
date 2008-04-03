@@ -25,17 +25,17 @@
  * Raises a SIGUSR1 signal to tell nanohttp to stop.
  * @param sig signal to handle
  */
-void		handle_signal(int sig);
+void handle_signal(int sig);
 
 /**
  *  installs signal handlers (mostly SIG_IGN)
  */
-void		install_signal_handlers();
+void install_signal_handlers();
 
 /**
  * Global variable used to determine if the program should halt. Will it ever halt? Only Alan Turing knows.
  * @see handle_signal()
  */
-int		exit_now;
+int exit_now;
 
 #endif

@@ -20,6 +20,6 @@
 #ifndef __POKER_H
 #define __POKER_H
 
-void           *play(void *arg);
+void *play(void *arg);
 
 #endif

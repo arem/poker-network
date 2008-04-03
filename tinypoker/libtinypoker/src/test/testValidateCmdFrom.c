@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("From String should be valid", ipp_validate_msg(REGEX_MSG_FROM, "FROM PETE Go all in"));
 	assertTrue("From String should be valid", ipp_validate_msg(REGEX_MSG_FROM, "FROM MIKE You suck."));
 	assertTrue("From String should be valid", ipp_validate_msg(REGEX_MSG_FROM, "FROM Gamma CALL 20"));
@@ -31,5 +32,7 @@ main()
 	assertFalse("From String should not be valid", ipp_validate_msg(REGEX_MSG_FROM, "FROM -1 "));
 	assertFalse("From String should not be valid", ipp_validate_msg(REGEX_MSG_FROM, "FROM "));
 	assertFalse("From String should not be valid", ipp_validate_msg(REGEX_MSG_FROM, ""));
+
+	ipp_exit();
 	return PASS;
 }

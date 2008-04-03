@@ -20,8 +20,7 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
 	ipp_message *msga, *msgb;
 	ipp_card *Kh;
@@ -29,6 +28,8 @@ main()
 	ipp_card *Ad, *Kd;
 	ipp_card *As, *Ks, *Qs, *Js, *Ts, *_9s, *_7s, *_6s;
 	ipp_card *hand[5];
+
+	ipp_init();
 
 	Kh = ipp_new_card();
 	assertNotNull("ipp_new_card() failed", Kh);
@@ -368,5 +369,6 @@ main()
 	ipp_free_card(Ac);
 	ipp_free_card(Kh);
 
+	ipp_exit();
 	return PASS;
 }

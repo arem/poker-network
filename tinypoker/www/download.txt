@@ -25,7 +25,8 @@ normalization and parsing functions are available to developers as are
 several predefined types for representing poker games, players and cards.
 *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
 http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
-The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].
+It depends on http://www.gnu.org/software/gnutls/[GNU TLS] and
+http://www.gnu.org/software/gsl/[GNU Scientific Library].
 
  * http://tinypoker.org/code/libtinypoker-0.0.0.tar.gz[libtinypoker-0.0.0.tar.gz]
 

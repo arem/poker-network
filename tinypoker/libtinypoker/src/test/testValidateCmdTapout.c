@@ -20,9 +20,10 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-int 
-main()
+int main()
 {
+	ipp_init();
+
 	assertTrue("Tapout String should be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 5"));
 	assertTrue("Tapout String should be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 0"));
 	assertTrue("Tapout String should be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT 1234"));
@@ -33,5 +34,7 @@ main()
 	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT S"));
 	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, "TAPOUT "));
 	assertFalse("Tapout String should not be valid", ipp_validate_msg(REGEX_MSG_TAPOUT, ""));
+
+	ipp_exit();
 	return PASS;
 }

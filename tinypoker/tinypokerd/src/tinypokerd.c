@@ -29,7 +29,6 @@
 #include <fcntl.h>
 
 #include "config.h"
-#include "deck.h"
 #include "monitor.h"
 #include "pokerserv.h"
 #include "signal.h"
@@ -39,18 +38,17 @@
  * Determines if gatewayavd should run in the background (daemonized) or
  * not. If daemonize is 1, then gatewayavd should run in the background.
  */
-int		daemonize;
+int daemonize;
 
 /**
  * Determines if our process killed a running tinypokerd process successfully.
  */
-int		killed;
+int killed;
 
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
-void
-display_version()
+void display_version()
 {
 	daemon_log(LOG_INFO, "%s/%s", TINYPOKERD_NAME, TINYPOKERD_VERSION);
 	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
@@ -63,8 +61,7 @@ display_version()
  * Displays some usage information, command line parameters and whatnot.
  * @param program the name of the program.
  */
-void
-display_help(char *program)
+void display_help(char *program)
 {
 	daemon_log(LOG_INFO, "Usage: %s [options]", program);
 	daemon_log(LOG_INFO, "Options:");
@@ -80,11 +77,10 @@ display_help(char *program)
  * @param argv The command line arguments.
  * @return Returns 0 on success and non-zero when we want the program to terminate.
  */
-int
-parse_args(int argc, char **argv)
+int parse_args(int argc, char **argv)
 {
-	int		option_index;
-	int		done;
+	int option_index;
+	int done;
 
 	static struct option long_options[] = {
 		{"help", no_argument, 0, 'h'},
@@ -98,8 +94,8 @@ parse_args(int argc, char **argv)
 	done = 0;
 
 	while (!done) {
-		int		c;
-		int		ret;
+		int c;
+		int ret;
 
 		c = getopt_long(argc, argv, "hvkf", long_options, &option_index);
 		if (c < 0) {
@@ -136,12 +132,11 @@ parse_args(int argc, char **argv)
 	return done;
 }
 
-int
-main(int argc, char *argv[], char *envp[])
+int main(int argc, char *argv[], char *envp[])
 {
-	int		fd;
-	int		ret;
-	pid_t		pid;
+	int fd;
+	int ret;
+	pid_t pid;
 
 	/* Default Values for Global Variables */
 	daemonize = 1;
@@ -221,7 +216,6 @@ main(int argc, char *argv[], char *envp[])
 	ipp_init();
 
 	daemon_log(LOG_INFO, "[MAIN] libtinypoker initialized");
-	deck_init();		/* create the deck */
 
 	/* Install Signal Handlers */
 	install_signal_handlers();

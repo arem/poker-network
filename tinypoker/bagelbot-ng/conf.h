@@ -24,14 +24,14 @@
 #define NULL 0
 #endif
 
-char           *configfile;
-char           *user;
-char           *host;
+char *configfile;
+char *user;
+char *host;
 
 /**
  * Reads 'configfile' and allocates memory for their values
  */
-void		configure ();
+void configure();
 
 /**
  * Macro to free the user and host (if set).

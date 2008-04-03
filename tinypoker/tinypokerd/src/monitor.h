@@ -23,22 +23,22 @@
 /**
  *  initialize monitor variables
  */
-void		monitor_init();
+void monitor_init();
 
 /**
  *  increments the thread count
  */
-void		monitor_inc();
+void monitor_inc();
 
 /**
  *  decrements the thread count
  */
-void		monitor_dec();
+void monitor_dec();
 
 /**
  *  waits until no threads are running
  *  blocks new threads from being created
  */
-void		monitor_wait();
+void monitor_wait();
 
 #endif

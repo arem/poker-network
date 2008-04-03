@@ -20,6 +20,6 @@
 #ifndef __PLAY_H
 #define __PLAY_H
 
-void		play      (ipp_socket * sock);
+void play(ipp_socket * sock);
 
 #endif

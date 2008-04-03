@@ -37,8 +37,7 @@
  * This function effectively resets all configurable values.
  * It should be called at the end of the program.
  */
-void
-config_free()
+void config_free()
 {
 	if (x509_ca) {
 		free(x509_ca);
@@ -67,8 +66,7 @@ config_free()
  * Examines each value of the current configuration.
  * If a value was not set, it is set to the default.
  */
-static void
-config_with_defaults()
+static void config_with_defaults()
 {
 	if (game_type == UNSPECIFIED) {
 		game_type = HOLDEM;
@@ -94,15 +92,14 @@ config_with_defaults()
 /**
  * Parses an tinypokerd.conf configuration file.
  */
-void
-config_parse()
+void config_parse()
 {
-	int		rc;
+	int rc;
 
 	config_free();
 
-	cfg_t          *cfg;
-	cfg_opt_t	opts  [] = {
+	cfg_t *cfg;
+	cfg_opt_t opts[] = {
 		CFG_SIMPLE_STR("x509_ca", &x509_ca),
 		CFG_SIMPLE_STR("x509_crl", &x509_crl),
 		CFG_SIMPLE_STR("x509_cert", &x509_cert),
