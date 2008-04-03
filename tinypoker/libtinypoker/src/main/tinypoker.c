@@ -1,18 +1,18 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
- * 
+ *
  * This file is part of libtinypoker.
- * 
+ *
  * libtinypoker is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
- * 
+ *
  * libtinypoker is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -26,14 +26,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
-#include <string.h>
+#include <string.h> 
 #include <sys/mman.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <time.h>
+#include <time.h> 
 #include <unistd.h>
 
 #include <gnutls/gnutls.h>
@@ -47,10 +47,7 @@ GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 /**
  * Initializes underlying libraries. This function *must* be called first!
- */
-void 
-ipp_init()
-{
+ */ void ipp_init() {
 	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
 	gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
 	gnutls_global_init();
@@ -58,10 +55,7 @@ ipp_init()
 
 /**
  * De-initializes underlying libraries. This function *must* be called last!
- */
-void 
-ipp_exit()
-{
+ */ void ipp_exit() {
 	gnutls_global_deinit();
 }
 
@@ -71,13 +65,10 @@ ipp_exit()
  * Trim leading and trailing white space.
  * Should be called before ipp_validate_msg()
  * @param msg the message, a null terminated string, to transform.
- */
-void 
-ipp_normalize_msg(char *msg)
-{
-	int		len       , start, end, i, j;
+ */ void ipp_normalize_msg(char *msg) {
+	int len , start, end, i, j;
 	len = strlen(msg);
-	char           *pos;
+	char *pos;
 
 	if (!msg || strlen(msg) < MIN_MSG_SIZE) {
 		return;
@@ -115,23 +106,20 @@ ipp_normalize_msg(char *msg)
  * @param regex one of the REGEX constants.
  * @param msg a message.
  * @return 1 if msg is valid, 0 if msg is not valid.
- */
-int 
-ipp_validate_msg(char *regex, char *msg)
-{
-	regex_t		preg;
-	int		ret;
+ */ int ipp_validate_msg(char *regex, char *msg) {
+	regex_t preg;
+	int ret;
 
 	if (!regex || !msg) {
 		return FALSE;
 	}
 	ret = regcomp(&preg, regex, REG_EXTENDED);
-	if (ret) {		/* compile the pattern */
+	if (ret) { /* compile the pattern */
 		return FALSE;
 	}
 	/* See if the message matches */
 	ret = regexec(&preg, msg, 0, 0, 0);
-	regfree(&preg);		/* Clean up */
+	regfree(&preg); /* Clean up */
 
 	if (!ret) {
 		return TRUE;
@@ -144,12 +132,9 @@ ipp_validate_msg(char *regex, char *msg)
  * Validates an arbitrary IPP Messages.
  * @param msg a message.
  * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
- */
-int 
-ipp_validate_unknown_msg(char *msg)
-{
+ */ int ipp_validate_unknown_msg(char *msg) {
 	unsigned int	i;
-	int		is_valid = -1;
+	int is_valid = -1;
 
 	if (!ipp_regex_msg || !msg) {
 		return FALSE;
@@ -167,11 +152,8 @@ ipp_validate_unknown_msg(char *msg)
 /**
  * Allocates an empty ipp_socket. Don't forget to ipp_free_socket().
  * @return a malloc()'d ipp_socket structure.
- */
-ipp_socket     *
-ipp_new_socket()
-{
-	ipp_socket     *sock;
+ */ ipp_socket * ipp_new_socket() {
+	ipp_socket *sock;
 	sock = (ipp_socket *) malloc(sizeof(ipp_socket));
 	if (!sock) {
 		return NULL;
@@ -182,24 +164,17 @@ ipp_new_socket()
 
 /**
  * Deallocate an ipp_socket.
- */
-void 
-ipp_free_socket(ipp_socket * sock)
-{
+ */ void ipp_free_socket(ipp_socket * sock) {
 	if (sock) {
 		ipp_disconnect(sock);
-		free(sock);
-	}
+		free(sock);	}
 }
 
 /**
  * Allocates an empty ipp_message. Don't forget to ipp_free_message().
  * @return a malloc()'d ipp_message structure.
- */
-ipp_message    *
-ipp_new_message()
-{
-	ipp_message    *msg;
+ */ ipp_message * ipp_new_message() {
+	ipp_message *msg;
 	msg = (ipp_message *) malloc(sizeof(ipp_message));
 	if (!msg) {
 		return NULL;
@@ -211,13 +186,10 @@ ipp_new_message()
 /**
  * Parses msg->payload into msg->parsed.
  * @param msg an IPP message
- */
-void 
-ipp_parse_msg(ipp_message * msg)
-{
-	int		tokcnt    , i, j;
-	char		delim = ' ';
-	char           *s, *t;
+ */ void ipp_parse_msg(ipp_message * msg) {
+	int tokcnt , i, j;
+	char delim = ' ';
+	char *s, *t;
 
 	if ((msg == NULL || msg->payload == NULL || msg->parsed != NULL) && msg->type >= 0) {
 		return;
@@ -263,11 +235,8 @@ ipp_parse_msg(ipp_message * msg)
 
 /**
  * Deallocate an ipp_message.
- */
-void 
-ipp_free_message(ipp_message * msg)
-{
-	int		i;
+ */ void ipp_free_message(ipp_message * msg) {
+	int i;
 
 	if (msg) {
 		if (msg->payload) {
@@ -289,11 +258,8 @@ ipp_free_message(ipp_message * msg)
 /**
  * Allocates an empty ipp_card. Don't forget to ipp_free_card().
  * @return a malloc()'d ipp_card structure.
- */
-ipp_card       *
-ipp_new_card()
-{
-	ipp_card       *card;
+ */ ipp_card * ipp_new_card() {
+	ipp_card *card;
 
 	card = (ipp_card *) malloc(sizeof(ipp_card));
 	if (card == NULL) {
@@ -305,10 +271,7 @@ ipp_new_card()
 
 /**
  * Deallocate an ipp_card.
- */
-void 
-ipp_free_card(ipp_card * card)
-{
+ */ void ipp_free_card(ipp_card * card) {
 	if (card) {
 		free(card);
 	}
@@ -317,11 +280,8 @@ ipp_free_card(ipp_card * card)
 /**
  * Allocates an empty ipp_player. Don't forget to ipp_free_player().
  * @return a malloc()'d ipp_card structure.
- */
-ipp_player     *
-ipp_new_player()
-{
-	ipp_player     *player;
+ */ ipp_player * ipp_new_player() {
+	ipp_player *player;
 
 	player = (ipp_player *) malloc(sizeof(ipp_player));
 	if (player == NULL) {
@@ -333,10 +293,7 @@ ipp_new_player()
 
 /**
  * Deallocates an ipp_player.
- */
-void 
-ipp_free_player(ipp_player * player)
-{
+ */ void ipp_free_player(ipp_player * player) {
 	if (player) {
 		if (player->name) {
 			free(player->name);
@@ -366,11 +323,8 @@ ipp_free_player(ipp_player * player)
 /**
  * Allocates an empty ipp_table. Don't for get to ipp_free_table().
  * @return a malloc()'d ipp_table structure.
- */
-ipp_table      *
-ipp_new_table()
-{
-	ipp_table      *table;
+ */ ipp_table * ipp_new_table() {
+	ipp_table *table;
 
 	table = (ipp_table *) malloc(sizeof(ipp_table));
 	if (table == NULL) {
@@ -382,11 +336,8 @@ ipp_new_table()
 
 /**
  * Deallocates an ipp_table.
- */
-void 
-ipp_free_table(ipp_table * table)
-{
-	int		i;
+ */ void ipp_free_table(ipp_table * table) {
+	int i;
 
 	if (table) {
 		if (table->players) {
@@ -419,14 +370,11 @@ ipp_free_table(ipp_table * table)
  * Checks a certificate to make sure it is valid.
  * @param session GNU TLS Session.
  * @param hostname the hostname of the server connected to.
- */
-int 
-__ipp_verify_cert(gnutls_session session, const char *hostname)
-{
+ */ int __ipp_verify_cert(gnutls_session session, const char *hostname) {
 	unsigned int	status;
 	const gnutls_datum *cert_list;
 	unsigned int	cert_list_size;
-	int		ret       , i, valid;
+	int ret , i, valid;
 	gnutls_x509_crt	cert;
 
 	ret = gnutls_certificate_verify_peers2(session, &status);
@@ -493,21 +441,18 @@ __ipp_verify_cert(gnutls_session session, const char *hostname)
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
- */
-ipp_socket     *
-ipp_connect(char *hostname, char *ca_file)
-{
-	ipp_socket     *sock;
-	int		ret;
+ */ ipp_socket * ipp_connect(char *hostname, char *ca_file) {
+	ipp_socket *sock;
+	int ret;
 	const int	kx_prio[] = {GNUTLS_KX_RSA, 0};
-	const char     *err;
+	const char *err;
 
 	struct addrinfo *ai;
 	struct addrinfo hints;
 	struct addrinfo *runp;
 
 	gnutls_transport_ptr_t ptr;
-	long		gnutls_sock;
+	long gnutls_sock;
 
 	/* TinyPoker -- create an empty socket structure */
 	sock = ipp_new_socket();
@@ -583,10 +528,7 @@ ipp_connect(char *hostname, char *ca_file)
 /**
  * Disconnect from the server.
  * @param sock a socket to disconnect.
- */
-void 
-ipp_disconnect(ipp_socket * sock)
-{
+ */ void ipp_disconnect(ipp_socket * sock) {
 	if (sock == NULL) {
 		return;
 	}
@@ -612,11 +554,8 @@ ipp_disconnect(ipp_socket * sock)
 /**
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_readln_thread_params structure.
- */
-void 
-__ipp_readln_thread(void *void_params)
-{
-	int		ret;
+ */ void __ipp_readln_thread(void *void_params) {
+	int ret;
 	__ipp_readln_thread_params *params;
 	params = (__ipp_readln_thread_params *) void_params;
 
@@ -642,16 +581,13 @@ __ipp_readln_thread(void *void_params)
  * @param sock the socket to read from.
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with free().
- */
-ipp_message    *
-ipp_read_msg(ipp_socket * sock, int timeout)
-{
+ */ ipp_message * ipp_read_msg(ipp_socket * sock, int timeout) {
 	__ipp_readln_thread_params params;
-	char           *buffer;
-	int		n         , is_valid, ret;
+	char *buffer;
+	int n , is_valid, ret;
 	pthread_t	reader;
 	pthread_attr_t	reader_attr;
-	time_t		clock;
+	time_t clock;
 
 	is_valid = FALSE;
 	buffer = NULL;
@@ -691,7 +627,7 @@ ipp_read_msg(ipp_socket * sock, int timeout)
 
 	is_valid = ipp_validate_unknown_msg(buffer);
 	if (is_valid > -1) {
-		ipp_message    *msg;
+		ipp_message *msg;
 		msg = ipp_new_message();
 		if (msg) {
 			msg->type = is_valid;
@@ -711,11 +647,8 @@ ipp_read_msg(ipp_socket * sock, int timeout)
 /**
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * @param void_params a __ipp_writeln_thread_params structure.
- */
-void 
-__ipp_writeln_thread(void *void_params)
-{
-	int		ret;
+ */ void __ipp_writeln_thread(void *void_params) {
+	int ret;
 	__ipp_writeln_thread_params *params;
 	params = (__ipp_writeln_thread_params *) void_params;
 
@@ -733,15 +666,12 @@ __ipp_writeln_thread(void *void_params)
  * @param msg the message to send.
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
- */
-int 
-ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
-{
+ */ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout) {
 	__ipp_writeln_thread_params params;
-	int		is_valid  , ret, n;
+	int is_valid , ret, n;
 	pthread_t	writer;
 	pthread_attr_t	writer_attr;
-	time_t		clock;
+	time_t clock;
 
 	is_valid = FALSE;
 	n = 0;
@@ -749,8 +679,8 @@ ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 	ipp_normalize_msg(msg->payload);
 	is_valid = ipp_validate_unknown_msg(msg->payload);
 	if (is_valid > -1 && is_valid == msg->type) {
-		int		len;
-		char           *final_msg;
+		int len;
+		char *final_msg;
 
 		len = strlen(msg->payload);
 		final_msg = malloc(sizeof(char) * (len + 2));
@@ -802,16 +732,12 @@ ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 /**
  * servloop exit Indicator
  * 1 for exit now, 0 for continue.
- */
-static int	done;
+ */ static int	done;
 
 /**
  * Set done to 1 when SIGUSR2 is raised.
  * @param sig signal
- */
-void 
-__ipp_handle_sigusr2(int sig)
-{
+ */ void __ipp_handle_sigusr2(int sig) {
 	if (sig == SIGUSR2) {
 		done = 1;
 	}
@@ -827,10 +753,9 @@ __ipp_handle_sigusr2(int sig)
  * @param crl_file CRL
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
- */
-void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file){
-	int		slave, rc, optval;
-	ipp_socket     *ipp_slave;
+ */ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file){
+	int slave, rc, optval;
+	ipp_socket *ipp_slave;
 
 	struct addrinfo *ai;
 	struct addrinfo hints;
@@ -845,7 +770,7 @@ void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_fil
 	gnutls_dh_params_t dh_params;
 	gnutls_certificate_credentials_t x509_cred;
 	gnutls_transport_ptr_t ptr;
-	long		gnutls_sock;
+	long gnutls_sock;
 
 	gnutls_certificate_allocate_credentials(&x509_cred);
 	gnutls_certificate_set_x509_trust_file(x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
@@ -914,7 +839,7 @@ void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_fil
 		 * this is done so that when we signal we re-evaluate if
 		 * !done == true
 		 */
-		rc = poll(sds, nsds, 30000); 
+		rc = poll(sds, nsds, 30000);
 
 		if (done) {
 			break;
@@ -994,8 +919,7 @@ void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_fil
  * hands to the character representing the highest card in the straight.
  * @param str a product of primes that represent a straight.
  * @return a character representing the highest card in the straight.
- */
-char ipp_eval_straight2char(int64_t str) {
+ */ char ipp_eval_straight2char(int64_t str) {
 	switch (str) {
 		case IPP_EVAL_STRAIGHT_5: return FIVE;
 		case IPP_EVAL_STRAIGHT_6: return SIX;
@@ -1015,8 +939,7 @@ char ipp_eval_straight2char(int64_t str) {
  * Maps the prime representation of a rank _or_ suit to a character.
  * @param p the prime number.
  * @return a chacter representing the rank or suit ('C' = clubs, 'T' = 10, '2' = 2, etc).
- */
-char ipp_eval_prime2char(int64_t p) {
+ */ char ipp_eval_prime2char(int64_t p) {
 	switch (p) {
 		case IPP_EVAL_C: return CLUBS;
 		case IPP_EVAL_H: return HEARTS;
@@ -1071,8 +994,7 @@ int64_t ipp_eval_char2prime(char c) {
  * Maps a card to a prime number based representation of the card.
  * @param card the card to map.
  * @return the prime number based representation of the card or 0ll if card is NULL.
- */
-int64_t ipp_eval_card2prime(ipp_card *card) {
+ */ int64_t ipp_eval_card2prime(ipp_card *card) {
 	if (card == NULL) {
 		return 0ll;
 	} else {
@@ -1084,8 +1006,7 @@ int64_t ipp_eval_card2prime(ipp_card *card) {
  * Evaluate a 5 card hand.
  * @param cards a hand to evaluate.
  * @return an IPP message containing a formated 'handtype' string as the payload and the type as the type.
- */
-ipp_message *ipp_eval(ipp_card *cards[5]) {
+ */ ipp_message *ipp_eval(ipp_card *cards[5]) {
 	int i = 0, cnt = 0, len = 0;
 	int64_t tmp, ranks, hand;
 	int cnts[IPP_EVAL_NPRIMES];
@@ -1171,12 +1092,16 @@ ipp_message *ipp_eval(ipp_card *cards[5]) {
 	}
 
 	if (flush && straight) {
-		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c\n", CMD_STRAIGHTFLUSH, ipp_eval_straight2char(straight));
+		msg->type = MSG_STRAIGHTFLUSH;
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c", CMD_STRAIGHTFLUSH, ipp_eval_straight2char(straight));
 	} else if (quad) {
-		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c\n", CMD_FOUROFAKIND, ipp_eval_prime2char(quad), ipp_eval_prime2char(kicker));
+		msg->type = MSG_FOUROFAKIND;
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c", CMD_FOUROFAKIND, ipp_eval_prime2char(quad), ipp_eval_prime2char(kicker));
 	} else if (triple && paira) {
-		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c\n", CMD_FULLHOUSE, ipp_eval_prime2char(triple), ipp_eval_prime2char(paira));
+		msg->type = MSG_FULLHOUSE;
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c", CMD_FULLHOUSE, ipp_eval_prime2char(triple), ipp_eval_prime2char(paira));
 	} else if (flush) {
+		msg->type = MSG_FLUSH;
 		snprintf(msg->payload, MAX_MSG_SIZE, "%s", CMD_FLUSH);
 		len = strlen(CMD_FLUSH);
 		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
@@ -1186,10 +1111,11 @@ ipp_message *ipp_eval(ipp_card *cards[5]) {
 				len += 2;
 			}
 		}
-		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
 	} else if (straight) {
-		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c\n", CMD_STRAIGHT, ipp_eval_straight2char(straight));
+		msg->type = MSG_STRAIGHT;
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c", CMD_STRAIGHT, ipp_eval_straight2char(straight));
 	} else if (triple) {
+		msg->type = MSG_THREEOFAKIND;
 		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c", CMD_THREEOFAKIND, ipp_eval_prime2char(triple));
 		len = strlen(CMD_THREEOFAKIND) + strlen (" X");
 		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
@@ -1199,10 +1125,11 @@ ipp_message *ipp_eval(ipp_card *cards[5]) {
 				len += 2;
 			}
 		}
-		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
 	} else if (paira && pairb) {
-		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c %c\n", CMD_TWOPAIR, ipp_eval_prime2char(max(paira, pairb)), ipp_eval_prime2char(min(paira, pairb)), ipp_eval_prime2char(kicker));
+		msg->type = MSG_TWOPAIR;
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c %c", CMD_TWOPAIR, ipp_eval_prime2char(max(paira, pairb)), ipp_eval_prime2char(min(paira, pairb)), ipp_eval_prime2char(kicker));
 	} else if (paira) {
+		msg->type = MSG_ONEPAIR;
 		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c", CMD_ONEPAIR, ipp_eval_prime2char(paira));
 		len = strlen(CMD_ONEPAIR) + strlen(" C");
 		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
@@ -1212,10 +1139,10 @@ ipp_message *ipp_eval(ipp_card *cards[5]) {
 				len += 2;
 			}
 		}
-		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
 	} else {
+		msg->type = MSG_HIGHCARD;
 		snprintf(msg->payload, MAX_MSG_SIZE, "%s", CMD_HIGHCARD);
-		len = strlen("HIGHCARD");
+		len = strlen(CMD_HIGHCARD);
 		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
 			if (cnts[i] == 1) {
 				tmp_str[1] = ipp_eval_prime2char(ipp_eval_primes[i]);
@@ -1223,8 +1150,97 @@ ipp_message *ipp_eval(ipp_card *cards[5]) {
 				len += 2;
 			}
 		}
-		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
 	}
 
 	return msg;
 }
+
+/**
+ * Comparator for qsort and other similar sorting functions.
+ * @param ipp_message_a an ipp_message pointer.
+ * @param ipp_message_b an ipp_message pointer.
+ * @return integer less than, equal to, or greater than zero if
+ *         the first argument is considered to be respectively
+ *         less than, equal to, or greater than the second.
+ *         Failures also return zero.
+ */
+int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b) {
+	int i, n;
+
+	ipp_message *x = (ipp_message *) ipp_message_a;
+	ipp_message *y = (ipp_message *) ipp_message_b;
+
+	/* safety check -- our paranoid checks propbably impact performance */
+	if (x == NULL || y == NULL || x == y || x->type < 0 || y->type < 0 || x->payload == NULL || y->payload == NULL || ipp_validate_unknown_msg(x->payload) == -1 || ipp_validate_unknown_msg(y->payload) == -1) {
+		return 0;
+	}
+
+	/* message types are defined as ints from best to worst (where best has the lowest index) */
+	/* we could to things like 'return y->type - x->type', but I think its easier to debug and use -1, 0, 1 */
+	if (x->type == y->type) {
+		/* same hand type, check ranks of hand */
+		ipp_parse_msg(x);
+		ipp_parse_msg(y);
+
+		if (x->parsed == NULL || y->parsed == NULL) {
+			/* parse failed :( */
+			return 0;
+		}
+
+		/* TODO this switch statement is a mess, make it clean */
+		switch (x->type) {
+			/* STRAIGHT and STRAIGHTFLUSH have 1 level of comparison */
+			case MSG_STRAIGHT:
+			case MSG_STRAIGHTFLUSH:
+				n = 1;
+				break;
+
+			/* FULLHOUSE and FOUROFAKIND have 2 levels of comparison */
+			case MSG_FULLHOUSE:
+			case MSG_FOUROFAKIND:
+				n = 2;
+				break;
+
+			/* MSG_THREEOFAKIND and MSG_TWOPAIR have 3 levels of comparison */
+			case MSG_THREEOFAKIND:
+			case MSG_TWOPAIR:
+				n = 3;
+				break;
+
+			/* MSG_ONEPAIR has 4 levels of comparison */
+			case MSG_ONEPAIR:
+				n = 4;
+				break;
+
+			/* MSG_FLUSH and MSG_HIGHCARD have 5 levels of comparison */
+			case MSG_FLUSH:
+			case MSG_HIGHCARD:
+				n = 5;
+				break;
+
+			/* we should never get here */
+			default:
+				return 0;
+		}
+
+		for (i = 1; i < (n+1); i++) {
+			int64_t a, b;
+
+			if (x->parsed[i] == NULL || y->parsed[i] == NULL || x->parsed[i][0] == '\0' || y->parsed[i][0] == '\0') {
+				return 0;
+			}
+
+			a = ipp_eval_char2prime(x->parsed[i][0]);
+			b = ipp_eval_char2prime(y->parsed[i][0]);
+
+			if (a != b) {
+				return (a > b) ? 1 : -1;
+			}
+		}
+
+		return 0;
+	} else {
+		return (x->type < y->type) ? 1 : -1;
+	}
+}
+

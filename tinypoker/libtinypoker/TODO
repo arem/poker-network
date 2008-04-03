@@ -1,4 +1,4 @@
  * man pages
  * programming guide
- * hand ranking (given X hands who beats who)
- * best combination (given a board of 5 cards and 2 hole cards, find the highest ranking combination)
+ * hand ranking (given X hands who beats who -- partly completed)
+ * best combination (given a board of 5 cards and 2 hole cards, find the highest ranking 5 card hand)

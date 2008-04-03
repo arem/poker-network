@@ -239,3 +239,7 @@ ADD_TEST(testEvalChar2Prime ${EXECUTABLE_OUTPUT_PATH}/testEvalChar2Prime)
 ADD_EXECUTABLE(testEval testEval.c)
 TARGET_LINK_LIBRARIES(testEval tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testEval ${EXECUTABLE_OUTPUT_PATH}/testEval)
+
+ADD_EXECUTABLE(testHandCompar testHandCompar.c)
+TARGET_LINK_LIBRARIES(testHandCompar tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testHandCompar ${EXECUTABLE_OUTPUT_PATH}/testHandCompar)

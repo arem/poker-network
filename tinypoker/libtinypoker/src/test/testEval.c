@@ -93,7 +93,9 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "STRAIGHTFLUSH A\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "STRAIGHTFLUSH A", msg->payload);
+	assertEqual("Didn't detect proper hand.", msg->type, MSG_STRAIGHTFLUSH);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_STRAIGHTFLUSH);
 	ipp_free_message(msg);
 
 	hand[0] = As;
@@ -104,7 +106,9 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "STRAIGHT A\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "STRAIGHT A", msg->payload);
+	assertEqual("Didn't detect proper hand.", msg->type, MSG_STRAIGHT);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_STRAIGHT);
 	ipp_free_message(msg);
 
 	hand[0] = As;
@@ -115,7 +119,9 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "FLUSH A K Q J 7\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "FLUSH A K Q J 7", msg->payload);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_FLUSH);
+	assertEqual("Didn't detect proper hand.", msg->type, MSG_FLUSH);
 	ipp_free_message(msg);
 
 	hand[0] = As;
@@ -126,7 +132,9 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "ONEPAIR K A J 7\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "ONEPAIR K A J 7", msg->payload);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_ONEPAIR);
+	assertEqual("Didn't detect proper hand.", msg->type, MSG_ONEPAIR);
 	ipp_free_message(msg);
 
 	hand[0] = As;
@@ -137,7 +145,9 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "TWOPAIR A K 7\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "TWOPAIR A K 7", msg->payload);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_TWOPAIR);
+	assertEqual("Didn't detect proper hand.", msg->type, MSG_TWOPAIR);
 	ipp_free_message(msg);
 
 	hand[0] = As;
@@ -148,7 +158,9 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "FULLHOUSE K A\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "FULLHOUSE K A", msg->payload);
+	assertEqual("Didn't detect proper hand.", msg->type, MSG_FULLHOUSE);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_FULLHOUSE);
 	ipp_free_message(msg);
 
 	hand[0] = As;
@@ -159,7 +171,9 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "THREEOFAKIND K A J\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "THREEOFAKIND K A J", msg->payload);
+	assertEqual("Didn't detect proper hand.", msg->type, MSG_THREEOFAKIND);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_THREEOFAKIND);
 	ipp_free_message(msg);
 
 	hand[0] = Kh;
@@ -170,7 +184,8 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "FOUROFAKIND K J\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "FOUROFAKIND K J", msg->payload);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_FOUROFAKIND);
 	ipp_free_message(msg);
 
 	hand[0] = As;
@@ -181,7 +196,8 @@ main()
 
 	msg = ipp_eval(hand);
 	assertNotNull("ipp_eval() returned null", msg);
-	assertStringEqual("Didn't detect proper hand.", "HIGHCARD A K J 7 6\n", msg->payload);
+	assertStringEqual("Didn't detect proper hand.", "HIGHCARD A K J 7 6", msg->payload);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msg->payload), MSG_HIGHCARD);
 	ipp_free_message(msg);
 
 	ipp_free_card(_6s);

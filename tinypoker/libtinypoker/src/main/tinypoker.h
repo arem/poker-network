@@ -890,7 +890,7 @@ static char    *ipp_regex_msg[] = {
 #define IPP_EVAL_STRAIGHT_K (162490421ll)
 #define IPP_EVAL_STRAIGHT_A (259106347ll)
 
-int64_t ipp_eval_primes[] = {
+static int64_t ipp_eval_primes[] = {
 	IPP_EVAL_C, /*  0 */
 	IPP_EVAL_H, /*  1 */
 	IPP_EVAL_D, /*  2 */
@@ -1064,6 +1064,14 @@ int64_t ipp_eval_card2prime(ipp_card *card);
  * @return an IPP message containing a formated 'handtype' string as the payload and the type as the type.
  */
 ipp_message *ipp_eval(ipp_card *cards[5]);
+
+/**
+ * Comparitor for qsort and other similar sorting functions.
+ * @param ipp_message_a an ipp_message pointer.
+ * @param ipp_message_b an ipp_message pointer.
+ * @return 1, 0 or -1 if ipp_message_a is greater than, equal to or less than ipp_message_b.
+ */
+int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b);
 
 #endif
 
