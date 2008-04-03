@@ -223,3 +223,19 @@ ADD_TEST(testValidateUnknownMsg ${EXECUTABLE_OUTPUT_PATH}/testValidateUnknownMsg
 ADD_EXECUTABLE(testNormalizeMessage testNormalizeMessage.c)
 TARGET_LINK_LIBRARIES(testNormalizeMessage tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 ADD_TEST(testNormalizeMessage ${EXECUTABLE_OUTPUT_PATH}/testNormalizeMessage)
+
+ADD_EXECUTABLE(testEvalStraight2Char testEvalStraight2Char.c)
+TARGET_LINK_LIBRARIES(testEvalStraight2Char tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testEvalStraight2Char ${EXECUTABLE_OUTPUT_PATH}/testEvalStraight2Char)
+
+ADD_EXECUTABLE(testEvalPrime2Char testEvalPrime2Char.c)
+TARGET_LINK_LIBRARIES(testEvalPrime2Char tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testEvalPrime2Char ${EXECUTABLE_OUTPUT_PATH}/testEvalPrime2Char)
+
+ADD_EXECUTABLE(testEvalChar2Prime testEvalChar2Prime.c)
+TARGET_LINK_LIBRARIES(testEvalChar2Prime tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testEvalChar2Prime ${EXECUTABLE_OUTPUT_PATH}/testEvalChar2Prime)
+
+ADD_EXECUTABLE(testEval testEval.c)
+TARGET_LINK_LIBRARIES(testEval tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
+ADD_TEST(testEval ${EXECUTABLE_OUTPUT_PATH}/testEval)

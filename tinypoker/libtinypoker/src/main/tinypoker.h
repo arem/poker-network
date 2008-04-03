@@ -29,6 +29,7 @@ extern "C" {
 #include <string.h>
 #include <gnutls/gnutls.h>
 #include <netinet/in.h>
+#include <sys/types.h>
 
 #ifndef TRUE
 #define TRUE (1)
@@ -37,6 +38,20 @@ extern "C" {
 #ifndef FALSE
 #define FALSE (0)
 #endif
+
+#define max(x,y) ({ 		\
+	typeof(x) _x = (x);	\
+	typeof(y) _y = (y);	\
+	(void) (&_x == &_y);	\
+	_x > _y ? _x : _y;	\
+})
+
+#define min(x,y) ({		\
+	typeof(x) _x = (x);	\
+	typeof(y) _y = (y);	\
+	(void) (&_x == &_y);	\
+	_x < _y ? _x : _y;	\
+})
 
 /**
  * Major version number. This is updated when major re-writes or
@@ -49,7 +64,7 @@ extern "C" {
  * Minor version number. This is updated when new APIs are added
  * that don't change existing APIs.
  */
-#define LIBTINYPOKER_MINOR_VERSION 0
+#define LIBTINYPOKER_MINOR_VERSION 1
 
 /**
  * Patch version number. This is updated when bugs are fixed that don't
@@ -410,37 +425,46 @@ void		ipp_free_table(ipp_table * table);
  */
 #define REGEX_DRAW_N "(" REGEX_DRAW_1 "|" REGEX_DRAW_2 "|" REGEX_DRAW_3 "|" REGEX_DRAW_4 "|" REGEX_DRAW_5 ")"
 
-#define REGEX_STRAIGHTFLUSH "STRAIGHTFLUSH"
-#define REGEX_STRAIGHTFLUSH_HANDTYPE REGEX_STRAIGHTFLUSH REGEX_SPACE REGEX_RANK
+#define CMD_STRAIGHTFLUSH "STRAIGHTFLUSH"
+#define REGEX_HT_STRAIGHTFLUSH CMD_STRAIGHTFLUSH REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_STRAIGHTFLUSH ("^" REGEX_HT_STRAIGHTFLUSH "$")
 
-#define REGEX_FOUROFAKIND "FOUROFAKIND"
-#define REGEX_FOUROFAKIND_HANDTYPE REGEX_FOUROFAKIND REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define CMD_FOUROFAKIND "FOUROFAKIND"
+#define REGEX_HT_FOUROFAKIND CMD_FOUROFAKIND REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_FOUROFAKIND ("^" REGEX_HT_FOUROFAKIND "$")
 
-#define REGEX_FULLHOUSE "FULLHOUSE"
-#define REGEX_FULLHOUSE_HANDTYPE REGEX_FULLHOUSE REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define CMD_FULLHOUSE "FULLHOUSE"
+#define REGEX_HT_FULLHOUSE CMD_FULLHOUSE REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_FULLHOUSE ("^" REGEX_HT_FULLHOUSE "$")
 
-#define REGEX_FLUSH "FLUSH"
-#define REGEX_FLUSH_HANDTYPE REGEX_FLUSH REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define CMD_FLUSH "FLUSH"
+#define REGEX_HT_FLUSH CMD_FLUSH REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_FLUSH ("^" REGEX_HT_FLUSH "$")
 
-#define REGEX_STRAIGHT "STRAIGHT"
-#define REGEX_STRAIGHT_HANDTYPE REGEX_STRAIGHT REGEX_SPACE REGEX_RANK
+#define CMD_STRAIGHT "STRAIGHT"
+#define REGEX_HT_STRAIGHT CMD_STRAIGHT REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_STRAIGHT ("^" REGEX_HT_STRAIGHT "$")
 
-#define REGEX_THREEOFAKIND "THREEOFAKIND"
-#define REGEX_THREEOFAKIND_HANDTYPE REGEX_THREEOFAKIND REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define CMD_THREEOFAKIND "THREEOFAKIND"
+#define REGEX_HT_THREEOFAKIND CMD_THREEOFAKIND REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_THREEOFAKIND ("^" REGEX_HT_THREEOFAKIND "$")
 
-#define REGEX_TWOPAIR "TWOPAIR"
-#define REGEX_TWOPAIR_HANDTYPE REGEX_TWOPAIR REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define CMD_TWOPAIR "TWOPAIR"
+#define REGEX_HT_TWOPAIR CMD_TWOPAIR REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_TWOPAIR ("^" REGEX_HT_TWOPAIR "$")
 
-#define REGEX_ONEPAIR "ONEPAIR"
-#define REGEX_ONEPAIR_HANDTYPE REGEX_ONEPAIR REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define CMD_ONEPAIR "ONEPAIR"
+#define REGEX_HT_ONEPAIR CMD_ONEPAIR REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_ONEPAIR ("^" REGEX_HT_ONEPAIR "$")
 
-#define REGEX_HIGHCARD "HIGHCARD"
-#define REGEX_HIGHCARD_HANDTYPE REGEX_HIGHCARD REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define CMD_HIGHCARD "HIGHCARD"
+#define REGEX_HT_HIGHCARD CMD_HIGHCARD REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK REGEX_SPACE REGEX_RANK
+#define REGEX_MSG_HIGHCARD ("^" REGEX_HT_HIGHCARD "$")
 
 /**
  * Declaration of a hand that can be made from a player's cards
  */
-#define REGEX_HANDTYPE "(" REGEX_STRAIGHTFLUSH_HANDTYPE "|" REGEX_FOUROFAKIND_HANDTYPE "|" REGEX_FULLHOUSE_HANDTYPE "|" REGEX_FLUSH_HANDTYPE "|" REGEX_STRAIGHT_HANDTYPE "|" REGEX_THREEOFAKIND_HANDTYPE "|" REGEX_TWOPAIR_HANDTYPE "|" REGEX_ONEPAIR_HANDTYPE "|" REGEX_HIGHCARD_HANDTYPE ")"
+#define REGEX_HANDTYPE "(" REGEX_HT_STRAIGHTFLUSH "|" REGEX_HT_FOUROFAKIND "|" REGEX_HT_FULLHOUSE "|" REGEX_HT_FLUSH "|" REGEX_HT_STRAIGHT "|" REGEX_HT_THREEOFAKIND "|" REGEX_HT_TWOPAIR "|" REGEX_HT_ONEPAIR "|" REGEX_HT_HIGHCARD ")"
 
 /**
  * The word blind.
@@ -778,6 +802,15 @@ static char    *ipp_regex_msg[] = {
 	REGEX_MSG_YES,
 	REGEX_MSG_ERROR,
 	REGEX_MSG_OK,
+	REGEX_MSG_STRAIGHTFLUSH,
+	REGEX_MSG_FOUROFAKIND,
+	REGEX_MSG_FULLHOUSE,
+	REGEX_MSG_FLUSH,
+	REGEX_MSG_STRAIGHT,
+	REGEX_MSG_THREEOFAKIND,
+	REGEX_MSG_TWOPAIR,
+	REGEX_MSG_ONEPAIR,
+	REGEX_MSG_HIGHCARD,
 	NULL
 };
 
@@ -818,6 +851,66 @@ static char    *ipp_regex_msg[] = {
 #define MSG_YES 34
 #define MSG_ERROR 35
 #define MSG_OK 36
+#define MSG_STRAIGHTFLUSH 37
+#define MSG_FOUROFAKIND 38
+#define MSG_FULLHOUSE 39
+#define MSG_FLUSH 40
+#define MSG_STRAIGHT 41
+#define MSG_THREEOFAKIND 42
+#define MSG_TWOPAIR 43
+#define MSG_ONEPAIR 44
+#define MSG_HIGHCARD 45
+
+#define IPP_EVAL_C ( 2ll)
+#define IPP_EVAL_H ( 3ll)
+#define IPP_EVAL_D ( 5ll)
+#define IPP_EVAL_S ( 7ll)
+#define IPP_EVAL_2 (11ll)
+#define IPP_EVAL_3 (13ll)
+#define IPP_EVAL_4 (17ll)
+#define IPP_EVAL_5 (19ll)
+#define IPP_EVAL_6 (23ll)
+#define IPP_EVAL_7 (29ll)
+#define IPP_EVAL_8 (31ll)
+#define IPP_EVAL_9 (37ll)
+#define IPP_EVAL_T (41ll)
+#define IPP_EVAL_J (43ll)
+#define IPP_EVAL_Q (47ll)
+#define IPP_EVAL_K (53ll)
+#define IPP_EVAL_A (59ll)
+
+#define IPP_EVAL_STRAIGHT_5 (  2725151ll)
+#define IPP_EVAL_STRAIGHT_6 (  1062347ll)
+#define IPP_EVAL_STRAIGHT_7 (  2800733ll)
+#define IPP_EVAL_STRAIGHT_8 (  6678671ll)
+#define IPP_EVAL_STRAIGHT_9 ( 14535931ll)
+#define IPP_EVAL_STRAIGHT_T ( 31367009ll)
+#define IPP_EVAL_STRAIGHT_J ( 58642669ll)
+#define IPP_EVAL_STRAIGHT_Q ( 95041567ll)
+#define IPP_EVAL_STRAIGHT_K (162490421ll)
+#define IPP_EVAL_STRAIGHT_A (259106347ll)
+
+int64_t ipp_eval_primes[] = {
+	IPP_EVAL_C, /*  0 */
+	IPP_EVAL_H, /*  1 */
+	IPP_EVAL_D, /*  2 */
+	IPP_EVAL_S, /*  3 */
+	IPP_EVAL_2, /*  4 */
+	IPP_EVAL_3, /*  5 */
+	IPP_EVAL_4, /*  6 */
+	IPP_EVAL_5, /*  7 */
+	IPP_EVAL_6, /*  8 */
+	IPP_EVAL_7, /*  9 */
+	IPP_EVAL_8, /* 10 */
+	IPP_EVAL_9, /* 11 */
+	IPP_EVAL_T, /* 12 */
+	IPP_EVAL_J, /* 13 */
+	IPP_EVAL_Q, /* 14 */
+	IPP_EVAL_K, /* 15 */
+	IPP_EVAL_A  /* 16 */
+};
+
+#define IPP_EVAL_NPRIMES (17)
 
 /* function prototypes */
 
@@ -935,6 +1028,42 @@ void		__ipp_writeln_thread(void *void_params);
  * @param key_file Private Key
  */
 void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
+
+/**
+ * Maps a product of the prime representation of ranks of cards in the
+ * hands to the character representing the highest card in the straight.
+ * @param str a product of primes that represent a straight.
+ * @return a character representing the highest card in the straight.
+ */
+char ipp_eval_straight2char(int64_t str);
+
+/**
+ * Maps the prime representation of a rank _or_ suit to a character.
+ * @param p the prime number.
+ * @return a chacter representing the rank or suit ('C' = clubs, 'T' = 10, '2' = 2, etc).
+ */
+char ipp_eval_prime2char(int64_t p);
+
+/**
+ * Maps a character representation of a rank _or_ suit to a prime number.
+ * @param c the character ('C' = clubs, 'T' = 10, '2' = 2, etc).
+ * @return a prime number used for hand evaluation.
+ */
+int64_t ipp_eval_char2prime(char c);
+
+/**
+ * Maps a card to a prime number based representation of the card.
+ * @param card the card to map.
+ * @return the prime number based representation of the card or 0ll if card is NULL.
+ */
+int64_t ipp_eval_card2prime(ipp_card *card);
+
+/**
+ * Evaluate a 5 card hand. 
+ * @param cards a hand to evaluate.
+ * @return an IPP message containing a formated 'handtype' string as the payload and the type as the type.
+ */
+ipp_message *ipp_eval(ipp_card *cards[5]);
 
 #endif
 

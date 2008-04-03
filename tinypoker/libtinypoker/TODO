@@ -1,3 +1,4 @@
  * man pages
  * programming guide
- * hand evaluator (either a native implementation or wrapper for poker-eval)
+ * hand ranking (given X hands who beats who)
+ * best combination (given a board of 5 cards and 2 hole cards, find the highest ranking combination)

@@ -988,3 +988,243 @@ void		ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_fil
 	gnutls_certificate_free_credentials(x509_cred);
 	gnutls_dh_params_deinit(dh_params);
 }
+
+/**
+ * Maps a product of the prime representation of ranks of cards in the
+ * hands to the character representing the highest card in the straight.
+ * @param str a product of primes that represent a straight.
+ * @return a character representing the highest card in the straight.
+ */
+char ipp_eval_straight2char(int64_t str) {
+	switch (str) {
+		case IPP_EVAL_STRAIGHT_5: return FIVE;
+		case IPP_EVAL_STRAIGHT_6: return SIX;
+		case IPP_EVAL_STRAIGHT_7: return SEVEN;
+		case IPP_EVAL_STRAIGHT_8: return EIGHT;
+		case IPP_EVAL_STRAIGHT_9: return NINE;
+		case IPP_EVAL_STRAIGHT_T: return TEN;
+		case IPP_EVAL_STRAIGHT_J: return JACK;
+		case IPP_EVAL_STRAIGHT_Q: return QUEEN;
+		case IPP_EVAL_STRAIGHT_K: return KING;
+		case IPP_EVAL_STRAIGHT_A: return ACE;
+		default: return 'X';
+	}
+}
+
+/**
+ * Maps the prime representation of a rank _or_ suit to a character.
+ * @param p the prime number.
+ * @return a chacter representing the rank or suit ('C' = clubs, 'T' = 10, '2' = 2, etc).
+ */
+char ipp_eval_prime2char(int64_t p) {
+	switch (p) {
+		case IPP_EVAL_C: return CLUBS;
+		case IPP_EVAL_H: return HEARTS;
+		case IPP_EVAL_D: return DIAMONDS;
+		case IPP_EVAL_S: return SPADES;
+		case IPP_EVAL_2: return TWO;
+		case IPP_EVAL_3: return THREE;
+		case IPP_EVAL_4: return FOUR;
+		case IPP_EVAL_5: return FIVE;
+		case IPP_EVAL_6: return SIX;
+		case IPP_EVAL_7: return SEVEN;
+		case IPP_EVAL_8: return EIGHT;
+		case IPP_EVAL_9: return NINE;
+		case IPP_EVAL_T: return TEN;
+		case IPP_EVAL_J: return JACK;
+		case IPP_EVAL_Q: return QUEEN;
+		case IPP_EVAL_K: return KING;
+		case IPP_EVAL_A: return ACE;
+		default: return 'X';
+	}
+}
+
+/**
+ * Maps a character representation of a rank _or_ suit to a prime number.
+ * @param c the character ('C' = clubs, 'T' = 10, '2' = 2, etc).
+ * @return a prime number used for hand evaluation.
+ */
+int64_t ipp_eval_char2prime(char c) {
+	switch (c) {
+		case CLUBS: return IPP_EVAL_C;
+		case HEARTS: return IPP_EVAL_H;
+		case DIAMONDS: return IPP_EVAL_D;
+		case SPADES: return IPP_EVAL_S;
+		case TWO: return IPP_EVAL_2;
+		case THREE: return IPP_EVAL_3;
+		case FOUR: return IPP_EVAL_4;
+		case FIVE: return IPP_EVAL_5;
+		case SIX: return IPP_EVAL_6;
+		case SEVEN: return IPP_EVAL_7;
+		case EIGHT: return IPP_EVAL_8;
+		case NINE: return IPP_EVAL_9;
+		case TEN: return IPP_EVAL_T;
+		case JACK: return IPP_EVAL_J;
+		case QUEEN: return IPP_EVAL_Q;
+		case KING: return IPP_EVAL_K;
+		case ACE: return IPP_EVAL_A;
+		default: return 0ll;
+	}
+}
+
+/**
+ * Maps a card to a prime number based representation of the card.
+ * @param card the card to map.
+ * @return the prime number based representation of the card or 0ll if card is NULL.
+ */
+int64_t ipp_eval_card2prime(ipp_card *card) {
+	if (card == NULL) {
+		return 0ll;
+	} else {
+		return (ipp_eval_char2prime(card->rank) * ipp_eval_char2prime(card->suit));
+	}
+}
+
+/**
+ * Evaluate a 5 card hand.
+ * @param cards a hand to evaluate.
+ * @return an IPP message containing a formated 'handtype' string as the payload and the type as the type.
+ */
+ipp_message *ipp_eval(ipp_card *cards[5]) {
+	int i = 0, cnt = 0, len = 0;
+	int64_t tmp, ranks, hand;
+	int cnts[IPP_EVAL_NPRIMES];
+	int flush = 0, straight = 0, quad = 0, triple = 0, paira = 0, pairb = 0, kicker = 0;
+	char tmp_str[] = {' ', 'X', '\0'};
+	ipp_message *msg;
+
+	msg = ipp_new_message();
+	if (msg == NULL) {
+		return NULL;
+	}
+
+	msg->payload = (char *) malloc(sizeof(char) * (MAX_MSG_SIZE + 1));
+	if (msg->payload == NULL) {
+		return NULL;
+	}
+	memset(msg->payload, '\0', (sizeof(char) * (MAX_MSG_SIZE + 1)));
+
+	hand = ipp_eval_card2prime(cards[0]) * ipp_eval_card2prime(cards[1]) * ipp_eval_card2prime(cards[2]) * ipp_eval_card2prime(cards[3]) * ipp_eval_card2prime(cards[4]);
+
+	for (i = 0; i < IPP_EVAL_NPRIMES; i++) {
+
+		if (i == 4) {
+			ranks = hand;
+		}
+
+		cnt = 0;
+		while ((tmp=hand/ipp_eval_primes[i]) * ipp_eval_primes[i] == hand) {
+			hand = tmp;
+			cnt++;
+		}
+
+		cnts[i] = cnt;
+		if (i > 3) {
+
+			switch (cnt) {
+				case 4:
+					quad = ipp_eval_primes[i];
+					break;
+
+				case 3:
+					triple = ipp_eval_primes[i];
+					break;
+
+				case 2:
+					if (paira == 0) {
+						paira = ipp_eval_primes[i];
+					} else {
+						pairb = ipp_eval_primes[i];
+					}
+					break;
+
+				case 1:
+					kicker = ipp_eval_primes[i];
+					break;
+
+				default:
+					break;
+			}
+		} else if (cnt == 5) {
+			flush = ipp_eval_primes[i];
+		}
+	}
+
+	if (!paira && !triple && !quad) {
+		switch (ranks) {
+			case IPP_EVAL_STRAIGHT_5:
+			case IPP_EVAL_STRAIGHT_6:
+			case IPP_EVAL_STRAIGHT_7:
+			case IPP_EVAL_STRAIGHT_8:
+			case IPP_EVAL_STRAIGHT_9:
+			case IPP_EVAL_STRAIGHT_T:
+			case IPP_EVAL_STRAIGHT_J:
+			case IPP_EVAL_STRAIGHT_Q:
+			case IPP_EVAL_STRAIGHT_K:
+			case IPP_EVAL_STRAIGHT_A:
+				straight = ranks;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if (flush && straight) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c\n", CMD_STRAIGHTFLUSH, ipp_eval_straight2char(straight));
+	} else if (quad) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c\n", CMD_FOUROFAKIND, ipp_eval_prime2char(quad), ipp_eval_prime2char(kicker));
+	} else if (triple && paira) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c\n", CMD_FULLHOUSE, ipp_eval_prime2char(triple), ipp_eval_prime2char(paira));
+	} else if (flush) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s", CMD_FLUSH);
+		len = strlen(CMD_FLUSH);
+		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
+			if (cnts[i] == 1) {
+				tmp_str[1] = ipp_eval_prime2char(ipp_eval_primes[i]);
+				strncat(msg->payload, tmp_str, MAX_MSG_SIZE - len);
+				len += 2;
+			}
+		}
+		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
+	} else if (straight) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c\n", CMD_STRAIGHT, ipp_eval_straight2char(straight));
+	} else if (triple) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c", CMD_THREEOFAKIND, ipp_eval_prime2char(triple));
+		len = strlen(CMD_THREEOFAKIND) + strlen (" X");
+		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
+			if (cnts[i] == 1) {
+				tmp_str[1] = ipp_eval_prime2char(ipp_eval_primes[i]);
+				strncat(msg->payload, tmp_str, MAX_MSG_SIZE - len);
+				len += 2;
+			}
+		}
+		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
+	} else if (paira && pairb) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c %c %c\n", CMD_TWOPAIR, ipp_eval_prime2char(max(paira, pairb)), ipp_eval_prime2char(min(paira, pairb)), ipp_eval_prime2char(kicker));
+	} else if (paira) {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s %c", CMD_ONEPAIR, ipp_eval_prime2char(paira));
+		len = strlen(CMD_ONEPAIR) + strlen(" C");
+		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
+			if (cnts[i] == 1) {
+				tmp_str[1] = ipp_eval_prime2char(ipp_eval_primes[i]);
+				strncat(msg->payload, tmp_str, MAX_MSG_SIZE - len);
+				len += 2;
+			}
+		}
+		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
+	} else {
+		snprintf(msg->payload, MAX_MSG_SIZE, "%s", CMD_HIGHCARD);
+		len = strlen("HIGHCARD");
+		for (i = IPP_EVAL_NPRIMES - 1; i >= 0 && ipp_eval_primes[i] >= IPP_EVAL_2; i--) {
+			if (cnts[i] == 1) {
+				tmp_str[1] = ipp_eval_prime2char(ipp_eval_primes[i]);
+				strncat(msg->payload, tmp_str, MAX_MSG_SIZE - len);
+				len += 2;
+			}
+		}
+		strncat(msg->payload, "\n", MAX_MSG_SIZE - len);
+	}
+
+	return msg;
+}
