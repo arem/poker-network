@@ -266,7 +266,7 @@ extern "C" {
  * Randomize the order of the cards in the deck.
  * @param deck to shuffle.
  */
-	void ipp_shuffle_deck(ipp_deck *deck);
+	void ipp_shuffle_deck(ipp_deck * deck);
 
 /**
  * Deallocates an ipp_deck.

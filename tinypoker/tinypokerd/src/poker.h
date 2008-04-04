@@ -20,6 +20,8 @@
 #ifndef __POKER_H
 #define __POKER_H
 
+extern ipp_table *tbl;
+
 void *play(void *arg);
 
 #endif

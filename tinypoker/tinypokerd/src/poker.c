@@ -20,19 +20,17 @@
 #include <stdlib.h>
 #include <tinypoker.h>
 
+#include "poker.h"
 #include "signal.h"
+
+ipp_table *tbl = NULL;
 
 void *play(void *arg)
 {
-	ipp_deck *deck;
-	deck = ipp_new_deck();
-	if (deck == NULL) {
-		return NULL;
-	}
 
 	while (!exit_now) {
 		sleep(1);
-		ipp_shuffle_deck(deck);
+		ipp_shuffle_deck(tbl->deck);
 	}
 
 	monitor_dec();

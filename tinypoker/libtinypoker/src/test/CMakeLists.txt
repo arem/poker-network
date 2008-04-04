@@ -275,3 +275,7 @@ ADD_TEST(testDeck ${EXECUTABLE_OUTPUT_PATH}/testDeck)
 ADD_EXECUTABLE(testHandCompar testHandCompar.c)
 TARGET_LINK_LIBRARIES(testHandCompar tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSLCBLAS} ${LIBGSL})
 ADD_TEST(testHandCompar ${EXECUTABLE_OUTPUT_PATH}/testHandCompar)
+
+ADD_EXECUTABLE(testEnumerateAllHands testEnumerateAllHands.c)
+TARGET_LINK_LIBRARIES(testEnumerateAllHands tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSLCBLAS} ${LIBGSL})
+ADD_TEST(testEnumerateAllHands ${EXECUTABLE_OUTPUT_PATH}/testEnumerateAllHands)

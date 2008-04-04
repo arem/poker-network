@@ -409,7 +409,8 @@ ipp_card *ipp_deck_next_card(ipp_deck * deck)
  * Randomize the order of the cards in the deck.
  * @param deck to shuffle.
  */
-void ipp_shuffle_deck(ipp_deck *deck) {
+void ipp_shuffle_deck(ipp_deck * deck)
+{
 	ipp_card *tmp;
 	int x, y;
 
@@ -440,7 +441,7 @@ ipp_deck *ipp_new_deck()
 {
 	int x, y, z, i;
 	ipp_deck *deck;
-	char __suits[4] = { 's', 'd', 'c', 'h' };
+	char __suits[4] = { SPADES, DIAMONDS, HEARTS, CLUBS };
 	char __ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
 
 	deck = (ipp_deck *) malloc(sizeof(ipp_deck));
@@ -501,6 +502,13 @@ ipp_table *ipp_new_table()
 		return NULL;
 	}
 	memset(table, '\0', sizeof(ipp_table));
+
+	table->deck = ipp_new_deck();
+	if (table->deck == NULL) {
+		free(table);
+		return NULL;
+	}
+
 	return table;
 }
 
@@ -1275,7 +1283,6 @@ ipp_message *ipp_eval(ipp_card * cards[5])
 	hand = ipp_eval_card2prime(cards[0]) * ipp_eval_card2prime(cards[1]) * ipp_eval_card2prime(cards[2]) * ipp_eval_card2prime(cards[3]) * ipp_eval_card2prime(cards[4]);
 
 	for (i = 0; i < IPP_EVAL_NPRIMES; i++) {
-
 		if (i == 4) {
 			ranks = hand;
 		}

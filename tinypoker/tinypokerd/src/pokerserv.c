@@ -141,6 +141,13 @@ int pokerserv()
 	pthread_t dealer_thread;
 	pthread_attr_t dealer_thread_attr;
 
+	tbl = ipp_new_table();
+	if (tbl == NULL) {
+		exit_now = 1;
+		raise(SIGQUIT);
+		return 0;
+	}
+
 	/* create a thread to play the game */
 	pthread_attr_init(&dealer_thread_attr);
 	pthread_attr_setdetachstate(&dealer_thread_attr, PTHREAD_CREATE_DETACHED);
