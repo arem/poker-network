@@ -406,6 +406,16 @@ extern "C" {
 #define REGEX_NAME "[0-9a-zA-Z_]{1,32}"
 
 /**
+ * Password of player (no spaces).
+ */
+#define REGEX_PASS "[0-9a-zA-Z_]{1,32}"
+
+/**
+ * Password of player (no spaces).
+ */
+#define REGEX_LOGIN "(" REGEX_NAME "|" REGEX_NAME ":" REGEX_PASS ")"
+
+/**
  * Amount of Money or other Non-Negative Amount (i.e. raises per round)
  * Smaller than max value of a signed 32-bit int.
  * XXX: 16-bit CPUs/OSes will fail on large amounts.
@@ -739,7 +749,7 @@ extern "C" {
 
 #define REGEX_MSG_IPP ("^" CMD_IPP REGEX_SPACE REGEX_PROTOCOL_VERSION REGEX_SPACE REGEX_INFO "$")
 
-#define REGEX_MSG_BUYIN ("^" CMD_BUYIN REGEX_SPACE REGEX_NAME REGEX_SPACE REGEX_AMT "$")
+#define REGEX_MSG_BUYIN ("^" CMD_BUYIN REGEX_SPACE REGEX_LOGIN REGEX_SPACE REGEX_AMT "$")
 
 #define REGEX_MSG_WELCOME ("^" CMD_WELCOME REGEX_SPACE REGEX_NAME "$")
 
@@ -939,7 +949,7 @@ extern "C" {
 #define IPP_EVAL_STRAIGHT_K (162490421ll)
 #define IPP_EVAL_STRAIGHT_A (259106347ll)
 
-	static int64_t ipp_eval_primes[] = {
+	static long long ipp_eval_primes[] = {
 		IPP_EVAL_C,	/*  0 */
 		IPP_EVAL_H,	/*  1 */
 		IPP_EVAL_D,	/*  2 */
@@ -1084,28 +1094,28 @@ extern "C" {
  * @param str a product of primes that represent a straight.
  * @return a character representing the highest card in the straight.
  */
-	char ipp_eval_straight2char(int64_t str);
+	char ipp_eval_straight2char(long long str);
 
 /**
  * Maps the prime representation of a rank _or_ suit to a character.
  * @param p the prime number.
  * @return a chacter representing the rank or suit ('C' = clubs, 'T' = 10, '2' = 2, etc).
  */
-	char ipp_eval_prime2char(int64_t p);
+	char ipp_eval_prime2char(long long p);
 
 /**
  * Maps a character representation of a rank _or_ suit to a prime number.
  * @param c the character ('C' = clubs, 'T' = 10, '2' = 2, etc).
  * @return a prime number used for hand evaluation.
  */
-	int64_t ipp_eval_char2prime(char c);
+	long long ipp_eval_char2prime(char c);
 
 /**
  * Maps a card to a prime number based representation of the card.
  * @param card the card to map.
  * @return the prime number based representation of the card or 0ll if card is NULL.
  */
-	int64_t ipp_eval_card2prime(ipp_card * card);
+	long long ipp_eval_card2prime(ipp_card * card);
 
 /**
  * Evaluate a 5 card hand. 

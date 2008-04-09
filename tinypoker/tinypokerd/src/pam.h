@@ -17,17 +17,29 @@
  * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TINYPOKERD_H
-#define __TINYPOKERD_H
+#ifndef __PAM_H
+#define __PAM_H
 
+#include <security/pam_appl.h>
 
-#define TINYPOKERD_NAME "tinypokerd"
-#define TINYPOKERD_VERSION "0.0.0"
+#define PAM_SERVICE_NAME "tinypoker"
 
-#include <tinypoker.h>
+/**
+ * The PAM conversation callback.
+ * @param num_msg number of conversation messages.
+ * @param msg a conversation message.
+ * @param resp a conversation response of size num_msg.
+ * @param appdata_ptr data.
+ * @return PAM_SUCCESS or PAM_CONV_ERR
+ */
+int ipp_pam_conv(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr);
 
-#if (LIBTINYPOKER_MAJOR_VERSION == 0 && LIBTINYPOKER_MINOR_VERSION < 1)
-#error "libtinypoker version too old. Minimum version is 0.1.0"
-#endif
+/**
+ * Authenticate a User with PAM
+ * @param user username
+ * @param pass password
+ * @return TRUE for authenticated or FALSE for failed.
+ */
+int ipp_auth(char *user, char *pass);
 
 #endif

@@ -58,7 +58,7 @@ int main(int argc, char **argv, char **envp)
 		return 1;
 	}
 	msg->type = MSG_BUYIN;
-	msg->payload = strdup("BUYIN TOM 500");
+	msg->payload = strdup("BUYIN TEST:ABC123 500");
 	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);
 	if (rc) {
 		printf("< %s\n", msg->payload);

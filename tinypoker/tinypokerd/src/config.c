@@ -110,6 +110,8 @@ void config_parse()
 
 	cfg = NULL;
 
+	daemon_log(LOG_INFO, "[CONF] parsing config file");
+
 	cfg = cfg_init(opts, 0);
 	if (!cfg) {
 		daemon_log(LOG_ERR, "[CONF] cfg_init failed! Loading defaults...");

@@ -45,6 +45,11 @@
 
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
+#include <limits.h>
+#if (LLONG_MAX < 9223372036854775807ll)
+#error "long long must be at least 64-bits wide."
+#endif
+
 #include "tinypoker.h"
 
 /**
@@ -1119,7 +1124,7 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
  * @param str a product of primes that represent a straight.
  * @return a character representing the highest card in the straight.
  */
-char ipp_eval_straight2char(int64_t str)
+char ipp_eval_straight2char(long long str)
 {
 	switch (str) {
 	case IPP_EVAL_STRAIGHT_5:
@@ -1152,7 +1157,7 @@ char ipp_eval_straight2char(int64_t str)
  * @param p the prime number.
  * @return a chacter representing the rank or suit ('C' = clubs, 'T' = 10, '2' = 2, etc).
  */
-char ipp_eval_prime2char(int64_t p)
+char ipp_eval_prime2char(long long p)
 {
 	switch (p) {
 	case IPP_EVAL_C:
@@ -1199,7 +1204,7 @@ char ipp_eval_prime2char(int64_t p)
  * @param c the character ('C' = clubs, 'T' = 10, '2' = 2, etc).
  * @return a prime number used for hand evaluation.
  */
-int64_t ipp_eval_char2prime(char c)
+long long ipp_eval_char2prime(char c)
 {
 	switch (c) {
 	case CLUBS:
@@ -1246,7 +1251,7 @@ int64_t ipp_eval_char2prime(char c)
  * @param card the card to map.
  * @return the prime number based representation of the card or 0ll if card is NULL.
  */
-int64_t ipp_eval_card2prime(ipp_card * card)
+long long ipp_eval_card2prime(ipp_card * card)
 {
 	if (card == NULL) {
 		return 0ll;
@@ -1263,7 +1268,7 @@ int64_t ipp_eval_card2prime(ipp_card * card)
 ipp_message *ipp_eval(ipp_card * cards[5])
 {
 	int i = 0, cnt = 0, len = 0;
-	int64_t tmp, ranks, hand;
+	long long tmp, ranks, hand;
 	int cnts[IPP_EVAL_NPRIMES];
 	int flush = 0, straight = 0, quad = 0, triple = 0, paira = 0, pairb = 0, kicker = 0;
 	char tmp_str[] = { ' ', 'X', '\0' };
@@ -1478,7 +1483,7 @@ int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b)
 		}
 
 		for (i = 1; i < (n + 1); i++) {
-			int64_t a, b;
+			long long a, b;
 
 			if (x->parsed[i] == NULL || y->parsed[i] == NULL || x->parsed[i][0] == '\0' || y->parsed[i][0] == '\0') {
 				return 0;

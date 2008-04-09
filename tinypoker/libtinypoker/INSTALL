@@ -11,7 +11,7 @@ You need the following to build this library...
 
 Configure, compile, test, install...
 
-        $ cmake .
+        $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
         $ make
 	$ make test
         # make install

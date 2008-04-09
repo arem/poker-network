@@ -46,7 +46,7 @@ Build and Install libtinypoker
 
 .Configure, make and install
 --------------------------------------
- $ cmake .
+ $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
  $ make
  # make install
 --------------------------------------

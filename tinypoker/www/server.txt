@@ -34,7 +34,7 @@ Build and Install libtinypoker
 
 .Configure, make and install
 --------------------------------------
- $ cmake .
+ $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
  $ make
  # make install
 --------------------------------------
@@ -44,7 +44,7 @@ Build and Install tinypokerd
 
 .Configure, make and install
 --------------------------------------
- $ cmake .
+ $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
  $ make
  # make install
 --------------------------------------
@@ -96,6 +96,32 @@ dns_name = localhost
 Once you have the certificate files generated, you should copy them to 
 the '/etc/tinypoker/' directory. In that directory, you will also need
 to create an empty file named 'crl.pem'.
+
+Configure PAM
+-------------
+
+*tinypokerd* uses http://www.kernel.org/pub/linux/libs/pam/[Pluggable Authentication Modules for Linux]
+to handle user authentication. This provides an integrated and extremely configurable authentication
+system. It allows *tinypokerd* to authenticate players against any PAM supported authentication system
+(example: LDAP server, system accounts, a simple password file or something else).
+
+In this example we only show how to setup a simple password file. Read more about PAM to find out how
+to configure something more fancy. The first thing to do is to create a *tinypoker* file. See the example
+below.
+
+./etc/pam.d/tinypoker
+--------------------------------
+auth    required pam_pwdfile.so pwdfile /etc/tinypoker/passwd
+account required pam_permit.so
+--------------------------------
+
+Mext, we create the password file and add two users, *jdoe* and *jsmith*. The *-c* option is only needed
+for the first user.
+
+------------------------------------------
+htpasswd -c /etc/tinypoker/passwd jdoe
+htpasswd /etc/tinypoker/passwd jsmith
+------------------------------------------
 
 Legacy Client Support (Optional)
 --------------------------------

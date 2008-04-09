@@ -148,12 +148,32 @@ ELSE (LIBGSL_INCLUDE_DIR)
 ENDIF (LIBGSL_INCLUDE_DIR)
 
 #############################################
+# libpam checks
+#############################################
+
+FIND_LIBRARY(LIBPAM pam ${libdirs})
+
+IF (LIBPAM)
+  MESSAGE(STATUS "Found libpam: ${LIBPAM}")
+ELSE (LIBPAM)
+  MESSAGE (FATAL_ERROR "libpam not found. See: http://www.kernel.org/pub/linux/libs/pam/")
+ENDIF (LIBPAM)
+
+FIND_PATH(LIBPAM_INCLUDE_DIR security/pam_appl.h ${incdirs})
+
+IF (LIBPAM_INCLUDE_DIR)
+  MESSAGE(STATUS "Found security/pam_appl.h in ${LIBPAM_INCLUDE_DIR}")
+ELSE (LIBPAM_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "security/pam_appl.h not found. See: http://www.kernel.org/pub/linux/libs/pam/")
+ENDIF (LIBPAM_INCLUDE_DIR)
+
+#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${incdirs} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR})
-ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c poker.c pokerserv.c)
-TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${LIBGNUTLS} ${LIBGSL} ${LIBGSLCBLAS})
+INCLUDE_DIRECTORIES(${incdirs} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR} ${LIBPAM_INCLUDE_DIR})
+ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c pam.c poker.c pokerserv.c)
+TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${LIBGNUTLS} ${LIBGSL} ${LIBGSLCBLAS} ${LIBPAM})
 
 #############################################
 # Installation

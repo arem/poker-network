@@ -10,3 +10,9 @@ tinypokerd is the TinyPoker server. It will use libtinypoker to
 implement the Internet Poker Protocol (IPP) 2.0 over TLS. The code will 
 be based on the pokerd code base and experience implementing pokerd. An
 effort will be made to make the server footprint even smaller than pokerd.
+
+Features
+
+ * Internet Poker Protocol 2.0 (IPP) over Transport Layer Security (TLS)
+ * Internet Protocol version 4 (IPv4) and Internet Protocol version 6 (IPv6)
+ * User authentication with Pluggable Authentication Modules (PAM)

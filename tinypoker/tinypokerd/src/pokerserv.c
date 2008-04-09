@@ -26,6 +26,7 @@
 #include <tinypoker.h>
 
 #include "config.h"
+#include "pam.h"
 #include "poker.h"
 #include "signal.h"
 #include "tinypokerd.h"
@@ -42,7 +43,7 @@ static void client_connect_callback(ipp_socket * sock)
 	 */
 
 	ipp_message *msg;
-	char *user;
+	char *user, *pass;
 	int rc;
 	char ip[64];
 
@@ -85,14 +86,65 @@ static void client_connect_callback(ipp_socket * sock)
 		msg = NULL;
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] [RECV] |%s| from %s", msg->payload, ip);
+		daemon_log(LOG_INFO, "[SERV] [RECV] {BUYIN} from %s", ip);
 	}
 
 	user = strdup(msg->parsed[1]);
-	daemon_log(LOG_INFO, "[SERV] %s is |%s|", ip, user);
-
 	ipp_free_message(msg);
 	msg = NULL;
+
+	pass = strchr(user, ':');
+	if (pass == NULL) {
+		pass = strdup("");
+		if (pass == NULL) {
+			daemon_log(LOG_ERR, "[SERV] malloc failed");
+			ipp_disconnect(sock);
+			ipp_free_socket(sock);
+			sock = NULL;
+			ipp_free_message(msg);
+			msg = NULL;
+			free(user);
+			user = NULL;
+			return;
+		}
+	} else {
+		*pass = '\0';
+		pass = strdup(pass + sizeof(char));
+		if (pass == NULL) {
+			daemon_log(LOG_ERR, "[SERV] malloc failed");
+			ipp_disconnect(sock);
+			ipp_free_socket(sock);
+			sock = NULL;
+			ipp_free_message(msg);
+			msg = NULL;
+			free(user);
+			user = NULL;
+			return;
+		}
+	}
+
+	daemon_log(LOG_INFO, "[SERV] %s is |%s|", ip, user);
+
+	/* daemon_log(LOG_INFO, "[SERV] '%s' '%s'", user, pass); */
+
+	rc = ipp_auth(user, pass);
+	memset(pass, 'X', strlen(pass));
+	free(pass);
+	pass = NULL;
+
+	if (rc == TRUE) {
+		daemon_log(LOG_INFO, "[SERV] Auth OK");
+	} else {
+		daemon_log(LOG_INFO, "[SERV] Auth Failed");
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		free(user);
+		user = NULL;
+		return;
+	}
 
 	msg = ipp_new_message();
 	msg->type = MSG_WELCOME;
@@ -104,6 +156,9 @@ static void client_connect_callback(ipp_socket * sock)
 		sock = NULL;
 		ipp_free_message(msg);
 		msg = NULL;
+		free(user);
+		user = NULL;
+		return;
 	}
 	memset(msg->payload, '\0', (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2)));
 	snprintf(msg->payload, (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 1)), "%s%s", "WELCOME ", user);
@@ -116,6 +171,8 @@ static void client_connect_callback(ipp_socket * sock)
 		sock = NULL;
 		ipp_free_message(msg);
 		msg = NULL;
+		free(user);
+		user = NULL;
 		return;
 	} else {
 		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %s", msg->payload, ip);
@@ -158,8 +215,12 @@ int pokerserv()
 		raise(SIGQUIT);
 		return -1;
 	}
+	daemon_log(LOG_INFO, "[SERV] Dealer Thread Started");
+
 	/* Start listening for connections */
 	ipp_servloop(client_connect_callback, x509_ca, x509_crl, x509_cert, x509_key);
+
+	daemon_log(LOG_INFO, "[SERV] Server Loop Exited");
 
 	if (!exit_now) {
 		raise(SIGQUIT);

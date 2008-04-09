@@ -10,7 +10,7 @@ You need the following to build the binary...
 
 Configure, compile, install...
 
-	$ cmake .
+	$ cmake -D CMAKE_INSTALL_PREFIX=/usr .
 	$ make
 	# make install
 

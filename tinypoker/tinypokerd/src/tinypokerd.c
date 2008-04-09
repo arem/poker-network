@@ -212,6 +212,12 @@ int main(int argc, char *argv[], char *envp[])
 	/* Configure */
 	config_parse();
 
+	daemon_log(LOG_INFO, "[MAIN] configuration set");
+	daemon_log(LOG_INFO, "[MAIN] x509_ca => '%s'", x509_ca);
+	daemon_log(LOG_INFO, "[MAIN] x509_crl => '%s'", x509_crl);
+	daemon_log(LOG_INFO, "[MAIN] x509_cert => '%s'", x509_cert);
+	daemon_log(LOG_INFO, "[MAIN] x509_key => '%s'", x509_key);
+
 	/* setup tiny poker */
 	ipp_init();
 
@@ -220,18 +226,28 @@ int main(int argc, char *argv[], char *envp[])
 	/* Install Signal Handlers */
 	install_signal_handlers();
 
+	daemon_log(LOG_INFO, "[MAIN] signal handlers set");
+
 	/* this must run before any threads are created */
 	monitor_init();
+
+	daemon_log(LOG_INFO, "[MAIN] monitor set");
 
 	/* Play some poker until we get a SIGINT, SIGQUIT, or SIGKILL */
 	pokerserv();
 
+	daemon_log(LOG_INFO, "[MAIN] shutting down");
+
 	monitor_wait();		/* thread cleanup */
+	daemon_log(LOG_INFO, "[MAIN] threads all cleaned up");
 
 	ipp_exit();
-	config_free();
-	daemon_pid_file_remove();
+	daemon_log(LOG_INFO, "[MAIN] libtinypoker cleared");
 
+	config_free();
+	daemon_log(LOG_INFO, "[MAIN] config cleared");
+
+	daemon_pid_file_remove();
 	daemon_log(LOG_INFO, "[MAIN] Exiting...");
 
 	return 0;
