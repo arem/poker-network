@@ -22,33 +22,47 @@
 
 #include <tinypoker.h>
 
+char *setuid_name;
+
+/**
+ * The default username to run as.
+ */
+#define DEFAULT_SETUID_NAME "tinypokerd"
+
+char *setgid_name;
+
+/**
+ * The default group to run as.
+ */
+#define DEFAULT_SETGID_NAME "tinypokerd"
+
 char *x509_ca;
 
 /**
  * The default CA file location.
  */
-#define DEFAULT_X509_CA "/etc/tinypoker/ca.pem"
+#define DEFAULT_X509_CA "/etc/tinypokerd/ca.pem"
 
 char *x509_crl;
 
 /**
  * The default CRL file location.
  */
-#define DEFAULT_X509_CRL "/etc/tinypoker/crl.pem"
+#define DEFAULT_X509_CRL "/etc/tinypokerd/crl.pem"
 
 char *x509_cert;
 
 /**
  * The default certificate location.
  */
-#define DEFAULT_X509_CERT "/etc/tinypoker/cert.pem"
+#define DEFAULT_X509_CERT "/etc/tinypokerd/cert.pem"
 
 char *x509_key;
 
 /**
  * The default private key location.
  */
-#define DEFAULT_X509_KEY "/etc/tinypoker/key.pem"
+#define DEFAULT_X509_KEY "/etc/tinypokerd/key.pem"
 
 /**
  * The type of game we're playing (holdem, draw, stud)
@@ -58,7 +72,7 @@ enum game_type game_type;
 /**
  * The default configuration file location.
  */
-#define DEFAULT_CONFIGFILE "/etc/tinypoker/tinypokerd.conf"
+#define DEFAULT_CONFIGFILE "/etc/tinypokerd/tinypokerd.conf"
 
 /**
  * Parses an tinypokerd.conf configuration file.

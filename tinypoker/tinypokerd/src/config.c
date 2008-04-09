@@ -39,6 +39,16 @@
  */
 void config_free()
 {
+	if (setuid_name) {
+		free(setuid_name);
+		setuid_name = NULL;
+	}
+
+	if (setgid_name) {
+		free(setgid_name);
+		setgid_name = NULL;
+	}
+
 	if (x509_ca) {
 		free(x509_ca);
 		x509_ca = NULL;
@@ -72,6 +82,14 @@ static void config_with_defaults()
 		game_type = HOLDEM;
 	}
 
+	if (setuid_name == NULL) {
+		setuid_name = strdup(DEFAULT_SETUID_NAME);
+	}
+
+	if (setgid_name == NULL) {
+		setgid_name = strdup(DEFAULT_SETGID_NAME);
+	}
+
 	if (x509_ca == NULL) {
 		x509_ca = strdup(DEFAULT_X509_CA);
 	}
@@ -100,6 +118,8 @@ void config_parse()
 
 	cfg_t *cfg;
 	cfg_opt_t opts[] = {
+		CFG_SIMPLE_STR("setuid", &setuid_name),
+		CFG_SIMPLE_STR("setgid", &setgid_name),
 		CFG_SIMPLE_STR("x509_ca", &x509_ca),
 		CFG_SIMPLE_STR("x509_crl", &x509_crl),
 		CFG_SIMPLE_STR("x509_cert", &x509_cert),
@@ -126,9 +146,13 @@ void config_parse()
 		cfg_free(cfg);
 		cfg = NULL;
 	}
-	if (game_type < 0 || game_type > 3) {
-		daemon_log(LOG_ERR, "[CONF] game_type not present in config file or invalid, defaulting to holdem");
-		game_type = HOLDEM;
+
+	if (setuid_name == NULL) {
+		daemon_log(LOG_ERR, "[CONF] setuid not present in config file, defaulting to '%s'", DEFAULT_SETUID_NAME);
+	}
+
+	if (setgid_name == NULL) {
+		daemon_log(LOG_ERR, "[CONF] setgid not present in config file, defaulting to '%s'", DEFAULT_SETGID_NAME);
 	}
 
 	if (x509_ca == NULL) {
@@ -145,6 +169,11 @@ void config_parse()
 
 	if (x509_key == NULL) {
 		daemon_log(LOG_ERR, "[CONF] x509_key not present in config file, defaulting to '%s'", DEFAULT_X509_KEY);
+	}
+
+	if (game_type < 0 || game_type > 3) {
+		daemon_log(LOG_ERR, "[CONF] game_type not present in config file or invalid, defaulting to holdem");
+		game_type = HOLDEM;
 	}
 
 	config_with_defaults();

@@ -27,6 +27,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <pwd.h>
+#include <grp.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "monitor.h"
@@ -132,38 +135,50 @@ int parse_args(int argc, char **argv)
 	return done;
 }
 
+const char *get_pid_filename()
+{
+	return "/var/run/tinypokerd/tinypokerd.pid";
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
-	int fd;
-	int ret;
+	int fd, ret, uid, gid;
+	struct passwd *pw;
+	struct group *gr;
 	pid_t pid;
 
 	/* Default Values for Global Variables */
 	daemonize = 1;
 	killed = 0;
+	setuid_name = NULL;
+	setgid_name = NULL;
 	x509_ca = NULL;
 	x509_crl = NULL;
 	x509_cert = NULL;
 	x509_key = NULL;
 
 	/* Sanity Checks */
+	if (geteuid() != 0) {
+		daemon_log(LOG_ERR, "[MAIN] You need root privileges to run this application.");
+		return 1;
+	}
+
 	if (argc < 1 || !argv || !argv[0]) {
 		daemon_log(LOG_ERR, "[MAIN] Cannot determine program name from argv[0]\n");
 		return 1;
 	}
 	daemon_pid_file_ident = daemon_log_ident = daemon_ident_from_argv0(argv[0]);
+	daemon_pid_file_proc = get_pid_filename;
 
 	/* Command Line Arguements */
 	ret = parse_args(argc, argv);
 	if (ret) {
 		return (killed ? 0 : ret);
 	}
-	pid = daemon_pid_file_is_running();
-	if (pid > 0) {
-		daemon_log(LOG_ERR, "[MAIN] %s is already running (PID => %u)", argv[0], daemon_log_ident, pid);
-		daemon_log(LOG_INFO, "[MAIN] Use `%s -k` to kill the running instance", daemon_log_ident);
-		return 1;
-	}
+
+	/* Configure */
+	config_parse();
+
 	/* Daemonize */
 	if (daemonize) {
 		/* Configure Logging */
@@ -204,15 +219,60 @@ int main(int argc, char *argv[], char *envp[])
 		fd = open("/dev/null", O_WRONLY);
 		fd = open("/dev/null", O_WRONLY);
 	}
+
+	uid = getuid();
+	gid = getgid();
+
+	gr = getgrnam(setgid_name);
+	if (gr) {
+		gid = gr->gr_gid;
+	} else {
+		daemon_log(LOG_ERR, "[MAIN] Could not determine groupId for group %s", setgid_name);
+		return 1;
+	}
+
+	pw = getpwnam(setuid_name);
+	if (pw) {
+		uid = pw->pw_uid;
+	} else {
+		daemon_log(LOG_ERR, "[MAIN] Could not determine userId for user %s", setuid_name);
+		return 1;
+	}
+
+	if (uid == 0 || gid == 0) {
+		daemon_log(LOG_ERR, "[MAIN] Refusing to set userId and/or groupId to 0.");
+		return 1;
+	}
+
+	/* drop privileges */
+	ret = setgid(gid);
+	if (ret) {
+		daemon_log(LOG_ERR, "[MAIN] setgid(%d) failed", gid);
+		return 1;
+	}
+
+	ret = setuid(uid);
+	if (ret) {
+		daemon_log(LOG_ERR, "[MAIN] setuid(%d) failed", uid);
+		return 1;
+	}
+
+	pid = daemon_pid_file_is_running();
+	if (pid > 0) {
+		daemon_log(LOG_ERR, "[MAIN] %s is already running (PID => %u)", argv[0], daemon_log_ident, pid);
+		daemon_log(LOG_INFO, "[MAIN] Use `%s -k` to kill the running instance", daemon_log_ident);
+		return 1;
+	}
 	ret = daemon_pid_file_create();
 	if (ret < 0) {
 		daemon_log(LOG_ERR, "[MAIN] Could not create PID file: %s", strerror(errno));
 		return 1;
 	}
-	/* Configure */
-	config_parse();
+
 
 	daemon_log(LOG_INFO, "[MAIN] configuration set");
+	daemon_log(LOG_INFO, "[MAIN] setuid => '%s'", setuid_name);
+	daemon_log(LOG_INFO, "[MAIN] setgid => '%s'", setgid_name);
 	daemon_log(LOG_INFO, "[MAIN] x509_ca => '%s'", x509_ca);
 	daemon_log(LOG_INFO, "[MAIN] x509_crl => '%s'", x509_crl);
 	daemon_log(LOG_INFO, "[MAIN] x509_cert => '%s'", x509_cert);

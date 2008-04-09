@@ -94,8 +94,37 @@ dns_name = localhost
 ------------------------------------------
 
 Once you have the certificate files generated, you should copy them to 
-the '/etc/tinypoker/' directory. In that directory, you will also need
+the '/etc/tinypokerd/' directory. In that directory, you will also need
 to create an empty file named 'crl.pem'.
+
+Add a tinypokerd User and Group
+-------------------------------
+
+*tinypokerd* needs root privileges to do some setup when it first starts up,
+and as soon as it's done, *tinypokerd* drops root privileges. A user must
+exist for *tinypokerd* to run as after it drops root privileges. In the example
+below we create that user and set the shell to 'nologin'.
+
+------------------------------------------
+ # useradd tinypokerd
+ # chsh tinypokerd
+	Login Shell [/bin/sh]: /bin/nologin
+------------------------------------------
+
+You can pick a different username and group if you wish. Both are configurable.
+
+Create a run Directory
+----------------------
+
+*tinypokerd* creates a PID file when it starts up. The PID file keeps track of the running
+instance of *tinypokerd*. It can be used to tell if the daemon is running or not as well
+as stopping a running daemon. In the example below we create the directory and give
+the 'tinypokerd' user permission to it.
+
+------------------------------------------
+ # mkdir /var/run/tinypokerd/
+ # chown tinypokerd:tinypokerd /var/run/tinypokerd/
+------------------------------------------
 
 Configure PAM
 -------------
@@ -111,7 +140,7 @@ below.
 
 ./etc/pam.d/tinypoker
 --------------------------------
-auth    required pam_pwdfile.so pwdfile /etc/tinypoker/passwd
+auth    required pam_pwdfile.so pwdfile /etc/tinypokerd/passwd
 account required pam_permit.so
 --------------------------------
 
@@ -119,8 +148,8 @@ Mext, we create the password file and add two users, *jdoe* and *jsmith*. The *-
 for the first user.
 
 ------------------------------------------
-htpasswd -c /etc/tinypoker/passwd jdoe
-htpasswd /etc/tinypoker/passwd jsmith
+htpasswd -c /etc/tinypokerd/passwd jdoe
+htpasswd /etc/tinypokerd/passwd jsmith
 ------------------------------------------
 
 Legacy Client Support (Optional)
@@ -161,24 +190,29 @@ List of Configuration Options
 [frame="all", grid="all"]
 `--------------`---------------`---------------------------------------------------`----------------------------------
 *key*           *value*         *description*                                       *default*
-x509_ca         /path/to/file   Certificate Authority File                          /etc/tinypoker/ca.pem
-x509_crl        /path/to/file   Certificate Revocation List File                    /etc/tinypoker/crl.pem
-x509_cert       /path/to/file   Server Certificate File                             /etc/tinypoker/cert.pem
-x509_key        /path/to/file   Server Certificate Private Key File                 /etc/tinypoker/key.pem
+setuid	        username        Name of the user to run as                          tinypokerd
+setgid	        groupname       Name of the group to run as                         tinypokerd	
+x509_ca         /path/to/file   Certificate Authority File                          /etc/tinypokerd/ca.pem
+x509_crl        /path/to/file   Certificate Revocation List File                    /etc/tinypokerd/crl.pem
+x509_cert       /path/to/file   Server Certificate File                             /etc/tinypokerd/cert.pem
+x509_key        /path/to/file   Server Certificate Private Key File                 /etc/tinypokerd/key.pem
 game_type       1-3             Specify the type of game (holdem, draw or stud).    1
 ----------------------------------------------------------------------------------------------------------------------
 
 Example Configuration File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-./etc/tinypoker/tinypokerd.conf
+./etc/tinypokerd/tinypokerd.conf
 --------------------------------------
 # This is a comment
 
-x509_ca = /etc/tinypoker/ca.pem
-x509_crl = /etc/tinypoker/crl.pem
-x509_cert = /etc/tinypoker/cert.pem
-x509_key = /etc/tinypoker/key.pem
+setuid = tinypokerd
+setgid = tinypokerd
+
+x509_ca = /etc/tinypokerd/ca.pem
+x509_crl = /etc/tinypokerd/crl.pem
+x509_cert = /etc/tinypokerd/cert.pem
+x509_key = /etc/tinypokerd/key.pem
 
 # Texas Hold'em
 game_type = 1
@@ -227,4 +261,3 @@ Example Commands
 --------------------------------------
  # /usr/sbin/tinypokerd --foreground
 --------------------------------------
-
