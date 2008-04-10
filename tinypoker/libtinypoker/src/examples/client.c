@@ -17,6 +17,8 @@
  * libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
+
 #include "../main/tinypoker.h"
 #include <string.h>
 

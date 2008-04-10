@@ -71,7 +71,7 @@ void handle_sigint(int sig)
 /**
  *  installs signal handlers (mostly SIG_IGN)
  */
-void install_signal_handlers()
+void install_signal_handlers(void)
 {
 
 	int i;

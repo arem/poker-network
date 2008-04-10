@@ -19,7 +19,9 @@
 
 #include <stdlib.h>
 #include <tinypoker.h>
+#include <unistd.h>
 
+#include "monitor.h"
 #include "poker.h"
 #include "signal.h"
 

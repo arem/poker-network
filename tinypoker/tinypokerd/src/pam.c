@@ -17,6 +17,8 @@
  * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
+
 #include <libdaemon/dlog.h>
 #include <security/pam_appl.h>
 #include <string.h>

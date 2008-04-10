@@ -77,13 +77,13 @@ enum game_type game_type;
 /**
  * Parses an tinypokerd.conf configuration file.
  */
-void config_parse();
+void config_parse(void);
 
 /**
  * Release any resources that hold configuration information.
  * This function effectively resets all configurable values.
  * It should be called at the end of the program.
  */
-void config_free();
+void config_free(void);
 
 #endif

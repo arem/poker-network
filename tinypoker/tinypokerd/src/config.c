@@ -17,6 +17,8 @@
  * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
+
 #include <confuse.h>
 #include <libdaemon/dlog.h>
 #include <tinypoker.h>
@@ -37,7 +39,7 @@
  * This function effectively resets all configurable values.
  * It should be called at the end of the program.
  */
-void config_free()
+void config_free(void)
 {
 	if (setuid_name) {
 		free(setuid_name);
@@ -76,7 +78,7 @@ void config_free()
  * Examines each value of the current configuration.
  * If a value was not set, it is set to the default.
  */
-static void config_with_defaults()
+static void config_with_defaults(void)
 {
 	if (game_type == UNSPECIFIED) {
 		game_type = HOLDEM;
@@ -110,7 +112,7 @@ static void config_with_defaults()
 /**
  * Parses an tinypokerd.conf configuration file.
  */
-void config_parse()
+void config_parse(void)
 {
 	int rc;
 

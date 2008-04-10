@@ -30,7 +30,7 @@ void handle_signal(int sig);
 /**
  *  installs signal handlers (mostly SIG_IGN)
  */
-void install_signal_handlers();
+void install_signal_handlers(void);
 
 /**
  * Global variable used to determine if the program should halt. Will it ever halt? Only Alan Turing knows.

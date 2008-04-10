@@ -37,6 +37,7 @@
 #include <unistd.h>
 
 #include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
 #include <gcrypt.h>
 #include <gsl/gsl_rng.h>
 
@@ -53,6 +54,81 @@ GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #include "tinypoker.h"
 
 /**
+ * Regular Expressions for all supported message types
+ */
+static char *ipp_regex_msg[] = {
+	REGEX_MSG_IPP,
+	REGEX_MSG_BUYIN,
+	REGEX_MSG_WELCOME,
+	REGEX_MSG_NEWGAME,
+	REGEX_MSG_PLAYER,
+	REGEX_MSG_BUTTON,
+	REGEX_MSG_ANTE,
+	REGEX_MSG_DEAL,
+	REGEX_MSG_FROM,
+	REGEX_MSG_FLOP,
+	REGEX_MSG_TURN,
+	REGEX_MSG_RIVER,
+	REGEX_MSG_DRAWQ,
+	REGEX_MSG_DRAW,
+	REGEX_MSG_DRAWN,
+	REGEX_MSG_FOLD,
+	REGEX_MSG_UP,
+	REGEX_MSG_DOWN,
+	REGEX_MSG_ACTION,
+	REGEX_MSG_BLIND,
+	REGEX_MSG_TAPOUT,
+	REGEX_MSG_STRADDLE,
+	REGEX_MSG_CALL,
+	REGEX_MSG_RAISE,
+	REGEX_MSG_OPEN,
+	REGEX_MSG_CHECK,
+	REGEX_MSG_WINNER,
+	REGEX_MSG_BUSTED,
+	REGEX_MSG_GAMEOVER,
+	REGEX_MSG_QUIT,
+	REGEX_MSG_SHOWQ,
+	REGEX_MSG_SHOW,
+	REGEX_MSG_BEATQ,
+	REGEX_MSG_NO,
+	REGEX_MSG_YES,
+	REGEX_MSG_ERROR,
+	REGEX_MSG_OK,
+	REGEX_MSG_STRAIGHTFLUSH,
+	REGEX_MSG_FOUROFAKIND,
+	REGEX_MSG_FULLHOUSE,
+	REGEX_MSG_FLUSH,
+	REGEX_MSG_STRAIGHT,
+	REGEX_MSG_THREEOFAKIND,
+	REGEX_MSG_TWOPAIR,
+	REGEX_MSG_ONEPAIR,
+	REGEX_MSG_HIGHCARD,
+	NULL
+};
+
+
+static long long ipp_eval_primes[] = {
+	IPP_EVAL_C,		/*  0 */
+	IPP_EVAL_H,		/*  1 */
+	IPP_EVAL_D,		/*  2 */
+	IPP_EVAL_S,		/*  3 */
+	IPP_EVAL_2,		/*  4 */
+	IPP_EVAL_3,		/*  5 */
+	IPP_EVAL_4,		/*  6 */
+	IPP_EVAL_5,		/*  7 */
+	IPP_EVAL_6,		/*  8 */
+	IPP_EVAL_7,		/*  9 */
+	IPP_EVAL_8,		/* 10 */
+	IPP_EVAL_9,		/* 11 */
+	IPP_EVAL_T,		/* 12 */
+	IPP_EVAL_J,		/* 13 */
+	IPP_EVAL_Q,		/* 14 */
+	IPP_EVAL_K,		/* 15 */
+	IPP_EVAL_A		/* 16 */
+};
+
+
+/**
  * random number generator
  */
 static gsl_rng *rng = NULL;
@@ -60,7 +136,7 @@ static gsl_rng *rng = NULL;
 /**
  * Initializes underlying libraries. This function *must* be called first!
  */
-void ipp_init()
+void ipp_init(void)
 {
 	const gsl_rng_type *T;
 	T = gsl_rng_ranlux;
@@ -78,7 +154,7 @@ void ipp_init()
 /**
  * De-initializes underlying libraries. This function *must* be called last!
  */
-void ipp_exit()
+void ipp_exit(void)
 {
 	/* GNU Sci Lib */
 	if (rng) {
@@ -173,7 +249,7 @@ int ipp_validate_unknown_msg(char *msg)
 	unsigned int i;
 	int is_valid = -1;
 
-	if (!ipp_regex_msg || !msg) {
+	if (!msg) {
 		return FALSE;
 	}
 	for (i = 0; ipp_regex_msg[i]; i++) {
@@ -262,7 +338,7 @@ void ipp_parse_msg(ipp_message * msg)
 				/* malloc() failed */
 				for (j = 0; msg->parsed[j]; j++) {
 					free(msg->parsed[j]);
-					msg->parsed[j];
+					msg->parsed[j] = NULL;
 				}
 				free(msg->parsed);
 				msg->parsed = NULL;
@@ -444,7 +520,7 @@ void ipp_shuffle_deck(ipp_deck * deck)
  */
 ipp_deck *ipp_new_deck()
 {
-	int x, y, z, i;
+	int x, y, z;
 	ipp_deck *deck;
 	char __suits[4] = { SPADES, DIAMONDS, HEARTS, CLUBS };
 	char __ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
@@ -634,7 +710,6 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 	ipp_socket *sock;
 	int ret;
 	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
-	const char *err;
 
 	struct addrinfo *ai;
 	struct addrinfo hints;
@@ -779,7 +854,8 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
 {
 	__ipp_readln_thread_params params;
 	char *buffer;
-	int n, is_valid, ret;
+	int is_valid, ret;
+	unsigned int n;
 	pthread_t reader;
 	pthread_attr_t reader_attr;
 	time_t clock;
@@ -867,7 +943,8 @@ void __ipp_writeln_thread(void *void_params)
 int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 {
 	__ipp_writeln_thread_params params;
-	int is_valid, ret, n;
+	int is_valid, ret;
+	unsigned int n;
 	pthread_t writer;
 	pthread_attr_t writer_attr;
 	time_t clock;
@@ -1286,7 +1363,7 @@ ipp_message *ipp_eval(ipp_card * cards[5])
 	memset(msg->payload, '\0', (sizeof(char) * (MAX_MSG_SIZE + 1)));
 
 	hand = ipp_eval_card2prime(cards[0]) * ipp_eval_card2prime(cards[1]) * ipp_eval_card2prime(cards[2]) * ipp_eval_card2prime(cards[3]) * ipp_eval_card2prime(cards[4]);
-
+	ranks = 0;
 	for (i = 0; i < IPP_EVAL_NPRIMES; i++) {
 		if (i == 4) {
 			ranks = hand;

@@ -20,6 +20,6 @@
 #ifndef __POKERSERV_H
 #define __POKERSERV_H
 
-int pokerserv();
+int pokerserv(void);
 
 #endif

@@ -17,6 +17,7 @@
  * bagelbot-ng.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <strings.h>
 #include <getopt.h>
 #include <libdaemon/dlog.h>
 #include <tinypoker.h>
@@ -29,13 +30,13 @@
  * Handshake with the server.
  * @return a connected socket or NULL.
  */
-ipp_socket *handshake()
+ipp_socket *handshake(void)
 {
 	int rc;
 	ipp_socket *sock;
 	ipp_message *msg;
 
-	daemon_log(LOG_INFO, "[HAND] [CONN] %s %d", host);
+	daemon_log(LOG_INFO, "[HAND] [CONN] %s", host);
 
 	sock = ipp_connect(host, "ca.pem");
 	if (sock == NULL) {
@@ -120,7 +121,7 @@ void display_help(char *program)
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
-void display_version()
+void display_version(void)
 {
 	daemon_log(LOG_INFO, "%s v%1.1f", PROGRAM, VERSION);
 	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
@@ -181,7 +182,7 @@ int main(int argc, char **argv)
 	int rc;
 
 	if (argc < 1 || !argv || !argv[0]) {
-		daemon_log(LOG_ERR, "(%u:%s) Cannot determine program name from argv[0]", __FILE__, __LINE__);
+		daemon_log(LOG_ERR, "(%u:%s) Cannot determine program name from argv[0]", __LINE__, __FILE__);
 		return 1;
 	}
 	/* Set the default config file path */

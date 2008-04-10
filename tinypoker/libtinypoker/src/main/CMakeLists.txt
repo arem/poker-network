@@ -91,10 +91,9 @@ ENDIF (LIBGSL_INCLUDE_DIR)
 # Put everything together
 #############################################
 
-SET(CMAKE_C_FLAGS, "${CMAKE_C_FLAGS} -std=c99")
-
 INCLUDE_DIRECTORIES(${incdirs} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR})
 ADD_LIBRARY(tinypoker SHARED tinypoker.c)
+SET_TARGET_PROPERTIES(tinypoker PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
 LINK_LIBRARIES(tinypoker ${LIBPTHREAD} ${LIBGNUTLS} ${LIBGSL} ${LIBGSLCBLAS})
 INSTALL(TARGETS tinypoker DESTINATION lib)
 INSTALL(FILES tinypoker.h DESTINATION include)

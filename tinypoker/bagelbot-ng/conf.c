@@ -35,7 +35,7 @@
 /**
  * Reads 'configfile' and allocates memory for their values
  */
-void configure()
+void configure(void)
 {
 	cfg_opt_t opts[] = {
 		CFG_SIMPLE_STR("user", &user),

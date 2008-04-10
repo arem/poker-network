@@ -28,6 +28,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 
@@ -39,19 +40,13 @@ extern "C" {
 #define FALSE (0)
 #endif
 
-#define max(x,y) ({ 		\
-	typeof(x) _x = (x);	\
-	typeof(y) _y = (y);	\
-	(void) (&_x == &_y);	\
-	_x > _y ? _x : _y;	\
-})
+#ifndef max
+#define max(x,y) (x > y ? x : y)
+#endif
 
-#define min(x,y) ({		\
-	typeof(x) _x = (x);	\
-	typeof(y) _y = (y);	\
-	(void) (&_x == &_y);	\
-	_x < _y ? _x : _y;	\
-})
+#ifndef min
+#define min(x,y) (x < y ? x : y)
+#endif
 
 /**
  * Major version number. This is updated when major re-writes or
@@ -203,7 +198,7 @@ extern "C" {
  * @return a malloc()'d ipp_socket structure.
  * @see ipp_free_socket()
  */
-	ipp_socket *ipp_new_socket();
+	ipp_socket *ipp_new_socket(void);
 
 /**
  * Deallocate an ipp_socket.
@@ -214,7 +209,7 @@ extern "C" {
  * Allocates an empty ipp_message. Don't forget to ipp_free_message().
  * @return a malloc()'d ipp_message structure.
  */
-	ipp_message *ipp_new_message();
+	ipp_message *ipp_new_message(void);
 
 /**
  * Parses msg->payload into msg->parsed
@@ -231,7 +226,7 @@ extern "C" {
  * Allocates an empty ipp_card. Don't forget to ipp_free_card().
  * @return a malloc()'d ipp_card structure.
  */
-	ipp_card *ipp_new_card();
+	ipp_card *ipp_new_card(void);
 
 /**
  * Deallocate an ipp_card.
@@ -260,7 +255,7 @@ extern "C" {
  * Don't for get to ipp_free_deck().
  * @return a malloc()'d ipp_deck structure.
  */
-	ipp_deck *ipp_new_deck();
+	ipp_deck *ipp_new_deck(void);
 
 /**
  * Randomize the order of the cards in the deck.
@@ -277,7 +272,7 @@ extern "C" {
  * Allocates an empty ipp_player. Don't forget to ipp_free_player().
  * @return a malloc()'d ipp_player structure.
  */
-	ipp_player *ipp_new_player();
+	ipp_player *ipp_new_player(void);
 
 /**
  * Deallocates an ipp_player.
@@ -288,7 +283,7 @@ extern "C" {
  * Allocates an empty ipp_table. Don't for get to ipp_free_table().
  * @return a malloc()'d ipp_table structure.
  */
-	ipp_table *ipp_new_table();
+	ipp_table *ipp_new_table(void);
 
 /**
  * Deallocates an ipp_table.
@@ -821,58 +816,6 @@ extern "C" {
 
 #define REGEX_MSG_OK ("^" CMD_OK REGEX_SPACE REGEX_INFO "$")
 
-/* Regular Expressions for all supported message types */
-
-	static char *ipp_regex_msg[] = {
-		REGEX_MSG_IPP,
-		REGEX_MSG_BUYIN,
-		REGEX_MSG_WELCOME,
-		REGEX_MSG_NEWGAME,
-		REGEX_MSG_PLAYER,
-		REGEX_MSG_BUTTON,
-		REGEX_MSG_ANTE,
-		REGEX_MSG_DEAL,
-		REGEX_MSG_FROM,
-		REGEX_MSG_FLOP,
-		REGEX_MSG_TURN,
-		REGEX_MSG_RIVER,
-		REGEX_MSG_DRAWQ,
-		REGEX_MSG_DRAW,
-		REGEX_MSG_DRAWN,
-		REGEX_MSG_FOLD,
-		REGEX_MSG_UP,
-		REGEX_MSG_DOWN,
-		REGEX_MSG_ACTION,
-		REGEX_MSG_BLIND,
-		REGEX_MSG_TAPOUT,
-		REGEX_MSG_STRADDLE,
-		REGEX_MSG_CALL,
-		REGEX_MSG_RAISE,
-		REGEX_MSG_OPEN,
-		REGEX_MSG_CHECK,
-		REGEX_MSG_WINNER,
-		REGEX_MSG_BUSTED,
-		REGEX_MSG_GAMEOVER,
-		REGEX_MSG_QUIT,
-		REGEX_MSG_SHOWQ,
-		REGEX_MSG_SHOW,
-		REGEX_MSG_BEATQ,
-		REGEX_MSG_NO,
-		REGEX_MSG_YES,
-		REGEX_MSG_ERROR,
-		REGEX_MSG_OK,
-		REGEX_MSG_STRAIGHTFLUSH,
-		REGEX_MSG_FOUROFAKIND,
-		REGEX_MSG_FULLHOUSE,
-		REGEX_MSG_FLUSH,
-		REGEX_MSG_STRAIGHT,
-		REGEX_MSG_THREEOFAKIND,
-		REGEX_MSG_TWOPAIR,
-		REGEX_MSG_ONEPAIR,
-		REGEX_MSG_HIGHCARD,
-		NULL
-	};
-
 #define MSG_IPP 0
 #define MSG_BUYIN 1
 #define MSG_WELCOME 2
@@ -949,26 +892,6 @@ extern "C" {
 #define IPP_EVAL_STRAIGHT_K (162490421ll)
 #define IPP_EVAL_STRAIGHT_A (259106347ll)
 
-	static long long ipp_eval_primes[] = {
-		IPP_EVAL_C,	/*  0 */
-		IPP_EVAL_H,	/*  1 */
-		IPP_EVAL_D,	/*  2 */
-		IPP_EVAL_S,	/*  3 */
-		IPP_EVAL_2,	/*  4 */
-		IPP_EVAL_3,	/*  5 */
-		IPP_EVAL_4,	/*  6 */
-		IPP_EVAL_5,	/*  7 */
-		IPP_EVAL_6,	/*  8 */
-		IPP_EVAL_7,	/*  9 */
-		IPP_EVAL_8,	/* 10 */
-		IPP_EVAL_9,	/* 11 */
-		IPP_EVAL_T,	/* 12 */
-		IPP_EVAL_J,	/* 13 */
-		IPP_EVAL_Q,	/* 14 */
-		IPP_EVAL_K,	/* 15 */
-		IPP_EVAL_A	/* 16 */
-	};
-
 #define IPP_EVAL_NPRIMES (17)
 
 /* function prototypes */
@@ -976,12 +899,12 @@ extern "C" {
 /**
  * Initializes underlying libraries. This function *must* be called before performing any network operations!
  */
-	void ipp_init();
+	void ipp_init(void);
 
 /**
  * De-initializes underlying libraries. This function *must* be called last!
  */
-	void ipp_exit();
+	void ipp_exit(void);
 
 /**
  * Validates IPP Messages

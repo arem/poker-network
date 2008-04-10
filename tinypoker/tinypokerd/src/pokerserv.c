@@ -17,6 +17,8 @@
  * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
+
 #include <netdb.h>
 #include <sys/socket.h>
 #include <gnutls/gnutls.h>
@@ -26,6 +28,7 @@
 #include <tinypoker.h>
 
 #include "config.h"
+#include "monitor.h"
 #include "pam.h"
 #include "poker.h"
 #include "signal.h"
@@ -193,7 +196,7 @@ static void client_connect_callback(ipp_socket * sock)
 	sock = NULL;
 }
 
-int pokerserv()
+int pokerserv(void)
 {
 	pthread_t dealer_thread;
 	pthread_attr_t dealer_thread_attr;

@@ -17,6 +17,8 @@
  * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
+
 #include <errno.h>
 #include <getopt.h>
 #include <libdaemon/dlog.h>
@@ -29,6 +31,7 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
+
 #include <unistd.h>
 
 #include "config.h"
@@ -51,7 +54,7 @@ int killed;
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
-void display_version()
+void display_version(void)
 {
 	daemon_log(LOG_INFO, "%s/%s", TINYPOKERD_NAME, TINYPOKERD_VERSION);
 	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
@@ -135,7 +138,7 @@ int parse_args(int argc, char **argv)
 	return done;
 }
 
-const char *get_pid_filename()
+const char *get_pid_filename(void)
 {
 	return "/var/run/tinypokerd/tinypokerd.pid";
 }
@@ -259,7 +262,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	pid = daemon_pid_file_is_running();
 	if (pid > 0) {
-		daemon_log(LOG_ERR, "[MAIN] %s is already running (PID => %u)", argv[0], daemon_log_ident, pid);
+		daemon_log(LOG_ERR, "[MAIN] %s is already running (PID => %u)", daemon_log_ident, pid);
 		daemon_log(LOG_INFO, "[MAIN] Use `%s -k` to kill the running instance", daemon_log_ident);
 		return 1;
 	}

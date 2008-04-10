@@ -31,7 +31,7 @@ char *host;
 /**
  * Reads 'configfile' and allocates memory for their values
  */
-void configure();
+void configure(void);
 
 /**
  * Macro to free the user and host (if set).
