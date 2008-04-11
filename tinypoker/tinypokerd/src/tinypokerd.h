@@ -22,7 +22,7 @@
 
 
 #define TINYPOKERD_NAME "tinypokerd"
-#define TINYPOKERD_VERSION "0.0.0"
+#define TINYPOKERD_VERSION VERSION
 
 #include <tinypoker.h>
 

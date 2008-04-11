@@ -35,7 +35,7 @@ int main(int argc, char **argv, char **envp)
 		ipp_exit();
 		return 1;
 	}
-	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, NULL);
 	if (msg && msg->payload && msg->type == MSG_IPP) {
 		printf("> %s\n", msg->payload);
 		ipp_free_message(msg);
@@ -61,7 +61,7 @@ int main(int argc, char **argv, char **envp)
 	}
 	msg->type = MSG_BUYIN;
 	msg->payload = strdup("BUYIN TEST:ABC123 500");
-	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);
+	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT, NULL);
 	if (rc) {
 		printf("< %s\n", msg->payload);
 		ipp_free_message(msg);
@@ -78,7 +78,7 @@ int main(int argc, char **argv, char **envp)
 		return 1;
 	}
 
-	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, NULL);
 	if (msg && msg->payload && msg->type == MSG_WELCOME) {
 		printf("> %s\n", msg->payload);
 		ipp_free_message(msg);

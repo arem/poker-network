@@ -23,7 +23,11 @@ and bad input. IPP message validation, normalization and parsing
 functions are available to developers as are several predefined types
 for representing poker games, players and cards.
  
-tinypokerd - Internet Poker Protocol (IPP) version 2.0 Server.
+tinypokerd - tinypokerd is the TinyPoker server. It will use libtinypoker to
+implement the Internet Poker Protocol (IPP) 2.0 over TLS. The code will
+be based on the pokerd code base and experience implementing pokerd. An
+effort will be made to make the server footprint even smaller than 
+pokerd.
 
 tinypokerclient - a basic GUI designed for use with tinypokerd. The primary
 purpose is to provide a way for humans to more easily debug poker bots and

@@ -25,6 +25,7 @@
 #include "conf.h"
 #include "play.h"
 #include "main.h"
+#include "signal.h"
 
 /**
  * Handshake with the server.
@@ -43,7 +44,7 @@ ipp_socket *handshake(void)
 		daemon_log(LOG_ERR, "[HAND] ipp_connect() failed");
 		return NULL;
 	}
-	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, NULL);
 	if (!msg || msg->type != MSG_IPP) {
 		ipp_free_message(msg);
 		msg = NULL;
@@ -75,7 +76,7 @@ ipp_socket *handshake(void)
 	memset(msg->payload, '\0', (sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 2)));
 	snprintf(msg->payload, (sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 1)), "%s%s%s", "BUYIN ", user, " 100");
 
-	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT);
+	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT, NULL);
 	if (!rc) {
 		daemon_log(LOG_ERR, "[HAND] send failed");
 		ipp_free_message(msg);
@@ -89,7 +90,7 @@ ipp_socket *handshake(void)
 	ipp_free_message(msg);
 	msg = NULL;
 
-	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT);
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, NULL);
 	if (!msg || msg->type != MSG_WELCOME) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
@@ -123,7 +124,7 @@ void display_help(char *program)
  */
 void display_version(void)
 {
-	daemon_log(LOG_INFO, "%s v%1.1f", PROGRAM, VERSION);
+	daemon_log(LOG_INFO, "%s v%s", PROGRAM, VERSION);
 	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
 	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
 	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
@@ -185,6 +186,9 @@ int main(int argc, char **argv)
 		daemon_log(LOG_ERR, "(%u:%s) Cannot determine program name from argv[0]", __LINE__, __FILE__);
 		return 1;
 	}
+
+	install_signal_handlers();
+
 	/* Set the default config file path */
 	configfile = (char *) malloc((strlen("bagelbot-ng.conf") + 2) * sizeof(char));
 	if (!configfile) {

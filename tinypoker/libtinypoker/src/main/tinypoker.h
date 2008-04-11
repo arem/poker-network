@@ -67,6 +67,8 @@ extern "C" {
  */
 #define LIBTINYPOKER_PATCH_VERSION 0
 
+#define LIBTINYPOKER_VERSION VERSION
+
 /* TODO Support for Stud and Draw */
 #define HOLDEM_HOLE_CARDS 2
 #define HOLDEM_PLAYERS_PER_TABLE 8
@@ -955,7 +957,7 @@ extern "C" {
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-	ipp_message *ipp_read_msg(ipp_socket * sock, int timeout);
+	ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *));
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
@@ -964,7 +966,7 @@ extern "C" {
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-	int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout);
+	int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logger) (char *));
 
 /**
  * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!

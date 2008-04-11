@@ -70,6 +70,11 @@ char *x509_key;
 enum game_type game_type;
 
 /**
+ * The path to the configuration file.
+ */
+char *configfile;
+
+/**
  * The default configuration file location.
  */
 #define DEFAULT_CONFIGFILE "/etc/tinypokerd/tinypokerd.conf"

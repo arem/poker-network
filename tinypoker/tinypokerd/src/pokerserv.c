@@ -64,7 +64,7 @@ static void client_connect_callback(ipp_socket * sock)
 	msg->type = MSG_IPP;
 	msg->payload = strdup("IPP 2.0 " TINYPOKERD_NAME "/" TINYPOKERD_VERSION);
 
-	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT);
+	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, NULL);
 	if (rc == FALSE) {
 		daemon_log(LOG_ERR, "[SERV] Could not send IPP message to %s", ip);
 		ipp_disconnect(sock);
@@ -79,7 +79,7 @@ static void client_connect_callback(ipp_socket * sock)
 	ipp_free_message(msg);
 	msg = NULL;
 
-	msg = ipp_read_msg(sock, SERVER_READ_TIMEOUT);
+	msg = ipp_read_msg(sock, SERVER_READ_TIMEOUT, NULL);
 	if (msg == NULL || msg->type != MSG_BUYIN || msg->payload == NULL) {
 		daemon_log(LOG_ERR, "[SERV] Could not read BUYIN message from %s", ip);
 		ipp_disconnect(sock);
@@ -98,7 +98,7 @@ static void client_connect_callback(ipp_socket * sock)
 
 	pass = strchr(user, ':');
 	if (pass == NULL) {
-		pass = strdup("");
+		pass = strdup("NOPASS");
 		if (pass == NULL) {
 			daemon_log(LOG_ERR, "[SERV] malloc failed");
 			ipp_disconnect(sock);
@@ -166,7 +166,7 @@ static void client_connect_callback(ipp_socket * sock)
 	memset(msg->payload, '\0', (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2)));
 	snprintf(msg->payload, (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 1)), "%s%s", "WELCOME ", user);
 
-	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT);
+	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, NULL);
 	if (rc == FALSE) {
 		daemon_log(LOG_ERR, "[SERV] Could not send WELCOME message to %s", ip);
 		ipp_disconnect(sock);

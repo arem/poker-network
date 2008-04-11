@@ -27,7 +27,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
@@ -75,6 +77,7 @@ void display_help(char *program)
 	daemon_log(LOG_INFO, "    -v --version       Show version information");
 	daemon_log(LOG_INFO, "    -k --kill          Kill the running instance");
 	daemon_log(LOG_INFO, "    -f --foreground    Run in the foreground");
+	daemon_log(LOG_INFO, "    -c --config=file   Use an alternate config");
 }
 
 /**
@@ -89,10 +92,11 @@ int parse_args(int argc, char **argv)
 	int done;
 
 	static struct option long_options[] = {
-		{"help", no_argument, 0, 'h'},
-		{"version", no_argument, 0, 'v'},
-		{"kill", no_argument, 0, 'k'},
-		{"foreground", no_argument, 0, 'f'},
+		{"help", no_argument, NULL, 'h'},
+		{"version", no_argument, NULL, 'v'},
+		{"kill", no_argument, NULL, 'k'},
+		{"foreground", no_argument, NULL, 'f'},
+		{"config", required_argument, NULL, 'c'},
 		{0, 0, 0, 0}
 	};
 
@@ -103,7 +107,7 @@ int parse_args(int argc, char **argv)
 		int c;
 		int ret;
 
-		c = getopt_long(argc, argv, "hvkf", long_options, &option_index);
+		c = getopt_long(argc, argv, "hvkfc:", long_options, &option_index);
 		if (c < 0) {
 			break;
 		}
@@ -128,6 +132,17 @@ int parse_args(int argc, char **argv)
 		case 'f':
 			daemonize = 0;
 			break;
+		case 'c':
+			if (configfile) {
+				free(configfile);
+				configfile = NULL;
+			}
+			configfile = strdup(optarg);
+			if (!configfile) {
+				daemon_log(LOG_ERR, "[MAIN] strdup() failed");
+				done = 1;
+			}
+			break;
 		default:
 			daemon_log(LOG_ERR, "[MAIN] Unsupported option");
 			done = 1;
@@ -148,6 +163,7 @@ int main(int argc, char *argv[], char *envp[])
 	int fd, ret, uid, gid;
 	struct passwd *pw;
 	struct group *gr;
+	struct rlimit rlim;
 	pid_t pid;
 
 	/* Default Values for Global Variables */
@@ -159,6 +175,7 @@ int main(int argc, char *argv[], char *envp[])
 	x509_crl = NULL;
 	x509_cert = NULL;
 	x509_key = NULL;
+	configfile = NULL;
 
 	/* Sanity Checks */
 	if (geteuid() != 0) {
@@ -173,14 +190,33 @@ int main(int argc, char *argv[], char *envp[])
 	daemon_pid_file_ident = daemon_log_ident = daemon_ident_from_argv0(argv[0]);
 	daemon_pid_file_proc = get_pid_filename;
 
+	if (configfile) {
+		free(configfile);
+		configfile = NULL;
+	}
+	configfile = strdup(DEFAULT_CONFIGFILE);
+	if (!configfile) {
+		daemon_log(LOG_ERR, "[MAIN] strdup() failed");
+		return 1;
+	}
+
 	/* Command Line Arguements */
 	ret = parse_args(argc, argv);
 	if (ret) {
+		if (configfile) {
+			free(configfile);
+			configfile = NULL;
+		}
 		return (killed ? 0 : ret);
 	}
 
 	/* Configure */
 	config_parse();
+
+	if (configfile) {
+		free(configfile);
+		configfile = NULL;
+	}
 
 	/* Daemonize */
 	if (daemonize) {
@@ -221,6 +257,60 @@ int main(int argc, char *argv[], char *envp[])
 		fd = open("/dev/null", O_RDONLY);
 		fd = open("/dev/null", O_WRONLY);
 		fd = open("/dev/null", O_WRONLY);
+	}
+
+	/* disable core dumps so usernames and passwords aren't dumped. */
+	rlim.rlim_cur = 0;
+	rlim.rlim_max = 0;
+	ret = setrlimit(RLIMIT_CORE, &rlim);
+	if (ret < 0) {
+		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		return 1;
+	}
+
+	/* set max file size to 8MB (8388608 bytes) */
+	rlim.rlim_cur = 8388608;
+	rlim.rlim_max = 8388608;
+	ret = setrlimit(RLIMIT_FSIZE, &rlim);
+	if (ret < 0) {
+		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		return 1;
+	}
+
+	/* set max address space to 32MB (33554432 bytes) */
+	rlim.rlim_cur = 33554432;
+	rlim.rlim_max = 33554432;
+	ret = setrlimit(RLIMIT_AS, &rlim);
+	if (ret < 0) {
+		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		return 1;
+	}
+
+	/* set max file descriptor number */
+	rlim.rlim_cur = 64;
+	rlim.rlim_max = 64;
+	ret = setrlimit(RLIMIT_NOFILE, &rlim);
+	if (ret < 0) {
+		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		return 1;
+	}
+
+	/* set max threads to 64 */
+	rlim.rlim_cur = 64;
+	rlim.rlim_max = 64;
+	ret = setrlimit(RLIMIT_NPROC, &rlim);
+	if (ret < 0) {
+		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		return 1;
+	}
+
+	/* don't be a CPU hog */
+	if (getpriority(PRIO_PROCESS, getpid()) < 0) {
+		ret = setpriority(PRIO_PROCESS, getpid(), 0);
+		if (ret == -1) {
+			daemon_log(LOG_ERR, "[MAIN] setpriority() failed");
+			return 1;
+		}
 	}
 
 	uid = getuid();
@@ -271,7 +361,6 @@ int main(int argc, char *argv[], char *envp[])
 		daemon_log(LOG_ERR, "[MAIN] Could not create PID file: %s", strerror(errno));
 		return 1;
 	}
-
 
 	daemon_log(LOG_INFO, "[MAIN] configuration set");
 	daemon_log(LOG_INFO, "[MAIN] setuid => '%s'", setuid_name);

@@ -15,7 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with bagelbot-ng.  If not, see <http://www.gnu.org/licenses/>.
 
-PROJECT(bagelbot-ng)
+PROJECT(bagelbot-ng C)
+
+# Version Information
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+SET(VERSION "${CPACK_PACKAGE_VERSION}")
+ADD_DEFINITIONS("-DVERSION=\\\"${VERSION}\\\"")
 
 SET (libdirs /usr/lib /usr/local/lib /usr/lib32 /usr/local/lib32 /usr/lib64 /usr/local/lib64)
 
@@ -148,12 +156,52 @@ ELSE (LIBGSL_INCLUDE_DIR)
 ENDIF (LIBGSL_INCLUDE_DIR)
 
 #############################################
+# libdl checks
+#############################################
+
+FIND_LIBRARY(LIBDL dl ${libdirs})
+
+IF (LIBDL)
+  MESSAGE(STATUS "Found libdl: ${LIBDL}")
+ELSE (LIBDL)
+  MESSAGE (FATAL_ERROR "libdl not found. See: http://www.gnu.org/software/libc/")
+ENDIF (LIBDL)
+
+FIND_PATH(LIBDL_INCLUDE_DIR dlfcn.h ${incdirs})
+
+IF (LIBDL_INCLUDE_DIR)
+  MESSAGE(STATUS "Found dlfcn.h in ${LIBDL_INCLUDE_DIR}")
+ELSE (LIBDL_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "dlfcn.h not found. See: http://www.gnu.org/software/libc/")
+ENDIF (LIBDL_INCLUDE_DIR)
+
+#############################################
+# libbfd checks
+#############################################
+
+FIND_LIBRARY(LIBBFD bfd ${libdirs})
+
+IF (LIBBFD)
+  MESSAGE(STATUS "Found libbfd: ${LIBBFD}")
+ELSE (LIBBFD)
+  MESSAGE (FATAL_ERROR "libbfd not found. See: http://www.gnu.org/software/binutils/")
+ENDIF (LIBBFD)
+
+FIND_PATH(LIBBFD_INCLUDE_DIR bfd.h ${incdirs})
+
+IF (LIBBFD_INCLUDE_DIR)
+  MESSAGE(STATUS "Found bfd.h in ${LIBBFD_INCLUDE_DIR}")
+ELSE (LIBBFD_INCLUDE_DIR)
+  MESSAGE (FATAL_ERROR "bfd.h not found. See: http://www.gnu.org/software/binutils/")
+ENDIF (LIBBFD_INCLUDE_DIR)
+
+#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR})
-ADD_EXECUTABLE(bagelbot-ng conf.c main.c play.c)
+INCLUDE_DIRECTORIES(${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR} ${LIBDL_INCLUDE_DIR} ${LIBBFD_INCLUDE_DIR})
+ADD_EXECUTABLE(bagelbot-ng conf.c main.c play.c signal.c)
 SET_TARGET_PROPERTIES(bagelbot-ng PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
-TARGET_LINK_LIBRARIES(bagelbot-ng ${LIBCONFUSE} ${LIBDAEMON} ${LIBTINYPOKER} ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSL} ${LIBGSLCBLAS})
+TARGET_LINK_LIBRARIES(bagelbot-ng ${LIBCONFUSE} ${LIBDAEMON} ${LIBTINYPOKER} ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSL} ${LIBGSLCBLAS} ${LIBDL} ${LIBBFD})
 INSTALL(PROGRAMS bagelbot-ng DESTINATION usr/bin)
 INSTALL(FILES bagelbot-ng.conf DESTINATION etc PERMISSIONS OWNER_WRITE OWNER_READ)

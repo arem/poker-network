@@ -107,7 +107,7 @@ static char *ipp_regex_msg[] = {
 };
 
 
-static long long ipp_eval_primes[] = {
+static const long long ipp_eval_primes[] = {
 	IPP_EVAL_C,		/*  0 */
 	IPP_EVAL_H,		/*  1 */
 	IPP_EVAL_D,		/*  2 */
@@ -980,7 +980,7 @@ void __ipp_readln_thread(void *void_params)
  * @param timeout number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with free().
  */
-ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
+ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *))
 {
 	__ipp_readln_thread_params params;
 	char *buffer;
@@ -1042,6 +1042,9 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout)
 			msg->type = is_valid;
 			msg->payload = buffer;
 			ipp_parse_msg(msg);
+			if (logger) {
+				logger(msg->payload);
+			}
 			return msg;
 		} else {
 			free(buffer);
@@ -1087,7 +1090,7 @@ void __ipp_writeln_thread(void *void_params)
  * @param timeout number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
+int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logger) (char *))
 {
 	__ipp_writeln_thread_params params;
 	int is_valid, ret;
@@ -1112,6 +1115,10 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout)
 	if (is_valid > -1 && is_valid == msg->type) {
 		int len;
 		char *final_msg;
+
+		if (logger) {
+			logger(msg->payload);
+		}
 
 		len = strlen(msg->payload);
 		final_msg = malloc(sizeof(char) * (len + 2));

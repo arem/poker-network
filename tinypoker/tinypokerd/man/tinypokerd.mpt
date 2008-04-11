@@ -21,10 +21,13 @@ Kill the running instance.
 Show a help message.
 .TP 
 \fB\-v\fR, \fB\-\-version\fR
-Show version information
+Show version information.
+.TP 
+\fB\-c\fR, \fB\-\-config=file\fR
+Use an alternate config.
 .SH "FILES"
 .LP 
-\fI/etc/tinypoker/tinypokerd.conf\fP 
+\fI/etc/tinypokerd/tinypokerd.conf\fP 
 .SH "AUTHORS"
 .LP 
 Thomas Cort <tom@tomcort.com>

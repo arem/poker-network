@@ -140,7 +140,7 @@ void config_parse(void)
 		config_with_defaults();
 		return;
 	}
-	rc = cfg_parse(cfg, DEFAULT_CONFIGFILE);
+	rc = cfg_parse(cfg, configfile);
 	if (rc == CFG_PARSE_ERROR) {
 		daemon_log(LOG_ERR, "[CONF] parser error '%s'", DEFAULT_CONFIGFILE);
 	}

@@ -36,8 +36,7 @@ tinypokerd
 *tinypokerd* is a small poker server. It is free software and is licensed under the 
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse],
-http://0pointer.de/lennart/projects/libdaemon/[libdaemon],
-http://www.gnu.org/software/libc/[libdl] and http://www.gnu.org/software/binutils/[libbfd].
+and http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
 
  * 'No releases yet'.
 
@@ -47,7 +46,7 @@ tinypokerclient
 *tinypokerclient* is a graphical *tinypokerd* client. It free software and is licensed under the
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker] and
-http://www.wxwidgets.org/[wxWidgets],
+http://www.wxwidgets.org/[wxWidgets].
 
 bagelbot-ng
 -----------
@@ -56,7 +55,10 @@ bagelbot-ng
 server, join a game, and fold every hand. It is intended
 to be a base for building a poker bot. It free software and is licensed under the
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://tinypoker.org/[libtinypoker].
+It depends on http://tinypoker.org/[libtinypoker],
+http://www.gnu.org/software/libc/[libdl] and
+http://www.gnu.org/software/binutils/[libbfd].
+
 
  * 'No releases yet'.
 

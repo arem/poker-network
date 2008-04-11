@@ -3,3 +3,4 @@
  * hand ranking (given X hands who beats who -- partly completed)
  * best combination (given a board of 5 cards and 2 hole cards, find the highest ranking 5 card hand)
  * handshaking helper functions
+ * protocol logging function

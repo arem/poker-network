@@ -17,9 +17,20 @@
  * bagelbot-ng.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAIN_H
-#define __MAIN_H
 
-#define PROGRAM "bagelbot-ng"
+#ifndef __SIGNAL_H
+#define __SIGNAL_H
+
+/**
+ *  installs signal handlers (mostly SIG_IGN)
+ */
+void install_signal_handlers(void);
+
+/**
+ * Global variable used to determine if the program should halt. Will it ever halt? Only Alan Turing knows.
+ * @see handle_signal()
+ */
+int exit_now;
 
 #endif
+

@@ -60,7 +60,7 @@ void tpFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
 	wxAboutDialogInfo info;
 
 	info.SetName(_("TinyPoker Client"));
-	info.SetVersion(_("0.0.0"));
+	info.SetVersion(_(VERSION));
 	info.SetDescription(_("basic GUI designed for use with tinypokerd"));
 	info.SetCopyright(_("(C) 2008 Thomas Cort <tom@tomcort.com>"));
 	info.SetWebSite(_("http://tinypoker.org/"));

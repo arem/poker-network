@@ -242,6 +242,7 @@ List of Command Line Options
 -v              --version       no              Show version information
 -k              --kill          no              Kill the running instance
 -f              --foreground    no              Run in the foreground
+-c [file]       --config=file   '/path/to/file' Use an alternate config
 ---------------------------------------------------------------------------
 
 Example Commands
