@@ -21,6 +21,8 @@ tinypokerd
 ----------
 
  * http://tinypoker.org/[libtinypoker] (GNU GPL v3 or Later)
+ * http://www.gnu.org/software/libc/[libdl] (GNU LGPL v2 or Later)
+ * http://www.gnu.org/software/binutils/[libbfd] (GNU GPL v3 or Later)
  * http://www.kernel.org/pub/linux/libs/pam/[libpam] (Either GNU GPL or BSD)
  * http://www.nongnu.org/confuse/[libConfuse] (GNU LGPL v2.1 or Later)
  * http://0pointer.de/lennart/projects/libdaemon/[libdaemon] (GNU LGPL v2.1 or Later)

@@ -35,8 +35,9 @@ tinypokerd
 
 *tinypokerd* is a small poker server. It is free software and is licensed under the 
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse]
-and http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
+It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse],
+http://0pointer.de/lennart/projects/libdaemon/[libdaemon],
+http://www.gnu.org/software/libc/[libdl] and http://www.gnu.org/software/binutils/[libbfd].
 
  * 'No releases yet'.
 
