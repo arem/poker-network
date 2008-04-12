@@ -188,7 +188,7 @@ extern "C" {
 		int num_players;
 		int amt_to_call;
 		enum holdem_stage stage;
-
+		/* TODO add mutex for altering this table */
 		/* TODO Support for Stud and Draw */
 		ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
 		ipp_card *board[HOLDEM_BOARD_CARDS];
@@ -1056,6 +1056,25 @@ extern "C" {
  * @return 1, 0 or -1 if ipp_message_a is greater than, equal to or less than ipp_message_b.
  */
 	int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b);
+
+/**
+ * Handshake Helper Function. This should be called by the server from the client connect callback.
+ * @param sock the connected socket.
+ * @param server_tag server name and version (example "tinypokerd/0.0.0").
+ * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
+ */
+	ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth) (char *, char *), void (*logger) (char *));
+
+/**
+ * Handshake Helper Function. This should be called by the client.
+ * @param hostname the name of the server.
+ * @param cacert the certificate of the certificate authority.
+ * @param user the username (in upper case).
+ * @param pass the password (in upper case).
+ * @param buyin_amt the inital money amount for this player.
+ * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
+ */
+	ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *));
 
 #endif
 

@@ -26,6 +26,7 @@
 
 char *configfile;
 char *user;
+char *pass;
 char *host;
 
 /**
@@ -37,7 +38,8 @@ void configure(void);
  * Macro to free the user and host (if set).
  */
 #define free_config()				\
-	if (user) { free(user); user = NULL; } \
+	if (user) { free(user); user = NULL; }	\
+	if (user) { free(pass); pass = NULL; }	\
 	if (host) { free(host); host = NULL; }
 
 #endif

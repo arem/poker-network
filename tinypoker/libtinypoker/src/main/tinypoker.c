@@ -306,6 +306,10 @@ ipp_socket *ipp_new_socket(void)
 		ipp_init();
 	}
 
+	if (sizeof(ipp_socket) <= 0) {
+		return NULL;
+	}
+
 	sock = (ipp_socket *) malloc(sizeof(ipp_socket));
 	if (!sock) {
 		return NULL;
@@ -322,6 +326,7 @@ void ipp_free_socket(ipp_socket * sock)
 	if (!ipp_initialized) {
 		ipp_init();
 	}
+
 	if (sock) {
 		ipp_disconnect(sock);
 		free(sock);
@@ -337,6 +342,10 @@ ipp_message *ipp_new_message(void)
 	ipp_message *msg;
 	if (!ipp_initialized) {
 		ipp_init();
+	}
+
+	if (sizeof(ipp_message) <= 0) {
+		return NULL;
 	}
 
 	msg = (ipp_message *) malloc(sizeof(ipp_message));
@@ -371,6 +380,10 @@ void ipp_parse_msg(ipp_message * msg)
 		}
 	}
 
+	if ((sizeof(char *) * (tokcnt + 1)) <= 0) {
+		return;
+	}
+
 	msg->parsed = (char **) malloc(sizeof(char *) * (tokcnt + 1));
 	if (!(msg->parsed)) {
 		/* malloc failed */
@@ -381,6 +394,16 @@ void ipp_parse_msg(ipp_message * msg)
 	for (i = 0; i < tokcnt; i++) {
 		t = strchr(s, delim);
 		if (t) {
+			if ((((t - s) + (sizeof(char) * 1))) <= 0) {
+				for (j = 0; msg->parsed[j]; j++) {
+					free(msg->parsed[j]);
+					msg->parsed[j] = NULL;
+				}
+				free(msg->parsed);
+				msg->parsed = NULL;
+				return;
+			}
+
 			msg->parsed[i] = (char *) malloc(((t - s) + (sizeof(char) * 1)));
 			if (!(msg->parsed[i])) {
 				/* malloc() failed */
@@ -443,6 +466,10 @@ ipp_card *ipp_new_card(void)
 		ipp_init();
 	}
 
+	if (sizeof(ipp_card) <= 0) {
+		return NULL;
+	}
+
 	card = (ipp_card *) malloc(sizeof(ipp_card));
 	if (card == NULL) {
 		return NULL;
@@ -475,6 +502,10 @@ ipp_player *ipp_new_player(void)
 
 	if (!ipp_initialized) {
 		ipp_init();
+	}
+
+	if (sizeof(ipp_player) <= 0) {
+		return NULL;
 	}
 
 	player = (ipp_player *) malloc(sizeof(ipp_player));
@@ -512,6 +543,7 @@ void ipp_free_player(ipp_player * player)
 			ipp_free_card(player->hole[1]);
 			player->hole[1] = NULL;
 		}
+
 		player->bankroll = 0;
 		player->amt_in = 0;
 		player->still_in = 0;
@@ -531,6 +563,10 @@ char *ipp_card2str(ipp_card * c)
 
 	if (!ipp_initialized) {
 		ipp_init();
+	}
+
+	if (sizeof(char) * 3 <= 0) {
+		return NULL;
 	}
 
 	str = (char *) malloc(sizeof(char) * 3);
@@ -613,6 +649,10 @@ ipp_deck *ipp_new_deck(void)
 		ipp_init();
 	}
 
+	if (sizeof(ipp_deck) <= 0) {
+		return NULL;
+	}
+
 	deck = (ipp_deck *) malloc(sizeof(ipp_deck));
 	if (deck == NULL) {
 		return NULL;
@@ -672,6 +712,10 @@ ipp_table *ipp_new_table(void)
 
 	if (!ipp_initialized) {
 		ipp_init();
+	}
+
+	if (sizeof(ipp_table) <= 0) {
+		return NULL;
 	}
 
 	table = (ipp_table *) malloc(sizeof(ipp_table));
@@ -911,7 +955,6 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
  */
 void ipp_disconnect(ipp_socket * sock)
 {
-
 	if (!ipp_initialized) {
 		ipp_init();
 	}
@@ -919,21 +962,29 @@ void ipp_disconnect(ipp_socket * sock)
 	if (!sock) {
 		return;
 	}
+
 	if (sock->session) {
 		gnutls_bye(sock->session, GNUTLS_SHUT_RDWR);
 	}
+
 	if (sock->sd) {
 		/* close the connection */
 		shutdown(sock->sd, SHUT_RDWR);
 		close(sock->sd);
+		sock->sd = 0;
 	}
+
 	if (sock->session) {
 		/* free session data */
 		gnutls_deinit(sock->session);
+		sock->session = NULL;
 	}
+
 	if (sock->x509_cred) {
 		gnutls_certificate_free_credentials(sock->x509_cred);
+		sock->x509_cred = NULL;
 	}
+
 	/* set to NULL to prevent double free() and other misuse */
 	memset(sock, '\0', sizeof(ipp_socket));
 }
@@ -956,6 +1007,10 @@ void __ipp_readln_thread(void *void_params)
 	}
 
 	params = (__ipp_readln_thread_params *) void_params;
+
+	if ((sizeof(char) * (MAX_MSG_SIZE + 1)) <= 0) {
+		pthread_exit(0);
+	}
 
 	*(params->buffer) = (char *) malloc(sizeof(char) * (MAX_MSG_SIZE + 1));
 	if (*(params->buffer)) {
@@ -1121,12 +1176,17 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logge
 		}
 
 		len = strlen(msg->payload);
-		final_msg = malloc(sizeof(char) * (len + 2));
+
+		if ((sizeof(char) * (len + 3)) <= 0) {
+			return FALSE;
+		}
+
+		final_msg = malloc(sizeof(char) * (len + 3));
 		if (final_msg == NULL) {
 			return FALSE;
 		}
-		memset(final_msg, '\0', len + 2);
-		strncpy(final_msg, msg->payload, len + 2);
+		memset(final_msg, '\0', len + 3);
+		strncpy(final_msg, msg->payload, len + 3);
 		final_msg[len] = '\n';
 
 		params.sock = sock;
@@ -1554,6 +1614,10 @@ ipp_message *ipp_eval(ipp_card * cards[5])
 		return NULL;
 	}
 
+	if ((sizeof(char) * (MAX_MSG_SIZE + 1)) <= 0) {
+		return NULL;
+	}
+
 	msg->payload = (char *) malloc(sizeof(char) * (MAX_MSG_SIZE + 1));
 	if (msg->payload == NULL) {
 		return NULL;
@@ -1780,4 +1844,293 @@ int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b)
 	} else {
 		return (x->type < y->type) ? 1 : -1;
 	}
+}
+
+
+/**
+ * Handshake Helper Function. This should be called by the server from the client connect callback.
+ * @param sock the connected socket.
+ * @param server_tag server name and version (example "tinypokerd/0.0.0").
+ * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
+ */
+ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth) (char *, char *), void (*logger) (char *))
+{
+	ipp_player *p;
+	ipp_message *msg;
+	char *user, *pass, *buyin_amt;
+	size_t len;
+	int rc;
+
+	if (!sock || !server_tag) {
+		return NULL;
+	}
+
+	len = strlen("IPP 2.0 ") + strlen(server_tag) + 3;
+	if (len <= 0) {
+		return NULL;
+	}
+
+	msg = ipp_new_message();
+	if (!msg) {
+		return NULL;
+	}
+
+	msg->type = MSG_IPP;
+	msg->payload = (char *) malloc(len);
+	if (!(msg->payload)) {
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+	memset(msg->payload, '\0', len);
+	snprintf(msg->payload, len - 1, "IPP 2.0 %s", server_tag);
+
+	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, logger);
+	if (!rc) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+
+	ipp_free_message(msg);
+	msg = NULL;
+
+	msg = ipp_read_msg(sock, SERVER_READ_TIMEOUT, logger);
+	if (msg == NULL || msg->type != MSG_BUYIN || msg->payload == NULL || msg->parsed == NULL || msg->parsed[0] == NULL || msg->parsed[1] == NULL || msg->parsed[2] == NULL) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+
+	user = strdup(msg->parsed[1]);
+	if (!user) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+
+	buyin_amt = strdup(msg->parsed[2]);
+	if (!buyin_amt) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+
+	ipp_free_message(msg);
+	msg = NULL;
+
+	pass = strchr(user, ':');
+	if (pass == NULL) {
+		pass = strdup("NOPASS");
+		if (pass == NULL) {
+			ipp_disconnect(sock);
+			ipp_free_socket(sock);
+			sock = NULL;
+			free(user);
+			user = NULL;
+			return NULL;
+		}
+	} else {
+		*pass = '\0';
+		pass = strdup(pass + sizeof(char));
+		if (pass == NULL) {
+			ipp_disconnect(sock);
+			ipp_free_socket(sock);
+			sock = NULL;
+			free(user);
+			user = NULL;
+			return NULL;
+		}
+	}
+
+	rc = auth(user, pass);
+	memset(pass, 'X', strlen(pass));
+	free(pass);
+	pass = NULL;
+
+	if (!rc) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		free(user);
+		user = NULL;
+		return NULL;
+	}
+
+	len = (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 3));
+	if (len <= 0) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		free(user);
+		user = NULL;
+		return NULL;
+	}
+
+	msg = ipp_new_message();
+	if (!msg) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		free(user);
+		user = NULL;
+		return NULL;
+	}
+
+	msg->type = MSG_WELCOME;
+	msg->payload = (char *) malloc(len);
+	if (!msg->payload) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		free(user);
+		user = NULL;
+		return NULL;
+	}
+	memset(msg->payload, '\0', len);
+	snprintf(msg->payload, len - 1, "WELCOME %s", user);
+
+	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, logger);
+	if (!rc) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		free(user);
+		user = NULL;
+		return NULL;
+	}
+
+	ipp_free_message(msg);
+	msg = NULL;
+
+	/* Handshake Complete :-) */
+	p = ipp_new_player();
+	if (!p) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		free(user);
+		user = NULL;
+		return NULL;
+	}
+
+	p->name = user;
+	p->sock = sock;
+	p->bankroll = atoi(buyin_amt);
+	if (p->bankroll < 0) {
+		p->bankroll = 0;
+	}
+
+	return p;
+}
+
+/**
+ * Handshake Helper Function. This should be called by the client. The function will do the call to ipp_connect() and handle the other setup tasks.
+ * @param hostname the name of the server.
+ * @param cacert the certificate of the certificate authority.
+ * @param user the username (in upper case).
+ * @param pass the password (in upper case).
+ * @param buyin_amt the inital money amount for this player.
+ * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
+ */
+ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *))
+{
+	ipp_socket *sock;
+	ipp_message *msg;
+	size_t len;
+	int rc;
+
+	if (!hostname || !cacert || !user || !pass || !buyin_amt) {
+		return NULL;
+	}
+
+	sock = ipp_connect(hostname, cacert);
+	if (!sock) {
+		return NULL;
+	}
+
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, logger);
+	if (!msg || !(msg->payload) || msg->type != MSG_IPP) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+	ipp_free_message(msg);
+	msg = NULL;
+
+	msg = ipp_new_message();
+	if (!msg) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		return NULL;
+	}
+
+	msg->type = MSG_BUYIN;
+	len = strlen(CMD_BUYIN) + strlen(" ") + strlen(user) + strlen(":") + strlen(pass) + strlen(" ") + strlen(buyin_amt) + 3;
+	if (sizeof(char) * len <= 0) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+
+	msg->payload = (char *) malloc(sizeof(char) * len);
+	if (!(msg->payload)) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+	memset(msg->payload, '\0', sizeof(char) * len);
+	snprintf(msg->payload, len - 1, "%s %s:%s %s", CMD_BUYIN, user, pass, buyin_amt);
+
+	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT, logger);
+	if (!rc) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+	ipp_free_message(msg);
+	msg = NULL;
+
+	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, logger);
+	if (!msg || !(msg->payload) || msg->type != MSG_WELCOME || !(msg->parsed) || !(msg->parsed[0]) || !(msg->parsed[1]) || strcmp(msg->parsed[1], user)) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+		ipp_free_message(msg);
+		msg = NULL;
+		return NULL;
+	}
+	ipp_free_message(msg);
+	msg = NULL;
+
+	return sock;
 }

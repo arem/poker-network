@@ -33,4 +33,3 @@ void install_signal_handlers(void);
 int exit_now;
 
 #endif
-

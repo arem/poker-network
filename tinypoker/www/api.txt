@@ -105,6 +105,9 @@ and *ipp_exit()*. Additionally, the random number generator is
 allocated and freed in those functions. The one and only header file 
 needed to use the API is *tinypoker.h*.
 
+What follows is an example that simply initializes and cleans up
+after *libtinypoker*.
+
 .test.c
 ------------------------------------------
 #include <tinypoker.h>
@@ -126,6 +129,82 @@ library and GNU TLS.
 
 ------------------------------------------
  $ gcc -lpthread -ltinypoker -lgnutls -lgsl -lgslcblas -o test test.c
+------------------------------------------
+
+Shaking hands with the Server
+-----------------------------
+
+The protocol calls for a handshake to happen between the client and
+the server. During the handshake the client connects, the server notifies
+the client of the supported protocol version, the client response with a
+buy in request and the server responds with a welcome message.
+
+This can be done manually with a connect, a read, a send and another
+read. Since the code is 25+ lines and since every client application
+will need to do this, *libtinypoker* provides a helper function (demonstrated
+below).
+
+.test.c
+------------------------------------------
+#include <tinypoker.h>
+
+int main(int argc, char *argv[]) {
+	ipp_socket *sock;
+
+	ipp_init();
+
+	sock = ipp_client_handshake("localhost", "ca.pem", "TEST", "ABC123", "500", NULL);
+	if (!sock) {
+		ipp_exit();
+		return 1;
+	}
+
+	ipp_disconnect(sock);
+	ipp_free_socket(sock);
+	sock = NULL;
+
+	ipp_exit();
+	return 0;
+}
+------------------------------------------
+
+Protocol Logging
+----------------
+
+Having access to the payload (text string) of every message that gets
+sent or recieved is useful for debugging. Each message could also be
+saved to a file for analysis and statistics gathering. Therefore,
+the send and read functions have a protocol logger callback. You can
+create your own logging function like the one below.
+
+.test.c
+------------------------------------------
+#include <tinypoker.h>
+
+void protocol_logger(char *msg) {
+	if (msg && msg[0]) {
+		printf("%s\n", msg);
+	}
+}
+
+int main(int argc, char *argv[]) {
+	ipp_socket *sock;
+
+	ipp_init();
+
+	sock = ipp_client_handshake("localhost", "ca.pem", "TEST", "ABC123", "500", protocol_logger);
+	if (!sock) {
+		ipp_exit();
+		return 1;
+	}
+
+	ipp_disconnect(sock);
+	ipp_free_socket(sock);
+	sock = NULL;
+
+	ipp_exit();
+	return 0;
+}
 ------------------------------------------
 
 To be continued

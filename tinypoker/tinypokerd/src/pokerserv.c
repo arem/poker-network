@@ -29,6 +29,7 @@
 
 #include "config.h"
 #include "monitor.h"
+#include "log.h"
 #include "pam.h"
 #include "poker.h"
 #include "signal.h"
@@ -40,155 +41,17 @@
  */
 static void client_connect_callback(ipp_socket * sock)
 {
-	/*
-	 * Note: this function causes the server loop to block. Don't do
-	 * anything too fancy or time intensive in here.
-	 */
+	ipp_player *p;
 
-	ipp_message *msg;
-	char *user, *pass;
-	int rc;
-	char ip[64];
-
-	memset(ip, '\0', sizeof(char) * 64);
-	rc = getnameinfo((struct sockaddr *) &(sock->sockaddr), sock->sockaddrlen, ip, sizeof(char) * 64, NULL, 0, NI_NUMERICHOST);
-	if (rc != 0) {
-		/* something crazy happened where the sockaddr didn't contain a valid address */
-		/* this should never happen, but just in case, we'll handle it */
-		snprintf(ip, 60, "(unknown-ip)");
-	}
-
-	daemon_log(LOG_INFO, "[SERV] [CONN] %s", ip);
-
-	msg = ipp_new_message();
-	msg->type = MSG_IPP;
-	msg->payload = strdup("IPP 2.0 " TINYPOKERD_NAME "/" TINYPOKERD_VERSION);
-
-	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, NULL);
-	if (rc == FALSE) {
-		daemon_log(LOG_ERR, "[SERV] Could not send IPP message to %s", ip);
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		ipp_free_message(msg);
-		sock = NULL;
+	p = ipp_server_handshake(sock, TINYPOKERD_NAME "/" TINYPOKERD_VERSION, ipp_auth, protocol_logger);
+	if (!p) {
+		daemon_log(LOG_ERR, "[SERV] Handshake Failed");
 		return;
 	} else {
-		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %s", msg->payload, ip);
-	}
-
-	ipp_free_message(msg);
-	msg = NULL;
-
-	msg = ipp_read_msg(sock, SERVER_READ_TIMEOUT, NULL);
-	if (msg == NULL || msg->type != MSG_BUYIN || msg->payload == NULL) {
-		daemon_log(LOG_ERR, "[SERV] Could not read BUYIN message from %s", ip);
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
+		ipp_free_player(p);
+		p = NULL;
 		sock = NULL;
-		ipp_free_message(msg);
-		msg = NULL;
-		return;
-	} else {
-		daemon_log(LOG_INFO, "[SERV] [RECV] {BUYIN} from %s", ip);
 	}
-
-	user = strdup(msg->parsed[1]);
-	ipp_free_message(msg);
-	msg = NULL;
-
-	pass = strchr(user, ':');
-	if (pass == NULL) {
-		pass = strdup("NOPASS");
-		if (pass == NULL) {
-			daemon_log(LOG_ERR, "[SERV] malloc failed");
-			ipp_disconnect(sock);
-			ipp_free_socket(sock);
-			sock = NULL;
-			ipp_free_message(msg);
-			msg = NULL;
-			free(user);
-			user = NULL;
-			return;
-		}
-	} else {
-		*pass = '\0';
-		pass = strdup(pass + sizeof(char));
-		if (pass == NULL) {
-			daemon_log(LOG_ERR, "[SERV] malloc failed");
-			ipp_disconnect(sock);
-			ipp_free_socket(sock);
-			sock = NULL;
-			ipp_free_message(msg);
-			msg = NULL;
-			free(user);
-			user = NULL;
-			return;
-		}
-	}
-
-	daemon_log(LOG_INFO, "[SERV] %s is |%s|", ip, user);
-
-	/* daemon_log(LOG_INFO, "[SERV] '%s' '%s'", user, pass); */
-
-	rc = ipp_auth(user, pass);
-	memset(pass, 'X', strlen(pass));
-	free(pass);
-	pass = NULL;
-
-	if (rc == TRUE) {
-		daemon_log(LOG_INFO, "[SERV] Auth OK");
-	} else {
-		daemon_log(LOG_INFO, "[SERV] Auth Failed");
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-		ipp_free_message(msg);
-		msg = NULL;
-		free(user);
-		user = NULL;
-		return;
-	}
-
-	msg = ipp_new_message();
-	msg->type = MSG_WELCOME;
-	msg->payload = (char *) malloc(sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2));
-	if (!(msg->payload)) {
-		daemon_log(LOG_ERR, "[SERV] malloc failed");
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-		ipp_free_message(msg);
-		msg = NULL;
-		free(user);
-		user = NULL;
-		return;
-	}
-	memset(msg->payload, '\0', (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 2)));
-	snprintf(msg->payload, (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 1)), "%s%s", "WELCOME ", user);
-
-	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, NULL);
-	if (rc == FALSE) {
-		daemon_log(LOG_ERR, "[SERV] Could not send WELCOME message to %s", ip);
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-		ipp_free_message(msg);
-		msg = NULL;
-		free(user);
-		user = NULL;
-		return;
-	} else {
-		daemon_log(LOG_INFO, "[SERV] [SEND] |%s| to %s", msg->payload, ip);
-	}
-
-	ipp_free_message(msg);
-	msg = NULL;
-
-	daemon_log(LOG_INFO, "[SERV] Handshake Complete");
-
-	/* TODO Add client socket to internal data structure here */
-	free(user);
-	user = NULL;
 
 	/* TODO: remove this. it is just here for testing */
 	ipp_disconnect(sock);
@@ -218,12 +81,13 @@ int pokerserv(void)
 		raise(SIGQUIT);
 		return -1;
 	}
-	daemon_log(LOG_INFO, "[SERV] Dealer Thread Started");
+
+	/* daemon_log(LOG_INFO, "[SERV] Dealer Thread Started"); */
 
 	/* Start listening for connections */
 	ipp_servloop(client_connect_callback, x509_ca, x509_crl, x509_cert, x509_key);
 
-	daemon_log(LOG_INFO, "[SERV] Server Loop Exited");
+	/* daemon_log(LOG_INFO, "[SERV] Server Loop Exited"); */
 
 	if (!exit_now) {
 		raise(SIGQUIT);

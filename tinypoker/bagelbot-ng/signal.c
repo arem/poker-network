@@ -150,13 +150,13 @@ void handle_sigsegv(int sig)
 
 	free(bt_symbols);
 
-        rc = uname(&sys_uname);
-        if (rc != -1) {
-                daemon_log(LOG_ERR, "%s version %s %s %s", sys_uname.sysname, sys_uname.version, sys_uname.release, sys_uname.machine);
-        }
+	rc = uname(&sys_uname);
+	if (rc != -1) {
+		daemon_log(LOG_ERR, "%s version %s %s %s", sys_uname.sysname, sys_uname.version, sys_uname.release, sys_uname.machine);
+	}
 
-        daemon_log(LOG_ERR, " ");
-        daemon_log(LOG_ERR, "=-=-=-=-=-=-=-=-=-=-=-=-=-= Segmentation fault =-=-=-=-=-=-=-=-=-=-=-=-=-=");
+	daemon_log(LOG_ERR, " ");
+	daemon_log(LOG_ERR, "=-=-=-=-=-=-=-=-=-=-=-=-=-= Segmentation fault =-=-=-=-=-=-=-=-=-=-=-=-=-=");
 
 	exit(1);
 }
@@ -167,11 +167,11 @@ void handle_sigsegv(int sig)
  */
 void handle_sigkill(int sig)
 {
-        if (sig == SIGKILL) {
-                raise(SIGUSR2);
-                exit_now = 1;
-                daemon_log(LOG_INFO, "[SIGN] SIGKILL Caught ; preparing to exit");
-        }
+	if (sig == SIGKILL) {
+		raise(SIGUSR2);
+		exit_now = 1;
+		daemon_log(LOG_INFO, "[SIGN] SIGKILL Caught ; preparing to exit");
+	}
 }
 
 /**
@@ -180,11 +180,11 @@ void handle_sigkill(int sig)
  */
 void handle_sigquit(int sig)
 {
-        if (sig == SIGQUIT) {
-                raise(SIGUSR2);
-                exit_now = 1;
-                daemon_log(LOG_INFO, "[SIGN] SIGQUIT Caught ; preparing to exit");
-        }
+	if (sig == SIGQUIT) {
+		raise(SIGUSR2);
+		exit_now = 1;
+		daemon_log(LOG_INFO, "[SIGN] SIGQUIT Caught ; preparing to exit");
+	}
 }
 
 /**
@@ -193,11 +193,11 @@ void handle_sigquit(int sig)
  */
 void handle_sigint(int sig)
 {
-        if (sig == SIGINT) {
-                raise(SIGUSR2);
-                exit_now = 1;
-                daemon_log(LOG_INFO, "[SIGN] SIGINT Caught ; preparing to exit");
-        }
+	if (sig == SIGINT) {
+		raise(SIGUSR2);
+		exit_now = 1;
+		daemon_log(LOG_INFO, "[SIGN] SIGINT Caught ; preparing to exit");
+	}
 }
 
 /**
@@ -206,23 +206,22 @@ void handle_sigint(int sig)
 void install_signal_handlers(void)
 {
 
-        int i;
+	int i;
 
-        for (i = 0; i < 32; i++) {
-                /*
-                 * Set ignore for all signals except the 3 we handle
-                 * (SIGKILL, SIGQUIT, SIGINT) and the 1 libtinypoker handles
-                 * (SIGUSR2)
-                 */
+	for (i = 0; i < 32; i++) {
+		/*
+		 * Set ignore for all signals except the 3 we handle
+		 * (SIGKILL, SIGQUIT, SIGINT) and the 1 libtinypoker handles
+		 * (SIGUSR2)
+		 */
 
-                if (i != SIGCHLD && i != SIGQUIT && i != SIGINT && i != SIGKILL && i != SIGUSR2 && i != SIGSEGV) {
-                        signal(i, SIG_IGN);
-                }
-        }
+		if (i != SIGCHLD && i != SIGQUIT && i != SIGINT && i != SIGKILL && i != SIGUSR2 && i != SIGSEGV) {
+			signal(i, SIG_IGN);
+		}
+	}
 
-        signal(SIGKILL, handle_sigkill);
-        signal(SIGQUIT, handle_sigquit);
-        signal(SIGINT, handle_sigint);
-        signal(SIGSEGV, handle_sigsegv);
+	signal(SIGKILL, handle_sigkill);
+	signal(SIGQUIT, handle_sigquit);
+	signal(SIGINT, handle_sigint);
+	signal(SIGSEGV, handle_sigsegv);
 }
-

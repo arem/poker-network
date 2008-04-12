@@ -28,86 +28,6 @@
 #include "signal.h"
 
 /**
- * Handshake with the server.
- * @return a connected socket or NULL.
- */
-ipp_socket *handshake(void)
-{
-	int rc;
-	ipp_socket *sock;
-	ipp_message *msg;
-
-	daemon_log(LOG_INFO, "[HAND] [CONN] %s", host);
-
-	sock = ipp_connect(host, "ca.pem");
-	if (sock == NULL) {
-		daemon_log(LOG_ERR, "[HAND] ipp_connect() failed");
-		return NULL;
-	}
-	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, NULL);
-	if (!msg || msg->type != MSG_IPP) {
-		ipp_free_message(msg);
-		msg = NULL;
-		ipp_free_socket(sock);
-		sock = NULL;
-		return NULL;
-	}
-	daemon_log(LOG_INFO, "[HAND] [RECV] %s", msg->payload);
-	ipp_free_message(msg);
-	msg = NULL;
-
-	msg = ipp_new_message();
-	if (!msg) {
-		daemon_log(LOG_ERR, "[HAND] malloc failed");
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-		return NULL;
-	}
-	msg->type = MSG_BUYIN;
-	msg->payload = (char *) malloc(sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 2));
-	if (!(msg->payload)) {
-		daemon_log(LOG_ERR, "[HAND] malloc failed");
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-		return NULL;
-	}
-	memset(msg->payload, '\0', (sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 2)));
-	snprintf(msg->payload, (sizeof(char) * (strlen("BUYIN ") + strlen(user) + strlen(" 100") + 1)), "%s%s%s", "BUYIN ", user, " 100");
-
-	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT, NULL);
-	if (!rc) {
-		daemon_log(LOG_ERR, "[HAND] send failed");
-		ipp_free_message(msg);
-		msg = NULL;
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-		return NULL;
-	}
-	daemon_log(LOG_INFO, "[HAND] [SEND] %s", msg->payload);
-	ipp_free_message(msg);
-	msg = NULL;
-
-	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, NULL);
-	if (!msg || msg->type != MSG_WELCOME) {
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-		ipp_free_message(msg);
-		msg = NULL;
-		return NULL;
-	}
-	daemon_log(LOG_INFO, "[HAND] [RECV] %s", msg->payload);
-	ipp_free_message(msg);
-	msg = NULL;
-
-	return sock;
-}
-
-
-/**
  * Displays some usage information, command line parameters and whatnot.
  * @param program the name of the program.
  */
@@ -171,6 +91,13 @@ int parse_args(int argc, char **argv)
 	return done;
 }
 
+void protocol_logger(char *msg)
+{
+	if (msg && msg[0]) {
+		daemon_log(LOG_INFO, "%s", msg);
+	}
+}
+
 /**
  * A command line poker bot.
  * @param argc The number of command line arguments coming in argv.
@@ -214,7 +141,7 @@ int main(int argc, char **argv)
 
 	ipp_init();
 
-	if ((sock = handshake())) {
+	if ((sock = ipp_client_handshake(host, "ca.pem", user, pass, "500", protocol_logger))) {
 		daemon_log(LOG_INFO, "[MAIN] Handshake OK");
 		play(sock);
 		ipp_disconnect(sock);

@@ -39,6 +39,7 @@ void configure(void)
 {
 	cfg_opt_t opts[] = {
 		CFG_SIMPLE_STR("user", &user),
+		CFG_SIMPLE_STR("pass", &pass),
 		CFG_SIMPLE_STR("host", &host),
 		CFG_END()
 	};

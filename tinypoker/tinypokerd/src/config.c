@@ -132,7 +132,7 @@ void config_parse(void)
 
 	cfg = NULL;
 
-	daemon_log(LOG_INFO, "[CONF] parsing config file");
+	/* daemon_log(LOG_INFO, "[CONF] parsing config file"); */
 
 	cfg = cfg_init(opts, 0);
 	if (!cfg) {
