@@ -21,6 +21,13 @@ just had its first release. The new server, *tinypokerd*, needs
 additional game logic. The target release date for *tinypokerd*
 is July 1, 2008.
 
+.Features
+- Secure client/server communications with Transport Layer Security
+- Support for Internet Protocol version 4 (IPv4) and version 6 (IPv6)
+- User authentication with Pluggable Authentication Modules (PAM)
+- Compatible with existing Internet Poker Protocol 2.0 Implementations.
+- Freedom to run, copy, distribute, study, change and improve the software. 
+
 News
 ----
 
@@ -38,21 +45,7 @@ The underlying code is designed to gracefully handle network problems
 such as unexpected disconnections and bad input. IPP message validation,
 normalization and parsing functions are available to developers as are
 several predefined types for representing poker games, players and cards.
-*libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
+*libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software]
+and is licensed under the terms of the
 http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].
-
-
-March 26, 2008 - tinypokerclient development started
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Development has begun on *tinypokerclient*. It will provide a
-basic GUI for use with *tinypokerd*. The primary
-purpose will be to provide a way for humans to more easily debug
-poker bots and *tinypokerd*.
-
-March 25, 2008 - libtinypoker now supports IPv6
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-As of revision 3815, *libtinypoker* is now capable of communicating with
-http://en.wikipedia.org/wiki/IPv6[IPv6] enabled clients and servers.

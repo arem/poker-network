@@ -15,27 +15,29 @@
 // You should have received a copy of the GNU General Public License
 // along with tinypokerclient.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifndef __TPCONNECTIONWIZARD_H
+#define __TPCONNECTIONWIZARD_H
+
 #include <wx/wx.h>
+#include <wx/wizard.h>
 #include <wx/intl.h>
 
-#include "tpConnectFrame.h"
-#include "tpFrame.h"
+#include "tpConnectionWizardPage.h"
 
-tpConnectFrame::tpConnectFrame(tpFrame *parent, wxMenu *menuFile, const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale): wxFrame(parent, -1, title, pos, size), m_locale(locale) {
-	m_parent = parent;
-	m_menuFile = menuFile;
+class tpConnectionWizard : public wxWizard
+{
 
-	m_menuFile->Enable(ID_Connect, false);
-	m_menuFile->Enable(ID_Disconnect, true);
-	m_parent->SetStatusText(_("Connected"));
+	public:
+		tpConnectionWizard(wxFrame *frame, bool useSizer = true);
+		wxWizardPage *GetFirstPage();
 
-	Centre();
-}
+		wxString getUsername();
+		wxString getHostname();
+		wxString getPassword();
 
-void tpConnectFrame::OnConnect(wxCommandEvent& event) {
-	Close(true);
-}
+	private:
+		wxWizardPageSimple *m_page;
+		tpConnectionWizardPage *m_tppage;
+};
 
-BEGIN_EVENT_TABLE(tpConnectFrame, wxFrame)
-	EVT_MENU(ID_ConnectClick, tpConnectFrame::OnConnect)
-END_EVENT_TABLE()
+#endif

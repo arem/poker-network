@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with tinypokerclient.  If not, see <http://www.gnu.org/licenses/>.
 
+# Version Information
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+SET(VERSION "${CPACK_PACKAGE_VERSION}")
+ADD_DEFINITIONS("-DVERSION=\\\"${VERSION}\\\"")
+
 SET (libdirs /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/local/lib64 /usr/lib32 /usr/local/lib32)
 SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)
 SET (incdirs /usr/include /usr/local/include /usr/pkg/include)
@@ -84,5 +92,5 @@ ENDIF (LIBGSL_INCLUDE_DIR)
 
 INCLUDE_DIRECTORIES(${incdirs} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR})
 INCLUDE(${wxWidgets_USE_FILE})
-ADD_EXECUTABLE(tinypokerclient tpApp.cc tpConnectFrame.cc tpFrame.cc tpLog.cc main.cc)
+ADD_EXECUTABLE(tinypokerclient tpApp.cc tpConnectionWizard.cc tpConnectionWizardPage.cc tpFrame.cc tpLog.cc main.cc)
 TARGET_LINK_LIBRARIES(tinypokerclient ${wxWidgets_LIBRARIES} ${LIBTINYPOKER} ${LIBGNUTLS} ${LIBGSL} ${LIBGSLCBLAS})

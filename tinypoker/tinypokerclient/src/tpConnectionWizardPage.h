@@ -15,46 +15,27 @@
 // You should have received a copy of the GNU General Public License
 // along with tinypokerclient.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __TPFRAME_H
-#define __TPFRAME_H
-
-#include <tinypoker.h>
+#ifndef __TPCONNECTIONWIZARDPAGE_H
+#define __TPCONNECTIONWIZARDPAGE_H
 
 #include <wx/wx.h>
 #include <wx/wizard.h>
 #include <wx/intl.h>
 
-#include "tpConnectionWizard.h"
-#include "tpLog.h"
+class tpConnectionWizardPage : public wxWizardPageSimple {
 
-class tpFrame: public wxFrame {
 	public:
-		tpFrame(const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale);
+		tpConnectionWizardPage(wxWizard *parent);
 
-		void log(const wxString& text);
+		wxString getUsername();
+		wxString getHostname();
+		wxString getPassword();
 
-		void OnAbout(wxCommandEvent& event);
-		void OnConnect(wxCommandEvent& event);
-		void OnDisconnect(wxCommandEvent& event);
-		void OnExit(wxCommandEvent& event);
-
-		void OnConnectionWizardFinished(wxWizardEvent& event);
 	private:
-		DECLARE_EVENT_TABLE()
-		wxLocale& m_locale;
 
-		wxPanel *m_parent;
-		wxMenu *m_menuFile;
-		tpLog *m_log;
-		ipp_socket *m_sock;
-		tpConnectionWizard *m_wiz;
-};
-
-enum {
-	ID_About = 1,
-	ID_Connect,
-	ID_Disconnect,
-	ID_Exit
+		wxTextCtrl *m_hostname;
+		wxTextCtrl *m_username;
+		wxTextCtrl *m_password;
 };
 
 #endif

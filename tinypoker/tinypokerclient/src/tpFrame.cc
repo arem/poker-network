@@ -20,8 +20,9 @@
 #include <wx/wx.h>
 #include <wx/intl.h>
 #include <wx/aboutdlg.h>
+#include <wx/wizard.h>
 
-#include "tpConnectFrame.h"
+#include "tpConnectionWizard.h"
 #include "tpFrame.h"
 #include "tpLog.h"
 
@@ -52,6 +53,8 @@ tpFrame::tpFrame(const wxString& title, const wxPoint& pos, const wxSize& size, 
 	m_log = new tpLog(m_parent);
 	vbox->Add(m_log, 1, wxEXPAND | wxALL);
 	m_parent->SetSizer(vbox);
+
+	m_wiz = new tpConnectionWizard(this);
 
 	Centre();
 }
@@ -88,9 +91,15 @@ void tpFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
 }
 
 void tpFrame::OnConnect(wxCommandEvent& WXUNUSED(event)) {
-	tpConnectFrame *frame = new tpConnectFrame(this, m_menuFile, _("New Connection..."), wxPoint(-1, -1), wxSize(400,300), m_locale);
+	m_wiz->RunWizard(m_wiz->GetFirstPage());
+}
 
-	frame->Show(true);
+void tpFrame::OnConnectionWizardFinished(wxWizardEvent& WXUNUSED(event)) {
+	wxMessageBox(m_wiz->getHostname(), _("Hostname"));
+	wxMessageBox(m_wiz->getUsername(), _("Username"));
+	wxMessageBox(m_wiz->getPassword(), _("Password"));
+
+	/* TODO validate input and do handshake */
 }
 
 void tpFrame::OnDisconnect(wxCommandEvent& WXUNUSED(event)) {
@@ -121,5 +130,7 @@ BEGIN_EVENT_TABLE(tpFrame, wxFrame)
 	EVT_MENU(ID_Connect, tpFrame::OnConnect)
 	EVT_MENU(ID_Disconnect, tpFrame::OnDisconnect)
 	EVT_MENU(ID_Exit,  tpFrame::OnExit)
+
+	EVT_WIZARD_FINISHED(wxID_ANY, tpFrame::OnConnectionWizardFinished)
 END_EVENT_TABLE()
 

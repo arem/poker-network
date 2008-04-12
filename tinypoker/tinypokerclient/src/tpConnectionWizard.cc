@@ -15,29 +15,34 @@
 // You should have received a copy of the GNU General Public License
 // along with tinypokerclient.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __TPCONNECTFRAME_H
-#define __TPCONNECTFRAME_H
-
 #include <wx/wx.h>
+#include <wx/wizard.h>
 #include <wx/intl.h>
 
-#include "tpFrame.h"
+#include "tpConnectionWizard.h"
+#include "tpConnectionWizardPage.h"
 
-class tpConnectFrame: public wxFrame {
-	public:
-		tpConnectFrame(tpFrame *parent, wxMenu *menuFile, const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale);
+tpConnectionWizard::tpConnectionWizard(wxFrame *frame, bool useSizer) : wxWizard(frame, wxID_ANY, _("TinyPoker Connection Wizard"), NULL,wxDefaultPosition, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) {
+	m_page = m_tppage = new tpConnectionWizardPage(this);
 
-		void OnConnect(wxCommandEvent& event);
+	if (useSizer) {
+		GetPageAreaSizer()->Add(m_page);
+	}
+}
 
-	private:
-		DECLARE_EVENT_TABLE()
-		tpFrame *m_parent;
-		wxLocale& m_locale;
-		wxMenu *m_menuFile;
-};
 
-enum {
-	ID_ConnectClick = 1
-};
+wxWizardPage *tpConnectionWizard::GetFirstPage() {
+	return m_page;
+}
 
-#endif
+wxString tpConnectionWizard::getHostname() {
+	return m_tppage->getHostname();
+}
+
+wxString tpConnectionWizard::getUsername() {
+	return m_tppage->getUsername();
+}
+
+wxString tpConnectionWizard::getPassword() {
+	return m_tppage->getPassword();
+}

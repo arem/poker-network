@@ -52,6 +52,10 @@ div.sidebar-title {
   font-weight: bold;
 }
 
+div.title {
+  font-weight: bold;
+}
+
 pre {
   background-color: #eeeeee;
   border: 1px dotted #000000;
