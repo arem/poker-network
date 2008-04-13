@@ -14,8 +14,8 @@ libtinypoker application programming interface
 *libtinypoker* provides application programming interfaces
 (APIs) to applications implementing the Internet Poker Protocol (IPP)
 Version 2.0. The library provides a robust communications framework
-that allows clients and servers to communicate over secure transport
-layer sockets (TLS) using Internet Protocol version 4 (IPv4) and/or
+that allows clients and servers to communicate over secure 
+Transport Layer Security (TLS) using Internet Protocol version 4 (IPv4) and/or
 Internet Protocol version 6 (IPv6). The underlying code is designed
 to gracefully handle network problems such as unexpected disconnections
 and bad input. IPP message validation, normalization and parsing
@@ -30,7 +30,7 @@ before proceeding.
 Install the Dependencies
 ------------------------
 
-*libtinypoker* has just two dependencies, http://www.gnu.org/software/gnutls/[GNU TLS]
+*libtinypoker* has just two dependencies, http://www.gnu.org/software/gnutls/[GNU Transport Layer Security]
 and http://www.gnu.org/software/gsl/[GNU Scientific Library].
 
 Obtain the Source Code

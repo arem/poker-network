@@ -13,7 +13,7 @@ Home
 
 Thank you for stopping by and checking out '{siteTitle}'.
 '{siteTitle}' is a collection of http://www.gnu.org/philosophy/free-sw.html[free software]
-for poker and is written and maintained by Thomas Cort. 
+for poker and is written and maintained by http://www.tomcort.com/[Thomas Cort]. 
 The '{siteTitle}' project was founded in 2005 to create a poker server
 and poker bot programming framework. It has evolved since then and is
 currently undergoing a major re-write. The new library, *libtinypoker*,
@@ -22,19 +22,32 @@ additional game logic. The target release date for *tinypokerd*
 is July 1, 2008.
 
 .Features
-- Secure client/server communications with Transport Layer Security
-- Support for Internet Protocol version 4 (IPv4) and version 6 (IPv6)
-- User authentication with Pluggable Authentication Modules (PAM)
+- Secure client/server communications with Transport Layer Security.
+- Support for Internet Protocol version 4 (IPv4) and version 6 (IPv6).
+- User authentication with Pluggable Authentication Modules (PAM).
 - Compatible with existing Internet Poker Protocol 2.0 Implementations.
 - Freedom to run, copy, distribute, study, change and improve the software. 
 
 News
 ----
 
+April 13, 2008 - libtinypoker 20080413 Snapshot Available
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A development snapshot of *libtinypoker* is now available                         
+in the http://tinypoker.org/download.html[downloads] section.
+The snapshot was created so that interested developers could follow the new
+http://tinypoker.org/api.html[tutorial] without having to do a checkout from
+http://tinypoker.org/subversion.html[subversion]. Within the next few weeks
+the hand evaluator and ranking features should be complete enough for a formal
+release. As always, *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software]
+and is licensed under the terms of the
+http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+
+
 April 1, 2008 - libtinypoker 0.0.0 Released
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first release of *libtinypoker* is now available to the public at no cost
+The first release of *libtinypoker* is now available
 in the http://tinypoker.org/download.html[downloads] section.
 *libtinypoker* provides application programming interfaces (APIs) to applications
 implementing the Internet Poker Protocol (IPP) Version 2.0. The library
@@ -48,4 +61,3 @@ several predefined types for representing poker games, players and cards.
 *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software]
 and is licensed under the terms of the
 http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
-The only dependency is http://www.gnu.org/software/gnutls/[GNU TLS].

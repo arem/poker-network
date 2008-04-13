@@ -13,6 +13,7 @@
 body {
   font-family: "Trebuchet MS" Verdana, Arial, sans-serif;
   font-size: 0.9em;
+  background: #afafee;
 }
 
 h2 {
@@ -27,13 +28,14 @@ h3 {
 }
 
 #container {
-  width: 760px;
+  width: 84%;
   margin: 0px auto 0px auto;
   padding: 0px;
 }
 
 #menu {
   width: 140px;
+  background: #ffffff;
 }
 
 #menu ul {
@@ -54,6 +56,18 @@ div.sidebar-title {
 
 div.title {
   font-weight: bold;
+}
+
+#title {
+  background: #ffffff;
+}
+
+#body {
+  background: #ffffff;
+}
+
+td {
+  padding: 10px 10px 10px 10px;
 }
 
 pre {

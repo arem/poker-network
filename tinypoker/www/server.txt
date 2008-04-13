@@ -18,8 +18,8 @@ Install the Dependencies
 ------------------------
 
 TinyPoker makes use of several software libraries. Each one must be installed
-before building and running *tinypokerd*. A complete list can be found
-http://tinypoker.org/dependencies.html[here].
+before building and running *tinypokerd*. A complete list can be found on the
+http://tinypoker.org/download.html[download] page.
 
 Obtain the Source Code
 ----------------------
