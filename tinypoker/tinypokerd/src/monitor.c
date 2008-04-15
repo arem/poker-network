@@ -77,10 +77,8 @@ void monitor_wait(void)
 		pthread_mutex_lock(&mon_lock);
 
 		if (!cnt) {
-			/*
-			 * Do NOT release lock; we don't want any more
-			 * threads starting
-			 */
+			pthread_mutex_unlock(&mon_lock);
+			pthread_mutex_destroy(&mon_lock);
 			return;
 		} else {
 			pthread_mutex_unlock(&mon_lock);

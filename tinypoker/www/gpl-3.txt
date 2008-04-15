@@ -13,8 +13,9 @@ GNU General Public License Version 3
 
 All of the '{siteTitle}' source code is released under the 'GNU General'
 'Public License' version 3, or (at your option) any later version.
-This includes *libtinypoker*, *tinypokerd*, *bagelbot-ng* and *tinypokerclient*.
-This website and transparent copy are released under the terms of the 
+This includes *libtinypoker*, *tinypokerd*, *tinypokerbot* and 
+*tinypokerclient*. This website and transparent copy are released under 
+the terms of the 
 http://tinypoker.org/gfdl-1.2.html[GNU Free Documentation License Version 1.2].
 
 --------------------------------------

@@ -52,11 +52,11 @@ http://www.wxwidgets.org/[wxWidgets].
 
  * 'No releases yet'.
 
-bagelbot-ng
------------
+tinypokerbot
+------------
 
-*bagelbot-ng* is a trivial client for *tinypokerd*. It will connect to a
-server, join a game, and fold every hand. It is intended
+*tinypokerbot* is a trivial client for *tinypokerd*. It will connect to 
+a server, join a game, and fold every hand. It is intended
 to be a base for building a poker bot. It free software and is licensed under the
 terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker],

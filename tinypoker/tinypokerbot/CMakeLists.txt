@@ -1,21 +1,21 @@
 # Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
 #
-# This file is part of bagelbot-ng.
+# This file is part of tinypokerbot.
 #
-# bagelbot-ng is free software: you can redistribute it and/or modify
+# tinypokerbot is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 # 
-# bagelbot-ng is distributed in the hope that it will be useful,
+# tinypokerbot is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with bagelbot-ng.  If not, see <http://www.gnu.org/licenses/>.
+# along with tinypokerbot.  If not, see <http://www.gnu.org/licenses/>.
 
-PROJECT(bagelbot-ng C)
+PROJECT(tinypokerbot C)
 
 # Version Information
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
@@ -200,8 +200,8 @@ ENDIF (LIBBFD_INCLUDE_DIR)
 #############################################
 
 INCLUDE_DIRECTORIES(${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR} ${LIBDL_INCLUDE_DIR} ${LIBBFD_INCLUDE_DIR})
-ADD_EXECUTABLE(bagelbot-ng conf.c main.c play.c signal.c)
-SET_TARGET_PROPERTIES(bagelbot-ng PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
-TARGET_LINK_LIBRARIES(bagelbot-ng ${LIBCONFUSE} ${LIBDAEMON} ${LIBTINYPOKER} ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSL} ${LIBGSLCBLAS} ${LIBDL} ${LIBBFD})
-INSTALL(PROGRAMS bagelbot-ng DESTINATION usr/bin)
-INSTALL(FILES bagelbot-ng.conf DESTINATION etc PERMISSIONS OWNER_WRITE OWNER_READ)
+ADD_EXECUTABLE(tinypokerbot conf.c main.c play.c signal.c)
+SET_TARGET_PROPERTIES(tinypokerbot PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
+TARGET_LINK_LIBRARIES(tinypokerbot ${LIBCONFUSE} ${LIBDAEMON} ${LIBTINYPOKER} ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSL} ${LIBGSLCBLAS} ${LIBDL} ${LIBBFD})
+INSTALL(PROGRAMS tinypokerbot DESTINATION usr/bin)
+INSTALL(FILES tinypokerbot.conf DESTINATION etc PERMISSIONS OWNER_WRITE OWNER_READ)

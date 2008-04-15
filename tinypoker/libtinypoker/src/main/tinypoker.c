@@ -730,7 +730,42 @@ ipp_table *ipp_new_table(void)
 		return NULL;
 	}
 
+	pthread_mutex_init(&(table->lock), 0);
+
 	return table;
+}
+
+/**
+ * Add an ipp_player to an ipp_table in a thread safe way.
+ * @param table the table to add to.
+ * @param player the player to add.
+ * @return the index in table->players[] or -1 if the table was full.
+ */
+int ipp_add_player(ipp_table * table, ipp_player * player)
+{
+	int i, added;
+
+	pthread_mutex_lock(&(table->lock));
+
+	/* TODO Support for Stud and Draw */
+	if (table->nplayers == HOLDEM_PLAYERS_PER_TABLE) {
+		pthread_mutex_unlock(&(table->lock));
+		return -1;
+	}
+
+	added = 0;
+	for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
+		if (table->players[i] == NULL) {
+			table->players[i] = player;
+			table->nplayers++;
+			added = 1;
+			break;
+		}
+	}
+
+	pthread_mutex_unlock(&(table->lock));
+
+	return i;
 }
 
 /**
@@ -761,9 +796,11 @@ void ipp_free_table(ipp_table * table)
 				}
 			}
 		}
-		table->num_players = 0;
+		table->nplayers = 0;
 		table->amt_to_call = 0;
 		table->stage = 0;
+
+		pthread_mutex_destroy(&(table->lock));
 
 		free(table);
 		table = NULL;

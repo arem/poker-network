@@ -31,6 +31,7 @@ extern "C" {
 #include <gnutls/x509.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+#include <pthread.h>
 
 #ifndef TRUE
 #define TRUE (1)
@@ -185,14 +186,14 @@ extern "C" {
  */
 	typedef struct ipp_table {
 		enum game_type type;
-		int num_players;
+		int nplayers;
 		int amt_to_call;
 		enum holdem_stage stage;
-		/* TODO add mutex for altering this table */
 		/* TODO Support for Stud and Draw */
 		ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
 		ipp_card *board[HOLDEM_BOARD_CARDS];
 		ipp_deck *deck;
+		pthread_mutex_t lock;
 	} ipp_table;
 
 /**
@@ -286,6 +287,14 @@ extern "C" {
  * @return a malloc()'d ipp_table structure.
  */
 	ipp_table *ipp_new_table(void);
+
+/**
+ * Add an ipp_player to an ipp_table in a thread safe way.
+ * @param table the table to add to.
+ * @param player the player to add.
+ * @return the index in table->players[] or -1 if the table was full.
+ */
+	int ipp_add_player(ipp_table * table, ipp_player * player);
 
 /**
  * Deallocates an ipp_table.

@@ -42,6 +42,7 @@
 static void client_connect_callback(ipp_socket * sock)
 {
 	ipp_player *p;
+	int rc;
 
 	p = ipp_server_handshake(sock, TINYPOKERD_NAME "/" TINYPOKERD_VERSION, ipp_auth, protocol_logger);
 	if (!p) {
@@ -53,10 +54,13 @@ static void client_connect_callback(ipp_socket * sock)
 		sock = NULL;
 	}
 
-	/* TODO: remove this. it is just here for testing */
-	ipp_disconnect(sock);
-	ipp_free_socket(sock);
-	sock = NULL;
+	rc = ipp_add_player(tbl, p);
+	if (rc == -1) {
+		/* TODO send table full error message */
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		sock = NULL;
+	}
 }
 
 int pokerserv(void)

@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
 To be continued
 ---------------
 
-This document is being written as *tinypokerclient* and *bagelbot-ng* are
+This document is being written as *tinypokerclient* and *tinypokerbot* are
 being developed, so it is still very much a work in progress. If you want
 to go further, take a look at *tinypoker.h*; it is well commented and
 should give you and idea about the functions and structures available.

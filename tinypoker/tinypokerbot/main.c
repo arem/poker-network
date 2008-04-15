@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
  * 
- * This file is part of bagelbot-ng.
+ * This file is part of tinypokerbot.
  * 
- * bagelbot-ng is free software: you can redistribute it and/or modify it under
+ * tinypokerbot is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  * 
- * bagelbot-ng is distributed in the hope that it will be useful, but WITHOUT
+ * tinypokerbot is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  * 
  * You should have received a copy of the GNU General Public License along with
- * bagelbot-ng.  If not, see <http://www.gnu.org/licenses/>.
+ * tinypokerbot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <strings.h>
@@ -117,13 +117,13 @@ int main(int argc, char **argv)
 	install_signal_handlers();
 
 	/* Set the default config file path */
-	configfile = (char *) malloc((strlen("bagelbot-ng.conf") + 2) * sizeof(char));
+	configfile = (char *) malloc((strlen("tinypokerbot.conf") + 2) * sizeof(char));
 	if (!configfile) {
 		daemon_log(LOG_ERR, "malloc() failed!");
 		return 255;
 	}
-	bzero(configfile, (strlen("bagelbot-ng.conf") + 2) * sizeof(char));
-	snprintf(configfile, strlen("bagelbot-ng.conf") + 1, "bagelbot-ng.conf");
+	bzero(configfile, (strlen("tinypokerbot.conf") + 2) * sizeof(char));
+	snprintf(configfile, strlen("tinypokerbot.conf") + 1, "tinypokerbot.conf");
 
 	configure();
 
