@@ -23,7 +23,6 @@
 #include <tinypoker.h>
 
 #include "conf.h"
-#include "play.h"
 #include "main.h"
 #include "signal.h"
 
@@ -143,7 +142,10 @@ int main(int argc, char **argv)
 
 	if ((sock = ipp_client_handshake(host, "ca.pem", user, pass, "500", protocol_logger))) {
 		daemon_log(LOG_INFO, "[MAIN] Handshake OK");
-		play(sock);
+
+/* TODO dlopen */
+
+
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;

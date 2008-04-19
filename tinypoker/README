@@ -8,9 +8,9 @@
 
 TinyPoker is a collection of poker software written by Thomas Cort. 
 Originally the code was written for a poker bot programming competition 
-for the Computer Science Club at Bishop's University in 
-Lennoxville, Quebec, Canada. It has evolved since then and is currently
-undergoing a major re-write. 
+for the Computer Science Club at Bishop's University in Lennoxville, 
+Quebec, Canada. It has evolved since then and is currently undergoing a 
+major re-write. 
 
 libtinypoker - libtinypoker provides application programming interfaces
 (APIs) to applications implementing the Internet Poker Protocol (IPP)
@@ -38,5 +38,4 @@ connects to the server, joins the game, and folds every chance it gets. It is
 intended to be used as an example for creating a new bots. You just have 
 to add the programming logic to determine to fold, raise, bet, or call.
 
-For more information on the TinyPoker Project
-See: http://tinypoker.org/
+For more information on the TinyPoker Project see: http://tinypoker.org/

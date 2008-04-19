@@ -1,0 +1,105 @@
+\input texinfo   @c -*-texinfo-*-
+@comment $Id$
+@comment %**start of header
+@setfilename tinypoker.info
+@include version.texi
+@settitle TinyPoker @value{VERSION}
+@syncodeindex pg cp
+@comment %**end of header
+@copying
+This manual is for TinyPoker (version @value{VERSION}, @value{UPDATED}).
+
+Copyright @copyright{} 2008 Thomas Cort
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is included in the section entitled "GNU
+Free Documentation License".
+
+@end quotation
+@end copying
+
+@titlepage
+@title TinyPoker
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Thomas Cort (@email{tom@@tomcort.com})
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@top TinyPoker
+
+This manual is for TinyPoker (version @value{VERSION}, @value{UPDATED}).
+@end ifnottex
+
+@chapter Introduction
+@section Background
+
+@url{http://tinypoker.org/,TinyPoker} is a collection of poker software
+written by @url{http://www.tomcort.com/,Thomas Cort}.
+Originally the code was written as part of a poker bot programming competition
+for the @url{http://j9.ubishops.ca/,Computer Science Club} at
+@url{http://www.ubishops.ca/,Bishop's University} in Lennoxville,
+Quebec, Canada. It has evolved since then and is currently undergoing a
+major re-write that will include support for the
+@cindex Internet Poker Protocol
+Internet Poker Protocol (IPP) version 2.0 and a number of new features.
+
+@section libtinypoker
+
+@cindex libtinypoker
+libtinypoker provides application programming interfaces
+(APIs) to applications implementing the Internet Poker Protocol (IPP)
+Version 2.0. The library provides a robust communications framework
+that allows clients and servers to communicate over secure
+@cindex transport layer sockets
+transport layer sockets (TLS) using Internet Protocol version 4 (IPv4) and/or
+Internet Protocol version 6 (IPv6). The underlying code is designed
+to gracefully handle network problems such as unexpected disconnections
+and bad input. IPP message validation, normalization and parsing
+functions are available to developers as are several predefined types
+for representing poker games, players and cards.
+
+@section tinypokerd
+
+@cindex tinypokerd
+tinypokerd is the TinyPoker server. It will use
+@cindex libtinypoker
+libtinypoker to implement the
+@cindex Internet Poker Protocol
+Internet Poker Protocol (IPP). The code will be based on the pokerd
+code base and experience implementing pokerd. An effort will be made
+to make the server footprint even smaller than pokerd.
+
+@section tinypokerclient
+
+@cindex tinypokerclient
+tinypokerclient provides a basic GUI designed for use with tinypokerd. The primary
+purpose is to provide a way for humans to more easily debug poker bots and
+tinypokerd.
+
+@section tinypokerbot
+
+@cindex tinypokerbot
+tinypokerbot is a basic bot designed for use with tinypokerd. This
+@cindex bot
+bot connects to the server, joins the game, and folds every chance it gets. It is
+intended to be used as an example for creating a new bots. You just have
+to add the programming logic to determine to fold, raise, bet, or call.
+
+@appendix GNU Free Documentation License
+@include fdl.texi
+
+@unnumbered Index
+
+@printindex cp
+
+@bye
+

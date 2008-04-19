@@ -745,11 +745,8 @@ int ipp_add_player(ipp_table * table, ipp_player * player)
 {
 	int i, added;
 
-	pthread_mutex_lock(&(table->lock));
-
 	/* TODO Support for Stud and Draw */
 	if (table->nplayers == HOLDEM_PLAYERS_PER_TABLE) {
-		pthread_mutex_unlock(&(table->lock));
 		return -1;
 	}
 
@@ -762,8 +759,6 @@ int ipp_add_player(ipp_table * table, ipp_player * player)
 			break;
 		}
 	}
-
-	pthread_mutex_unlock(&(table->lock));
 
 	return i;
 }
@@ -1898,6 +1893,10 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 	size_t len;
 	int rc;
 
+	if (!ipp_initialized) {
+		ipp_init();
+	}
+
 	if (!sock || !server_tag) {
 		return NULL;
 	}
@@ -2093,6 +2092,10 @@ ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char 
 	size_t len;
 	int rc;
 
+	if (!ipp_initialized) {
+		ipp_init();
+	}
+
 	if (!hostname || !cacert || !user || !pass || !buyin_amt) {
 		return NULL;
 	}
@@ -2170,4 +2173,66 @@ ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char 
 	msg = NULL;
 
 	return sock;
+}
+
+/**
+ * Deal cards to the players at the table.
+ * @param table to deal at.
+ * @param timeout number of seconds to wait for output.
+ * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
+ */
+void ipp_deal(ipp_table * table, int timeout, void (*logger) (char *))
+{
+	int i, j;
+	int rc;
+
+	if (!ipp_initialized) {
+		ipp_init();
+	}
+
+	if (!table) {
+		return;
+	}
+
+	/* TODO Support for Stud and Draw */
+
+	for (i = 0; i < HOLDEM_HOLE_CARDS; i++) {
+		for (j = 0; j < HOLDEM_PLAYERS_PER_TABLE; j++) {
+			if (table->players[j]) {
+				table->players[j]->hole[i] = ipp_deck_next_card(table->deck);
+			}
+		}
+	}
+
+	for (i = 0; HOLDEM_PLAYERS_PER_TABLE; i++) {
+		ipp_message *msg;
+		int len;
+
+		msg = ipp_new_message();
+		if (!msg) {
+			/* malloc failed */
+			return;
+		}
+
+		len = strlen(CMD_DEAL) + strlen(" ") + strlen("xx") + strlen(" ") + strlen("xx") + 3;
+
+		msg->type = MSG_DEAL;
+		msg->payload = (char *) malloc(len);
+		if (!(msg->payload)) {
+			/* malloc failed */
+			return;
+		}
+		memset(msg->payload, '\0', len);
+		snprintf(msg->payload, len - 1, "%s %c%c %c%c", CMD_DEAL, table->players[i]->hole[0]->rank, table->players[i]->hole[0]->suit, table->players[i]->hole[1]->rank, table->players[i]->hole[1]->suit);
+		rc = ipp_send_msg(table->players[i]->sock, msg, timeout, logger);
+		if (rc) {
+			table->players[i]->still_in = TRUE;
+		} else {
+			table->players[i]->kill = TRUE;
+			table->players[i]->still_in = FALSE;
+		}
+
+		ipp_free_message(msg);
+
+	}
 }

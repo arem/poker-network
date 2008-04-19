@@ -17,10 +17,12 @@
  * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <pthread.h>
 #include <stdlib.h>
 #include <tinypoker.h>
 #include <unistd.h>
 
+#include "log.h"
 #include "monitor.h"
 #include "poker.h"
 #include "signal.h"
@@ -30,10 +32,26 @@ ipp_table *tbl = NULL;
 void *play(void *arg)
 {
 
-	while (!exit_now) {
-		sleep(1);
+	do {
+		/* shuffle before every hand and when no players are around */
+		pthread_mutex_lock(&(tbl->lock));
 		ipp_shuffle_deck(tbl->deck);
-	}
+		pthread_mutex_unlock(&(tbl->lock));
+
+		/* must have 2 players */
+		pthread_mutex_lock(&(tbl->lock));
+		if (tbl->nplayers < 2) {
+			pthread_mutex_unlock(&(tbl->lock));
+			sleep(1);	/* sleep while we wait : constantly shuffling hogs the CPU */
+			continue;
+		}
+		pthread_mutex_unlock(&(tbl->lock));
+
+		pthread_mutex_lock(&(tbl->lock));
+		ipp_deal(tbl, SERVER_WRITE_TIMEOUT, protocol_logger);
+		pthread_mutex_unlock(&(tbl->lock));
+
+	} while (!exit_now);
 
 	monitor_dec();
 	return NULL;

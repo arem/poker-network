@@ -1,0 +1,29 @@
+// TinyPoker.org
+// Copyright (C) 2007, 2008 Thomas Cort <tom@tomcort.com>
+//
+// Permission is granted to copy, distribute and/or modify this document
+// under the terms of the GNU Free Documentation License, Version 1.2 or
+// any later version published by the Free Software Foundation; with no
+// Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+// copy of the license is included in the section entitled "GNU Free
+// Documentation License".
+
+Contributor License Agreements
+==============================
+
+Before contributions to TinyPoker can be accepted into the official 
+distribution, contributors must complete a
+http://en.wikipedia.org/wiki/Contributor_License_Agreement[Contributor License Agreement]
+(CLA). The CLA makes clear who the contributor is, the 
+source of the contribution, whether the contributor is allowed to make 
+the contribution or not, and it also grants a copyright license and 
+patent license to Thomas Cort to protect him and the users of TinyPoker.
+The agreement will also make license enforcement easier.
+
+To be completed by Individuals:
+
+* http://tinypoker.org/cla/cla-indv.txt[Individual Contributor License Agreement ("Agreement") v1.0]
+
+To be completed by corporate entities:
+
+* http://tinypoker.org/cla/cla-indv.txt[Software Grant and Corporate Contributor License Agreement ("Agreement") v1.0]

@@ -144,13 +144,17 @@ auth    required pam_pwdfile.so pwdfile /etc/tinypokerd/passwd
 account required pam_permit.so
 --------------------------------
 
-Mext, we create the password file and add two users, *jdoe* and *jsmith*. The *-c* option is only needed
+Next, we create the password file and add two users, *JDOE* and *JSMITH*. The *-c* option is only needed
 for the first user.
 
 ------------------------------------------
-htpasswd -c /etc/tinypokerd/passwd jdoe
-htpasswd /etc/tinypokerd/passwd jsmith
+htpasswd -c /etc/tinypokerd/passwd JDOE
+htpasswd /etc/tinypokerd/passwd JSMITH
 ------------------------------------------
+
+Note: the Internet Poker Protocol is case insensitive and PAM is case sensitive. To resolve the difference,
+everything is converted to upper case. So when you create your users, the username should be in upper case
+and the password should be in upper case.
 
 Legacy Client Support (Optional)
 --------------------------------

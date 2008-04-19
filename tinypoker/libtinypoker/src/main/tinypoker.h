@@ -50,21 +50,17 @@ extern "C" {
 #endif
 
 /**
- * Major version number. This is updated when major re-writes or
- * changes to the API occur requiring implementing programs to be
- * changed.
+ * Major version number.
  */
 #define LIBTINYPOKER_MAJOR_VERSION 0
 
 /**
- * Minor version number. This is updated when new APIs are added
- * that don't change existing APIs.
+ * Minor version number.
  */
 #define LIBTINYPOKER_MINOR_VERSION 1
 
 /**
- * Patch version number. This is updated when bugs are fixed that don't
- * add any new APIs.
+ * Patch version number.
  */
 #define LIBTINYPOKER_PATCH_VERSION 0
 
@@ -179,6 +175,7 @@ extern "C" {
 		int amt_in;	/* amount into the pot from this player */
 		int still_in;	/* TRUE if still in the hand, FALSE
 				 * if folded, disconnected, etc. */
+		int kill;	/* TRUE if the player is scheduled for removal from the table. This is needed because ipp_remove_player() cannot be called while the table is locked. */
 	} ipp_player;
 
 /**
@@ -1084,6 +1081,14 @@ extern "C" {
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
 	ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *));
+
+/**
+ * Deal cards to the players at the table.
+ * @param table to deal at.
+ * @param timeout number of seconds to wait for output.
+ * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
+ */
+	void ipp_deal(ipp_table * table, int timeout, void (*logger) (char *));
 
 #endif
 
