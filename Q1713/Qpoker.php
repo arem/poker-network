@@ -18,6 +18,8 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+  The GLP is at the of this file.
 */
 
 
@@ -33,34 +35,59 @@ file called QpokerMySQL.php containing this:
 ?>
 */
 
-//As long as you don't remove the following lines you will satisfy the
+$logspeed=round(microtime(true)*1000);
+
+//As long as you don't remove the following lines you will always satisfy the
 //requirements of the GPL.
     if($_REQUEST['source']==="show")
       {
-	echo '<html><head><title>Qpoker source</title></head>';
+	header('Content-type: application/xhtml+xml; charset=utf-8');
+	echo '<?xml version="1.0" encoding="UTF-8"?>';
+	echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">';
+	echo '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Qpoker source</title></head>';
 	echo '<body style="font-family:monospace;font-size:12px;white-space:pre">';
-	$file=file('Qpoker.php');
-	foreach($file as $num => $line)
+	$file=fopen(basename('Qpoker.php'),'r');
+	$num=0;
+	while(!feof($file))
 	    {
-	      echo '<b>'.str_pad($num+1,4,' ',STR_PAD_LEFT).':</b> ';
-	      echo htmlentities(strtr($line,array("\t"=>'        ')));
+	      echo '<b>'.str_pad(++$num,4,' ',STR_PAD_LEFT).':</b> ';
+	      echo htmlspecialchars(strtr(fgets($file),array("\t"=>'        ')));
+	      flush();
 	    }
 	die('</body></html>');
       }
     if($_REQUEST['source']==="download")
       {
-	$file=implode('',file('Qpoker.php'));
+	$file=fopen(basename('Qpoker.php'),'r');
 	header('ContentType: application/x-php');
 	header('Content-disposition: attachment; Qpoker.php');
-	die($file);  
+	fpassthru($file);
+	exit;
       }
-//As long as you don't remove the priviose lines you will satisfy the
+//As long as you don't remove the priviose lines you will always satisfy the
 //requirements of the GPL.
 
 
+function prepare_input(&$var)
+{
+  if(is_array($var))
+   {
+    foreach($var as $key => $value)
+     {
+      prepare_input($var[$key]);
+     }
+   }
+  else
+   {
+    if(get_magic_quotes_gpc()) $var=stripslashes($var);
+    $var=str_replace("\r\n","\n",$var); //windows linefeeds
+    $var=str_replace("\r","\n",$var); //mac linefeeds
+   }
+}
 
-if(get_magic_quotes_gpc()) foreach($_REQUEST as &$r) if(is_string($r)) $r=stripslashes($r);
-unset($r);
+prepare_input($_POST); 
+prepare_input($_GET);
+prepare_input($_REQUEST);
 
 
 include('QpokerMySQL.php');
@@ -86,15 +113,15 @@ if(isset($_REQUEST['changed']))
   switch($_REQUEST['changed'])
     {
     case 'time':
-      if(intval($_REQUEST['time'])<time())die('reload');
-      die(strval(intval($_REQUEST['time'])));
+      if(intval($_REQUEST['time'])<time()) { logspeed();die('reload');}
+      logspeed();die(strval(intval($_REQUEST['time'])));
     case 'chat':
       if($t=@mysql_fetch_assoc(
 	   @mysql_query(
 	     'SELECT `table` FROM `'.$MySQLprefix.'player` '
 	     .'WHERE `id`='.intval($_REQUEST['playerid']).' AND `table`!=0')))
 	{
-	  if($_REQUEST['chat']=='all') die("reload");
+	  if($_REQUEST['chat']=='all') { logspeed();die("reload"); }
 	  $t=@mysql_fetch_assoc(
 	    @mysql_query(
 	      'SELECT `'.$MySQLprefix.'chat`.`id` '
@@ -105,38 +132,38 @@ if(isset($_REQUEST['changed']))
 	}
       else
 	{
-	  if($_REQUEST['chat']=='table') die("reload");
+	  if($_REQUEST['chat']=='table') { logspeed();die("reload"); }
 	  $t=@mysql_fetch_assoc(
 	    @mysql_query(
 	      'SELECT `id` FROM `'.$MySQLprefix.'chat` '
 	      .'ORDER BY `id` DESC LIMIT 1'));
 	}
-      die(strval(intval($t['id'])));
+      logspeed();die(strval(intval($t['id'])));
     case 'cards':
       $t=@mysql_fetch_assoc(
 	@mysql_query(
 	  'SELECT MAX(`actiontime`) AS maxat '
 	  .'FROM `'.$MySQLprefix.'table`,`'.$MySQLprefix.'player` '
 	  .'WHERE `'.$MySQLprefix.'player`.`table`='.intval($_REQUEST['tableid'])));
-      die(strval(intval($t['maxat'])));
+      logspeed();die(strval(intval($t['maxat'])));
     case 'tables':
       $t=@mysql_fetch_assoc(
 	@mysql_query(
 	  'SELECT MAX(`timein`) AS maxti,  MAX(`timeout`) AS maxto '
 	  .'FROM `'.$MySQLprefix.'player`'));
-      die(strval(max($t['maxto'],$t['maxti'])));
+      logspeed();die(strval(max($t['maxto'],$t['maxti'])));
     case 'players':
       $t=@mysql_fetch_assoc(
 	@mysql_query(
-	  'SELECT COUNT(`id`) AS cid FROM `'.$MySQLprefix.'player` '
+	  'SELECT MAX(`timein`) AS mti FROM `'.$MySQLprefix.'player` '
 	  .'WHERE `table`='.intval($_REQUEST['tableid'])));
-      die(strval(intval($t['cid'])));
+      logspeed();die(strval(intval($t['mti'])));
     case 'actions':
       $t=@mysql_fetch_assoc(
 	@mysql_query(
 	  'SELECT `onturn` FROM `'.$MySQLprefix.'table` '
 	  .'WHERE `id`='.intval($_REQUEST['tableid'])));
-      die(strval(intval($t['onturn'])));
+      logspeed();die(strval(intval($t['onturn'])));
     }
 }
 
@@ -144,25 +171,38 @@ if(isset($_REQUEST['sid'])) session_id($_REQUEST['sid']);
 
 session_start();
 
-//header('Content-Type: application/xhtml+xml; charset=utf-8');
-
-
 $url='Qpoker.php?';
 if(isset($_REQUEST['sid']))$url.='sid='.session_id().'&';
 
 ini_set('error_reporting',E_ALL);
 
+$variants=array();
+$variants['texasholdem']=array(
+  'name' => 'Texas Hold\'em',
+  );
 
-$nums=array(1=>' A',' 2',' 3',' 4',' 5',' 6',' 7',' 8',' 9','10',' J',' Q',' K',' A');
-$nums2=array(1=>'A','2','3','4','5','6','7','8','9','1','J','Q','K','A');
+$limits=array();
+$limits['limit']=array(
+  'name' => 'Limit',
+  );
+$limits['potlimit']=array(
+  'name' => 'Pot Limit',
+  );
+$limits['nolimit']=array(
+  'name' => 'No Limit',
+  );
+
+$numsHTML=array('','Ace','2','3','4','5','6','7','8','9','10','Jack','Queen',' King','Ace');
+$numsHTMLp=array('','Aces','2','3','4','5','6','7','8','9','10','Jacks','Queens',' Kings','Aces');
+$nums2=array('','a','2','3','4','5','6','7','8','9','t','j','q','k','a');
 $nums3=array_flip($nums2);
-$nums4=array(1=>'a','2','3','4','5','6','7','8','9','10','j','q','k','a');
-$cols=array('&#x2660;','&#x2663;','&#x2665;','&#x2666;');
+$colsHTML=array('&#x2660;','&#x2663;','&#x2665;','&#x2666;');
 $cols2=array('s','c','h','d');
+$cols3=array_flip($cols2);
 
 if(isset($_REQUEST['logout']))
 {
-  unset($_SESSION);
+  unset($_SESSION['loggedin']);
 }
 if(isset($_REQUEST['login']) and $_REQUEST['login'])
 $_SESSION['loggedin']=
@@ -180,53 +220,47 @@ else $player=NULL;
 if($player) 
 {
   if(isset($_REQUEST['zoom']) and intval($_REQUEST['zoom']))
-    $zoom=intval($_REQUEST['zoom']);
-  else
-    $zoom=$player['zoom'];
-  if($zoom!=$player['zoom'])
-    query('UPDATE `'.$MySQLprefix.'player` SET `zoom`='.$zoom.' WHERE `id`='.$player['id']);
+    {
+      if($player['zoom']!=intval($_REQUEST['zoom']))
+	query('UPDATE `'.$MySQLprefix.'player` SET `zoom`='.intval($_REQUEST['zoom']).' WHERE `id`='.$player['id']);
+      $player['zoom']=intval($_REQUEST['zoom']);
+    }
 }
-else
-  $zoom=100;
 
 $action=isset($_REQUEST['action'])?$_REQUEST['action']:NULL;
-isset($_REQUEST['buyin']) and $buyin=intval($_REQUEST['buyin']) or $buyin=1000;
-isset($_REQUEST['tablesize']) and $tablesize=intval($_REQUEST['tablesize']) or $tablesize=5;
-isset($_REQUEST['sbstart']) and $sbstart=intval($_REQUEST['sbstart']) or $sbstart=20;
-isset($_REQUEST['sbinc'  ]) and $sbinc  =intval($_REQUEST['sbinc'  ]) or $sbinc  =10;
-isset($_REQUEST['sbend'  ]) and $sbend  =intval($_REQUEST['sbend'  ]) or $sbend =100;
 if(!isset($_REQUEST['frame']))$_REQUEST['frame']=false;
 
-$players=query('SELECT * FROM `'.$MySQLprefix.'player`');
+//$players=query('SELECT * FROM `'.$MySQLprefix.'player`');
 
-$font='font-family:monospace;font-size:'.zoom(14).'px;white-space:pre';
+$font1='font-family:monospace;font-size:'.zoom(14).'px;white-space:pre';
 $font2='font-family:monospace;font-size:'.zoom(12).'px;white-space:pre';
 $font3='font-family:sans-serif;font-size:'.zoom(12).'px;white-space:normal';
-$fontg='color:#808080;'.$font;
+$font1g='color:#808080;'.$font1;
 $font2g='color:#808080;'.$font2;
 $font3g='color:#808080;'.$font3;
-$font='color:#000000;'.$font;
+$font1='color:#000000;'.$font1;
 $font2='color:#000000;'.$font2;
 $font3='color:#000000;'.$font3;
 
-if($_REQUEST['frame'] and $_REQUEST['frame']!='main' or !$player)
+if($_REQUEST['frame'] or !$player)
 {
-  echo '<html><head><title>Qpoker</title></head>';
+  header('Content-type: application/xhtml+xml; charset=utf-8');
+  echo '<?xml version="1.0" encoding="UTF-8"?>';
+  echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">';
+  echo '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Qpoker</title></head>';
   echo '<body style="padding:0px;margin:0px">';
   echo '<form';
-  echo ' name="theform"';
   echo ' id="theform"';
   echo ' method="post"';
-  echo ' action="'.$url.(($_REQUEST['frame']=='chatdisplay')?'#chatbottom':'').'" style="display:inline"';
+  echo ' action="'.htmlspecialchars($url.(($_REQUEST['frame']=='chatdisplay')?'#chatbottom':'')).'" style="display:inline"';
   echo '>';
-  echo '<input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
-  echo '<span style="'.$font.'">';
-  $htmlend='</span></form></body></html>';
+  echo '<div style="'.$font1.'"><input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
+  $htmlend='</div></form></body></html>';
 }
 
 if(isset($_REQUEST['register']))
 {
-  if($_REQUEST['name'] and 
+  if(isset($_REQUEST['name']) and $_REQUEST['name'] and 
      !query('SELECT id FROM `'.$MySQLprefix.'player` WHERE name="'.mes($_REQUEST['name']).'"')
      and $_REQUEST['pass1'] and $_REQUEST['pass2'] 
      and $_REQUEST['pass1']==$_REQUEST['pass2'])
@@ -235,18 +269,18 @@ if(isset($_REQUEST['register']))
 	query('INSERT INTO `'.$MySQLprefix.'player`',
 	      'SET `name`="'.mes($_REQUEST['name']).'"',
 	      ', `pass`="'.md5($_REQUEST['pass1']).'"');
-      echo 'Thanks for registring '.htmlentities($_REQUEST['name']).'.<br />';
-      echo '<br /><a href="'.$url.'">login</a>';
+      echo 'Thanks for registring '.htmlspecialchars($_REQUEST['name']).'.<br />';
+      echo '<br /><a href="'.htmlspecialchars($url).'">login</a>';
     }
   else
     {
-      if($_REQUEST['name'] 
+      if(isset($_REQUEST['name']) and $_REQUEST['name']
 	 and $_REQUEST['pass1'] and $_REQUEST['pass2'] 
 	 and $_REQUEST['pass1']==$_REQUEST['pass2'])
-	echo htmlentities($_REQUEST['name'])
+	echo htmlspecialchars($_REQUEST['name'])
 	  .' is already used by someone else<br />';
       echo 'Name:    <input name="name" type="text" /><br />';
-      if($_REQUEST['name'] 
+      if(isset($_REQUEST['name']) and $_REQUEST['name'] 
 	 and (!$_REQUEST['pass1'] or !$_REQUEST['pass2'] 
 	      or $_REQUEST['pass1']!=$_REQUEST['pass2']))
 	echo 'passwords didn\'t match<br />';
@@ -261,93 +295,53 @@ else if(!$player)
     {
       if(isset($_REQUEST['login'])) echo 'Login failed<br />';
       if(!isset($_REQUEST['name']))$_REQUEST['name']='';
-      echo 'Name:    <input name="name" type="text" value="'.htmlentities($_REQUEST['name']).'" /><br />';
-      echo 'Password:<input name="pass" type="password" /><br />';
-      echo '<input type="submit" name="login" value="login" /><br />';
-      echo '<br /><a href="?register=1">register</a><br />';
+      echo '<div><label for="loginname">Name:</label><input id="loginname" name="name" type="text" value="'.htmlspecialchars($_REQUEST['name']).'" /></div>';
+      echo '<div><label for="loginpass">Password:</label><input id="loginpass" name="pass" type="password" /></div>';
+      echo '<div><input type="submit" name="login" value="login" /></div>';
+      echo '<div><a href="?register=1">register</a></div>';
 
       //As long as you don't remove the following lines you will satisfy the
       //requirements of the GPL.
           echo '<span style="'.$font2.'">';
-	  echo '<br /><br /><br /><br />';
-	  echo '<br />You may watch the <a href="'.$url.'source=show">source code</a> and <a href="'.$url.'source=download">download</a> a copy.';
+	  echo '<br /><br /><br />';
+	  echo '<br />You may watch the <a href="'.htmlspecialchars($url).'source=show">source code</a> and <a href="'.htmlspecialchars($url).'source=download">download</a> a copy.';
 	  echo '<br />You may also redistribute is under the terms of the GPL.';
+	  echo '<br /><br /><br />';
+	  echo '<br />This is an pre-alpha version!';
 	  echo '<br />';
-	  echo '<br />';
-	  echo '<br />';
-	  echo '<br />This program is free software; you can redistribute it and/or modify';
-	  echo '<br />it under the terms of the GNU General Public License as published by';
-	  echo '<br />the Free Software Foundation; either version 2 of the License, or';
-	  echo '<br />(at your option) any later version.';
-	  echo '<br /> ';
 	  echo '<br />This program is distributed in the hope that it will be useful,';
 	  echo '<br />but WITHOUT ANY WARRANTY; without even the implied warranty of';
 	  echo '<br />MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the';
-	  echo '<br /><a target="blank" href="http://www.gnu.org/licenses/gpl.html">GNU General Public License</a> for more details.';
-	  echo '<br />';
-	  echo '<br />';
-	  echo '<br />All images are part of <a href="http://www.openclipart.org">openclipart</a>';
-	  echo '<br />and distributed under the terms of the';
-	  echo '<br /><a target="blank" href="http://www.gnu.org/licenses/fdl.html">GNU Free Documentation License</a> (GNU FDL).';
-	  echo '<br />';
-	  echo '<br /><a href="QpokerCards.tar.gz">download</a> the images.';
-	  echo '</span>';
+	  echo '<br /><a href="http://www.gnu.org/licenses/gpl.html">GNU General Public License</a> for more details.';
       //As long as you don't remove the priviouse lines you will satisfy the
       //requirements of the GPL.
-          echo '<span style="'.$font2.'">';
-	  echo '<br /><br /><br /><br />';
-	  echo '<br />This is an alph version!';
-	  echo '<br />';
-	  echo '<br />To Do:';
-	  echo '<br />- basics';
-	  echo '<br />  - test and inprove payout';
-	  echo '<br />  - leaving a table';
-	  echo '<br />  - auto fold for players that left a turnament';
-	  echo '<br />  - less reloading of the tablelist';
-	  echo '<br />- table settings';
-	  echo '<br />  - putting them on a seperate screen';
-	  echo '<br />  - a maximum reaction time';
-	  echo '<br />  - blind controll';
-	  echo '<br />  - payouts for 2nd, 3tr ...';
-	  echo '<br />- more poker variants (for now just NL Hold\'em 1 table turnaments)';
-	  echo '<br />  - none turnament tables';
-	  echo '<br />  - Limit Poker';
-	  echo '<br />  - Pot Limit Poker';
-	  echo '<br />  - other variants than Texas Hold\'em ';
-	  echo '<br />- optimizations';
-	  echo '<br />  - better random algorithem';
-	  echo '<br />  - MySQL optimizations';
-	  echo '<br />  - speed optimizations';
-	  echo '<br />- even more';
-	  echo '<br />  - alow a guest access to the tables';
-	  echo '<br />  - spellchecking';
-	  echo '<br />';
-	  echo '<br />as the alpha testing is in process there will be a need for beta testing soon';
-	  echo '<br />everybody who likes to put this on his server for beta testing would be a big help';
 	  echo '</span>';
     }
   else
     {
       echo 'login faild or session timeout.<br />';
-      echo 'please <a target="_top" href="'.$url.'">login</a> again.';
+      echo 'please <a target="_top" href="'.htmlspecialchars($url).'">login</a> again.';
     }
 }
 else if(!$_REQUEST['frame'])
 {
-  echo '<html><head><title>Qpoker</title></head>';
-  echo '<frameset cols="*,'.zoom(200).'" border="1">';
+  header('Content-type: application/xhtml+xml; charset=utf-8');
+  echo '<?xml version="1.0" encoding="UTF-8"?>';
+  echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">';
+  echo '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Qpoker</title></head>';
+  echo '<frameset cols="*,'.zoom(200).'" border="'.zoom(1).'">';
   echo '<frame';
-  echo ' src="'.$url.'frame=main"';
+  echo ' src="'.htmlspecialchars($url).'frame=main"';
   echo '></frame>';
-  echo '<frameset rows="'.zoom(35).',*,'.zoom(40).'" border="1">';
+  echo '<frameset rows="'.zoom(35).',*,'.zoom(40).'" border="'.zoom(1).'">';
   echo '<frame style="overflow:hidden"';
-  echo ' src="'.$url.'frame=status"';
+  echo ' src="'.htmlspecialchars($url).'frame=status"';
   echo '></frame>';
   echo '<frame';
-  echo ' src="'.$url.'frame=chatdisplay#chatbottom"';
+  echo ' src="'.htmlspecialchars($url).'frame=chatdisplay#chatbottom"';
   echo '></frame>';
   echo '<frame style="overflow:hidden"';
-  echo ' src="'.$url.'frame=chatwrite"';
+  echo ' src="'.htmlspecialchars($url).'frame=chatwrite"';
   echo '></frame>';
   echo '</frameset>';
   echo '</frameset>';
@@ -363,8 +357,8 @@ else if($_REQUEST['frame']=='chatwrite')
 	    '    `time`='.time());
     }
   echo '<input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
-  echo '<input style="width:100%;height:'.zoom(20).'px;'.$font3.'" type="text" name="chatline" /><br />';
-  echo '<input style="width:100%;height:'.zoom(20).'px;'.$font2.'" type="submit" value="send" />';
+  echo '<div><input style="border:'.zoom(1).'px solid #000;width:100%;height:'.zoom(18).'px;'.$font3.'" type="text" name="chatline" /></div>';
+  echo '<div><input style="border:'.zoom(1).'px solid #000;width:100%;height:'.zoom(18).'px;'.$font2.'" type="submit" value="send" /></div>';
 }
 else if($_REQUEST['frame']=='chatdisplay')
 {
@@ -396,8 +390,8 @@ else if($_REQUEST['frame']=='chatdisplay')
   echo '<span style="'.$font3.'">';
   foreach($chat as $line)
       {
-	echo '<b>'.$line['name'].'</b>: ';
-	echo $line['text'].'<br />';
+	echo '<b>'.htmlspecialchars($line['name']).'</b>: ';
+	echo htmlspecialchars($line['text']).'<br />';
       }
   echo '<a name="chatbottom" id="chatbottom"></a></span>';
   if($table)
@@ -408,80 +402,212 @@ else if($_REQUEST['frame']=='chatdisplay')
 else if($_REQUEST['frame']=='status')
 {
   echo '<input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
-  echo htmlentities($player['name']);
+  echo htmlspecialchars($player['name']);
   echo ' ['.$player['money'].' DM]';
   echo ' <a target="_top" href="?logout=logout">logout</a>';
   echo '<br />Zoom: ';
   echo ' <a target="_top"';
-  echo ' href="'.$url.'zoom='.($zoom+10).'"';
+  echo ' href="'.htmlspecialchars($url).'zoom='.($player['zoom']+10).'"';
   echo ' style="text-decoration:none"><b>+</b></a> ';
-  echo $zoom.'%';
+  echo $player['zoom'].'%';
   echo ' <a target="_top"';
-  echo ' href="'.$url.'zoom='.($zoom-10).'"';
+  echo ' href="'.htmlspecialchars($url).'zoom='.($player['zoom']-10).'"';
   echo ' style="text-decoration:none"><b>-</b></a>';
 }
 else if($_REQUEST['frame']=='main')
 {
-  if(isset($_REQUEST['table'])
-     and $_REQUEST['table']!=='leave' 
-     and ($_REQUEST['table']==='create' 
-	  or $table=l(query('SELECT * FROM `'.$MySQLprefix.'table`',
-			    'WHERE `id`='.intval($_REQUEST['table'])))
-	  ))
+  if(isset($_REQUEST['table']) and $_REQUEST['table']==='create')
     {
-      if($_REQUEST['table']==='create')
+      $sbinc_select=array(
+	'fast' =>'fast (short turnament)',
+	'norm'=>'normal',
+	'slow'=>'slow (long turnament)',
+	'none'=>'no increment (very long turnament)'
+	);
+
+      $step=2;
+      isset($_REQUEST['buyin'   ]) and $buyin   =intval($_REQUEST['buyin'   ]) 
+	and $buyin<=$player['money']
+	or $buyin =1000 and $step=1;
+      isset($_REQUEST['sbstart' ]) and $sbstart =intval($_REQUEST['sbstart' ]) 
+	and $sbstart<$buyin
+	or $sbstart =10 and $step=1;
+      isset($_REQUEST['sbinc'   ]) and isset($sbinc_select[$sbinc=$_REQUEST['sbinc']]) 
+	or $sbinc   ='norm' and $step=1;
+      isset($_REQUEST['payout'  ]) and $payout  =intval($_REQUEST['payout'  ]) 
+	and $payout<=4
+	or $payout   =1 and $step=1;
+      isset($_REQUEST['size'    ]) and $size    =intval($_REQUEST['size'    ]) 
+	or $size     =6 and $step=0;
+      isset($_REQUEST['limit'   ]) and isset($limits  [$limit  =$_REQUEST['limit'  ]]) 
+	or $limit  ='limit'       and $step=0;
+      isset($_REQUEST['variant' ]) and isset($variants[$variant=$_REQUEST['variant']]) 
+	or $variant='texasholdem' and $step=0;
+
+
+      if($step<1)
 	{
-	  if($_REQUEST['buyin']>$player['money'])
-	    {
-	      echo '<html><head><title>Qpoker</title></head><body style="padding:0px;margin:0px">';
-	      echo '<form';
-	      echo ' name="theform"';
-	      echo ' id="theform"';
-	      echo ' method="post"';
-	      echo ' action="'.$url.'" style="display:inline"';
-	      echo '>';
-	      echo '<input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
-	      echo '<span style="'.$font.'">';
-	      echo 'You can\'t create a table with a bigger buyin than ';
-	      echo $player['money'].' DM<br />';
-	      echo '<input type="submit" value="back" />';
-	      echo '</span></form></body></html>';
-	      exit;
-	    }
-	  else
-	    {
-	      $_REQUEST['table']=query('INSERT INTO `'.$MySQLprefix.'table`',
-				       'SET admin='.$player['id'],
-				       ', `timecreate`='.time(),
-				       ', `size`='.$tablesize,
-				       ', `dealer`='.$player['id'],
-				       ', `onturn`='.$player['id'],
-				       ', `buyin`='.$buyin,
-				       ', `sb`='.$sbstart,
-				       ', `sbstart`='.$sbstart,
-				       ', `sbinc`='.$sbinc,
-				       ', `sbend`='.$sbend);
-	      
-	      $table=l(query('SELECT * FROM `'.$MySQLprefix.'table`',
-			     'WHERE `id`='.intval($_REQUEST['table'])));
-	    }
+	  echo '<h1>New Table:</h1>';
+	  echo '<p style="padding-left:'.zoom(40).'px">';
+	  echo '<select name="limit">';
+	  foreach($limits as $k => $limit)
+	    echo '<option value="'.$k.'">'.$limit['name'].'</option>';
+	  echo '</select> ';
+	  
+	  echo '<select name="variant">';
+	  foreach($variants as $k => $variant)
+	    echo '<option value="'.$k.'">'.$variant['name'].'</option>';
+	  echo '</select> ';
+	  
+	  echo '<select name="size">';
+	  for($i=2;$i<=16;$i++)
+	    echo '<option value="'.$i.'">'.$i.' players</option>';
+	  echo '</select> ';
+	  
+	  echo '<input type="checkbox" name="turnament" id="turnament" value="1" />';
+	  echo '<label for="turnament"> turnament</label> ';
+	  
+	  echo '<input type="hidden" name="table" value="create" />';
+	  echo '</p>';
+	  echo '<div><input type="submit" value="continue" /></div>';
 	}
+      else if($step<2)
+	{
+	  echo '<h1>';
+	  echo $limits[$_REQUEST['limit']]['name'].' ';
+	  echo '<input type="hidden" name="limit" value="'.$_REQUEST['limit'].'" />';
+	  echo $variants[$_REQUEST['variant']]['name'].' ';
+	  echo '<input type="hidden" name="variant" value="'.$_REQUEST['variant'].'" />';
+	  echo $_REQUEST['size'].' players';
+	  echo '<input type="hidden" name="size" value="'.$_REQUEST['size'].'" />';
+	  if(isset($_REQUEST['turnament']))
+	    {
+	      echo ' turnament';
+	      echo '<input type="hidden" name="turnament" value="1" />';
+	    }
+	  echo ':</h1>';
+	  echo '<p style="padding-left:'.zoom(40).'px">';
+
+	  if(isset($_REQUEST['turnament']))
+	    {
+	      echo '<h2>buy-in:</h2>';
+	      echo '<p style="padding-left:'.zoom(40).'px">';
+	      echo '<select name="buyin">';
+	      for($i=2;$i<4;$i++)
+		{
+		  echo '<option value="'.(1*pow(10,$i)).'">'.(1*pow(10,$i)).' DM</option>';
+		  echo '<option value="'.(2*pow(10,$i)).'">'.(2*pow(10,$i)).' DM</option>';
+		  echo '<option value="'.(5*pow(10,$i)).'">'.(5*pow(10,$i)).' DM</option>';
+		}
+	      echo '<option value="'.pow(10,$i).'">'.pow(10,$i).' DM</option>';
+	      echo '</select>';
+	      echo '</p>';
+	      echo '<h2>small blind:</h2>';
+	      echo '<p style="padding-left:'.zoom(40).'px">';
+	      echo '<h3>start at</h3><p style="padding-left:'.zoom(40).'px"><input size="3" name="sbstart" value="10" /> DM</p>';
+	      echo '<h3>increment small blind</h3>';
+	      echo '<p style="padding-left:'.zoom(40).'px">';
+	      echo makeselect('sbinc',$sbinc_select,$sbinc);
+	      echo '</p>';
+	      echo '</p>';
+	      echo '<h2>payouts:</h2>';
+// now
+// 8,4,2,1
+// 2 100%
+// 3  67%, 33%
+// 7  57%, 29%, 14%
+// 14 53%, 27%, 13%, 7%
+
+	      echo '<p style="padding-left:'.zoom(40).'px">';
+	      echo '<select name="payout">';
+	      echo '<option value="1">winner takes it all</option>';
+	      if($_REQUEST['size']>=3)
+		echo '<option value="2">1st (67%) and 2nd (33%)</option>';
+	      if($_REQUEST['size']>=7)
+		echo '<option value="3">1st (57%), 2nd (29%) and 3rd (14%)</option>';
+	      if($_REQUEST['size']>=14)
+		echo '<option value="4">1st (53%), 2nd (27%), 3rd (13%) and 4th (7%)</option>';
+	      echo '</select>';
+	      echo '</p>';
+	    }
+	  else if(0)
+	    {
+	      echo '<h2>buy-in:</h2> ';
+	      echo '<p style="padding-left:'.zoom(40).'px">';
+	      echo '<select name="buyinmin">';
+	      for($i=2;$i<4;$i++)
+		{
+		  echo '<option value="'.(1*pow(10,$i)).'">min '.(1*pow(10,$i)).'</option>';
+		  echo '<option value="'.(2*pow(10,$i)).'">min '.(2*pow(10,$i)).'</option>';
+		  echo '<option value="'.(5*pow(10,$i)).'">min '.(5*pow(10,$i)).'</option>';
+		}
+	      echo '</select> ';
+	      echo '<select name="buyinmax">';
+	      for($i=2;$i<4;$i++)
+		{
+		  echo '<option value="'.(2*pow(10,$i)).'">max '.(2*pow(10,$i)).' DM</option>';
+		  echo '<option value="'.(5*pow(10,$i)).'">max '.(5*pow(10,$i)).' DM</option>';
+		  echo '<option value="'.(10*pow(10,$i)).'">max '.(10*pow(10,$i)).' DM</option>';
+		}
+	      echo '</select> ';
+	      echo '</p>';
+
+	      echo '<h2>blinds:</h2>';
+	      echo '<p style="padding-left:'.zoom(40).'px">';
+	      echo '<select name="sb">';
+	      
+	      for($i=0;$i<2;$i++)
+		{
+		  for($j=pow(10,$i);$j<pow(10,$i+1);$j+=pow(10,$i))
+		    {
+		      echo '<option value="'.$j.'">'.$j.' / '.(2*$j).' DM</option>';
+		    }
+		}
+	      echo '</select> ';
+	      echo '</p>';
+	      
+	    }
+	  else echo 'error: not done yet';
+	  echo '</p>';
+	  echo '<div>';
+	  echo '<input type="hidden" name="table" value="create" />';
+	  echo '<input type="submit" value="continue" />';
+	  echo '</div>';
+	}
+      else
+	{
+	  $_REQUEST['table']=
+	    query('INSERT INTO `'.$MySQLprefix.'table`',
+		  'SET `timecreate`='.time(),
+		  ', `size`='.$size,
+		  ', `limit`="'.$limit.'"',
+		  ', `variant`="'.$variant.'"',
+		  ', `payout`='.$payout,
+		  ', `dealer`=0',
+		  ', `onturn`=0',
+		  ', `handcount`=0',
+		  ', `buyin`='.$buyin,
+		  ', `sb`='.$sbstart,
+		  ', `sbstart`='.$sbstart,
+		  ', `sbinc`="'.$sbinc.'"');
+	  
+	  $table=l(query('SELECT * FROM `'.$MySQLprefix.'table`',
+			 'WHERE `id`='.intval($_REQUEST['table'])));
+	  
+	}
+    }
+  else if(isset($_REQUEST['table'])
+	  and $table=l(query('SELECT * FROM `'.$MySQLprefix.'table`',
+			     'WHERE `id`='.intval($_REQUEST['table'])))
+	  )
+    {
       $buyin=l(query('SELECT `buyin` FROM `'.$MySQLprefix.'table`',
 		     'WHERE `id`='.intval($_REQUEST['table'])),'<,buyin');
       if($buyin>$player['money'] 
 	 or count(query('SELECT `id` FROM `'.$MySQLprefix.'player`',
 			'WHERE `table`='.$table['id']))
-		  >$table['size']-1)
+	 >$table['size']-1)
 	{
-	  echo '<html><head><title>Qpoker</title></head><body style="padding:0px;margin:0px">';
-	  echo '<form';
-	  echo ' name="theform"';
-	  echo ' id="theform"';
-	  echo ' method="post"';
-	  echo ' action="'.$url.'" style="display:inline"';
-	  echo '>';
-	  echo '<input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
-	  echo '<span style="'.$font.'">';
 	  if($buyin>$player['money'])
 	    {
 	      echo 'You can\'t join a table with a bigger buyin than ';
@@ -490,18 +616,17 @@ else if($_REQUEST['frame']=='main')
 	  else
 	    echo 'All Seats are allready taken.<br />';
 	  echo '<input type="submit" value="back" />';
-	  echo '</span></form></body></html>';
-	  exit;
+	  logspeed();die($htmlend);
 	}
       else
 	{
 	  query('UPDATE `'.$MySQLprefix.'player`',
 		'SET `table`='.$table['id'],
 		', `seat`='.(($_REQUEST['table']==='create')?'0':
-		  l(query('SELECT MAX(`seat`) AS maxseat',
-			  'FROM `'.$MySQLprefix.'player`',
-			  'WHERE `table`='.intval($table['id'])),
-		    '<,maxseat')+1),
+			     l(query('SELECT MAX(`seat`) AS maxseat',
+				     'FROM `'.$MySQLprefix.'player`',
+				     'WHERE `table`='.intval($table['id'])),
+			       '<,maxseat')+1),
 		', `money`=`money`-'.$buyin,
 		', `tablemoney`='.intval($buyin),
 		', `betmoney`=0',
@@ -516,245 +641,51 @@ else if($_REQUEST['frame']=='main')
     }
   if(!getGame())
     {
-      //table list
-      $wait=query('SELECT MAX(`timein`) AS maxti, MAX(`timeout`) AS maxto',
-		  'FROM `'.$MySQLprefix.'player`');
-      $wait=max(l($wait,'<,maxto'),l($wait,'<,maxti'));
 
-      echo '<html><head><title>Qpoker</title></head><body style="padding:0px;margin:0px">';
-      echo '<form';
-      echo ' name="theform"';
-      echo ' id="theform"';
-      echo ' method="post"';
-      echo ' action="'.$url.'" style="display:inline"';
-      echo '>';
-      echo '<span style="'.$font.'">';
-      echo '<input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
-      $htmlend='</span></form></body></html>';
-
-      makeAjax($wait,'tables');
-
-      $notable=true;
-      $tables=query('SELECT * FROM `'.$MySQLprefix.'table` WHERE `timeclosed`=0');
-      foreach($tables as $table)
-	  {
-	    $p=
-	      query('SELECT *',
-		    'FROM `'.$MySQLprefix.'player`',
-		    'WHERE `table`='.intval($table['id']),
-		    'ORDER BY `seat`');
-	    if(count($p)<$table['size'])
-	      {
-		if($notable)
-		  {
-		    echo 'Select a Table:<br />';
-		    $notable=false;
-		  }
-		echo '<input style="'.$font.'" type="submit" name="table" value="';
-		echo str_pad($table['id'],6,'0',STR_PAD_LEFT).' ';
-		echo str_pad($table['buyin'].' DM',9,' ',STR_PAD_LEFT).' ';
-		echo str_pad(
-		  $table['sbstart'].'-'.$table['sbend'].' DM',12,' ',STR_PAD_LEFT);
-		echo str_pad(
-		  '   '.count($p).'/'.$table['size']
-		  .' ('.htmlentities(implode(', ',l($p,'*,name'))).')',
-		  70);
-		echo '" /><br />';
-	      }
-	  }
-      if(!$notable)
-	echo '(Number, Buy-In, Small-Blind, Players)<br /><br />';
-      echo 'New Table:<br />';
-      echo ' Size:       <input size="2" name="tablesize" value="5" /> Players<br />';
-      echo ' Buy-In:     <input size="4" name="buyin" value="1000" /> DM<br />';
-      echo ' Small Bind:<br />';
-      echo '  Start:     <input size="3" name="sbstart" value="20" /> DM<br />';
-      echo '  Increment: <input size="3" name="sbinc" value="10" /> DM<br />';
-      echo '  End:       <input size="3" name="sbend" value="100" /> DM<br />';
-      echo '<input type="submit" name="table" value="create" />   ';
-
+      if(!isset($_REQUEST['table']) or $_REQUEST['table']!=='create')
+	{
+	  //table list
+	  $wait=query('SELECT MAX(`timein`) AS maxti, MAX(`timeout`) AS maxto',
+		      'FROM `'.$MySQLprefix.'player`');
+	  $wait=max(l($wait,'<,maxto'),l($wait,'<,maxti'));
+	  
+	  makeAjax($wait,'tables');
+	  
+	  echo tablelist();
+	  
+	  echo '<input type="hidden" name="table" value="create" />';
+	  echo '<input type="submit" value="create new table" />   ';
+	}
     }
-  else if(count($players)<$table['size'])
+  else if(count($playersseated)<$table['size'])
     {
       if(isset($_REQUEST['table']) and $_REQUEST['table']==='leave')
 	{
-	  if($player['id']==$table['admin'])
+	  if(count(query('SELECT `id`',
+			 'FROM `'.$MySQLprefix.'player`',
+			 '`WHERE `table`='.$table['id']))==1)
 	    {
-	      foreach($players as $p)
-		  {
-		    query('UPDATE `'.$MySQLprefix.'player` SET `table`=0',
-			  ', `money`=`money`+`tablemoney`',
-			  ', `tablemoney`=0',
-			  ', `timeout`='.time(),
-			  'WHERE `id`='.$p['id']);
-		  }
 	      query('DELETE FROM `'.$MySQLprefix.'table`',
 		    'WHERE `id`='.$table['id']);
 	    }
-	  else
-	    {
-	      query('UPDATE `'.$MySQLprefix.'player`',
-		    'SET `table`=0',
-		    ', `money`=`money`+`tablemoney`',
-		    ', `tablemoney`=0',
-		    ', `timeout`='.time(),
-		    'WHERE `id`='.$player['id']);
-	    }
+	  query('UPDATE `'.$MySQLprefix.'player`',
+		'SET `table`=0',
+		', `money`=`money`+`tablemoney`',
+		', `tablemoney`=0',
+		', `timeout`='.time(),
+		'WHERE `id`='.$player['id']);
 	}
-      echo '<html><head><title>Qpoker</title></head><body style="padding:0px;margin:0px">';
-      echo '<form';
-      echo ' name="theform"';
-      echo ' id="theform"';
-      echo ' method="POST"';
-      echo ' action="'.$url.'" style="display:inline"';
-      echo '>';
-      echo '<span style="'.$font.'">';
-      echo '<input type="hidden" name="frame" value="'.$_REQUEST['frame'].'" />';
-      $htmlend='</span></form></body></html>';
-
-      makeAjax(count($players),'players&tableid='.$table['id']);
+      makeAjax(max(l($players,'timein')),'players&tableid='.$table['id']);
 
       echo 'Table '.str_pad($table['id'],6,'0',STR_PAD_LEFT).'<br /><br />';
-      echo nl2br(htmlentities(implode("\n",l($players,'*,name'))));
+      echo nl2br(htmlspecialchars(implode("\n",l($players,'*,name'))));
       echo '<br /><br />waiting for '.($table['size']-count($players)).' more Player(s).';
       echo '<br /><br /><input type="submit" name="table" value="leave" />';
     }
-  else
-    {
-      echo '<html><head><title>Qpoker</title></head>';
-      echo '<frameset rows="*,'.zoom(40).'" border="1">';
-      echo '<frame src="'.$url.'frame=cards"></frame>';
-      echo '<frame src="'.$url.'frame=actions"></frame>';
-      echo '</frameset>';
-      $htmlend='</html>';
-    }
-}
-else if($_REQUEST['frame']=='cards')
-{
-  if(getGame())
-    {
-      $wait=l(query('SELECT MAX(`actiontime`) AS maxat',
-		   'FROM `'.$MySQLprefix.'player`',
-		   'WHERE `table`='.$table['id']),'<,maxat');
-
-      makeAjax($wait,'cards&tableid='.$table['id']);
-
-      foreach($players as $pid => $p)
-	{
-	  $thishand='';
-	  $actionhtml=
-	    array(
-	      'none'=>'',
-	      'sb'=>'small blind ',
-	      'bb'=>'big blind ',
-	      'fold'=>'<b>fold</b> ',
-	      'call'=>'<b>call</b> ',
-	      'check'=>'check ',
-	      'allin'=>'<b>all-in</b> ',
-	      'bet'=>'<b>bet</b> ',
-	      'raise'=>'<b>raise</b> ',
-	      );
-	  if($p['tablestatus']=="out")
-	    $thishand='<b>out</b> '.$thishand;
-	  else if($table['onturn']==$pid) 
-	    $thishand=$actionhtml[$p['action']].$thishand;
-
-	  $other[$pid]=' ';
-	  if($table['onturn']==$pid) 
-	    $other[$pid].='<span style="background-color:#FFFF00">';
-	  $other[$pid].=$p['name'];
-	  if($pid==$table['dealer']) $other[$pid].=' (D)';
-	  $other[$pid].=' ['.intval($p['tablemoney']).' DM]';
-	  if($table['onturn']==$pid) 
-	    $other[$pid].='</span>';
-	  $other[$pid].= '<table><tr><td><pre>';
-	  if($p['showcards'])
-	    {
-	      $other[$pid].=cardimgs($pcards[$pid],($pid==$player['id'])?100:70);
-	    }
-	  else
-	    {
-	      if($pid==$player['id'])// and in_array($pid,$seated))
-		{
-		  $other[$pid].=cardimgs($pcards[$pid],100);
-		}
-	      else
-		{
-		  $other[$pid].= cardimgs('xxxx',($pid==$player['id'])?100:70);
-		}
-	    }
-	  $other[$pid].=' </pre></td>';
-	  $other[$pid].='<td valign="bottom" align="right" style="'.$font2.'">';
-	  $other[$pid].=moneyimgs(intval($p['betmoney']));
-	  $other[$pid].='</td>';
-	  $other[$pid].='<td width="25"></td></tr></table>';
-	  $other[$pid].=' '.$thishand;
-	  
-	} 
-      
-      
-      echo '<table><tr>';
-      $pid=nextplayer($player['id']);
-      while ($pid!=$player['id'])
-	{
-	  echo '<td style="'.$font2.'">'.$other[$pid].'</td>';
-	  $pid=nextplayer($pid);
-	}
-      echo '</tr></table><br />';
-      
-      echo '<table><tr>';
-      
-      echo '<td><span style="'.$font2.'"> ';
-      if($table['betround']==0 and $table['nextbetround'])
-	echo '<span style="background-color:#FFFF00">flop</span>';
-      else
-	echo 'flop';
-      echo '<br />';
-      if($table['betround']>0) 
-	{
-	  echo cardimgs(substr($ccards,0,6),70);
-	}
-      else echo cardimgs('xxxxxx',70);
-      echo ' </span></td>';
-      
-      echo '<td><span style="'.$font2.'"> ';
-      if($table['betround']==1 and $table['nextbetround'])
-	echo '<span style="background-color:#FFFF00">turn</span>';
-      else
-	echo 'turn';
-      echo '<br />';
-      if($table['betround']>1) 
-	echo cardimgs(substr($ccards,6,2),70);
-      else 
-	echo cardimgs('xx',70);
-      echo ' </span></td>';
-      
-      echo '<td><span style="'.$font2.'"> ';
-      if($table['betround']==2 and $table['nextbetround'])
-	echo '<span style="background-color:#FFFF00">river</span>';
-      else
-	echo 'river';
-      echo '<br />';
-      if($table['betround']>2) echo cardimgs(substr($ccards,8,2),70);
-      else echo cardimgs('xx',70);
-      echo ' </span></td>';
-      
-      echo '<td valign="bottom" align="right"><span style="'.$font2.'">';
-      echo moneyimgs(intval($table['pot']));
-      echo ' </span></td>';
-      echo '<td width="25"></td>';
-      echo '</tr></table><br /><br />';
-      
-      echo $other[$player['id']];
-    }
-  else die('fatal error: wrong table');
-}
-else if($_REQUEST['frame']=='actions')
-{
-  if(getGame() and count($playersseated)>1)
+  else if(count($playersseated)>1)
     {
       $maxbetmoney=max(l($players,'*,betmoney'));
-
+	  
       $maxbetmoney2=0;
       foreach($players as $p)
 	  {
@@ -763,11 +694,11 @@ else if($_REQUEST['frame']=='actions')
 	       and $p['betmoney']>$maxbetmoney2
 	       ) $maxbetmoney2=$p['betmoney'];
 	  }
-
+	  
       $minbet=2*$maxbetmoney-$maxbetmoney2;
-      if($minbet<$table['sb']*2){$minbet=$table['sb']*2;}
-      
-
+      if($minbet<roundnice($table['sb'])*2){$minbet=roundnice($table['sb'])*2;}
+	  
+	  
       if(!isset($_REQUEST['preaction']) 
 	 or $_REQUEST['preaction']==='call' 
 	 and $_REQUEST['pacallmoney']!=$maxbetmoney
@@ -786,9 +717,9 @@ else if($_REQUEST['frame']=='actions')
 	      if($player['betmoney']>=$maxbetmoney) $_REQUEST['action']='check';
 	      else $_REQUEST['action']='fold';
 	    }
-	
+	      
 	  if(substr($_REQUEST['action'],0,4)=='call') $_REQUEST['action']='call';
-
+	      
 	  if($_REQUEST['action']=='call')
 	    {
 	      $_REQUEST['money']=$maxbetmoney;
@@ -864,12 +795,83 @@ else if($_REQUEST['frame']=='actions')
 	      }
 	}
       getGame();
-      
+
+      $playerHTML=playerHTML();
+
+      echo '<table width="100%"><tr>';
+      $c=0;
+      $pid=nextplayer($player['id']);
+      while ($pid!=$player['id'])
+	{
+	  echo '<td width="25%" style="'.$font2.'">'.$playerHTML[$pid].'</td>';
+	  $pid=nextplayer($pid);
+	  $c++;
+	  if($c>=4)
+	    {
+	      echo '</tr></table><br />';
+	      echo '<table width="100%"><tr>';
+	      $c=0;
+	    }
+	}
+      echo '<td width="25%" style="'.$font3.'">';
+      echo nl2br(htmlspecialchars(implode("\n",l($playerswatching,'*,name'))));
+      echo '</td>';
+
+      for($c++;$c<4;$c++) echo '<td></td>';
+      echo '</tr></table><br />';
+	  
+      echo '<table><tr>';
+	  
+      echo '<td><span style="'.$font2.'"> ';
+      if($table['bettinground']==0 and $table['nextbettinground'])
+	echo '<span style="background-color:#FFFF00">flop</span>';
+      else
+	echo 'flop';
+      echo '<br />';
+      if($table['bettinground']>0) 
+	{
+	  echo cardimgs(substr($ccards,0,6),70);
+	}
+      else echo cardimgs('xxxxxx',70);
+      echo ' </span></td>';
+	  
+      echo '<td><span style="'.$font2.'"> ';
+      if($table['bettinground']==1 and $table['nextbettinground'])
+	echo '<span style="background-color:#FFFF00">turn</span>';
+      else
+	echo 'turn';
+      echo '<br />';
+      if($table['bettinground']>1) 
+	echo cardimgs(substr($ccards,6,2),70);
+      else 
+	echo cardimgs('xx',70);
+      echo ' </span></td>';
+	  
+      echo '<td><span style="'.$font2.'"> ';
+      if($table['bettinground']==2 and $table['nextbettinground'])
+	echo '<span style="background-color:#FFFF00">river</span>';
+      else
+	echo 'river';
+      echo '<br />';
+      if($table['bettinground']>2) echo cardimgs(substr($ccards,8,2),70);
+      else echo cardimgs('xx',70);
+      echo ' </span></td>';
+	  
+      echo '<td valign="bottom" align="right"><span style="'.$font2.'">';
+      echo moneyimgs(intval($table['pot']));
+      echo ' </span></td>';
+      echo '<td width="'.zoom(25).'"></td>';
+      echo '</tr></table><br /><br />';
+	  
+      echo $playerHTML[$player['id']];
+
+      getGame();
+	  
       do{
 	$maxbetmoney=max(l($players,'*,betmoney'));
-	
+	    
 	$brdone=true;
-	if(!$table['nextbetround'])
+	if(!$table['nextbettinground'])
 	  {
 	    foreach($players as $p)
 		{
@@ -880,26 +882,26 @@ else if($_REQUEST['frame']=='actions')
 			)) 
 		    $brdone=false;
 		}
-	    
+		
 	    if(count($playersactive)<=1) $brdone=true;
 	  }
 	if(!$table['deck'])$brdone=true;
-	
+	    
 	if($brdone)
 	  {
-	    if(!$table['nextbetround'])
+	    if(!$table['nextbettinground'])
 	      {
-		
+		    
 		collectbets();
-		
-		if($table['betround']>=3) showdown();
-		
+		    
+		if($table['bettinground']>=3) showdown();
+		    
 		query('UPDATE `'.$MySQLprefix.'table` ',
-		      'SET `nextbetround`='.($table['nextbetround']=(time()+5)),
+		      'SET `nextbettinground`='.($table['nextbettinground']=(time()+3)),
 		      ', `onturn`=0',
 		      'WHERE `id`='.$table['id']);
 	      }
-	    else if($table['nextbetround']<time())
+	    else if($table['nextbettinground']<time())
 	      {
 		foreach($players as $p)
 		    {
@@ -912,174 +914,169 @@ else if($_REQUEST['frame']=='actions')
 		    }
 		getGame();
 		query('UPDATE `'.$MySQLprefix.'table`',
-		      'SET `nextbetround`=0',
+		      'SET `nextbettinground`=0',
 		      ', `onturn`='.(count($playersactive)?nextactive($table['dealer']):'0'),
-		      ', `betround`=`betround`+1',
+		      ', `bettinground`=`bettinground`+1',
 		      'WHERE `id`='.$table['id']);
 		$brdone=false;
-		if($table['betround']>=3 or $table['deck']=='' or count($playersin)<=1)
+		if($table['bettinground']>=3 or $table['deck']=='' or count($playersin)<=1)
 		  {
 		    if($table['deck']=='')
 		      firsthand();
 		    else
 		      nexthand();
-		    
+			
 		    postblinds();
 		  }
 	      }
 	    getGame();
 	  }
-      } while($brdone && !$table['nextbetround']);
+      } while($brdone && !$table['nextbettinground']);
+	  
 
       if($brdone)
 	{
-	  makeAjax($table['nextbetround'],'time&time='.$table['nextbetround']);
-	  /*
-	  echo 'waiting for ';
-	  switch ($table['betround'])
-	    {
-	    case 0: echo 'the flop'; break;
-	    case 1: echo 'the turn'; break;
-	    case 2: echo 'the river'; break;
-	    case 3: echo 'new cards'; break;
-	    }
-	  */
+	  makeAjax($table['nextbettinground'],'time&time='.$table['nextbettinground']);
 	}
       else
 	{
-	  makeAjax($table['onturn'],'actions&tableid='.$table['id']);
+	  $wait=l(query('SELECT MAX(`actiontime`) AS maxat',
+			'FROM `'.$MySQLprefix.'player`',
+			'WHERE `table`='.$table['id']),'<,maxat');
+	      
+	  makeAjax($wait,'cards&tableid='.$table['id']);
 	}
+	  
+      $maxbetmoney=max(l($players,'*,betmoney'));
+	      
+      echo '<table cellpadding="0">';
+      echo '<tr>';
+	      
+      echo '<td width="'.zoom(60).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$font1g.'">';
+      if(!$brdone and $table['onturn']==$player['id'] 
+	 and $player['betmoney']+$player['tablemoney']>$maxbetmoney)
 	{
-	  $maxbetmoney=max(l($players,'*,betmoney'));
-	  
-	  echo '<table cellpadding="0">';
-	  echo '<tr>';
-	  
-	  echo '<td width="'.zoom(60).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$fontg.'">';
-	  if(!$brdone and $table['onturn']==$player['id'] 
-	     and $player['betmoney']+$player['tablemoney']>$maxbetmoney)
+	  if($maxbetmoney)
 	    {
-	      if($maxbetmoney)
-		{
-		  echo '<span style="'.$font2.'">by </span>';
-		  echo '<input style="border:1px solid #000;padding:1px;vertical-align:bottom;'.$font2.';width:'.zoom(40).'px;height:'.zoom(16).'px;text-align:right"';
-		  echo ' type="text" name="money2" value="'.($minbet-$maxbetmoney).'" id="moneyby"';
-		  echo ' onkeyup="document.getElementById(&quot;moneyto&quot;).value';
-		  echo '=Number(this.value)+'.$player['betmoney'];
-		  echo '"';
-		  echo ' onchange="';
-		  echo 'if(Number(this.value)<'.($minbet-$maxbetmoney).')this.value='.($minbet-$maxbetmoney).';';
-		  echo 'if(Number(this.value)>'.$player['tablemoney'].')this.value='.$player['tablemoney'].';';
-		  echo 'document.getElementById(&quot;moneyto&quot;).value';
-		  echo '=Number(this.value)+'.$player['betmoney'];
-		  echo '"';
-		  echo ' /><br>';
-		  echo '<span style="'.$font2.'">to </span>';
-		  echo '<input style="border:1px solid #000;vertical-align:bottom;'.$font2.';width:'.zoom(40).'px;height:'.zoom(16).'px;text-align:right"';
-		  echo ' type="text" name="money"  value="'.$minbet.'" id="moneyto"';
-		  echo ' onkeyup="document.getElementById(&quot;moneyby&quot;).value';
-		  echo '=Number(this.value)-'.$player['betmoney'];
-		  echo '"';
-		  echo ' onchange="';
-		  echo 'if(Number(this.value)<'.intval($minbet).')this.value='.intval($minbet).';';
-		  echo 'if(Number(this.value)>'.($player['tablemoney']+$player['betmoney']).')this.value='.($player['tablemoney']+$player['betmoney']).';';
-		  echo 'document.getElementById(&quot;moneyby&quot;).value';
-		  echo '=Number(this.value)-'.$player['betmoney'];
-		  echo '"';
-		  echo ' />';
-		}
-	      else
-		{
-		  echo '<input style="'.$font.';width:'.zoom(60).'px;height:'.zoom(32).'px;text-align:right"';
-		  echo ' type="text" name="money" value="'.$minbet.'" /><br>';
-		}
-	    }
-	  echo '</td>';
-	  
-	  echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$fontg.';border:1px solid black;background-color:#d0d0d0">';
-	  if(!$brdone and $table['onturn']==$player['id'] 
-	     and $player['betmoney']+$player['tablemoney']>$maxbetmoney)
-	    {
-	      echo '<input style="'.$font.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:1px solid black;background-color:#d0d0d0"';
-	      echo ' type="submit" name="action" value='.($maxbetmoney?'raise':'bet').' />';
-	    }
-	  else echo $maxbetmoney?'raise':'bet';
-	  echo '</td>';
-	  
-	  echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$fontg.';border:1px solid black;background-color:#d0d0d0">';
-	  if($brdone or $player['betmoney']>=$maxbetmoney) echo 'call';
-	  else if($table['onturn']!=$player['id'])
-	    {
-	      echo '<input type="radio" name="preaction" value="call" id="pacall"';
-	      if($_REQUEST['preaction']==='call')
-		echo ' checked="checked"';
-	      echo ' /><label style="'.$font.'" for="pacall"> call ';
-	      if($player['betmoney']+$player['tablemoney']<=$maxbetmoney)
-		echo '(allin)';
-	      else echo $maxbetmoney.' DM';
-	      echo '<input type="hidden" name="pacallmoney" value="'.$maxbetmoney.'" />';
-	      echo '</label>';
+	      echo '<span style="'.$font2.'">by </span>';
+	      echo '<input style="border:'.zoom(1).'px solid #000;padding:'.zoom(1).'px;vertical-align:bottom;'.$font2.';width:'.zoom(40).'px;height:'.zoom(16).'px;text-align:right"';
+	      echo ' type="text" name="money2" value="'.($minbet-$maxbetmoney).'" id="moneyby"';
+	      echo ' onkeyup="document.getElementById(&quot;moneyto&quot;).value';
+	      echo '=Number(this.value)+'.$player['betmoney'];
+	      echo '"';
+	      echo ' onchange="';
+	      echo 'if(Number(this.value)<'.($minbet-$maxbetmoney).')this.value='.($minbet-$maxbetmoney).';';
+	      echo 'if(Number(this.value)>'.$player['tablemoney'].')this.value='.$player['tablemoney'].';';
+	      echo 'document.getElementById(&quot;moneyto&quot;).value';
+	      echo '=Number(this.value)+'.$player['betmoney'];
+	      echo '"';
+	      echo ' /><br />';
+	      echo '<span style="'.$font2.'">to </span>';
+	      echo '<input style="border:'.zoom(1).'px solid #000;vertical-align:bottom;'.$font2.';width:'.zoom(40).'px;height:'.zoom(16).'px;text-align:right"';
+	      echo ' type="text" name="money"  value="'.$minbet.'" id="moneyto"';
+	      echo ' onkeyup="document.getElementById(&quot;moneyby&quot;).value';
+	      echo '=Number(this.value)-'.$player['betmoney'];
+	      echo '"';
+	      echo ' onchange="';
+	      echo 'if(Number(this.value)<'.intval($minbet).')this.value='.intval($minbet).';';
+	      echo 'if(Number(this.value)>'.($player['tablemoney']+$player['betmoney']).')this.value='.($player['tablemoney']+$player['betmoney']).';';
+	      echo 'document.getElementById(&quot;moneyby&quot;).value';
+	      echo '=Number(this.value)-'.$player['betmoney'];
+	      echo '"';
+	      echo ' />';
 	    }
 	  else
 	    {
-	      echo '<input style="'.$font.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:1px solid black;background-color:#d0d0d0"';
-	      echo ' type="submit" name="action" value="call ';
-	      if($player['betmoney']+$player['tablemoney']<=$maxbetmoney)
-		echo '(allin)';
-	      else echo $maxbetmoney.' DM';
-	      echo '" />';
+	      echo '<input style="'.$font1.';width:'.zoom(60).'px;height:'.zoom(32).'px;text-align:right"';
+	      echo ' type="text" name="money" value="'.$minbet.'" /><br />';
 	    }
-	  echo '</td>';
-	  
-	  echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$fontg.';border:1px solid black;background-color:#d0d0d0">';
-	  if($brdone or $player['betmoney']<$maxbetmoney) echo 'check';
-	  else if($table['onturn']!=$player['id'])
-	    {
-	      echo '<input type="radio" name="preaction" value="check" id="pacheck"';
-	      if($_REQUEST['preaction']==='check')
-		echo ' checked="checked"';
-	      echo ' /><label style="'.$font.'" for="pacheck"> check</label>';
-	    }
-	  else
-	    echo '<input style="'.$font.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:1px solid black;background-color:#d0d0d0" type="submit" name="action" value="check" />';
-	  echo '</td>';
-	  
-	  echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$fontg.';border:1px solid black;background-color:#d0d0d0">';
-	  if(!$brdone and $table['onturn']!=$player['id'])
-	    {
-	      echo '<input type="radio" name="preaction" value="fold" id="pafold"';
-	      if($_REQUEST['preaction']==='fold')
-		echo ' checked="checked"';
-	      echo ' /><label style="'.$font.'" for="pafold"> fold</label>';
-	    }
-	  else
-	    {
-	      echo '<input style="'.$font.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:1px solid black;background-color:#d0d0d0"';
-	      echo ' type="submit" name="action" value="fold" />';
-	    }
-	  echo '</td>';
-	  
-	  if(!$brdone and $table['onturn']!=$player['id'])
-	    {
-	      echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$fontg.';border:1px solid black;background-color:#d0d0d0">';
-	      echo '<input type="radio" name="preaction" value="none" id="panone"';
-	      if($_REQUEST['preaction']==='none')
-		echo ' checked="checked"';
-	      echo ' /><label style="'.$font.'" for="panone"> No Action</label>';
-	    }
-	  else
-	    echo '<td width="'.zoom(120).'" height="'.zoom(32).'">&nbsp;';
-	  echo '</td>';
-      
-	  echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$fontg.';border:1px solid black;background-color:#d0d0d0">';
-	  if(!$player['showcards'])
-	    echo '<input style="'.$font.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:1px solid black;background-color:#d0d0d0" type="submit" name="showcards" value="show cards" />';
-	  else echo 'show cards';
-	  echo '</td>';
-	  
-	  echo '</tr>';
-	  echo '</table>';
-        }
+	}
+      echo '</td>';
+	      
+      echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$font1g.';border:'.zoom(1).'px solid black;background-color:#d0d0d0">';
+      if(!$brdone and $table['onturn']==$player['id'] 
+	 and $player['betmoney']+$player['tablemoney']>$maxbetmoney)
+	{
+	  echo '<input style="'.$font1.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:'.zoom(1).'px solid black;background-color:#d0d0d0"';
+	  echo ' type="submit" name="action" value="'.($maxbetmoney?'raise':'bet').'" />';
+	}
+      else echo $maxbetmoney?'raise':'bet';
+      echo '</td>';
+	      
+      echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$font1g.';border:'.zoom(1).'px solid black;background-color:#d0d0d0">';
+      if($brdone or $player['betmoney']>=$maxbetmoney) echo 'call';
+      else if($table['onturn']!=$player['id'])
+	{
+	  echo '<input type="radio" name="preaction" value="call" id="pacall"';
+	  if($_REQUEST['preaction']==='call')
+	    echo ' checked="checked"';
+	  echo ' /><label style="'.$font1.'" for="pacall"> call ';
+	  if($player['betmoney']+$player['tablemoney']<=$maxbetmoney)
+	    echo '(allin)';
+	  else echo $maxbetmoney.' DM';
+	  echo '<input type="hidden" name="pacallmoney" value="'.$maxbetmoney.'" />';
+	  echo '</label>';
+	}
+      else
+	{
+	  echo '<input style="'.$font1.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:'.zoom(1).'px solid black;background-color:#d0d0d0"';
+	  echo ' type="submit" name="action" value="call ';
+	  if($player['betmoney']+$player['tablemoney']<=$maxbetmoney)
+	    echo '(allin)';
+	  else echo $maxbetmoney.' DM';
+	  echo '" />';
+	}
+      echo '</td>';
+	      
+      echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$font1g.';border:'.zoom(1).'px solid black;background-color:#d0d0d0">';
+      if($brdone or $player['betmoney']<$maxbetmoney) echo 'check';
+      else if($table['onturn']!=$player['id'])
+	{
+	  echo '<input type="radio" name="preaction" value="check" id="pacheck"';
+	  if($_REQUEST['preaction']==='check')
+	    echo ' checked="checked"';
+	  echo ' /><label style="'.$font1.'" for="pacheck"> check</label>';
+	}
+      else
+	echo '<input style="'.$font1.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:'.zoom(1).'px solid black;background-color:#d0d0d0" type="submit" name="action" value="check" />';
+      echo '</td>';
+	      
+      echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$font1g.';border:'.zoom(1).'px solid black;background-color:#d0d0d0">';
+      if(!$brdone and $table['onturn']!=$player['id'])
+	{
+	  echo '<input type="radio" name="preaction" value="fold" id="pafold"';
+	  if($_REQUEST['preaction']==='fold')
+	    echo ' checked="checked"';
+	  echo ' /><label style="'.$font1.'" for="pafold"> fold</label>';
+	}
+      else
+	{
+	  echo '<input style="'.$font1.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:'.zoom(1).'px solid black;background-color:#d0d0d0"';
+	  echo ' type="submit" name="action" value="fold" />';
+	}
+      echo '</td>';
+	      
+      if(!$brdone and $table['onturn']!=$player['id'])
+	{
+	  echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$font1g.';border:'.zoom(1).'px solid black;background-color:#d0d0d0">';
+	  echo '<input type="radio" name="preaction" value="none" id="panone"';
+	  if($_REQUEST['preaction']==='none')
+	    echo ' checked="checked"';
+	  echo ' /><label style="'.$font1.'" for="panone"> No Action</label>';
+	}
+      else
+	echo '<td width="'.zoom(120).'" height="'.zoom(32).'">&nbsp;';
+      echo '</td>';
+	      
+      echo '<td width="'.zoom(120).'" height="'.zoom(32).'" valign="middle" align="center" style="'.$font1g.';border:'.zoom(1).'px solid black;background-color:#d0d0d0">';
+      if(!$player['showcards'])
+	echo '<input style="'.$font1.';width:'.zoom(120).'px;height:'.zoom(32).'px;border:'.zoom(1).'px solid black;background-color:#d0d0d0" type="submit" name="showcards" value="show cards" />';
+      else echo 'show cards';
+      echo '</td>';
+	      
+      echo '</tr>';
+      echo '</table>';
+	      
       if(isset($bug)) echo $bug;
     }
   else if(isset($table))
@@ -1097,140 +1094,119 @@ else if($_REQUEST['frame']=='actions')
 	}
       if($player['id']==l($playersseated,'<,id') or $player['status']=='winner') echo 'you won!';
     }
-  else die('fatal error: wrong table');
-
-// echo '<script language="JavaScript">setTimeout("document.getElementById(\'theform\').submit()",5000);</script>';
-// echo '<td width="'.zoom(80).'"><input style="'.$font.'" type="submit" name="action" value="reload"></td>';
+  else { logspeed();die('fatal error: wrong table'); }
 }
-function hands()
+function handname($hand)
 {
-  global $nums,$nums2,$nums3,$nums4,$cols,$cols2,$handnames,$handranks;
+  global $numsHTML,$numsHTMLp;
+  $kind=$hand[0].$hand[1];
 
-  $handnames=array();
-
-  $handnames['rf']['name']='Royal Flush';
-  $handnames['sf']['name']='Strait Flush';
-  for($n=13;$n>=5;$n--)
+  switch($kind)
     {
-      $handnames['sf'.$nums2[$n]]['name']='Strait Flush '.$nums[$n];
-    }
-  $handnames['4k']['name']='4 of a kind';
-  for($n1=14;$n1>1;$n1--)
-    {
-      $handnames['4k'.$nums2[$n1]]['name']='4 of a kind '.$nums[$n1].'';
-      for($n2=14;$n2>2;$n2--)if($n1!=$n2)
+    case 'rf': return 'Royal Flush';
+    case 'sf': 
+      if(strlen($hand)>2) 
+	return 'Strait Flush '.$numsHTML[$hand[2]-4].' to '.$numsHTML[$hand[2]];
+      return 'Strait Flush';
+    case '4k':
+      if(strlen($hand)>3) 
+	return '4 of a kind '.$numsHTMLp[$hand[2]].' (kicker: '.$numsHTML[$hand[3]].')';
+      if(strlen($hand)>2) 
+	return '4 of a kind '.$numsHTMLp[$hand[2]].'';
+      return '4 of a kind';
+    case 'fh':
+      if(strlen($hand)>3)
+	return 'Full House '.$numsHTMLp[$hand[2]].' and '.$numsHTMLp[$hand[3]];
+      return 'Full House';
+    case 'fl':
+      if(strlen($hand)>2)
 	{
-	  $handnames['4k'.$nums2[$n1].$nums2[$n2]]['name']='4 of a kind '.$nums[$n1].' (Kicker: '.$nums[$n2].')';
+	  $r='Flush (including: '.$numsHTML[$hand[2]];
+	  for($i=3;$i<strlen($hand);$i++)
+	    $r.=', '.$numsHTML[$hand[$i]];
+	  return $r.')';
 	}
-    }
-  $handnames['fh']['name']='Full House';
-  for($n1=14;$n1>1;$n1--)for($n2=14;$n2>1;$n2--)if($n1!=$n2)
-    {
-      $handnames['fh'.$nums2[$n1].$nums2[$n2]]['name']='Full House '.$nums[$n1].', '.$nums[$n2];
-    }
-  
-  $handnames['fl']['name']='Flush';
-  for($n1=14;$n1>6;$n1--)
-    {
-      $handnames['fl'.$nums2[$n1]]['name']='Flush (including: '.$nums[$n1].')';
-      for($n2=13;$n2>4;$n2--)if($n1>$n2)
+      return 'Flush';
+    case 'st':
+      if(strlen($hand)>2) 
+	return 'Strait '.$numsHTML[$hand[2]-4].' to '.$numsHTML[$hand[2]];
+      return 'Strait';
+    case '2p':
+      if(strlen($hand)>4) 
+	return 'two pairs '.$numsHTMLp[$hand[2]].' and '.$numsHTMLp[$hand[3]].' (kicker: '.$numsHTML[$hand[4]].')';
+      if(strlen($hand)>3)
+	return 'two pairs '.$numsHTMLp[$hand[2]].' and '.$numsHTMLp[$hand[3]];
+      return 'two pairs';
+    case '2k':
+      if(strlen($hand)>3)
 	{
-	  $handnames['fl'.$nums2[$n1].$nums2[$n2]]['name']='Flush (including: '.$nums[$n1].' '.$nums[$n2].')';
-	  for($n3=12;$n3>3;$n3--)if($n2>$n3)
-	    {
-	      $handnames['fl'.$nums2[$n1].$nums2[$n2].$nums2[$n3]]['name']='Flush (including: '.$nums[$n1].' '.$nums[$n2].', '.$nums2[$n3].')';
-	      for($n4=11;$n4>2;$n4--)if($n3>$n4)
-		{
-		  $handnames['fl'.$nums2[$n1].$nums2[$n2].$nums2[$n3].$nums2[$n4]]['name']='Flush (including: '.$nums[$n1].' '.$nums[$n2].', '.$nums2[$n3].', '.$nums2[$n4].')';
-		  for($n5=9;$n5>1;$n5--)if($n4>$n5 and $n1>$n5+4)
-		    {
-		      $handnames['fl'.$nums2[$n1].$nums2[$n2].$nums2[$n3].$nums2[$n4].$nums2[$n5]]['name']='Flush (including: '.$nums[$n1].' '.$nums[$n2].', '.$nums[$n3].', '.$nums[$n4].', '.$nums[$n5].')';
-		    }
-		}
-	    }
+	  $r='one pair '.$numsHTMLp[$hand[2]].' (kicker: '.$numsHTML[$hand[3]];
+	  for($i=4;$i<strlen($hand);$i++)
+	    $r.=', '.$numsHTML[$hand[$i]];
+	  return $r.')';
 	}
-    }
-  
-  $handnames['st']['name']='Strait';
-  for($n=14;$n>=5;$n--)
-    {
-      $handnames['st'.$nums2[$n]]['name']='Strait '.$nums[$n];
-    }
-  
-  $handnames['3k']['name']='3 of a kind';
-  for($n1=14;$n1>1;$n1--)
-    {
-      $handnames['3k'.$nums2[$n1]]['name']='3 of a kind '.$nums[$n1].'';
-      for($n2=14;$n2>2;$n2--)if($n1!=$n2)
+      if(strlen($hand)>2) 
+	return 'one pair '.$numsHTMLp[$hand[2]].'';
+      return 'one pair';
+    case 'hc':
+      if(strlen($hand)>3)
 	{
-	  $handnames['3k'.$nums2[$n1].$nums2[$n2]]['name']='3 of a kind '.$nums[$n1].' (Kicker: '.$nums[$n2].')';
-	  for($n3=13;$n3>1;$n3--)if($n1!=$n3 and $n2>$n3)
-	    {
-	      $handnames['3k'.$nums2[$n1].$nums2[$n2].$nums2[$n3]]['name']='3 of a kind '.$nums[$n1].' (Kicker: '.$nums[$n2].', '.$nums[$n3].')';
-	    }
+	  $r='High Card '.$numsHTML[$hand[2]].' (kicker: '.$numsHTML[$hand[3]];
+	  for($i=4;$i<strlen($hand);$i++)
+	    $r.=', '.$numsHTML[$hand[$i]];
+	  return $r.')';
 	}
+      if(strlen($hand)>2) 
+	return 'High Card '.$numsHTML[$hand[2]].'';
+      return 'High Card';
+    default: return '';
     }
-  
-  $handnames['2p']['name']='two pairs';
-  for($n1=14;$n1>1;$n1--)
-    {
-      $handnames['2p'.$nums2[$n1]]['name']='two pairs '.$nums[$n1].'';
-      for($n2=14;$n2>1;$n2--)if($n1>$n2)
-	{
-	  $handnames['2p'.$nums2[$n1].$nums2[$n2]]['name']='two pairs '.$nums[$n1].', '.$nums2[$n2].'';
-	  for($n3=14;$n3>1;$n3--)if($n1!=$n3 and $n2!=$n3)
-	    {
-	      $handnames['2p'.$nums2[$n1].$nums2[$n2].$nums2[$n3]]['name']='two pairs '.$nums[$n1].', '.$nums[$n2].' (Kicker: '.$nums[$n3].')';
-	    }
-	}
-    }
-  
-  $handnames['2k']['name']='one pair';
-  for($n1=14;$n1>1;$n1--)
-    {
-      $handnames['2k'.$nums2[$n1]]['name']='one pair '.$nums[$n1].'';
-      for($n2=14;$n2>3;$n2--)if($n1!=$n2)
-	{
-	  $handnames['2k'.$nums2[$n1].$nums2[$n2]]['name']='one pair '.$nums[$n1].' (Kicker: '.$nums[$n2].')';
-	  for($n3=13;$n3>2;$n3--)if($n1!=$n3 and $n2>$n3)
-	    {
-	      $handnames['2k'.$nums2[$n1].$nums2[$n2].$nums2[$n3]]['name']='one pair '.$nums[$n1].' (Kicker: '.$nums[$n2].', '.$nums2[$n3].')';
-	      for($n4=12;$n4>1;$n4--)if($n1!=$n4 and $n3>$n4)
-		{
-		  $handnames['2k'.$nums2[$n1].$nums2[$n2].$nums2[$n3].$nums2[$n4]]['name']='one pair '.$nums[$n1].' (Kicker: '.$nums[$n2].', '.$nums[$n3].', '.$nums[$n4].')';
-		}
-	    }
-	}
-    }
-  
-  $handnames['hc']['name']='High Card';
-  for($n1=14;$n1>8;$n1--)
-    {
-      $handnames['hc'.$nums2[$n1]]['name']='High Card '.$nums[$n1];
-      for($n2=13;$n2>6;$n2--)if($n1>$n2)
-	{
-	  $handnames['hc'.$nums2[$n1].$nums2[$n2]]['name']='High Card '.$nums[$n1].' (Kicker: '.$nums[$n2].')';
-	  for($n3=12;$n3>5;$n3--)if($n2>$n3)
-	    {
-	      $handnames['hc'.$nums2[$n1].$nums2[$n2].$nums2[$n3]]['name']='High Card '.$nums[$n1].' (Kicker: '.$nums[$n2].', '.$nums2[$n3].')';
-	      for($n4=11;$n4>4;$n4--)if($n3>$n4)
-		{
-		  $handnames['hc'.$nums2[$n1].$nums2[$n2].$nums2[$n3].$nums2[$n4]]['name']='High Card '.$nums[$n1].' (Kicker: '.$nums[$n2].', '.$nums2[$n3].', '.$nums2[$n4].')';
-		  for($n5=9;$n5>3;$n5--)if($n4>$n5 and $n1>$n5+4)
-		    {
-		      $handnames['hc'.$nums2[$n1].$nums2[$n2].$nums2[$n3].$nums2[$n4].$nums2[$n5]]['name']='High Card '.$nums[$n1].' (Kicker: '.$nums[$n2].', '.$nums[$n3].', '.$nums[$n4].', '.$nums[$n5].')';
-		    }
-		}
-	    }
-	}
-    }
-  $handranks=array();$i=0;
-  foreach($handnames as $k => &$foo) $handranks[$k]=$i++;
 }
 
-function whathand($hand)
+function comphands($hand1,$hand2)
 {
-  global $nums,$nums2,$nums3,$nums4,$cols,$cols2;
+  $kind1=$hand1[0].$hand1[1];
+  $kind2=$hand2[0].$hand2[1];
+  if($kind1==$kind2)
+    {
+      for($i=2;$i<strlen($hand1) and $i<strlen($hand2);$i++)
+	{
+	  if($nums3[$hand1[$i]]>$nums3[$hand2[$i]]) return 1;
+	  if($nums3[$hand1[$i]]<$nums3[$hand2[$i]]) return -1;
+	}
+    }
+  else
+    {
+      if($kind1=='rf')return 1;
+      if($kind2=='rf')return -1;
+      if($kind1=='sf')return 1;
+      if($kind2=='sf')return -1;
+      if($kind1=='4k')return 1;
+      if($kind2=='4k')return -1;
+      if($kind1=='fh')return 1;
+      if($kind2=='fh')return -1;
+      if($kind1=='fl')return 1;
+      if($kind2=='fl')return -1;
+      if($kind1=='st')return 1;
+      if($kind2=='st')return -1;
+      if($kind1=='2p')return 1;
+      if($kind2=='2p')return -1;
+      if($kind1=='2k')return 1;
+      if($kind2=='2k')return -1;
+    }
+  return 0;
+}
+
+
+// $hand is a string with up to 9 cards / 18 chars
+// format:  "4das1hjh2d ... "
+// returns a hands value
+// format: "hcakt76" = high card Ace, kickers: King, 10, 7, 6   
+//         "sfj" = straight flush Jack, 10, 9, 8, 7
+//         ...   
+function cards2hand($hand)
+{
+  global $nums,$nums2,$nums3,$cols,$cols2;
 
   /* what is it */
   $flush='x';
@@ -1240,15 +1216,15 @@ function whathand($hand)
   if(substr_count($hand,'c')>=5)$flush='c';
   
   /* rf */
-  if(substr_count($hand,'A'.$flush)
+  if(substr_count($hand,'a'.$flush)
      and 
-     substr_count($hand,'K'.$flush)
+     substr_count($hand,'k'.$flush)
      and 
-     substr_count($hand,'Q'.$flush)
+     substr_count($hand,'q'.$flush)
      and 
-     substr_count($hand,'J'.$flush)
+     substr_count($hand,'j'.$flush)
      and 
-     substr_count($hand,'1'.$flush))
+     substr_count($hand,'t'.$flush))
    {return 'rf';}
   
   /* sf */
@@ -1269,7 +1245,7 @@ function whathand($hand)
   if(substr_count($hand,$nums2[$i])==4)
    {
     $kicker=0;
-    for($j=0;$j<7;$j++)
+    for($j=0;$j<strlen($hand)/2;$j++)
      {
       if($nums3[$hand[$j*2]]!=$i and $nums3[$hand[$j*2]]>$kicker)$kicker=$nums3[$hand[$j*2]];
      }
@@ -1297,7 +1273,7 @@ function whathand($hand)
     $kicker3=0;
     $kicker4=0;
     $kicker5=0;
-    for($j=0;$j<7;$j++)
+    for($j=0;$j<strlen($hand)/2;$j++)
      {
       if($nums3[$hand[$j*2]+1]==$flush)
        {
@@ -1355,7 +1331,7 @@ function whathand($hand)
    {
     $kicker1=0;
     $kicker2=0;
-    for($j=0;$j<7;$j++)
+    for($j=0;$j<strlen($hand)/2;$j++)
      {
       if($nums3[$hand[$j*2]]!=$i)
        {
@@ -1382,7 +1358,7 @@ function whathand($hand)
       if($i!=$j and substr_count($hand,$nums2[$j])==2)
        {
         $kicker=0;
-        for($k=0;$k<7;$k++)
+        for($k=0;$k<strlen($hand)/2;$k++)
          {
           if($nums3[$hand[$k*2]]!=$i and $nums3[$hand[$k*2]]!=$j and $nums3[$hand[$k*2]]>$kicker)$kicker=$nums3[$hand[$k*2]];
          }
@@ -1398,7 +1374,7 @@ function whathand($hand)
     $kicker1=0;
     $kicker2=0;
     $kicker3=0;
-    for($j=0;$j<7;$j++)
+    for($j=0;$j<strlen($hand)/2;$j++)
      {
       if($nums3[$hand[$j*2]]!=$i)
        {
@@ -1428,7 +1404,7 @@ function whathand($hand)
   $kicker3=0;
   $kicker4=0;
   $kicker5=0;
-  for($j=0;$j<7;$j++)
+  for($j=0;$j<strlen($hand)/2;$j++)
    {
     if($nums3[$hand[$j*2]]>$kicker1)
      {
@@ -1473,12 +1449,79 @@ function cardimgs($cards='xx',$size=100)
 	$r.=($i?' ':'').cardimgs(substr($cards,$i,2),$size);
       return $r;
     }
-  return
-    '<img alt="'.$cards.'" '
-        .'src="cards/'.$cards.'.png" '
-        .'width="'.zoom(70/100*$size).'" '
-        .'height="'.zoom(95/100*$size).'" '
-    .'/>';
+
+  $n=$cards[0];
+  if($n=='t')$n=10;
+  $text=strtoupper($n);
+  $c=$cards[1];
+  $col='#000000';
+
+  $r= $cards.'<svg height="193" id="svg2" version="1.0" width="143" x="0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" y="0">';
+  $r.= '<symbol>';
+  switch($c)
+    { 
+    case 'c': 
+      $r.= '<path d="M -1,1 L -4,12 L 4,12 L 1,1 C 3,1 7,7 9,7 C 15,7 15,-7 9,-7 C 7,-7 3,-1 1,-1 C 1,-4 5,-10 5,-13 C 5,-23 -5,-23 -5,-13 C -5,-10 -1,-4 -1,-1 C -3,-1 -7,-7 -9,-7 C -15,-7 -15,7 -9,7 C -7,7 -3,1 -1,1 z" id="symbolc" style="fill:#000000"/>';
+      break;
+    case 'h': 
+      $r.= '<path d="M 0,-10 C 0,-25 14,-25 14,-10 C 14,-5 5,7 0,15 C -5,7 -14,-5 -14,-10 C -14,-25 0,-25 0,-10 z" id="symbolh" style="fill:#FF0000"/>';
+      $col='#FF0000';
+      break;
+    case 'd': 
+      $r.= '<path d="M 0,20 C -1,15 -10,0 -14,0 C -10,0 -1,-15 0,-20 C 1,-15 10,0 14,0 C 10,0 1,15 0,20 z" id="symbold" style="fill:#FF0000"/>';
+      $col='#FF0000';
+      break;
+    case 's': 
+      $r.= '<path d="M -1,1 L -4,12 L 4,12 L 1,-1 C 1,5 14,10 14,0 C 14,-5 5,-17 0,-25 C -5,-17 -14,-5 -14,0 C -14,10 -1,5 -1,0 z" id="symbols" style="fill:#000000"/>';
+      break;
+    }
+
+  $r.= '<text x="0" y="0" id="num'.$text.'" text-anchor="middle" font-family="sans-serif" style="font-size:40px;font-weight:bold;fill:'.$col.';stroke:none">'.$text.'</text>';
+  $r.= '</symbol>';
+  
+  $r.= '<rect x="5" y="5" width="138" height="188" rx="16" ry="16" style="fill:#000000;fill-opacity:0.5"/>';
+  $r.= '<rect x="0" y="0" width="138" height="188" rx="16" ry="16" style="fill:#cccccc"/>';
+  $r.= '<rect x="2" y="2" width="138" height="188" rx="16" ry="16" style="fill:#cccccc"/>';
+  if($cards=='xx') $r.= '<rect x="1" y="1" width="138" height="188" rx="16" ry="16" style="fill:#000099"/>';
+  else 
+    {
+      $r.= '<rect x="1" y="1" width="138" height="188" rx="16" ry="16" style="fill:#ffffff"/>';
+  
+      $r.= '<use x="28" y="40" xlink:href="#num'.$text.'" transform="scale(.75,1)" />';
+      $r.= '<use x="28" y="40" xlink:href="#num'.$text.'" transform="rotate(180,70,95) scale(.75,1)" />';
+  
+      $r.= '<use x="20" y="70" xlink:href="#symbol'.$c.'" />';
+      $r.= '<use x="20" y="70" xlink:href="#symbol'.$c.'" transform="rotate(180,70,95)" />';
+  
+
+      if($n>=8) $r.= '<use x="100" y="100" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=8) $r.= '<use x="180" y="100" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=4 && $n<=7) $r.= '<use x="100" y="110" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==3) $r.= '<use x="140" y="110" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=4 && $n<=7) $r.= '<use x="180" y="110" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==10|| $n==2) $r.= '<use x="140" y="125" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==7) $r.= '<use x="140" y="140" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=8) $r.= '<use x="100" y="170" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=8) $r.= '<use x="180" y="170" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==6) $r.= '<use x="100" y="190" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+
+      if($n %2) $r.= '<use x="140" y="190" transform="scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n=='j'||$n=='q'||$n=='k') $r.= '<use x="47" y="60" xlink:href="#num'.$text.'" transform="scale(1.5,2)" />';
+      if($n=='a') $r.= '<use x="35" y="49" transform="scale(2,2)" xlink:href="#symbol'.$c.'" />';
+
+      if($n>=8) $r.= '<use x="100" y="100" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=8) $r.= '<use x="180" y="100" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=4 && $n<=7) $r.= '<use x="100" y="110" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==3) $r.= '<use x="140" y="110" transform="rotate(180,70,95) scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=4 && $n<=7) $r.= '<use x="180" y="110" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==10|| $n==2) $r.= '<use x="140" y="125" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==7) $r.= '<use x="140" y="140" transform="rotate(180,70,95) scale(0.5,0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=8) $r.= '<use x="100" y="170" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n>=8) $r.= '<use x="180" y="170" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+      if($n==6) $r.= '<use x="100" y="190" transform="rotate(180,70,95) scale(0.5)" xlink:href="#symbol'.$c.'" />';
+    }
+  $r.= '</svg>';
+  return $r;
 }
 function moneyimgs($money)
 {
@@ -1486,13 +1529,13 @@ function moneyimgs($money)
 
   $tm=$money;
   $mychips=array();
-  $r='<table cellpadding="2" cellspacing="0"><tr>';
+  $r='<table cellpadding="'.zoom(2).'" cellspacing="0"><tr>';
   foreach($chips as $k => $v)
     {
       if($tm>=$k)
 	{
 	  $r.='<td valign="bottom">';
-	  $r.='<table bgcolor="#888888" cellpadding="0" cellspacing="1">';
+	  $r.='<table bgcolor="#888888" cellpadding="0" cellspacing="'.zoom(1).'">';
 	  while($tm>=$k)
 	    {
 	      $r.='<tr><td width="'.zoom(10).'" ';
@@ -1510,40 +1553,83 @@ function moneyimgs($money)
 function sortbyhand($p1,$p2)
 {
   global $ccards,$pcards;
-  return comphands(whathand($ccards.$pcards[$p1['id']]),whathand($ccards.$pcards[$p1['id']]));
+  return comphands(cards2hand($ccards.$pcards['down'][$p1['id']].$pcards['up'][$p1['id']]),cards2hand($ccards.$pcards['down'][$p2['id']].$pcards['up'][$p2['id']]));
 }
-function comphands($c1,$c2)
-{
-  global $handranks;
-  if($c1==$c2) return 0;
-  if($handranks[$c1]>$handranks[$c2]) return 1;
-  return -1;
- }
+
 function getGame($onlycheck=false)
 {
-  global $table,$players,$player,$playersin,$playersseated,$playersactive,$ccards,$pcards;
-  if(!$table=l(query('SELECT `'.$GLOBALS['MySQLprefix'].'table`.* FROM `'.$GLOBALS['MySQLprefix'].'player`,`'.$GLOBALS['MySQLprefix'].'table`',
-		     'WHERE `'.$GLOBALS['MySQLprefix'].'table`.`id`=`'.$GLOBALS['MySQLprefix'].'player`.`table`',
-		     ' AND `'.$GLOBALS['MySQLprefix'].'player`.`id`='.intval($player['id']),
-		     ' AND `timeclosed`=0',
-		     ' AND `tablestatus`!="out"'))) return false;
+  global $table,$players,$player,$playersin,$playersseated,$playersactive,$ccards,$pcards,$playerswatching;
+  if(!$table=l(query('SELECT * FROM `'.$GLOBALS['MySQLprefix'].'table`',
+		     'WHERE `id`='.intval($player['table'])))) return false;
   if($onlycheck) return true;
   $players=query('SELECT * FROM `'.$GLOBALS['MySQLprefix'].'player` WHERE `table`='.$table['id'].' ORDER BY `seat`');
   
-  foreach($players as $k => $v)if(playerisseated($k))$playersseated[$k]=$v;
-  foreach($players as $k => $v)if(playerisin($k))$playersin[$k]=$v;
-  foreach($players as $k => $v)if(playerisactive($k))$playersactive[$k]=$v;
+  // the players represented by 5 arrays
+  // players = all players tha are there (including guests)
+  // playersseated = Players that have taken a Seat (after being out they have to stand up)
+  // playerswatching = Players that not have taken a Seat or been out
+  // playersin = Players that still in the pot (after flodding they arn't anymore)
+  // playersactive = Players that may still perform an action (after going all-in they can't)
+
+  $playersseated = array();
+  $playerswatching = array();
+  $playersin = array();
+  $playersactive = array();
+
+  foreach($players as $k => $v)
+      {
+	if(playerisseated($k))$playersseated[$k]=&$players[$k];
+	else $playerswatching[$k]=&$players[$k];
+      }
+  foreach($players as $k => $v)if(playerisin($k))$playersin[$k]=&$players[$k];
+  foreach($players as $k => $v)if(playerisactive($k))$playersactive[$k]=&$players[$k];
+
   $ccards=substr($table['deck'],0,10);
-  $pcards=array();
+  $pcards=array('up'=>array(),'down'=>array());
   $i=10;
   foreach($players as $pid => $p)
       {
-	$pcards[$pid]=substr($table['deck'],$i,4);
+	$pcards['down'][$pid]=substr($table['deck'],$i,4);
+	$pcards['up'][$pid]='';
 	$i+=4;
       }
   return true;
 }
 
+function setGame()
+{
+  global $table,$player;//,$players
+  $query1='UPDATE `'.$GLOBALS['MySQLprefix'].'table` SET';
+  foreach($table as $name => $value)
+      {
+	$query1.=' `'.$name.'`="'.mes($value).'",';
+      }
+  $query1=substr($query,0,strlen($query1)-1).' WHERE `id`='.intval($player['table']);
+  $query2='UPDATE `'.$GLOBALS['MySQLprefix'].'player` SET';
+  foreach($player as $name => $value)
+      {
+	$query2.=' `'.$name.'`="'.mes($value).'",';
+      }
+  $query2=substr($query,0,strlen($query2)-1).' WHERE `id`='.intval($player['id']);
+  
+  /*
+  $return=query($query1);
+  foreach($players as $p)
+      {
+	$query2='UPDATE `'.$GLOBALS['MySQLprefix'].'player` SET';
+	foreach($p as $name => $value)
+	    {
+	      $query2.=' `'.$name.'`="'.mes($value).'",';
+	    }
+	$query2=substr($query,0,strlen($query2)-1).' WHERE `id`='.intval($p['id']);
+	$return=($return and query($query2));
+      }
+  return $return;
+  */
+  return (query($query1) and query($query2));
+}
+
+// players = all players that are there (including guests)
 function nextplayer($pid)
 {
   global $players;
@@ -1556,6 +1642,7 @@ function nextplayer($pid)
   return l(reset($players),'id');
 }
 
+// playersin = Players that still in the pot (after flodding they arn't anymore)
 function playerisin($pid)
 {
   global $players;
@@ -1565,6 +1652,8 @@ function playerisin($pid)
     and $players[$pid]['action']!="fold"
     );
 }
+// playersseated = Players that have taken a Seat (after been out they have to stand up)
+// playerswatching = Players that not have taken a Seat or been out
 function playerisseated($pid)
 {
   global $players;
@@ -1573,6 +1662,7 @@ function playerisseated($pid)
     and ($players[$pid]['tablemoney']+$players[$pid]['betmoney']+$players[$pid]['allinpot'])
     );
 }
+// playersactive = Players that may still perform an action (after going all-in thay can't)
 function playerisactive($pid)
 {
   global $players;
@@ -1593,35 +1683,57 @@ function nextseated($pid)
   do{ $pid=nextplayer($pid); }while(!playerisseated($pid));
   return $pid;
 }
+function nextwatching($pid)
+{
+  do{ $pid=nextplayer($pid); }while(playerisseated($pid));
+  return $pid;
+}
 function nextactive($pid)
 {
   do{ $pid=nextplayer($pid); }while(!playerisactive($pid));
   return $pid;
 }
 
+// caching query() errors
+// query() will performe the die()
 function queryNoConnect()
 {
   $r.= 'Could not connect to The MySQL database<br />';
   $r.= 'MySQL error: '.mysql_error().'<br /><br />';
   $r.= 'Please make sure that ur QpokerMySQL.php contains the right data.<br /><br />';
   $r.= 'example QpokerMySQL.php:<br />';
-  $r.= '<?php<br />';
+  $r.= '&lt;?php<br />';
   $r.= '  $MySQLuser="user";<br />';
   $r.= '  $MySQLpass="pass";<br />';
   $r.= '  $MySQLhost="localhost";<br />';
   $r.= '  $MySQLdb="databasename";<br />';
   $r.= '  $MySQLprefix="qpoker_";<br />';
-  $r.= '?><br />';
+  $r.= '?&gt;<br />';
   return $r;
 }
 
+// caching query() errors
+// query() will performe the die()
 function queryNoDB()
 {
   return queryNoConnect();
 }
 
 
-function query($q,$q2='',$q3='',$q4='',$q5='',$q6='',$q7='',$q8='',$q9='')
+// performs a mysql_query
+// on first call it connects to the db
+// returns info dependent on the statement:
+// insert: autoincrement id
+// update: affected rows (thats how it may be used inside a if statement)
+// select: 2 dimentional array with all rows
+//         if there is a field called id, it will be used as first array-key.
+//                          (the order defined by 'ORDER BY' is NOT affected)
+//         second-level array-key is the fieldname (mysql_fetch_array)
+//         if no rows have been selected it returns an empty array 
+//                 (converts to bool false inside an if statement)
+// else: mysql_info()
+// if there was a MySQL error it will always return bool(false)
+function query()
 {
   static $db;
   if(!$db)
@@ -1672,7 +1784,7 @@ function query($q,$q2='',$q3='',$q4='',$q5='',$q6='',$q7='',$q8='',$q9='')
 // there are 2 special values
 //   '<' the first array element
 //   '*' all elements (only makes sence when more values are used for recurion)
-// a complex example:
+// an example:
 /*
  $companys = array(
    '01457' => array(
@@ -1689,15 +1801,14 @@ function query($q,$q2='',$q3='',$q4='',$q5='',$q6='',$q7='',$q8='',$q9='')
        )
     )
  )
-
 //to get a list of the first listed managers of each company do:
 $managers = l($companys,'*,managers,<');
 //to get the all managers of a company do:
 $managers = l($companys,'00235,managers');
 //to get a direct companynummber to name array do:
 $companynames = l($companys,'*,name');
-*/
 // this funktion is extremly useful to procces db results that are stored in an array s.a. query()
+*/
 function l($a,$how=array('<'))
 {
   if(!is_array($how))$how=explode(',',$how);
@@ -1708,22 +1819,31 @@ function l($a,$how=array('<'))
       return l(reset($a),$how);
   if($do==='*')
     {
-      foreach($a as &$k)
-	$k=l($k,$how);
+      foreach($a as &$v)
+	$v=l($v,$how);
       return $a;
     }
   return l($a[$do],$how);
 }
 
+// shortcut for mysql_escape_string()
+// i know i'm laisy
+// maybe it will have real usage when sombody trys to make a non MySQL port
 function mes($s)
 {
   return mysql_escape_string($s);
 }
 
+// uses the $player['zoom']
+// may also take a float as parameter
+// always returns an int >=1
 function zoom($i)
 {
-  return max(1,intval($i/100*$GLOBALS['zoom']));
+  return max(1,intval($i*(isset($GLOBALS['player']['zoom'])?$GLOBALS['player']['zoom']/100:1)));
 }
+
+// returns a random string with a length of 104
+// the format is: "4dasthjh2d ... "
 function randdeck()
 {
   global $nums2,$cols2;
@@ -1741,49 +1861,20 @@ function randdeck()
   return $deck;
 } 
 
-function randcards()
-{
-  global $ccards,$pcards,$players,$nums2,$cols2;
-  mt_srand($GLOBALS['table']['handid']);
-  
-  do
-    {
-      $all=$ccards=
-	$nums2[mt_rand(1,13)].$cols2[mt_rand(0,3)].
-	$nums2[mt_rand(1,13)].$cols2[mt_rand(0,3)].
-	$nums2[mt_rand(1,13)].$cols2[mt_rand(0,3)].
-	$nums2[mt_rand(1,13)].$cols2[mt_rand(0,3)].
-	$nums2[mt_rand(1,13)].$cols2[mt_rand(0,3)];
-
-      $pcards=array();
-      foreach($players as $pid => $p)
-	$all.=$pcards[$pid]=$nums2[mt_rand(1,13)].$cols2[mt_rand(0,3)].$nums2[mt_rand(1,13)].$cols2[mt_rand(0,3)];
-      
-      $unique=true;
-      for($i=0;$i<strlen($all);$i+=2)
-	{
-	  if(substr_count($all,$all[$i].$all[$i+1])>1)
-	    {
-	      $unique=false;
-	      break;
-	    }
-	}
-    } 
-  while(!$unique);
-}      
-
+// creates that little R at the right. checks for changes and submits
+// theform if there are any or on clicking the R
 function makeAjax($wait,$post,$speed=NULL)
 {
   if($speed===NULL)$speed=1000;
   $wait=intval($wait);
-//echo '<a href="'.$GLOBALS['url'].'changed='.$post.'">&quot;'.$wait.'&quot;</a>';
+//echo '<a href="'.htmlspecialchars($GLOBALS['url'].'changed='.$post).'">&quot;'.$wait.'&quot;</a>';
   echo '<input style="';
   echo   $GLOBALS['font2g'].';background:none;border:none;width:'.zoom(24).'px;height:'.zoom(20).'px;';
   echo   'position:absolute;z-index:99;right:0px;top:0px';
   echo '" type="submit" value="R" title="reload frame manualy" id="reloadbutton" />';
   echo '<script language="JavaScript">';
   
-  echo <<<JS
+  echo htmlspecialchars(<<<JS
     var ajaxReq;
   var ajaxCompare="$wait";
   if (window.XMLHttpRequest)
@@ -1808,6 +1899,8 @@ function makeAjax($wait,$post,$speed=NULL)
       {
 	if(ajaxReq.readyState == 4)
 	  {
+	    var zeit = new Date();
+	    var nextTO = zeit.getMilliseconds()%$speed;
 	    if(ajaxReq.status != 200)
 	      {
 		if(!tOut) tOut=setTimeout(
@@ -1832,7 +1925,7 @@ function makeAjax($wait,$post,$speed=NULL)
 	  {
 	    document.getElementById("reloadbutton").style.color="#000";
 	    ajaxReq.onreadystatechange=ajaxCheck;
-	    ajaxReq.open("POST","$GLOBALS[url].'",true);
+	    ajaxReq.open("post","$GLOBALS[url].'",true);
 	    ajaxReq.setRequestHeader("Content-Type", 
 				     "application/x-www-form-urlencoded");
 	    ajaxReq.send("changed=$post");
@@ -1841,7 +1934,8 @@ function makeAjax($wait,$post,$speed=NULL)
 	  setTimeout('document.getElementById("theform").submit()',${speed}0);
       }
   setTimeout('makeReq()',$speed);
-JS;
+JS
+);
   echo '</script>';
 }
 
@@ -1886,7 +1980,6 @@ function install()
 	CREATE TABLE `".$GLOBALS['MySQLprefix']."table` (
 	  `id` int(11) NOT NULL auto_increment,
 	  `size` int(6) NOT NULL,
-	  `admin` int(11) NOT NULL,
 	  `timecreate` int(11) NOT NULL,
 	  `timestart` int(11) NOT NULL,
 	  `timeclosed` int(11) NOT NULL,
@@ -1894,12 +1987,11 @@ function install()
 	  `dealer` int(11) NOT NULL,
 	  `buyin` int(11) NOT NULL,
 	  `sbstart` int(11) NOT NULL,
-	  `sbinc` int(11) NOT NULL,
-	  `sbend` int(11) NOT NULL,
+	  `sbinc` enum('none','slow','norm','fast') NOT NULL default 'norm',
 	  `sb` int(11) NOT NULL,
 	  `pot` int(11) NOT NULL,
 	  `onturn` int(11) NOT NULL,
-	  `betround` int(3) NOT NULL,
+	  `bettinground` int(3) NOT NULL,
 	  PRIMARY KEY  (`id`)
 	  ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
       ")!== false
@@ -1922,7 +2014,7 @@ function postblinds()
     $pid=$table['onturn'];
   else
     $pid=$table['dealer'];
-  if($players[$pid]['tablemoney']<=$table['sb'])
+  if($players[$pid]['tablemoney']<=roundnice($table['sb']))
     {
       query('UPDATE `'.$GLOBALS['MySQLprefix'].'player`',
 	    'SET `betmoney`=`tablemoney`',
@@ -1934,14 +2026,14 @@ function postblinds()
   else
     {
       query('UPDATE `'.$GLOBALS['MySQLprefix'].'player`',
-	    'SET `tablemoney`=`tablemoney`-'.$table['sb'],
-	    ', `betmoney`='.$table['sb'],
+	    'SET `tablemoney`=`tablemoney`-'.roundnice($table['sb']),
+	    ', `betmoney`='.roundnice($table['sb']),
 	    ', `action`="sb"',
 	    ', `actiontime`='.time(),
 	    'WHERE `id`='.$pid);
     }
   $pid=nextactive($pid);
-  if($players[$pid]['tablemoney']<=$table['sb']*2)
+  if($players[$pid]['tablemoney']<=roundnice($table['sb'])*2)
     {
       query('UPDATE `'.$GLOBALS['MySQLprefix'].'player`',
 	    'SET `betmoney`=`tablemoney`',
@@ -1953,8 +2045,8 @@ function postblinds()
   else
     {
       query('UPDATE `'.$GLOBALS['MySQLprefix'].'player`',
-	    'SET `tablemoney`=`tablemoney`-'.($table['sb']*2),
-	    ', `betmoney`='.($table['sb']*2),
+	    'SET `tablemoney`=`tablemoney`-'.(roundnice($table['sb'])*2),
+	    ', `betmoney`='.(roundnice($table['sb'])*2),
 	    ', `action`="bb"',
 	    ', `actiontime`='.time(),
 	    'WHERE `id`='.$pid);
@@ -1997,7 +2089,7 @@ function showdown()
   $pid=$table['onturn'] or $pid=nextin($table['dealer']);
   do
     {
-      $thishand=whathand($ccards.$pcards[$pid]);
+      $thishand=cards2hand($ccards.$pcards['down'][$pid].$pcards['up'][$pid]);
       if(!isset($maxwinnerhand) 
 	 or comphands($thishand,$maxwinnerhand)+1)
 	{
@@ -2083,8 +2175,15 @@ function nexthand($firsthand=false)
 	      ', `actiontime`='.time(),
 	      'WHERE `id`='.$p['id']);
       }
-  if($table['dealer']==$table['admin'] and  !$firsthand)
-    $table['sb']=min($table['sb']+$table['sbinc'],$table['sbend']);
+  if(!$table['handcount']%$table['size'] and !$firsthand)
+    {
+      if($table['inc']=='slow')
+	$table['sb']=round($table['sb']+$table['sbstart']*0.5);
+      if($table['inc']=='norm')
+	$table['sb']=round($table['sb']*1.5);
+      if($table['inc']=='fast')
+	$table['sb']=round(exp($table['sb'],1.5));
+    }
   getGame();
   
   mt_srand();
@@ -2092,13 +2191,17 @@ function nexthand($firsthand=false)
   query('UPDATE `'.$GLOBALS['MySQLprefix'].'table`',
 	'SET `dealer`='.$table['dealer'],
 	', `deck`="'.randdeck().'"',
-	', `betround`=0',
+	', `bettinground`=0',
 	', `onturn`='.nextactive($table['dealer']),
 	', `sb`='.$table['sb'],
 	'WHERE `id`='.$table['id']);
   
   getGame();
 }
+
+// just for debuging. it always returns the given value.
+// e.g. if u wanna see a malefunctioning SQL statement just as it inside query():
+// query(echo_r("SELECT .... "));
 function echo_r($var)
 {
   if(func_num_args()>1)
@@ -2107,10 +2210,11 @@ function echo_r($var)
       $var=implode(' ',$var);
     }
   if(is_string($var))echo nl2br("\n\"".mes($var)."\"\n");
-  else echo nl2br("\n".print_r($var)."\n");
+  else echo nl2br("\n".rprint_r($var)."\n");
   return $var;
 }
 
+// used like rand(), no srand() needed.
 function Qrand($from,$to)
 {
   static $srand=false;
@@ -2162,8 +2266,204 @@ function Qrand($from,$to)
   return mt_rand($from,$to);
 }
 
+function playerHTML()
+{
+  global $player, $players, $pcards, $table;
+  foreach($players as $pid => $p)
+      {
+	$thishand='';
+	$actionhtml=
+	  array(
+	    'none'=>'',
+	    'sb'=>'small blind ',
+	    'bb'=>'big blind ',
+	    'fold'=>'<b>fold</b> ',
+	    'call'=>'<b>call</b> ',
+	    'check'=>'check ',
+	    'allin'=>'<b>all-in</b> ',
+	    'bet'=>'<b>bet</b> ',
+	    'raise'=>'<b>raise</b> ',
+	    );
+	if($p['tablestatus']=="out")
+	  $thishand='<b>out</b> '.$thishand;
+	else if($table['onturn']==$pid) 
+	  $thishand=$actionhtml[$p['action']].$thishand;
+	
+	$html[$pid]=' ';
+	if($table['onturn']==$pid) 
+	  $html[$pid].='<span style="background-color:#FFFF00">';
+	$html[$pid].=$p['name'];
+	if($pid==$table['dealer']) $html[$pid].=' (D)';
+	$html[$pid].=' ['.intval($p['tablemoney']).' DM]';
+	if($table['onturn']==$pid) 
+	  $html[$pid].='</span>';
+	$html[$pid].= '<table><tr><td><pre>';
+	if($p['showcards'])
+	  {
+	    $html[$pid].=cardimgs($pcards['down'][$pid].$pcards['up'][$pid],($pid==$player['id'])?100:70);
+	  }
+	else
+	  {
+	    if($pid==$player['id'])// and in_array($pid,$seated))
+	      {
+		$html[$pid].=cardimgs($pcards['down'][$pid].$pcards['up'][$pid],100);
+	      }
+	    else
+	      {
+		$html[$pid].= cardimgs(str_repeat('x',strlen($pcards['down'][$pid]))
+					.$pcards['up'][$pid]
+					,($pid==$player['id'])?100:70);
+	      }
+	  }
+	$html[$pid].=' </pre></td>';
+	$html[$pid].='<td valign="bottom" align="right" style="'.$GLOBALS['font2'].'">';
+	$html[$pid].=moneyimgs(intval($p['betmoney']));
+	$html[$pid].='</td>';
+	$html[$pid].='<td width="'.zoom(25).'"></td></tr></table>';
+	$html[$pid].=' '.$thishand;
+	
+      } 
+  return $html;
+}
 
-echo $htmlend; 
+function tablelist()
+{
+  $notable=true;
+  $tables=query('SELECT * FROM `'.$GLOBALS['MySQLprefix'].'table`');// WHERE `timeclosed`=0');
+  $style='border:1px solid #000;'.$GLOBALS['font1'];
+  foreach($tables as $table)
+      {
+	$p=
+	  query('SELECT *',
+		'FROM `'.$GLOBALS['MySQLprefix'].'player`',
+		'WHERE `table`='.intval($table['id']),
+		'ORDER BY `seat`');
+	if(1 or count($p)<$table['size'])
+	  {
+	    if($notable)
+	      {
+		$r= 'Select a Table:';
+		$r.= '</div></form>';
+		$notable=false;
+	      }
+	    $r.= '<form method="post" action="'.$GLOBALS['url'].'">';
+	    $r.= '<div style="'.$GLOBALS['font1'].'">';
+	    $r.= '<input type="hidden" name="frame" value="main" />';
+	    $r.= '<input type="hidden" name="table" value="'.$table['id'].'" />';
+	    $r.= '<input style="'.$style.'" type="submit" name="tableid" value="';
+	    $r.= str_pad($table['id'],6,'0',STR_PAD_LEFT).'" />';
+	    $r.= '<input style="'.$style.'" type="submit" name="tablebuyin" value="';
+	    $r.= str_pad($table['buyin'].' DM',9,' ',STR_PAD_LEFT).'" />';
+	    $r.= '<input style="'.$style.'" type="submit" name="tablesb" value="';
+	    $r.= str_pad(
+	      $table['sbstart'].' '.$table['sbinc'].' DM',12,' ',STR_PAD_LEFT).'" />';
+	    $r.= '<input style="'.$style.'" type="submit" name="tableplayers" value="';
+	    $r.= str_pad(
+	      '   '.count($p).'/'.$table['size']
+	      .' ('.htmlspecialchars(implode(', ',l($p,'*,name'))).')',
+	      70).'" />';
+	    $r.= '</div></form>';
+	  }
+      }
+  if(!$notable)
+    {
+      $r.= '<div style="'.$GLOBALS['font1'].'">';
+      $r.= '(Number, Buy-In, Small-Blind, Players)<br /><br />';
+      $r.= '</div>';
+      $r.= '<form method="post" action="'.$GLOBALS['url'].'"><div style="'.$GLOBALS['font1'].'">';
+      $r.= '<input type="hidden" name="frame" value="main" />';
+    }
+  return $r;
+}
+
+// makes nice to view nums within the range given by $error
+// e.g. 314 -> 300, 321 -> 320, 344 -> 350 ...
+function roundnice($num,$digits=0,$error=.05,$errorTo5=NULL)
+{
+  if($errorTo5===NULL)$errorTo5=$error/2;
+  $digits=pow(10,$digits);
+  $num*=$digits;
+  $max=$num*(1+$error);
+  $min=$num*(1-$error);
+  $maxTo5=$num*(1+$errorTo5);
+  $minTo5=$num*(1-$errorTo5);
+  $len=1;
+  while($num>=pow(10,$len))$len++;
+
+  for($i=$len-1;$i>0;$i--)
+    {
+      $round=round($num/pow(10,$i)/5)*pow(10,$i)*5;
+      if($round<$maxTo5 and $round>$minTo5) return $round/$digits;
+      $round=round($num/pow(10,$i))*pow(10,$i);
+      if($round<$max and $round>$min) return $round/$digits;
+    }
+  $round=round($num/pow(10,$i)/5)*pow(10,$i)*5;
+  if($round<$maxTo5 and $round>$minTo5) return $round/$digits;
+  return round($num)/$digits;
+}
+
+function logspeed()
+{
+  $logspeed=(round(microtime(true)*1000)-$GLOBALS['logspeed'])/1000;
+  if(isset($_REQUEST['changed']))
+    {/*
+      $fp=fopen('QpokerSpeedAjax.log','a')
+	and (fwrite($fp,str_pad($_REQUEST['changed'],8)."\t".time()."\t".$logspeed."\n")
+	xor fclose($fp));
+     */}
+  else
+    { 
+      $fp=fopen('QpokerSpeed.log','a')
+	and (fwrite($fp,time()."\t".str_pad($logspeed,5,'0')."\t".$_SERVER['QUERY_STRING']."\n")
+	     xor fclose($fp));
+    }
+}
+function makeselect ($name, $array, $default = NULL)
+{
+  $r = '<select name="'.htmlspecialchars($name).'">';
+  foreach($array as $value => $displayed)
+      {
+	$r.='<option value="'.htmlspecialchars($value).'"';
+	if($default == $value) {
+	  $r.=' selected="selected"';
+	}
+	$r.='>'.htmlspecialchars($displayed).'</option>';
+      }
+  $r .= '</select>';
+  return $r;
+}
+
+/*
+for($i=0;$i<1000;$i++) echo $i."\t".roundnice($i)."\n";
+echo round(10000/3)."\n";
+echo roundnice(10000/3)."\n";
+echo round(985)."\n";
+echo roundnice(985)."\n";
+echo round(57777)."\n";
+echo roundnice(57777)."\n";
+echo round(46666)."\n";
+echo roundnice(46666)."\n";
+echo round(10000/6)."\n";
+echo roundnice(10000/6)."\n";
+echo round(10000/7)."\n";
+echo roundnice(10000/7)."\n";
+echo round(10000/9)."\n";
+echo roundnice(10000/9)."\n";
+echo round(10000/11)."\n";
+echo roundnice(10000/11)."\n";
+echo round(10000/12)."\n";
+echo roundnice(10000/12)."\n";
+echo round(10000/13)."\n";
+echo roundnice(10000/13)."\n";
+echo round(10000/14)."\n";
+echo roundnice(10000/14)."\n";
+echo round(314156)."\n";
+echo roundnice(314156)."\n";
+/**/
+//setGame();
+
+logspeed();
+echo $htmlend;
 
 
 
