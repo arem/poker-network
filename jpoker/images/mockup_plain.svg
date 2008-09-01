@@ -189,18 +189,11 @@
        id="raise" />
     <image
        xlink:href="../css/images/jpoker_table/raise_slider_dock.png"
-       x="686.33331"
-       y="541.98413"
+       x="685.55914"
+       y="576.04913"
        width="94"
        height="50"
        id="raise_range" />
-    <image
-       xlink:href="../css/images/jpoker_table/status.png"
-       x="628.19409"
-       y="11.148649"
-       width="150"
-       height="75"
-       id="table_status" />
     <image
        xlink:href="../css/images/jpoker_table/get_seat.png"
        x="25.861681"
@@ -294,19 +287,33 @@
            height="10"
            id="player_seat0_name" />
         <image
-           xlink:href="../css/images/jpoker_table/money.png"
-           x="37.737213"
-           y="215.53864"
-           width="80"
-           height="10"
-           id="player_seat0_money" />
-        <image
            xlink:href="../css/images/jpoker_table/avatar.png"
            x="32.237213"
            y="133.92337"
            width="91"
            height="65"
            id="player_seat0_avatar" />
+        <image
+           xlink:href="../css/images/jpoker_table/timeout.png"
+           x="37.287598"
+           y="128.79788"
+           width="80"
+           height="3.8063638"
+           id="player_seat0_timeout" />
+        <image
+           xlink:href="../css/images/jpoker_table/money.png"
+           x="36.639572"
+           y="215.71684"
+           width="40"
+           height="10"
+           id="player_seat0_money" />
+        <image
+           xlink:href="../css/images/jpoker_table/money.png"
+           x="78.834854"
+           y="215.71684"
+           width="40"
+           height="10"
+           id="player_seat0_action" />
       </g>
     </g>
     <image
@@ -700,11 +707,39 @@
        height="26"
        id="sitout" />
     <image
+       xlink:href="../css/images/jpoker_table/status.png"
+       x="664.81036"
+       y="674.70825"
+       width="132.63997"
+       height="59.571888"
+       id="auto_muck" />
+    <image
        xlink:href="../css/images/jpoker_table/button.png"
-       x="101"
-       y="101"
+       x="663.84668"
+       y="644.13184"
        width="67"
        height="26"
-       id="muck" />
+       id="muck_accept" />
+    <image
+       xlink:href="../css/images/jpoker_table/button.png"
+       x="731.414"
+       y="644.13184"
+       width="67"
+       height="26"
+       id="muck_deny" />
+    <image
+       xlink:href="../css/images/jpoker_table/status.png"
+       x="688.52948"
+       y="544.92053"
+       width="89.284515"
+       height="26.281096"
+       id="raise_input" />
+    <image
+       xlink:href="../css/images/jpoker_table/status.png"
+       x="628.14154"
+       y="10.71941"
+       width="149.67247"
+       height="75.830185"
+       id="table_info" />
   </g>
 </svg>

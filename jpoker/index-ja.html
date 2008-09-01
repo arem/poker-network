@@ -614,6 +614,9 @@ Story.prototype.closeTiddler = function(title,animate,unused)
 &lt;!--}}}--&gt;
 </pre>
 </div>
+<div title="Cashier" modifier="proppy" modified="200808301511" created="200808301209" tags="toRSS" changecount="1">
+<pre>&lt;&lt;jpokerCashier&gt;&gt;</pre>
+</div>
 <div title="ColorPalette" modifier="Saq" modified="200805291253" created="200709030351" tags="SuperCookerTheme" changecount="34">
 <pre>Background: #fff
 Foreground: #000
@@ -632,7 +635,7 @@ TertiaryMid: #999
 TertiaryDark: #444
 Error: #f88</pre>
 </div>
-<div title="Copyright" modifier="loic" modified="200805291253" created="200804051814">
+<div title="Copyright" modifier="loic" modified="200808301511" created="200804051814">
 <pre>{{{
 Copyright 2008 Loic Dachary &lt;mailto:loic@dachary.org&gt;
 Copyright 2007,2008 Johan Euphrosine &lt;mailto:proppy@aminche.com&gt;
@@ -682,6 +685,11 @@ Copyright for:
 
    (c) 2007 Christian Bach
 	Licensed under MIT
+
+Copyright for:
+	jpoker/jquery.from.js
+
+        Dual licensed under the MIT and GPL licenses
 
 Copyright for:
 	tiddlywiki as found in jpoker/poker.html
@@ -1524,7 +1532,7 @@ merge(config.shadowTiddlers,{
 
 /*}}}*/</pre>
 </div>
-<div title="JpokerPlugin" modifier="loic" modified="200807231540" created="200804051018" tags="systemConfig">
+<div title="JpokerPlugin" modifier="loic" modified="200808301850" created="200804051018" tags="systemConfig">
 <pre>/***
 |''Name:''|jpokerPlugin|
 |''Description:''||
@@ -1538,11 +1546,12 @@ merge(config.shadowTiddlers,{
 ***/
 //{{{
 
-//config.jpoker = { restURL : 'http://pokersource.eu/REST' };
-//config.jpoker = { restURL : 'http://jspoker.pokersource.info/REST' };
-//config.jpoker = { restURL : 'http://127.0.0.1/REST' };
-//config.jpoker = { restURL : 'http://127.0.0.1:19382/REST' };
-config.jpoker = { restURL : '/REST' };
+//config.jpoker = { restURL : 'http://pokersource.eu/POKER_REST' };
+//config.jpoker = { restURL : 'http://jspoker.pokersource.info/POKER_REST' };
+//config.jpoker = { restURL : 'http://pok01.prodin.orbus.fr:19384/POKER_REST' };
+//config.jpoker = { restURL : 'http://127.0.0.1/POKER_REST' };
+//config.jpoker = { restURL : 'http://127.0.0.1:19384/REST' };
+config.jpoker = { restURL : '/POKER_REST' };
 config.options.chkSinglePagePermalink = false;
 
 $.jpoker.server.defaults.spawnTable = function(server, packet) {
@@ -1554,6 +1563,12 @@ $.jpoker.server.defaults.spawnTable = function(server, packet) {
 $.jpoker.server.defaults.tourneyRowClick = function(server, packet) {
     var title = &quot; TourneyDetails &quot; + packet.name;
     config.shadowTiddlers[title] = &quot;&lt;&lt;jpokerTourneyDetails '&quot; + server.url + &quot;' &quot; + packet.game_id + &quot; '&quot; + packet.name + &quot;'&gt;&gt;&quot;;
+    story.displayTiddler(null, title, 1);
+};
+
+$.jpoker.server.defaults.placeTourneyRowClick = function(server, id) {
+    var title = &quot; TourneyPlaceholder &quot; + id;
+    config.shadowTiddlers[title] = &quot;&lt;&lt;jpokerTourneyPlaceholder '&quot; + server.url + &quot;' &quot; + id + &quot;&gt;&gt;&quot;;
     story.displayTiddler(null, title, 1);
 };
 
@@ -1615,6 +1630,24 @@ config.macros.jpokerUserInfo = {
     }
 };
 
+config.macros.jpokerPlaces = {
+    handler: function(place, macroName, params, wikifier, paramString, tiddler) {
+        $(place).jpoker('places', config.jpoker.restURL);
+    }
+};
+
+config.macros.jpokerCashier = {
+    handler: function(place, macroName, params, wikifier, paramString, tiddler) {
+        $(place).jpoker('cashier', config.jpoker.restURL);
+    }
+};
+
+config.macros.jpokerTourneyPlaceholder = {
+    handler: function(place, macroName, params, wikifier, paramString, tiddler) {
+        $(place).jpoker('tourneyPlaceholder', params[0], params[1]);
+    }
+};
+
 //}}}
 //!END-PLUGIN-CODE
 // %/</pre>
@@ -1651,10 +1684,10 @@ config.formatters.push(
 <div title="Login" modifier="Saq" modified="200804052207" created="200709031339" tags="SuperCookerTheme" changecount="6">
 <pre>&lt;&lt;jpokerLogin&gt;&gt;</pre>
 </div>
-<div title="MainMenu" modifier="YourName" modified="200807231540" created="200709022346" changecount="3">
-<pre>[[Tables]] [[RegularTourneys]] [[SitngoTourneys]] [[UserInfo]] [[Feedback|http://jspoker.pokersource.info/ideas.html]] [[Copyright]]</pre>
+<div title="MainMenu" modifier="YourName" modified="200808301511" created="200709022346" changecount="3">
+<pre>[[Tables]] [[RegularTourneys]] [[SitngoTourneys]] [[UserInfo]] [[Places]] [[Cashier]] [[Feedback|http://jspoker.pokersource.info/ideas.html]] [[Copyright]]</pre>
 </div>
-<div title="MarkupPostBody" modifier="loic" modified="200807170839" created="200803312321" changecount="1">
+<div title="MarkupPostBody" modifier="loic" modified="200808301511" created="200803312321" changecount="1">
 <pre>&lt;!--{{{--&gt;
 &lt;script language=&quot;JavaScript&quot; type=&quot;text/javascript&quot; src=&quot;jquery/jquery-1.2.6.js&quot;&gt;&lt;/script&gt;
 &lt;script language=&quot;JavaScript&quot; type=&quot;text/javascript&quot; src=&quot;jquery/ui/ui.core.js&quot;&gt;&lt;/script&gt;
@@ -1666,6 +1699,8 @@ config.formatters.push(
 &lt;script src=&quot;js/jquery.gettext.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/jquery.ajaxQueue.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/jquery.tablesorter.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;js/jquery.form.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;js/jquery.cookie.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/jquery.jpoker.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/mockup.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;!--}}}--&gt;
@@ -1701,6 +1736,9 @@ config.formatters.push(
 &lt;/div&gt;
 &lt;!--}}}--&gt;
 </pre>
+</div>
+<div title="Places" modifier="proppy" modified="200808251755" created="200808251404" tags="toRSS" changecount="1">
+<pre>&lt;&lt;jpokerPlaces&gt;&gt;</pre>
 </div>
 <div title="PublicMode" modifier="YourName" modified="200807142107" created="200806200807" tags="excludeLists excludeSearch publisherMode" changecount="1">
 <pre>|&gt;|!Layout Tiddlers|
@@ -11094,6 +11132,8 @@ if(useJavaSaver)
 <script src="js/jquery.gettext.js" type="text/javascript"></script>
 <script src="js/jquery.ajaxQueue.js" type="text/javascript"></script>
 <script src="js/jquery.tablesorter.js" type="text/javascript"></script>
+<script src="js/jquery.form.js" type="text/javascript"></script>
+<script src="js/jquery.cookie.js" type="text/javascript"></script>
 <script src="js/jquery.jpoker.js" type="text/javascript"></script>
 <script src="js/mockup.js" type="text/javascript"></script>
 <!--}}}-->
