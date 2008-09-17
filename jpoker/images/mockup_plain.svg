@@ -314,6 +314,20 @@
            width="40"
            height="10"
            id="player_seat0_action" />
+        <image
+           xlink:href="../css/images/jpoker_table/name.png"
+           x="37.825306"
+           y="226.99144"
+           width="80"
+           height="10"
+           id="player_seat0_stats" />
+        <image
+           xlink:href="../css/images/jpoker_table/name.png"
+           x="37.825302"
+           y="239.18794"
+           width="80"
+           height="10"
+           id="player_seat0_sidepot" />
       </g>
     </g>
     <image
@@ -702,7 +716,7 @@
     <image
        xlink:href="../css/images/jpoker_table/button.png"
        x="25"
-       y="101"
+       y="101.0274"
        width="67"
        height="26"
        id="sitout" />
@@ -741,5 +755,12 @@
        width="149.67247"
        height="75.830185"
        id="table_info" />
+    <image
+       xlink:href="../css/images/jpoker_table/button.png"
+       x="99.66317"
+       y="101.0274"
+       width="67"
+       height="26"
+       id="sitin" />
   </g>
 </svg>
