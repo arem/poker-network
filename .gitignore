@@ -1,4 +1,5 @@
 *.[oa]
+*.pyc
 *~
 TAGS
 poker-network/ABOUT-NLS
