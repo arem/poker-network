@@ -177,8 +177,13 @@ poker-network/tests/test-svg2gtk.py
 poker-network/tests/test-upgrade.py
 poker-network/tests/test-userstats.py
 poker-network/tests/test-webservice.py
+poker-network/tests/test-attrpack.py
 poker-network/tests/testbirthday.php
 poker-network/tests/testcurrency.php
 poker-network/tests/testpoker.php
 poker-network/tests/testwebservice.php
 poker-network/tests/upgrade
+poker-network/tests/.coverage
+poker-network/tests/_trial_temp
+poker-network/tests/annotated/
+
