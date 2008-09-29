@@ -49,6 +49,8 @@
 
         verbose: 0,
 
+        doReconnect: true,
+
         copyrightTimeout: 5000,
 
         copyright: function() {
@@ -102,10 +104,12 @@
             if(message.size() != 1) {
                 $('body').append('<div id=\'jpokerDialog\' class=\'jpoker_jquery_ui\' title=\'jpoker message\' />');
                 message = $('#jpokerDialog');
-                message.dialog({
-                        autoOpen: false,
-                            dialog: true
-                            });
+                var options = { width: 'none', height: 'none', autoOpen: false, dialog: true };
+                if($.browser.msie) {
+                    options.containerWidth = '300px';
+                    options.containerHeight = '200px';
+                }
+                message.dialog(options);
             }
             message.html(content).dialog('open');
         },
@@ -503,13 +507,14 @@
             url: '',
             async: true,
             lagmax: 60,
-            pollFrequency:  100,
-            pingFrequency: 5000,
+            dequeueFrequency: 100,
+            pingFrequency: 6000,
             timeout: 30000,
             clearTimeout: function(id) { return window.clearTimeout(id); },
             setTimeout: function(cb, delay) { return window.setTimeout(cb, delay); },
             ajax: function(o) { return jQuery.ajax(o); },
-            cookie: function() { return document.cookie; }
+            cookie: function() { return document.cookie; },
+	    protocol: function() { return document.location.protocol; }
         }, jpoker.watchable.defaults);
 
     jpoker.connection.prototype = $.extend({}, jpoker.watchable.prototype, {
@@ -579,6 +584,7 @@
                 // empty the incoming queue
                 this.queues = {};
                 this.delays = {};
+                this.sentTime = 0;
                 this.connectionState = 'disconnected';
             },
 
@@ -703,18 +709,21 @@
                         }
                     }
                 };
+                this.sentTime = jpoker.now();
                 this.ajax(args);
             },
 
             ping: function() {
-                if(jQuery([$.ajax_queue]).queue('ajax').length <= 0) {
+                var delta = jpoker.now() - this.sentTime;
+                if(delta > this.pingFrequency) {
                     this.sendPacket({ type: 'PacketPing' });
+                    delta = 0;
                 }
                 this.clearTimeout(this.pingTimer);
                 var $this = this;
                 this.pingTimer = this.setTimeout(function() {
                         $this.ping();
-                    }, this.pingFrequency);
+                    }, this.pingFrequency - delta);
             },
 
             pinging: function() { return this.pingTimer >= 0; },
@@ -754,7 +763,7 @@
                     var $this = this;
                     this.incomingTimer = this.setTimeout(function() {
                             $this.dequeueIncoming(); },
-                        this.pollFrequency);
+                        this.dequeueFrequency);
                 }
             },
 
@@ -811,7 +820,7 @@
                     var $this = this;
                     this.incomingTimer = this.setTimeout(function() {
                             $this.dequeueIncoming(); },
-                        this.pollFrequency);
+                        this.dequeueFrequency);
                 }
             }
 
@@ -855,7 +864,7 @@
 		++jpoker_serial;
 		$.cookie(jpoker_serial_cookie, jpoker_serial);
                 this.registerHandler(0, this.handler);
-                if(this.sessionExists()) {
+                if(jpoker.doReconnect && (this.sessionExists() || this.protocol() == 'file:')) {
                     this.reconnect();
                 }
             },
@@ -1008,6 +1017,13 @@
                 }
                 return timerRequest;
             },
+
+	    stopRefresh: function(tag) {
+		if (this.timers[tag] !== undefined) {		    
+		    this.clearInterval(this.timers[tag].timer);
+		    delete this.timers[tag];
+		}
+	    },
 
             //
             // tables lists
@@ -1379,7 +1395,7 @@
 		}
 	    },
 
-	    getPlayerPlacesByName : function(name) {
+	    getPlayerPlacesByName : function(name, options) {
 		this.queueRunning(function(server) {
 			server.setState(server.PLACES);
 			server.sendPacket({'type': 'PacketPokerGetPlayerPlaces', 'name': name});
@@ -1389,7 +1405,9 @@
 				    server.setState(server.RUNNING, 'PacketPokerPlayerPlaces');
 				    return false;
 				} else if ((packet.type == 'PacketError') && (packet.other_type == jpoker.packetName2Type.PACKET_POKER_PLAYER_PLACES)) {
-				    jpoker.dialog(_("No such user: "+name));
+				    if (options === undefined || options.dialog) {
+					jpoker.dialog(_("No such user: "+name));
+				    }
 				    server.notifyUpdate(packet);
 				    server.setState(server.RUNNING, 'PacketError');
 				    return false;
@@ -1671,6 +1689,7 @@
         this.url = server.url;
         this.init();
         server.registerHandler(game_id, this.handler);
+	server.registerHandler(0, this.handler0);
     };
 
     jpoker.tourney.defaults = {
@@ -1727,7 +1746,30 @@
                      delete server.tourneys[game_id];
                      break;
 		}
+		
+		return true;
+	    },
+	    
+	    handler0: function(server, game_id, packet) {
+                if(jpoker.verbose > 0) {
+                    jpoker.message('tourney.handler ' + JSON.stringify(packet));
+                }
+                
+                tourney = server.tourneys[packet.tourney_serial];
+                if(!tourney) {
+                    jpoker.message('unknown tourney ' + packet.tourney_serial);
+                    return true;
+                }
+                var url = server.url;
 
+                switch(packet.type) {
+
+                case 'PacketPokerTable':
+                     tourney.uninit();
+                     delete server.tourneys[packet.tourney_serial];
+                     break;
+		}
+		
 		return true;
 	    }
 	});
@@ -1988,14 +2030,6 @@
                     if(element) {
                         if(packet && packet.type == 'PacketPokerTableList') {
                             $(element).html(tableList.getHTML(id, packet, opts.link_pattern));
-			    if ($('tr', element).length > 1) {
-				var t = jpoker.plugins.tableList.templates;
-				var options = {container: $('.pager', element),
-					       positionFixed: false,
-					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
-					       next_label: t.next_label.supplant({next_label: _("Next page")})};
-				$('table', element).tablesorter({widgets: ['zebra']}).tablesorterPager(options);
-			    }
 			    if (opts.link_pattern === undefined) {
 				for(var i = 0; i < packet.packets.length; i++) {
 				    (function(){
@@ -2013,9 +2047,18 @@
 				    })();
 				}
                             }
+			    if ($('tr', element).length > 1) {
+				var t = jpoker.plugins.tableList.templates;
+				var options = {container: $('.pager', element),
+					       positionFixed: false,
+					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
+					       next_label: t.next_label.supplant({next_label: _("Next page")})};
+				$('table', element).tablesorter({widgets: ['zebra']}).tablesorterPager(options);
+			    }			    
                         }
                         return true;
                     } else {
+			server.stopRefresh('tableList');
                         return false;
                     }
                 };
@@ -2099,14 +2142,6 @@
                     if(element) {
                         if(packet && packet.type == 'PacketPokerTourneyList') {
                             $(element).html(regularTourneyList.getHTML(id, packet, opts.link_pattern));
-			    if ($('tr', element).length > 1) {
-				var t = jpoker.plugins.regularTourneyList.templates;
-				var options = {container: $('.pager', element),
-					       positionFixed: false,
-					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
-					       next_label: t.next_label.supplant({next_label: _("Next page")})};
-				$('table', element).tablesorter({widgets: ['zebra'], sortList: [[4, 0]]}).tablesorterPager(options);
-			    }
 			    if (opts.link_pattern === undefined) {
 				for(var i = 0; i < packet.packets.length; i++) {
 				    (function(){
@@ -2124,9 +2159,18 @@
 				    })();
 				}
 			    }
+ 			    if ($('tr', element).length > 1) {
+				var t = jpoker.plugins.regularTourneyList.templates;
+				var options = {container: $('.pager', element),
+					       positionFixed: false,
+					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
+					       next_label: t.next_label.supplant({next_label: _("Next page")})};
+				$('table', element).tablesorter({widgets: ['zebra'], sortList: [[4, 0]]}).tablesorterPager(options);
+			    }
                         }
                         return true;
                     } else {
+			server.stopRefresh('tourneyList');
                         return false;
                     }
                 };
@@ -2209,14 +2253,6 @@
                     if(element) {
                         if(packet && packet.type == 'PacketPokerTourneyList') {
                             $(element).html(sitngoTourneyList.getHTML(id, packet, opts.link_pattern));
-			    if ($('tr', element).length > 1) {
-				var t = jpoker.plugins.sitngoTourneyList.templates;
-				var options = {container: $('.pager', element),
-					       positionFixed: false,
-					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
-					       next_label: t.next_label.supplant({next_label: _("Next page")})};
-				$('table', element).tablesorter({widgets: ['zebra'], sortList: [[3, 0]]}).tablesorterPager(options);				
-			    }
 			    if (opts.link_pattern === undefined) {
 				for(var i = 0; i < packet.packets.length; i++) {
 				    (function(){
@@ -2234,9 +2270,18 @@
 				    })();
 				}
 			    }
+			    if ($('tr', element).length > 1) {
+				var t = jpoker.plugins.sitngoTourneyList.templates;
+				var options = {container: $('.pager', element),
+					       positionFixed: false,
+					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
+					       next_label: t.next_label.supplant({next_label: _("Next page")})};
+				$('table', element).tablesorter({widgets: ['zebra'], sortList: [[3, 0]]}).tablesorterPager(options);				
+			    }
                         }
                         return true;
                     } else {
+			server.stopRefresh('tourneyList');
                         return false;
                     }
                 };
@@ -2375,6 +2420,7 @@
                         }
                         return true;
                     } else {
+			server.stopRefresh('tourneyDetails');
                         return false;
                     }
                 };
@@ -2455,25 +2501,27 @@
 			'goto_table': _("Go to table")
 		    }));
 	    $.each(packet.table2serials, function(table, players) {
-		    var row = {
-			id: table,
-			table: table.substr(1),
-			players: players.length,
-			min_money: "",
-			max_money: ""};
-		    var moneys = $.map(players, function(player) {
-			    return packet.user2properties['X'+player.toString()].money;
-			}).sort();
-		    if (moneys.length >= 2) {
-			row.min_money = moneys[0];
-			row.max_money = moneys[moneys.length - 1];
+		    if (table != '-1') {
+			var row = {
+			    id: table,
+			    table: table.substr(1),
+			    players: players.length,
+			    min_money: "",
+			    max_money: ""};
+			var moneys = $.map(players, function(player) {
+				return packet.user2properties['X'+player.toString()].money;
+			    }).sort();
+			if (moneys.length >= 2) {
+			    row.min_money = moneys[0];
+			    row.max_money = moneys[moneys.length - 1];
+			}
+			if (link_pattern === undefined) {
+			    row.goto_table = t.tables.goto_table_button.supplant({'goto_table_label': _("Go to table")});
+			} else {
+			    row.goto_table = t.tables.goto_table_link.supplant({'goto_table_label': _("Go to table"), 'link': link_pattern.supplant({game_id: table.substr(1)})});
+			}
+			html.push(t.tables.rows.supplant(row));
 		    }
-		    if (link_pattern === undefined) {
-			row.goto_table = t.tables.goto_table_button.supplant({'goto_table_label': _("Go to table")});
-		    } else {
-			row.goto_table = t.tables.goto_table_link.supplant({'goto_table_label': _("Go to table"), 'link': link_pattern.supplant({game_id: table.substr(1)})});
-		    }
-		    html.push(t.tables.rows.supplant(row));
 		});
 	    html.push(t.tables.footer);
 	}	
@@ -2662,12 +2710,12 @@
     jpoker.plugins.serverStatus.templates = {
 	disconnected: '<div class=\'jpoker_server_status_disconnected\'> {label} </div>',
 	connected: '<div class=\'jpoker_server_status_connected\'></div>',
-        players: '<div class=\'jpoker_server_status_players\'> <div class=\'jpoker_server_status_players_count\'>{count}</div> <div class=\'jpoker_server_status_players_label\'>{players}</div> </div>',
-        tables: '<div class=\'jpoker_server_status_tables\'> <div class=\'jpoker_server_status_tables_count\'>{count}</div> <div class=\'jpoker_server_status_tables_label\'>{tables}</div> </div>',
+        players: '<div class=\'jpoker_server_status_players\'> <span class=\'jpoker_server_status_players_count\'>{count}</span> <span class=\'jpoker_server_status_players_label\'>{players}</span> </div>',
+        tables: '<div class=\'jpoker_server_status_tables\'> <span class=\'jpoker_server_status_tables_count\'>{count}</span> <span class=\'jpoker_server_status_tables_label\'>{tables}</span> </div>',
 
-        players_tourneys: '<div class=\'jpoker_server_status_players_tourneys\'> <div class=\'jpoker_server_status_players_tourneys_count\'>{count}</div> <div class=\'jpoker_server_status_players_tourneys_label\'>{players_tourneys}</div> </div>',
+        players_tourneys: '<div class=\'jpoker_server_status_players_tourneys\'> <span class=\'jpoker_server_status_players_tourneys_count\'>{count}</span> <span class=\'jpoker_server_status_players_tourneys_label\'>{players_tourneys}</span> </div>',
 
-        tourneys: '<div class=\'jpoker_server_status_tourneys\'> <div class=\'jpoker_server_status_tourneys_count\'>{count}</div> <div class=\'jpoker_server_status_tourneys_label\'>{tourneys}</div> </div>'
+        tourneys: '<div class=\'jpoker_server_status_tourneys\'> <span class=\'jpoker_server_status_tourneys_count\'>{count}</span> <span class=\'jpoker_server_status_tourneys_label\'>{tourneys}</span> </div>'
     };
 
     //
@@ -2743,7 +2791,7 @@
         var t = this.templates;
 	var html = [];
 	if(server.loggedIn()) {
-	    html.push(t.logout.supplant({ 'logout': _("{logname} logout").supplant({ 'logname': server.userInfo.name }) }));
+	    html.push(t.logout.supplant({ 'logout': ("{logname} <a href=\"javascript:;\">" + _("logout") + "</a>").supplant({ 'logname': server.userInfo.name }) }));
 	} else {
 	    html.push(t.login.supplant({ 'login': _("user: "),
                                          'password': _("password: "),
@@ -2890,7 +2938,11 @@
                                             game_id: game_id });
                             }, 1);
                     }
-                });
+                }).hover(function(){
+			$(this).addClass('hover');
+		    },function(){
+			$(this).removeClass('hover');
+		    }).html('<div class=\'jpoker_quit\'><a href=\'javascript://\'>' + _("Exit") + '</a></div>');
             $('#chat' + id).html('<input value=\'chat here\' type=\'text\' width=\'100%\' />').hide();
 	    $('#chat_history' + id).html('<div class=\'jpoker_chat_history_player\'></div><div class=\'jpoker_chat_history_dealer\'></div>');
             jpoker.plugins.playerSelf.hide(id);
@@ -2899,9 +2951,9 @@
             }
             jpoker.plugins.table.position(id, table, table.serial_in_position);
 	    jpoker.plugins.table.timeout(id, table, table.serial_in_position, 0.0);
-            if($('#jpokerSound').size() === 0) {
-                $('body').prepend('<div id=\'jpokerSound\' />');
-            }
+	    if($('#jpokerSound').size() === 0) {
+		$('body').append('<div id=\'jpokerSound\' />');
+	    }
 
 	    var table_info_element = $('#table_info' + id);
 	    $('<div class=\'jpoker_table_info_name\'>').appendTo(table_info_element).html(table.name);
@@ -3133,7 +3185,7 @@
 	tourney_end: function(table) {
 	    var server = jpoker.getServer(table.url);
 	    server.tourneyRowClick(server, {name: '', game_id: table.tourney_serial});
-	},
+	}
     };
 
     //
@@ -3198,7 +3250,7 @@
             player.registerUpdate(this.update, id, 'update' + id);
             player.registerDestroy(this.destroy, id, 'destroy' + id);
 	    var stats_element = $('#player_seat' + seat  + '_stats' + id).removeClass().addClass('jpoker_player_stats jpoker_ptable_player_seat' + seat + '_stats');
-	    var sidepot_element = $('#player_seat' + seat  + '_sidepot' + id).removeClass().addClass('jpoker_player_sidepot jpoker_ptable_player_seat' + seat + '_sidepot');
+	    var sidepot_element = $('#player_seat' + seat  + '_sidepot' + id).removeClass().addClass('jpoker_player_sidepot jpoker_ptable_player_seat' + seat + '_sidepot').hide();
 
 	    // at the end of player.create: call player_arrive callback
 	    $('#seat' + seat + id).addClass('jpoker_seat jpoker_seat'+seat);
@@ -3343,9 +3395,9 @@
 	    update: function(player, id) {
 		if (player.side_pot !== undefined) {
 		    var html = this.template.supplant($.extend(player.side_pot, {label: _("Pot")}));
-		    $('#player_seat' + player.seat + '_sidepot' + id).html(html);
+		    $('#player_seat' + player.seat + '_sidepot' + id).html(html).show();
 		} else {
-		    $('#player_seat' + player.seat + '_sidepot' + id).html('');
+		    $('#player_seat' + player.seat + '_sidepot' + id).html('').hide();
 		}
 	    }
 	},
@@ -3355,25 +3407,30 @@
 		rank: '<div class=\'jpoker_player_rank\'>{rank}</div>',
 		level: '<div class=\'jpoker_player_level jpoker_player_level_{level}\'></div>'
 	    },
+	    getLevel: function(percentile) {
+		var level;
+		if (percentile >= 75) {
+		    level = 'master';
+		} else if (percentile >= 50) {
+		    level = 'expert';
+		} else if (percentile >= 25) {
+		    level = 'pro';
+		} else {
+		    level = 'junior';
+		}
+		return level
+	    },
 	    getHTML: function(packet) {
 		var html = [];
 		var t = this.templates;
 		html.push(t.rank.supplant({rank: packet.rank}));
-		var level;
-		if (packet.percentile >= 75) {
-		    level = 'master';
-		} else if (packet.percentile >= 50) {
-		    level = 'expert';
-		} else if (packet.percentile >= 25) {
-		    level = 'pro';
-		} else {
-		    level = 'junior';
-		}		
-		html.push(t.level.supplant({level: level}));
+		html.push(t.level.supplant({level: packet.level}));
 		return html.join('\n');
 	    },
 	    update: function(player, packet, id) {
+		packet.level = this.getLevel(packet.percentile);
 		$('#player_seat' + player.seat + '_stats' + id).html(this.getHTML(packet));
+		$('#player_seat' + player.seat + id).addClass('jpoker_player_level_'+packet.level);
 	    }
 	},
 
@@ -3412,7 +3469,11 @@
             var names = [ 'check', 'call', 'raise', 'fold' ];
             var labels = [ _("check"), _("call"), _("raise"), _("fold") ];
             for(var i = 0; i < names.length; i++) {
-                $('#' + names[i] + id).html('<div class=\'jpoker_button\'><a href=\'javascript://\'>' + labels[i] + '</a></div>');
+                $('#' + names[i] + id).html('<div class=\'jpoker_button\'><a href=\'javascript://\'>' + labels[i] + '</a></div>').hover(function(){
+			$(this).addClass('hover');
+		    },function(){
+			$(this).removeClass('hover');
+		    });
             }
             //
             // rebuy
@@ -3428,6 +3489,12 @@
                         }
                     }
                 });
+	    rebuy.hover(function(){
+			$(this).addClass('hover');
+		    },function(){
+			$(this).removeClass('hover');
+		    });
+	    rebuy.html('<div class=\'jpoker_rebuy\'><a href=\'javascript://\'>' + _("Rebuy") + '</a></div>');
             rebuy.show();
 
             //
@@ -3443,7 +3510,11 @@
                         $(this).hide();
                     }
                     return false;
-                });
+                }).hover(function(){
+			$(this).addClass('hover');
+		    },function(){
+			$(this).removeClass('hover');
+		    });;
 
             //
             // sitin
@@ -3461,7 +3532,11 @@
                         $(this).hide();
                     }
                     return false;
-                }).show();
+                }).hover(function(){
+			$(this).addClass('hover');
+		    },function(){
+			$(this).removeClass('hover');
+		    }).show();
 
             //
             // chat
@@ -3492,18 +3567,26 @@
 	    $('#muck_accept' + id).html(jpoker.plugins.muck.templates.muck_accept.supplant({muck_accept_label: _("Muck")})).click(function() {
 		    var server = jpoker.getServer(url);
 		    server.sendPacket({type: 'PacketPokerMuckAccept', serial: server.serial, game_id: table.id});
-		});
+		}).hover(function(){
+			$(this).addClass('hover');
+		    },function(){
+			$(this).removeClass('hover');
+		    });
 	    $('#muck_deny' + id).html(jpoker.plugins.muck.templates.muck_deny.supplant({muck_deny_label: _("Show")})).click(function() {
 		    var server = jpoker.getServer(url);
 		    server.sendPacket({type: 'PacketPokerMuckDeny', serial: server.serial, game_id: table.id});
-		});
+		}).hover(function(){
+			$(this).addClass('hover');
+		    },function(){
+			$(this).removeClass('hover');
+		    });
 
 	    //
 	    // automuck
 	    //
 	    $('#auto_muck' + id).html(jpoker.plugins.muck.templates.auto_muck.supplant({id: id,
 			    auto_muck_win_label: _("Muck winning"),
-			    auto_muck_lose_label: _("Muck loosing")}));
+			    auto_muck_lose_label: _("Muck losing")}));
 	    $('#auto_muck_win' + id).click(function() {
 		    var server = jpoker.getServer(url);
 		    jpoker.plugins.muck.sendAutoMuck(server, game_id, id);
@@ -3547,11 +3630,20 @@
             if(rebuy.size() === 0) {
                 $('body').append('<div id=\'jpokerRebuy\' class=\'jpoker_jquery_ui\' title=\'' + _("Add chips") + '\' />');
                 rebuy = $('#jpokerRebuy');
-                rebuy.dialog({ autoOpen: false, resizable: false });
+                var options = { width: 'none', height: 'none', autoOpen: false, resizable: false };
+                if($.browser.msie) {
+                    /* 
+                     *  On IE, the widget container width and height needs to be set explicitly
+                     *  if the widget width/height is being set as 'none'
+                     */
+                    options.containerWidth = '300px';
+                    options.containerHeight = '200px';
+                }
+                rebuy.dialog(options);
             }
             rebuy.empty();
             rebuy.append('<div class=\'jpoker_rebuy_bound jpoker_rebuy_min\'>' + limits[0] + '</div>');
-            rebuy.append('<div class=\'ui-slider-1\' style=\'margin:10px;\'><div class=\'ui-slider-handle\'></div></div>');
+            rebuy.append('<div class=\'ui-slider-1\'><div class=\'ui-slider-handle\'></div></div>');
             rebuy.append('<div class=\'jpoker_rebuy_current\'>' + limits[1] + '</div>');
             rebuy.append('<div class=\'jpoker_rebuy_bound jpoker_rebuy_max\'>' + limits[2] + '</div>');
             var packet_type;
@@ -3687,10 +3779,10 @@
                 if(betLimit.max > betLimit.min) {
                     var raise = $('#raise_range' + id);
                     raise.empty();
-                    raise.append('<span class=\'jpoker_raise_bound jpoker_raise_min\'>' + jpoker.chips.SHORT(betLimit.min) + '</span> ');
-                    raise.append('<span class=\'jpoker_raise_current\' title=\'' + betLimit.min + '\'>' + jpoker.chips.SHORT(betLimit.min) + '</span> ');
-                    raise.append('<span class=\'jpoker_raise_bound jpoker_raise_max\'>' + jpoker.chips.SHORT(betLimit.max) + '</span> ');
-                    raise.append('<div class=\'ui-slider-1\' style=\'margin:10px; width:70px; \'><div class=\'ui-slider-handle\'></div></div>');
+                    raise.append('<div class=\'jpoker_raise_bound jpoker_raise_min\'>' + jpoker.chips.SHORT(betLimit.min) + '</div> ');
+                    raise.append('<div class=\'jpoker_raise_current\' title=\'' + betLimit.min + '\'>' + jpoker.chips.SHORT(betLimit.min) + '</div> ');
+                    raise.append('<div class=\'jpoker_raise_bound jpoker_raise_max\'>' + jpoker.chips.SHORT(betLimit.max) + '</div> ');
+                    raise.append('<div class=\'ui-slider-1\'><div class=\'ui-slider-handle\'></div></div>');
                     raise.show(); // must be visible otherwise outerWeight/outerWidth returns 0
 
 		    var raise_input = $('#raise_input' + id);
@@ -3959,7 +4051,8 @@
 					$('#' + tourney, element).click(function() {
 						var server = jpoker.getServer(url);
 						if(server) {
-						    server.placeTourneyRowClick(server, tourney);
+						    var packet = {game_id: tourney, name: ''};
+						    server.placeTourneyRowClick(server, packet);
 						}
 					    });
 				    });
@@ -4059,13 +4152,14 @@
 					$('#' + tourney, element).click(function() {
 						var server = jpoker.getServer(url);
 						if(server) {
-						    server.placeTourneyRowClick(server, tourney);
+						    var packet = {game_id: tourney, name: ''};
+						    server.placeTourneyRowClick(server, packet);
 						}
 					    });
 				    });
 			    }
 			    } else if ((packet.type == 'PacketError') && (packet.other_type == jpoker.packetName2Type.PACKET_POKER_PLAYER_PLACES)) {
-				$('.jpoker_player_lookup_result', element).empty();
+				jpoker.plugins.playerLookup.callback.error(packet);
 			    }
 			}
                         return true;
@@ -4078,7 +4172,8 @@
 
 		$(player_lookup_element).html(playerLookup.getHTMLForm());
 		$('.jpoker_player_lookup_submit', player_lookup_element).click(function() {
-			server.getPlayerPlacesByName($('.jpoker_player_lookup_input', player_lookup_element).val());
+			$('.jpoker_player_lookup_result', player_lookup_element).empty();
+			server.getPlayerPlacesByName($('.jpoker_player_lookup_input', player_lookup_element).val(), options);
 		    });
                 return this;
             });
@@ -4134,6 +4229,11 @@
 	    rows : '<tr class=\'jpoker_player_lookup_tourney\' id={id}><td>{tourney}</td></tr>',
 	    footer : '</tbody></table></div>',
 	    link: '<a href=\'{link}\'>{name}</a>'
+	}
+    };
+
+    jpoker.plugins.playerLookup.callback = {
+	error: function(packet) {
 	}
     };
 

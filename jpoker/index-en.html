@@ -587,14 +587,16 @@ Story.prototype.closeTiddler = function(title,animate,unused)
 |~SinglePageMode:|false|
 |showBackstage:|true|</pre>
 </div>
-<div title="AdminPageTemplate" modifier="Saq" modified="200804052145" created="200709022007" tags="SuperCookerTheme" changecount="18">
+<div title="AdminPageTemplate" modifier="Saq" modified="200809212334" created="200709022007" tags="SuperCookerTheme" changecount="18">
 <pre>&lt;!--{{{--&gt;
 &lt;div id=&quot;stickybod&quot;&gt;
 	&lt;div id=&quot;header&quot;&gt;
 		&lt;div id=&quot;pokLogin&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;Login&quot;&gt;&lt;/div&gt;
 		&lt;div id=&quot;headerTitle&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;SiteTitle&quot;&gt;&lt;/div&gt;
                 &lt;div id=&quot;lang&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;lang&quot;&gt;&lt;/div&gt;
+&lt;!--
 	&lt;div id=&quot;headerImage&quot;&gt;&lt;/div&gt;
+--&gt;
 	&lt;div id=&quot;menu&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;MainMenu&quot;&gt;
 	&lt;/div&gt;
 	&lt;/div&gt;
@@ -991,11 +993,262 @@ var regexpCarriageReturn = new RegExp(&quot;\r&quot;,&quot;mg&quot;);
 }
 //}}}</pre>
 </div>
+<div title="DropDownMenuPlugin" modifier="Saq" modified="200809212334" created="200809022008" tags="systemConfig excludeLists excludeSearch">
+<pre>/***
+|''Name:''|DropDownMenuPlugin|
+|''Description:''|Create dropdown menus from unordered lists|
+|''Author:''|Saq Imtiaz ( lewcid@gmail.com )|
+|''Source:''|http://tw.lewcid.org/#DropDownMenuPlugin|
+|''Code Repository:''|http://tw.lewcid.org/svn/plugins|
+|''Version:''|2.1|
+|''Date:''|11/04/2007|
+|''License:''|[[Creative Commons Attribution-ShareAlike 3.0 License|http://creativecommons.org/licenses/by-sa/3.0/]]|
+|''~CoreVersion:''|2.2.5|
+
+!!Usage:
+* create a two-level unordered list using wiki syntax, and place {{{&lt;&lt;dropMenu&gt;&gt;}}} on the line after it.
+* to create a vertical menu use {{{&lt;&lt;dropMenu vertical&gt;&gt;}}} instead.
+* to assign custom classes to the list, just pass them as parameters to the macro {{{&lt;&lt;dropMenu className1 className2 className3&gt;&gt;}}}
+
+!!Features:
+*Supports just a single level of drop-downs, as anything more usually provides a poor experience for the user.
+* Very light weight, about 1.5kb of JavaScript and 4kb of CSS.
+* Comes with two built in css 'themes', the default horizontal and vertical. 
+
+!!Customizing:
+* to customize the appearance of the menu's, you can either add a custom class as described above or, you can edit the CSS via the StyleSheetDropDownMenu shadow tiddler.
+
+!!Examples:
+* [[DropDownMenuDemo]]
+
+***/
+// /%
+//!BEGIN-PLUGIN-CODE
+config.macros.dropMenu={
+
+	dropdownchar: &quot;\u25bc&quot;,
+
+	handler : function(place,macroName,params,wikifier,paramString,tiddler){
+		list = findRelated(place.lastChild,&quot;UL&quot;,&quot;tagName&quot;,&quot;previousSibling&quot;);
+		if (!list)
+			return;
+		addClass(list,&quot;suckerfish&quot;);
+		if (params.length){
+			addClass(list,paramString);
+		}
+		this.fixLinks(list);
+	},
+	
+	fixLinks : function(el){
+		var els = el.getElementsByTagName(&quot;li&quot;);
+		for(var i = 0; i &lt; els.length; i++) {
+			if(els[i].getElementsByTagName(&quot;ul&quot;).length&gt;0){
+				var link = findRelated(els[i].firstChild,&quot;A&quot;,&quot;tagName&quot;,&quot;nextSibling&quot;);
+				if(!link){
+					var ih = els[i].firstChild.data;
+					els[i].removeChild(els[i].firstChild);
+					var d = createTiddlyElement(null,&quot;a&quot;,null,null,ih+this.dropdownchar,{href:&quot;javascript:;&quot;});
+					els[i].insertBefore(d,els[i].firstChild);
+				}
+				else{
+					link.firstChild.data = link.firstChild.data + this.dropdownchar;
+					removeClass(link,&quot;tiddlyLinkNonExisting&quot;);
+				}
+			}
+			els[i].onmouseover = function() {
+				addClass(this, &quot;sfhover&quot;);
+			};
+			els[i].onmouseout = function() {
+				removeClass(this, &quot;sfhover&quot;);
+			};
+		}
+	}	
+};
+
+config.shadowTiddlers[&quot;StyleSheetDropDownMenuPlugin&quot;] = 
+	 &quot;/*{{{*/\n&quot;+
+	 &quot;/***** LAYOUT STYLES -  DO NOT EDIT! *****/\n&quot;+
+	 &quot;ul.suckerfish, ul.suckerfish ul {\n&quot;+
+	 &quot;	margin: 0;\n&quot;+
+	 &quot;	padding: 0;\n&quot;+
+	 &quot;	list-style: none;\n&quot;+
+	 &quot;	line-height:1.4em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish  li {\n&quot;+
+	 &quot;	display: inline-block; \n&quot;+
+	 &quot;	display: block;\n&quot;+
+	 &quot;	float: left; \n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish li ul {\n&quot;+
+	 &quot;	position: absolute;\n&quot;+
+	 &quot;	left: -999em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish li:hover ul, ul.suckerfish li.sfhover ul {\n&quot;+
+	 &quot;	left: auto;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish ul li {\n&quot;+
+	 &quot;	float: none;\n&quot;+
+	 &quot;	border-right: 0;\n&quot;+
+	 &quot;	border-left:0;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish a, ul.suckerfish a:hover {\n&quot;+
+	 &quot;	display: block;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish li a.tiddlyLink, ul.suckerfish li a, #mainMenu ul.suckerfish li a {font-weight:bold;}\n&quot;+
+	 &quot;/**** END LAYOUT STYLES *****/\n&quot;+
+	 &quot;\n\n&quot;+
+	 &quot;/**** COLORS AND APPEARANCE - DEFAULT *****/\n&quot;+
+	 &quot;ul.suckerfish li a {\n&quot;+
+	 &quot;	padding: 0.5em 1.5em;\n&quot;+
+	 &quot;	color: #FFF;\n&quot;+
+	 &quot;	background: #0066aa;\n&quot;+
+	 &quot;	border-bottom: 0;\n&quot;+
+	 &quot;	font-weight:bold;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish li:hover a, ul.suckerfish li.sfhover a{\n&quot;+
+	 &quot;	background: #00558F;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish li:hover ul a, ul.suckerfish li.sfhover ul a{\n&quot;+
+	 &quot;	color: #000;\n&quot;+
+	 &quot;	background: #eff3fa;\n&quot;+
+	 &quot;	border-top:1px solid #FFF;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish ul li a:hover {\n&quot;+
+	 &quot;	background: #e0e8f5;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish li a{\n&quot;+
+	 &quot;	width:9em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish ul li a, ul.suckerfish ul li a:hover{\n&quot;+
+	 &quot;	display:inline-block;\n&quot;+
+	 &quot;	width:9em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish li {\n&quot;+
+	 &quot;	border-left: 1px solid #00558F;\n&quot;+
+	 &quot;}\n&quot;+
+	 &quot;/***** END COLORS AND APPEARANCE - DEFAULT *****/\n&quot;+
+	 &quot;\n\n&quot;+
+	 &quot;/***** LAYOUT AND APPEARANCE: VERTICAL *****/\n&quot;+
+	 &quot;ul.suckerfish.vertical li{\n&quot;+
+	 &quot;	width:10em;\n&quot;+
+	 &quot;	border-left: 0px solid #00558f;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical ul li, ul.suckerfish.vertical li a, ul.suckerfish.vertical li:hover a, ul.suckerfish.vertical li.sfhover a {\n&quot;+
+	 &quot;	border-left: 0.8em solid #00558f;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical li a, ul.suckerfish.vertical li:hover a, ul.suckerfish.vertical li.sfhover a,  ul.suckerfish.vertical li.sfhover a:hover{\n&quot;+
+	 &quot;	width:8em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical {\n&quot;+
+	 &quot;	width:10em; text-align:left;\n&quot;+
+	 &quot;	float:left;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical li a {\n&quot;+
+	 &quot;	padding: 0.5em 1em 0.5em 1em;\n&quot;+
+	 &quot;	border-top:1px solid  #fff;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical, ul.suckerfish.vertical ul {\n&quot;+
+	 &quot;	line-height:1.4em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical li:hover ul, ul.suckerfish.vertical li.sfhover ul { \n&quot;+
+	 &quot;	margin: -2.4em 0 0 10.9em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical li:hover ul li a, ul.suckerfish.vertical li.sfhover ul li a {\n&quot;+
+	 &quot;	border: 0px solid #FFF;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical li:hover a, ul.suckerfish.vertical li.sfhover a{\n&quot;+
+	 &quot;	padding-right:1.1em;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;ul.suckerfish.vertical li:hover ul li, ul.suckerfish.vertical li.sfhover ul li {\n&quot;+
+	 &quot;	border-bottom:1px solid  #fff;\n&quot;+
+	 &quot;}\n\n&quot;+
+	 &quot;/***** END LAYOUT AND APPEARANCE: VERTICAL *****/\n&quot;+
+	 &quot;/*}}}*/&quot;;
+store.addNotification(&quot;StyleSheetDropDownMenuPlugin&quot;,refreshStyles);
+//!END-PLUGIN-CODE
+// %/
+</pre>
+</div>
 <div title="FeaturedTable" modifier="loic" modified="200805132116" created="200805132320" tags="toRSS" changecount="1">
 <pre>&lt;&lt;jpokerFeaturedTable&gt;&gt;</pre>
 </div>
 <div title="Footer" modifier="Saq" modified="200805291253" created="200709022008" tags="SuperCookerTheme" changecount="5">
 <pre>[[PokerSource.eu|http://pokersource.eu/]] &amp;#169; 2008 [[Loic Dachary|mailto:loic@dachary.org]], [[Johan Euphrosine|mailto:proppy@aminche.com]], [[released under GNU GPLv3+|Copyright]]</pre>
+</div>
+<div title="FullScreenPlugin" modifier="saqimtiaz" modified="200809212334" created="200809052156" tags="excludeLists excludeSearch systemConfig">
+<pre>/***
+!!custom version for jpoker
+
+|Name|FullScreenPlugin|
+|Created by|SaqImtiaz|
+|Location|http://tw.lewcid.org/#FullScreenPlugin|
+|Version|1.1|
+|Requires|~TW2.x|
+!Description:
+Toggle between viewing tiddlers fullscreen and normally. Very handy for when you need more viewing space.
+
+!Demo:
+Click the ↕ button in the toolbar for this tiddler. Click it again to turn off fullscreen.
+
+!Installation:
+Copy the contents of this tiddler to your TW, tag with systemConfig, save and reload your TW.
+Edit the ViewTemplate to add the fullscreen command to the toolbar.
+
+!History:
+*25-07-06: ver 1.1
+*20-07-06: ver 1.0
+
+!Code
+***/
+//{{{
+var lewcidFullScreen = false;
+
+config.commands.fullscreen =
+{
+            text:&quot; ↕ &quot;,
+            tooltip:&quot;Fullscreen mode&quot;
+};
+
+config.commands.fullscreen.handler = function (event,src,title)
+{
+            if (lewcidFullScreen == false)
+               {
+                lewcidFullScreen = true;
+                setStylesheet('#sidebar, #header, #stickyfooter,#push, #mainMenu{display:none;} #displayArea{margin:0em 0 0 0 !important;}',&quot;lewcidFullScreenStyle&quot;);
+               }
+            else
+               {
+                lewcidFullScreen = false;
+                setStylesheet(' ',&quot;lewcidFullScreenStyle&quot;);
+               }
+}
+
+config.macros.fullscreen={};
+config.macros.fullscreen.handler =  function(place,macroName,params,wikifier,paramString,tiddler)
+{
+        var label = params[0]||&quot; ↕ &quot;;
+        var tooltip = params[1]||&quot;Fullscreen mode&quot;;
+        createTiddlyButton(place,label,tooltip,config.commands.fullscreen.handler);
+}
+
+var lewcid_fullscreen_closeTiddler = Story.prototype.closeTiddler;
+Story.prototype.closeTiddler =function(title,animate,slowly)
+{
+           lewcid_fullscreen_closeTiddler.apply(this,arguments);
+           if (story.isEmpty() &amp;&amp; lewcidFullScreen == true)
+              config.commands.fullscreen.handler();
+}
+
+
+Slider.prototype.lewcidStop = Slider.prototype.stop;
+Slider.prototype.stop = function()
+{
+           this.lewcidStop();
+           if (story.isEmpty() &amp;&amp; lewcidFullScreen == true)
+              config.commands.fullscreen.handler();
+}
+//}}}
+</pre>
 </div>
 <div title="GenerateRssByTagPlugin" modifier="BidiX" modified="200805291253" created="200703052156" tags="admin NewsWiki systemConfig" server.host="http://TiddlyHome.bidix.info/systemServer/NewsWiki.html" server.page.revision="200705281308" server.type="file">
 <pre>/***
@@ -1217,6 +1470,10 @@ config.macros.jpokerTourneyPlaceholder = {
 //!END-PLUGIN-CODE
 // %/</pre>
 </div>
+<div title="JpokerPluginRestOverride" modifier="saq" modified="200809261710" created="200804051018" tags="systemConfig">
+<pre>config.jpoker.restURL = 'http://jspoker.pokersource.info/POKER_REST';
+</pre>
+</div>
 <div title="LegacyStrikeThroughPlugin" modifier="MartinBudden" created="200607210000" tags="systemConfig">
 <pre>/***
 |''Name:''|LegacyStrikeThroughPlugin|
@@ -1249,8 +1506,18 @@ config.formatters.push(
 <div title="Login" modifier="Saq" modified="200804052207" created="200709031339" tags="SuperCookerTheme" changecount="6">
 <pre>&lt;&lt;jpokerLogin&gt;&gt;</pre>
 </div>
-<div title="MainMenu" modifier="YourName" modified="200809080901" created="200709022346" changecount="3">
-<pre>[[Tables]] [[RegularTourneys]] [[SitngoTourneys]] [[UserInfo]] [[Places]] [[PlayerLookup]] [[Cashier]] [[Feedback|http://jspoker.pokersource.info/ideas.html]] [[Copyright]]</pre>
+<div title="MainMenu" modifier="YourName" modified="200809212334" created="200709022346" changecount="3">
+<pre>*[[Tables]]
+**[[RegularTourneys]]
+**[[SitngoTourneys]]
+*[[UserInfo]]
+**[[Places]]
+**[[PlayerLookup]]
+**[[Cashier]]
+*[[Feedback|http://jspoker.pokersource.info/ideas.html]]
+*[[Copyright]]
+&lt;&lt;dropMenu&gt;&gt;&lt;html&gt;&lt;div style=&quot;clear:both;&quot;&gt;&lt;/div&gt;&lt;/html&gt;
+</pre>
 </div>
 <div title="MarkupPostBody" modifier="loic" modified="200809080901" created="200803312321" changecount="1">
 <pre>&lt;!--{{{--&gt;
@@ -1281,14 +1548,16 @@ config.formatters.push(
 &lt;!--}}}--&gt;
 </pre>
 </div>
-<div title="PageTemplate" modifier="YourName" modified="200804052145" created="200709031403" tags="SuperCookerTheme" changecount="5">
+<div title="PageTemplate" modifier="YourName" modified="200809212334" created="200709031403" tags="SuperCookerTheme" changecount="5">
 <pre>&lt;!--{{{--&gt;
 &lt;div id=&quot;stickybod&quot;&gt;
 	&lt;div id=&quot;header&quot;&gt;
 		&lt;div id=&quot;pokLogin&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;Login&quot;&gt;&lt;/div&gt;
 		&lt;div id=&quot;headerTitle&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;SiteTitle&quot;&gt;&lt;/div&gt;
                 &lt;div id=&quot;lang&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;lang&quot;&gt;&lt;/div&gt;
+&lt;!--
 	&lt;div id=&quot;headerImage&quot;&gt;&lt;/div&gt;
+--&gt;
 	&lt;div id=&quot;menu&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;MainMenu&quot;&gt;&lt;/div&gt;
 	&lt;/div&gt;
 	&lt;div id=&quot;myDisplayArea&quot;&gt;
@@ -1322,11 +1591,12 @@ config.formatters.push(
 |~SinglePageMode:|true|
 |showBackstage:|false|</pre>
 </div>
-<div title="PublicViewTemplate" modifier="Saq" modified="200805291253" created="200709031403" tags="SuperCookerTheme" changecount="2">
+<div title="PublicViewTemplate" modifier="Saq" modified="200809212334" created="200709031403" tags="SuperCookerTheme" changecount="2">
 <pre>&lt;!--{{{--&gt;
-&lt;div class='title' macro='view title'&gt;&lt;/div&gt;
+&lt;div class='title' macro='view title'&gt;&lt;span macro=&quot;fullscreen&quot;&gt;&lt;/span&gt;&lt;/div&gt;
 &lt;div class='viewer' macro='view text wikified'&gt;&lt;/div&gt;
-&lt;!--}}}--&gt;</pre>
+&lt;!--}}}--&gt;
+</pre>
 </div>
 <div title="PublisherGroupsConfig" modifier="Saq" modified="200805291253" created="200708091014" tags="WebsitePluginPackage">
 <pre>|!Name|!ReadOnly|!Backstage|!SPM|
@@ -1749,7 +2019,7 @@ window.updateMarkupBlock = function (s,blockName,tiddlerName)
 //!END-PLUGIN-CODE
 // %/</pre>
 </div>
-<div title="StyleSheet" modifier="YourName" modified="200805291253" created="200709022008" tags="SuperCookerTheme" changecount="154">
+<div title="StyleSheet" modifier="YourName" modified="200809212334" created="200709022008" tags="SuperCookerTheme" changecount="154">
 <pre>/*{{{*/
 html, * {
 	margin:0pt;
@@ -1810,6 +2080,7 @@ body #contentWrapper {
 #menu {
 	background:[[ColorPalette::PrimaryMid]];
 	padding: 9px;
+	clear:both
 }
 
 #stickybod{
@@ -1877,7 +2148,7 @@ body #contentWrapper {
 }
 
 .shadow .title {
-	color:[[ColorPalette::TertiaryMid]];
+	color:#17691C;
 }
 
 .subtitle {
@@ -2035,7 +2306,46 @@ td.login_input input {
 #contentWrapper .viewer .jpoker_ptable table.jpokerTableList {
 	margin: 0.5em auto;
 }
-/*}}}*/</pre>
+
+#contentWrapper .viewer .jpoker_table .jpoker_ptable{
+	margin: 0em auto;
+}
+
+.title .button, .title .button:hover {padding:0; background:transparent; border:none;}
+
+#menu {padding:0;}
+
+ul.suckerfish li ul {z-index:999;}
+/*}}}*/
+
+
+/**** COLORS AND APPEARANCE - DEFAULT *****/
+#menu ul.suckerfish li a {
+	padding: 0.5em 1.5em;
+	color: #FFF;
+	background: #009E03;
+	border-bottom: 0;
+	font-weight:bold;
+}
+
+#menu ul.suckerfish li:hover a, #menu ul.suckerfish li.sfhover a{
+	background: #17691C;
+}
+
+#menu ul.suckerfish li:hover ul a, #menu ul.suckerfish li.sfhover ul a{
+	color: #000;
+	background: #eff3fa;
+	border-top:1px solid #FFF;
+}
+
+#menu ul.suckerfish ul li a:hover {
+	background: #e0e8f5;
+}
+
+#menu ul.suckerfish li {
+	border-left: 1px solid #17691C;
+}
+</pre>
 </div>
 <div title="SuperCookerTheme" modifier="Saq" modified="200805291253" created="200708071133" changecount="1">
 <pre>Theme by [[Saq 'Lewcid' Imtiaz|http://tw.lewcid.org]]
@@ -2080,16 +2390,17 @@ window.getTiddlyLinkInfo = function(title,currClasses)
 <div title="UserInfo" modifier="proppy" modified="200807231540" created="200807211725" tags="toRSS" changecount="1">
 <pre>&lt;&lt;jpokerUserInfo&gt;&gt;</pre>
 </div>
-<div title="ViewTemplate" modifier="Saq" modified="200805291253" created="200709030908" tags="SuperCookerTheme" changecount="2">
+<div title="ViewTemplate" modifier="Saq" modified="200809212334" created="200709030908" tags="SuperCookerTheme" changecount="2">
 <pre>&lt;!--{{{--&gt;
 &lt;div class='toolbar' macro='toolbar closeTiddler closeOthers +editTiddler &gt; permalink references jump'&gt;&lt;/div&gt;
-&lt;div class='title' macro='view title'&gt;&lt;/div&gt;
+&lt;div class='title' macro='view title'&gt;&lt;span macro=&quot;fullscreen&quot;&gt;&lt;/span&gt;&lt;/div&gt;
 &lt;div class='subtitle'&gt;by &lt;span macro='view modifier link'&gt;&lt;/span&gt;, &lt;span macro='view modified date'&gt;&lt;/span&gt;&lt;/div&gt;
 &lt;div class='tagged' macro='tags'&gt;&lt;/div&gt;
 &lt;div class='viewer' macro='view text wikified'&gt;&lt;/div&gt;
 &lt;div class='tagging' macro='tagging'&gt;Related: &lt;/div&gt;
 &lt;div class='tagClear'&gt;&lt;/div&gt;
-&lt;!--}}}--&gt;</pre>
+&lt;!--}}}--&gt;
+</pre>
 </div>
 <div title="WebDavPlugin" modifier="YourName" modified="200805291253" created="200711171415" tags="systemConfig" changecount="3">
 <pre>/***
