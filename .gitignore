@@ -176,6 +176,7 @@ poker-network/tests/test-string.py
 poker-network/tests/test-svg2gtk.py
 poker-network/tests/test-upgrade.py
 poker-network/tests/test-userstats.py
+poker-network/tests/test-tourneyattrs.py
 poker-network/tests/test-webservice.py
 poker-network/tests/test-attrpack.py
 poker-network/tests/testbirthday.php
