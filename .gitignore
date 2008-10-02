@@ -147,6 +147,7 @@ poker-network/tests/test-javascript.py
 poker-network/tests/test-packets.py
 poker-network/tests/test-poker2d.py
 poker-network/tests/test-pokerauth.py
+poker-network/tests/test-user.py
 poker-network/tests/test-pokeravatar.py
 poker-network/tests/test-pokerbotlogic.py
 poker-network/tests/test-pokercashier.py
