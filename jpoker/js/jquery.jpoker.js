@@ -1535,6 +1535,7 @@
                     server.setState(server.RUNNING, 'PacketPokerStreamMode');
                     break;
 
+                case 'PacketPokerTableMove':
                 case 'PacketPokerTableDestroy':
                     table.uninit();
                     delete server.tables[game_id];
@@ -2117,8 +2118,8 @@
         footer : '</tbody></table>',
 	link: '<a href=\'{link}\'>{name}</a>',
 	pager: '<div class=\'pager\'><input class=\'pagesize\' value=\'10\'></input><ul class=\'pagelinks\'></ul></div>',
-	next_label: '{next_label} >>>',
-	previous_label: '<<< {previous_label}'
+	next_label: '>>>',
+	previous_label: '<<<'
     };
 
     //
@@ -2439,15 +2440,13 @@
         var t = this.templates;
         var html = [];
 
-	html.push(t.info.supplant({
-		        'registered' : _("{registered} players registered."),
-			'players_quota' : _("{players_quota} players max.")
-			    }).supplant(packet.tourney));
+	html.push(t.tname.supplant(packet.tourney));
 	
 	var player_state_template = t.players[packet.tourney.state];
 	if (player_state_template) {
 	    html.push(t.players.header);
 	    html.push(player_state_template.header.supplant({
+                        'caption': _("Players"),
 			'name': _("Name"),
 			'money': _("Money"),
 			'rank' : _("Rank")
@@ -2467,6 +2466,11 @@
 	    html.push(t.players.footer);
 	}
 	
+	html.push(t.info.supplant({
+	        'registered' : _("{registered} players registered."),
+			'players_quota' : _("{players_quota} players max.")
+                       }).supplant(packet.tourney));
+	
 	if (packet.tourney.state == "registering") {	    
 	    if (logged) {
 		if (registered) {
@@ -2479,6 +2483,7 @@
 
 	if (packet.tourney.state == "running" || packet.tourney.state == "complete") {
 	    html.push(t.prizes.header.supplant({
+                        'caption': _("Prizes"),
 			'rank': _("Rank"),
 			'prize': _("Prize")
 		    }));
@@ -2494,6 +2499,7 @@
 	}
 	if (packet.tourney.state == "running") {
 	    html.push(t.tables.header.supplant({
+                        'caption': _("Tables"),
 			'table': _("Table"),
 			'players': _("Players"),
 			'max_money': _("Max money"),
@@ -2534,6 +2540,7 @@
         var t = this.templates;
         var html = [];
 	html.push(t.table_players.header.supplant({
+                        caption: _("Table"),
 		        player: _("Player"),
 			money: _("Money")
 			}));
@@ -2547,43 +2554,44 @@
     };
 
     jpoker.plugins.tourneyDetails.templates = {
-	info: '<div class=\'jpoker_tourney_details_info\'><div class=\'jpoker_tourney_details_info_description\'>{description_long}</div><div class=\'jpoker_tourney_details_info_registered\'>{registered}</div><div class=\'jpoker_tourney_details_info_players_quota\'>{players_quota}</div></div>',
+    tname: '<div class=\'jpoker_tourney_name\'>{name}</div>',
+	info: '<div class=\'jpoker_tourney_details_info jpoker_tourney_details_{state}\'><div class=\'jpoker_tourney_details_info_description\'>{description_long}</div><div class=\'jpoker_tourney_details_info_registered\'>{registered}</div><div class=\'jpoker_tourney_details_info_players_quota\'>{players_quota}</div></div>',
 	players : {
 	    registering : {
-		header : '<table><thead><tr><th>{name}</th></tr></thead><tbody>',
+		header : '<table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th>{caption}</th></tr><tr><th>{name}</th></tr></thead><tbody>',
 		rows : '<tr><td>{name}</td></tr>',
 		footer : '</tbody></table>'
 	    },
 	    running : {
-		header : '<table><thead><tr><th>{name}</th><th>{money}</th><th>{rank}</th></tr></thead><tbody>',
+		header : '<table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'3\'>{caption}</th></tr><tr><th>{name}</th><th>{money}</th><th>{rank}</th></tr></thead><tbody>',
 		rows : '<tr><td>{name}</td><td>{money}</td><td>{rank}</td></tr>',
 		footer : '</tbody></table>'
 	    },
 	    complete : {
-		header : '<table><thead><tr><th>{name}</th><th>{rank}</th></tr></thead><tbody>',
+		header : '<table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'2\'>{caption}</th></tr><tr><th>{name}</th><th>{rank}</th></tr></thead><tbody>',
 		rows : '<tr><td>{name}</td><td>{rank}</td></tr>',
 		footer : '</tbody></table>'
 	    },
 	    header: '<div class=\'jpoker_tourney_details_players\'>',
 	    pager: '<div class=\'pager\'><input class=\'pagesize\' value=\'10\'></input><ul class=\'pagelinks\'></ul></div>',
-	    next_label: '{next_label} >>>',
-	    previous_label: '<<< {previous_label}',
+	    next_label: '>>',
+	    previous_label: '<<',
 	    footer: '</div>'
 	},
 	tables : {
-	    header : '<div class=\'jpoker_tourney_details_tables\'><table><thead><tr><th>{table}</th><th>{players}</th><th>{max_money}</th><th>{min_money}</th><th>{goto_table}</th></tr></thead><tbody>',
+	    header : '<div class=\'jpoker_tourney_details_tables\'><table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'5\'>{caption}</th></tr><tr><th>{table}</th><th>{players}</th><th>{max_money}</th><th>{min_money}</th><th>{goto_table}</th></tr></thead><tbody>',
 	    rows : '<tr id=\'{id}\' class=\'jpoker_tourney_details_table\' title=\'' + _("Click to show table details") + '\'><td>{table}</td><td>{players}</td><td>{max_money}</td><td>{min_money}</td><td>{goto_table}</td></tr>',
 	    footer : '</tbody></table></div>',
 	    goto_table_button: '<input class=\'jpoker_tourney_details_tables_goto_table\' type=\'submit\' value=\'{goto_table_label}\'></input>',
 	    goto_table_link: '<a class=\'jpoker_tourney_details_tables_goto_table\' href=\'{link}\'>{goto_table_label}</a>'
 	},
 	table_players : {
-	    header : '<div class=\'jpoker_tourney_details_table_players\'><table><thead><tr><th>{player}</th><th>{money}</th></tr></thead><tbody>',
+	    header : '<div class=\'jpoker_tourney_details_table_players\'><table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'2\'>{caption}</th></tr><tr><th>{player}</th><th>{money}</th></tr></thead><tbody>',
 	    rows : '<tr><td>{name}</td><td>{money}</td></tr>',
 	    footer : '</tbody></table></div>'
 	},
 	prizes : {
-	    header : '<div class=\'jpoker_tourney_details_prizes\'><table><thead><tr><th>{rank}</th><th>{prize}</th></tr></thead><tbody>',
+	    header : '<div class=\'jpoker_tourney_details_prizes\'><table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'2\'>{caption}</th></tr><tr><th>{rank}</th><th>{prize}</th></tr></thead><tbody>',
 	    rows : '<tr><td>{rank}</td><td>{prize}</td></tr>',
 	    footer : '</tbody></table></div>'
 	},
