@@ -1881,8 +1881,8 @@ config.macros.jpokerTourneyPlaceholder = {
 //!END-PLUGIN-CODE
 // %/</pre>
 </div>
-<div title="JpokerPluginRestOverride" modifier="saq" modified="200809261710" created="200804051018" tags="systemConfig">
-<pre>config.jpoker.restURL = 'http://jspoker.pokersource.info/POKER_REST';
+<div title="JpokerPluginRestOverride" modifier="saq" modified="200810100853" created="200804051018" tags="systemConfig">
+<pre>//config.jpoker.restURL = 'http://jspoker.pokersource.info/POKER_REST';
 </pre>
 </div>
 <div title="LegacyStrikeThroughPlugin" modifier="MartinBudden" created="200607210000" tags="systemConfig">
@@ -2430,7 +2430,7 @@ window.updateMarkupBlock = function (s,blockName,tiddlerName)
 //!END-PLUGIN-CODE
 // %/</pre>
 </div>
-<div title="StyleSheet" modifier="YourName" modified="200809212334" created="200709022008" tags="SuperCookerTheme" changecount="154">
+<div title="StyleSheet" modifier="YourName" modified="200810070916" created="200709022008" tags="SuperCookerTheme" changecount="154">
 <pre>/*{{{*/
 html, * {
 	margin:0pt;
@@ -2463,9 +2463,11 @@ body #contentWrapper {
 
 #pokLogin {
 	float:right;
+/*
 	padding:10px;
 	background:[[ColorPalette::TertiaryPale]];
 	border: 1px solid [[ColorPalette::TertiaryLight]];
+*/
 }
 
 #headerTitle{
@@ -2651,6 +2653,7 @@ h2,h3 {
       border-bottom:1px solid [[ColorPalette::PrimaryMid]];
 }
 
+/*
 .viewer table, table.twtable {
 	border:2px solid [[ColorPalette::PrimaryDark]];
 }
@@ -2662,6 +2665,7 @@ h2,h3 {
 .viewer td, .viewer tr, .twtable td, .twtable tr {
 	border:1px solid [[ColorPalette::PrimaryDark]];
 }
+*/
 
 .viewer .tab {
 	padding:1px;
@@ -2693,6 +2697,7 @@ h2,h3 {
 	width:13.5em;
 }
 
+/*
 td.login_text{
 	padding:5px 5px;
 	text-align:left;
@@ -2709,11 +2714,13 @@ td.login_input input {
 	font-size:15px;
 	padding:8px;
 }
+*/
 
 .editor input, .editor textarea {
 	width:99%;
 }
 
+/*
 #contentWrapper .viewer .jpoker_ptable table.jpokerTableList {
 	margin: 0.5em auto;
 }
@@ -2721,6 +2728,7 @@ td.login_input input {
 #contentWrapper .viewer .jpoker_table .jpoker_ptable{
 	margin: 0em auto;
 }
+*/
 
 .title .button, .title .button:hover {padding:0; background:transparent; border:none;}
 
@@ -2755,6 +2763,20 @@ ul.suckerfish li ul {z-index:999;}
 
 #menu ul.suckerfish li {
 	border-left: 1px solid #17691C;
+}
+
+
+/*
+Jpoker overrides below here
+*/
+
+.viewer .jpoker_tourney_details table, .jpoker_tourney_details table.twtable,
+.viewer .jpoker_tourney_details table th, .jpoker_tourney_details table.twtable th,
+.viewer .jpoker_tourney_details table thead td, .jpoker_tourney_details table.twtable thead td {
+	border:none;
+}
+.viewer .jpoker_tourney_details table, .jpoker_tourney_details table.twtable {
+	margin:0;
 }
 </pre>
 </div>

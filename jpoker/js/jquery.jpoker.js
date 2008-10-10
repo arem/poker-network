@@ -51,24 +51,46 @@
 
         doReconnect: true,
 
+        msie_compatibility: function() {
+            /* 
+             *  On IE, the widget container width and height needs to be set explicitly
+             *  if the widget width/height is being set as 'none'
+             */
+            this.dialog_options.containerWidth = '300px';
+            this.dialog_options.containerHeight = '200px';
+
+            this.plugins.playerSelf.rebuy_options.containerWidth = '300px';
+            this.plugins.playerSelf.rebuy_options.containerHeight = '200px';
+
+            this.copyright_options.containerWidth = '400px';
+            this.copyright_options.containerHeight = '300px';
+        },
+
+        other_compatibility: function() {
+            /* 
+             *  On IE, the widget container width and height needs to be set explicitly
+             *  if the widget width/height is being set as 'none'
+             */
+            this.dialog_options.containerWidth = '100%';
+            this.dialog_options.containerHeight = '100%';
+
+            this.plugins.playerSelf.rebuy_options.containerWidth = '100%';
+            this.plugins.playerSelf.rebuy_options.containerHeight = '100%';
+
+            this.copyright_options.containerWidth = '100%';
+            this.copyright_options.containerHeight = '100%';
+        },
+
         copyrightTimeout: 5000,
 
-        copyright: function() {
-            var options = { width: 'none', height: 'none' };
-	    if($.browser.msie) {
-		/* 
-                 *  On IE, the widget container width and height needs to be set explicitly
-                 *  if the widget width/height is being set as 'none'
-                 */
-		options.containerWidth = '400px';
-		options.containerHeight = '300px';
-	    }
+        copyright_options: { width: 'none', height: 'none' },
 
+        copyright: function() {
             /*
              * On IE7, css('margin') returns 'auto' instead of the actual margin value unless
 	     * the  margin is set explicitly. This causes ui.dialog to throw exceptions.
              */
-            var copyright = $('<div style=\'margin:0px\'><div id=\'jpoker_copyright\'><div class=\'jpoker_copyright_image\'></div><div class=\'jpoker_software\'>jpoker-' + this.VERSION + '</div><div class=\'jpoker_authors\'><div><span>Copyright 2008 </span><a href=\'mailto:loic@dachary.org\'>Loic Dachary</a></div><div><span class=\'jpoker_click\'>Copyright 2008 </span><a href=\'mailto:proppy@aminche.com\'>Johan Euphrosine</a></div></div><div class=\'jpoker_explain\'>jpoker runs on this web browser and is Free Software. You may use jpoker to run a business without asking the authors permissions. You may give a copy to your friends. However, the authors do not want jpoker to be used with proprietary software.</div><div class=\'jpoker_license\'>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\'http://www.fsf.org/licensing/licenses/gpl.txt\'>GNU General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</div> <div class=\'jpoker_full_copyright\'>Read the full <a href=\'http://jspoker.pokersource.info/jpoker/#Copyright\'>copyright information page.</a></div><div class=\'jpoker_download\'>Download <a href=\'http://upstream.jspoker.pokersource.info/file/tip/jpoker/js/jquery.jpoker.js\'>jpoker sources.</a></div><div class=\'jpoker_dismiss\'><a href=\'javascript://\'>Dismiss</a></div></div></div>').dialog(options); 
+            var copyright = $('<div style=\'margin:0px\'><div id=\'jpoker_copyright\'><div class=\'jpoker_copyright_image\'></div><div class=\'jpoker_software\'>jpoker-' + this.VERSION + '</div><div class=\'jpoker_authors\'><div><span>Copyright 2008 </span><a href=\'mailto:loic@dachary.org\'>Loic Dachary</a></div><div><span class=\'jpoker_click\'>Copyright 2008 </span><a href=\'mailto:proppy@aminche.com\'>Johan Euphrosine</a></div></div><div class=\'jpoker_explain\'>jpoker runs on this web browser and is Free Software. You may use jpoker to run a business without asking the authors permissions. You may give a copy to your friends. However, the authors do not want jpoker to be used with proprietary software.</div><div class=\'jpoker_license\'>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\'http://www.fsf.org/licensing/licenses/gpl.txt\'>GNU General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</div> <div class=\'jpoker_full_copyright\'>Read the full <a href=\'http://jspoker.pokersource.info/jpoker/#Copyright\'>copyright information page.</a></div><div class=\'jpoker_download\'>Download <a href=\'http://upstream.jspoker.pokersource.info/file/tip/jpoker/js/jquery.jpoker.js\'>jpoker sources.</a></div><div class=\'jpoker_dismiss\'><a href=\'javascript://\'>Dismiss</a></div></div></div>').dialog(this.copyright_options); 
             $('.jpoker_download', copyright).frame('box1');
             $('.ui-dialog-titlebar', copyright.parents('.ui-dialog-container')).hide();
             var close = function() { copyright.dialog('destroy'); };
@@ -99,17 +121,14 @@
             if(window.console) { window.console.log(str); }
         },
 
+        dialog_options: { width: 'none', height: 'none', autoOpen: false, dialog: true },
+
         dialog: function(content) {
             var message = $('#jpokerDialog');
             if(message.size() != 1) {
                 $('body').append('<div id=\'jpokerDialog\' class=\'jpoker_jquery_ui\' title=\'jpoker message\' />');
                 message = $('#jpokerDialog');
-                var options = { width: 'none', height: 'none', autoOpen: false, dialog: true };
-                if($.browser.msie) {
-                    options.containerWidth = '300px';
-                    options.containerHeight = '200px';
-                }
-                message.dialog(options);
+                message.dialog(this.dialog_options);
             }
             message.html(content).dialog('open');
         },
@@ -194,6 +213,9 @@
     };
 
     var jpoker = $.jpoker;
+
+    if($.browser.msie) { jpoker.msie_compatibility(); } // no coverage
+
 
     //--
     //-- Crypto functions and associated conversion routines
@@ -939,7 +961,9 @@
                     server.tables[packet.id].reinit(packet);
                 } else {
                     var table = new jpoker.table(server, packet);
-		    table.poll();
+                    if(!table.tourney_serial) {
+                        table.poll();
+                    }
 		    server.tables[packet.id] = table;
                     server.notifyUpdate(packet);
                 }
@@ -1331,28 +1355,32 @@
 
 	    setPersonalInfo : function(info) {
 		this.queueRunning(function(server) {
-			server.setState(server.PERSONAL_INFO);
-			var personalInfoDefaults = {
-			  'type' : 'PacketPokerSetAccount',
-			  'serial': server.serial,
-			  'name': server.userInfo.name,
-			  'password': ''
-			};
-			server.sendPacket($.extend(personalInfoDefaults, info));
-			server.registerHandler(0, function(server, unused_game_id, packet) {
-				if (packet.type == 'PacketPokerPersonalInfo') {
-				    packet.set_account = true;
-				    server.notifyUpdate(packet);
-				    server.setState(server.RUNNING, 'PacketPokerPersonalInfo');
-				    return false;
-				}
-				else if (packet.type == 'PacketError') {
-				    jpoker.dialog(packet.message);
-				    server.notifyUpdate(packet);
-				    server.setState(server.RUNNING, 'PacketError');
-				}
-				return true;
-			    });
+			if (info.password != info.password_confirmation) {
+			    jpoker.dialog(_("Password confirmation does not match"));
+			} else {
+			    server.setState(server.PERSONAL_INFO);
+			    var personalInfoDefaults = {
+				'type' : 'PacketPokerSetAccount',
+				'serial': server.serial,
+				'name': server.userInfo.name,
+				'password': ''
+			    };
+			    server.sendPacket($.extend(personalInfoDefaults, info));
+			    server.registerHandler(0, function(server, unused_game_id, packet) {
+				    if (packet.type == 'PacketPokerPersonalInfo') {
+					packet.set_account = true;
+					server.notifyUpdate(packet);
+					server.setState(server.RUNNING, 'PacketPokerPersonalInfo');
+					return false;
+				    }
+				    else if (packet.type == 'PacketError') {
+					jpoker.dialog(packet.message);
+					server.notifyUpdate(packet);
+					server.setState(server.RUNNING, 'PacketError');
+				    }
+				    return true;
+				});
+			}
 		    });
 	    },
 
@@ -1690,7 +1718,7 @@
         this.url = server.url;
         this.init();
         server.registerHandler(game_id, this.handler);
-	server.registerHandler(0, this.handler0);
+	server.registerHandler(0, this.handler);
     };
 
     jpoker.tourney.defaults = {
@@ -1731,48 +1759,34 @@
                 if(jpoker.verbose > 0) {
                     jpoker.message('tourney.handler ' + JSON.stringify(packet));
                 }
-                
-                tourney = server.tourneys[packet.game_id];
+
+                tourney_serial = packet.tourney_serial
+                tourney = server.tourneys[tourney_serial];
                 if(!tourney) {
-                    jpoker.message('unknown tourney ' + packet.game_id);
+                    tourney_serial = packet.game_id
+                    tourney = server.tourneys[tourney_serial];
+                }
+                if(!tourney) {
+                    // packets unrelated to an existing tourney are silently discarded
+                    if(jpoker.verbose > 1) {
+                        jpoker.message('tourney.handler: packet discarded');
+                    }
                     return true;
                 }
                 var url = server.url;
-                var serial = packet.serial;
 
                 switch(packet.type) {
 
+                case 'PacketPokerTourneyFinish':
                 case 'PacketPokerTourneyUnregister':
                      tourney.uninit();
-                     delete server.tourneys[game_id];
-                     break;
-		}
-		
-		return true;
-	    },
-	    
-	    handler0: function(server, game_id, packet) {
-                if(jpoker.verbose > 0) {
-                    jpoker.message('tourney.handler ' + JSON.stringify(packet));
-                }
-                
-                tourney = server.tourneys[packet.tourney_serial];
-                if(!tourney) {
-                    jpoker.message('unknown tourney ' + packet.tourney_serial);
-                    return true;
-                }
-                var url = server.url;
-
-                switch(packet.type) {
-
-                case 'PacketPokerTable':
-                     tourney.uninit();
-                     delete server.tourneys[packet.tourney_serial];
+                     delete server.tourneys[tourney_serial];
                      break;
 		}
 		
 		return true;
 	    }
+	    
 	});
 
     //
@@ -2024,7 +2038,7 @@
 
                 var id = jpoker.uid();
 
-                $this.append('<div class=\'jpoker_table_list\' id=\'' + id + '\'></table>');
+                $this.append('<div class=\'jpoker_widget jpoker_table_list\' id=\'' + id + '\'></table>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -2048,7 +2062,7 @@
 				    })();
 				}
                             }
-			    if ($('tr', element).length > 1) {
+			    if ($('tbody tr', element).length > 0) {
 				var t = jpoker.plugins.tableList.templates;
 				var options = {container: $('.pager', element),
 					       positionFixed: false,
@@ -2136,7 +2150,7 @@
 
                 var id = jpoker.uid();
 		
-                $this.append('<div class=\'jpoker_regular_tourney_list\' id=\'' + id + '\'></table>');
+                $this.append('<div class=\'jpoker_widget jpoker_regular_tourney_list\' id=\'' + id + '\'></table>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -2160,7 +2174,7 @@
 				    })();
 				}
 			    }
- 			    if ($('tr', element).length > 1) {
+ 			    if ($('tbody tr', element).length > 0) {
 				var t = jpoker.plugins.regularTourneyList.templates;
 				var options = {container: $('.pager', element),
 					       positionFixed: false,
@@ -2247,7 +2261,7 @@
 
                 var id = jpoker.uid();
 
-                $this.append('<div class=\'jpoker_sitngo_tourney_list\' id=\'' + id + '\'></table>');
+                $this.append('<div class=\'jpoker_widget jpoker_sitngo_tourney_list\' id=\'' + id + '\'></table>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -2361,7 +2375,7 @@
 
                 var id = jpoker.uid();
 
-                $this.append('<div class=\'jpoker_tourney_details\' id=\'' + id + '\'></div>');
+                $this.append('<div class=\'jpoker_widget jpoker_tourney_details\' id=\'' + id + '\'></div>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -2382,7 +2396,7 @@
                             $(element).html(tourneyDetails.getHTML(id, packet, logged, registered, opts.link_pattern));
 			    
 			    var tourney_details_player_element = $('.jpoker_tourney_details_players', element);
-			    if ($('tr', tourney_details_player_element).length > 1) {
+			    if ($('tbody tr', tourney_details_player_element).length > 0) {
 				var t = jpoker.plugins.tourneyDetails.templates.players;
 				var options = {container: $('.pager', element),
 					       positionFixed: false,
@@ -2615,7 +2629,7 @@
 
                 var id = jpoker.uid();
 
-                $this.append('<div class=\'jpoker_tourney_placeholder\' id=\'' + id + '\'></div>');
+                $this.append('<div class=\'jpoker_widget jpoker_tourney_placeholder\' id=\'' + id + '\'></div>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -2669,7 +2683,7 @@
 
                 var id = jpoker.uid();
 
-                $this.append('<div class=\'jpoker_server_status\' id=\'' + id + '\'></div>');
+                $this.append('<div class=\'jpoker_widget jpoker_server_status\' id=\'' + id + '\'></div>');
 
                 var updated = function(server) {
                     var element = document.getElementById(id);
@@ -2741,7 +2755,7 @@
 
                 var id = jpoker.uid();
 
-                $this.append('<div class=\'jpoker_login\' id=\'' + id + '\'></div>');
+                $this.append('<div class=\'jpoker_widget jpoker_login\' id=\'' + id + '\'></div>');
 
                 var updated = function(server) {
                     var element = document.getElementById(id);
@@ -2899,7 +2913,7 @@
 
                 var id = jpoker.uid();
 
-                $this.append('<span class=\'jpoker_table\' id=\'' + id + '\'><div class=\'jpoker_connecting\'><div class=\'jpoker_connecting_message\'>' + _("connecting to table {name}").supplant({ 'name': name }) + '</div><div class=\'jpoker_connecting_image\'></div></div></span>');
+                $this.append('<span class=\'jpoker_widget jpoker_table\' id=\'' + id + '\'><div class=\'jpoker_connecting\'><div class=\'jpoker_connecting_message\'>' + _("connecting to table {name}").supplant({ 'name': name }) + '</div><div class=\'jpoker_connecting_image\'></div></div></span>');
                 	       
 		if(game_id in server.tables) {
 		    var element = document.getElementById(id);
@@ -3158,6 +3172,7 @@
 	if (table.tourney_rank !== undefined) {
 	    jpoker.plugins.table.callback.tourney_end(table);
 	}
+	jpoker.plugins.table.callback.quit(table);
         return false;
     };
 
@@ -3194,7 +3209,9 @@
 	tourney_end: function(table) {
 	    var server = jpoker.getServer(table.url);
 	    server.tourneyRowClick(server, {name: '', game_id: table.tourney_serial});
-	}
+	},
+	quit: function(table) {
+	},
     };
 
     //
@@ -3427,7 +3444,7 @@
 		} else {
 		    level = 'junior';
 		}
-		return level
+		return level;
 	    },
 	    getHTML: function(packet) {
 		var html = [];
@@ -3523,7 +3540,7 @@
 			$(this).addClass('hover');
 		    },function(){
 			$(this).removeClass('hover');
-		    });;
+		    });
 
             //
             // sitin
@@ -3628,6 +3645,8 @@
             return true;
         },
         
+        rebuy_options: { width: 'none', height: 'none', autoOpen: false, resizable: false },
+
         rebuy: function(url, game_id, serial) {
             var player = jpoker.getPlayer(url, game_id, serial);
             if(!player) {
@@ -3639,16 +3658,7 @@
             if(rebuy.size() === 0) {
                 $('body').append('<div id=\'jpokerRebuy\' class=\'jpoker_jquery_ui\' title=\'' + _("Add chips") + '\' />');
                 rebuy = $('#jpokerRebuy');
-                var options = { width: 'none', height: 'none', autoOpen: false, resizable: false };
-                if($.browser.msie) {
-                    /* 
-                     *  On IE, the widget container width and height needs to be set explicitly
-                     *  if the widget width/height is being set as 'none'
-                     */
-                    options.containerWidth = '300px';
-                    options.containerHeight = '200px';
-                }
-                rebuy.dialog(options);
+                rebuy.dialog(this.rebuy_options);
             }
             rebuy.empty();
             rebuy.append('<div class=\'jpoker_rebuy_bound jpoker_rebuy_min\'>' + limits[0] + '</div>');
@@ -3919,7 +3929,7 @@
 
                 var id = jpoker.uid();
 		
-                $this.append('<div class=\'jpoker_user_info\' id=\'' + id + '\'></div>');
+                $this.append('<div class=\'jpoker_widget jpoker_user_info\' id=\'' + id + '\'></div>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -3936,16 +3946,7 @@
 					    info[$(this).attr('name')] = $(this).attr('value');
 					});
 				    server.setPersonalInfo(info);
-				});
-			    
-			    $('input[name=toggle_password]', element).click(function() {
-				    var password = $('input[name=password]');
-				    if (password.attr('type') == 'password') {
-					password.replaceWith(password.clone().attr('type', 'text'));
-				    } else if (password.attr('type' == 'text')) {
-					password.replaceWith(password.clone().attr('type', 'password'));
-				    }
-				});
+				});			    
 			    if (packet.set_account) {
 				$('.jpoker_user_info_feedback', element).text(_("Updated"));
 			    }
@@ -3992,7 +3993,7 @@
 	html.push(t.info.supplant($.extend({
 		    'name_title': _("Login"),
 		    'password_title': _("Password"),
-		    'toggle_password_title': _("Show password"),
+		    'password_confirmation_title': _("Password confirmation"),
 		    'email_title': _("Email"),
 		    'phone_title' : _("Phone Number"),
 		    'firstname_title': _("First name"),
@@ -4015,7 +4016,7 @@
     };
 
     jpoker.plugins.userInfo.templates = {
-	info: '<table><tr><td>{name_title}</td><td><div class=\'jpoker_user_info_name\'>{name}</div></input></td></tr><tr><td>{password_title}</td><td><input type=\'password\' name=\'password\' value=\'{password}\'></input></td></tr><tr><td>{toggle_password_title}</td><td><input type=\'checkbox\' name=\'toggle_password\'></input></td></tr><tr><td>{email_title}</td><td><input type=\'text\' name=\'email\' value=\'{email}\'></input></td></tr><tr><td>{phone_title}</td><td><input type=\'text\' name=\'phone\' value=\'{phone}\'></input></td></tr><tr><td>{firstname_title}</td><td><input type=\'text\' name=\'firstname\' value=\'{firstname}\'></input></td></tr><tr><td>{lastname_title}</td><td><input type=\'text\' name=\'lastname\' value=\'{lastname}\'></input></td></tr><tr><td>{addr_street_title}</td><td><input type=\'text\' name=\'addr_street\' value=\'{addr_street}\'></input></td></tr><tr><td>{addr_street2_title}</td><td><input type=\'text\' name=\'addr_street2\' value=\'{addr_street2}\'></input></td></tr><tr><td>{addr_zip_title}</td><td><input type=\'text\' name=\'addr_zip\' value=\'{addr_zip}\'></input></td></tr><tr><td>{addr_town_title}</td><td><input type=\'text\' name=\'addr_town\' value=\'{addr_town}\'></input></td></tr><tr><td>{addr_state_title}</td><td><input type=\'text\' name=\'addr_state\' value=\'{addr_state}\'></input></td></tr><tr><td>{addr_country_title}</td><td><input type=\'text\' name=\'addr_country\' value=\'{addr_country}\'></input></td></tr><tr><td>{gender_title}</td><td><input type=\'text\' name=\'gender\' value=\'{gender}\'></input></td></tr><tr><td>{birthdate_title}</td><td><input type=\'text\' name=\'birthdate\' value=\'{birthdate}\'></input></td></tr><tr><td><input class=\'jpoker_user_info_submit\' type=\'submit\' value=\'{submit_title}\'></input></td><td><div class=\'jpoker_user_info_feedback\'></div></td></tr></table>',
+	info: '<table><tr><td>{name_title}</td><td><div class=\'jpoker_user_info_name\'>{name}</div></input></td></tr><tr><td>{password_title}</td><td><input type=\'password\' name=\'password\' value=\'{password}\'></input></td></tr><tr><td>{password_confirmation_title}</td><td><input type=\'password\' name=\'password_confirmation\'></input></td></tr><tr><td>{email_title}</td><td><input type=\'text\' name=\'email\' value=\'{email}\'></input></td></tr><tr><td>{phone_title}</td><td><input type=\'text\' name=\'phone\' value=\'{phone}\'></input></td></tr><tr><td>{firstname_title}</td><td><input type=\'text\' name=\'firstname\' value=\'{firstname}\'></input></td></tr><tr><td>{lastname_title}</td><td><input type=\'text\' name=\'lastname\' value=\'{lastname}\'></input></td></tr><tr><td>{addr_street_title}</td><td><input type=\'text\' name=\'addr_street\' value=\'{addr_street}\'></input></td></tr><tr><td>{addr_street2_title}</td><td><input type=\'text\' name=\'addr_street2\' value=\'{addr_street2}\'></input></td></tr><tr><td>{addr_zip_title}</td><td><input type=\'text\' name=\'addr_zip\' value=\'{addr_zip}\'></input></td></tr><tr><td>{addr_town_title}</td><td><input type=\'text\' name=\'addr_town\' value=\'{addr_town}\'></input></td></tr><tr><td>{addr_state_title}</td><td><input type=\'text\' name=\'addr_state\' value=\'{addr_state}\'></input></td></tr><tr><td>{addr_country_title}</td><td><input type=\'text\' name=\'addr_country\' value=\'{addr_country}\'></input></td></tr><tr><td>{gender_title}</td><td><input type=\'text\' name=\'gender\' value=\'{gender}\'></input></td></tr><tr><td>{birthdate_title}</td><td><input type=\'text\' name=\'birthdate\' value=\'{birthdate}\'></input></td></tr><tr><td><input class=\'jpoker_user_info_submit\' type=\'submit\' value=\'{submit_title}\'></input></td><td><div class=\'jpoker_user_info_feedback\'></div></td></tr></table>',
 	avatar: '<div class=\'jpoker_user_info_avatar_preview\'></div><form class=\'jpoker_user_info_avatar_upload\' action=\'{upload_url}?name={hash}\' method=\'post\' enctype=\'multipart/form-data\'><input type=\'file\' name=\'filename\'></input><input type=\'submit\' value=\'{upload}\'></input></form><div class=\'jpoker_user_info_avatar_upload_feedback\'></div>'
     };
 
@@ -4038,7 +4039,7 @@
 
                 var id = jpoker.uid();
 		
-                $this.append('<div class=\'jpoker_places\' id=\'' + id + '\'></div>');
+                $this.append('<div class=\'jpoker_widget jpoker_places\' id=\'' + id + '\'></div>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -4138,7 +4139,7 @@
                 var $this = $(this);
 
                 var id = jpoker.uid();
-		var player_lookup_element = $('<div class=\'jpoker_player_lookup\' id=\'' + id + '\'></div>').appendTo($this);
+		var player_lookup_element = $('<div class=\'jpoker_widget jpoker_player_lookup\' id=\'' + id + '\'></div>').appendTo($this);
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
@@ -4260,7 +4261,7 @@
 
                 var id = jpoker.uid();
 		
-                $this.append('<div class=\'jpoker_cashier\' id=\'' + id + '\'></div>');
+                $this.append('<div class=\'jpoker_widget jpoker_cashier\' id=\'' + id + '\'></div>');
 
                 var updated = function(server, what, packet) {
                     var element = document.getElementById(id);
