@@ -613,8 +613,8 @@ test("jpoker.server.reconnect invalid error", function(){
 
         var error = jpoker.error;
         jpoker.error = function(message) {
-            equals(message.indexOf(code) >= 0, true, 'invalid error code');
             jpoker.error = error;
+            equals(message.indexOf(code) >= 0, true, 'invalid error code');
             start_and_cleanup();
         };
         server.reconnect();
@@ -1558,7 +1558,9 @@ test("jpoker.server.setState", function(){
 	expect(1);
 	var server = jpoker.serverCreate({ url: 'url' });
 	var undefinedState = undefined;
+	var error = jpoker.error;
 	jpoker.error = function(reason) {
+            jpoker.error = error;
 	    equals('undefined state', reason, 'error undefined state');
 	};
 	server.setState(undefined);	
@@ -1581,6 +1583,46 @@ test("jpoker.server.urls", function() {
 	server = jpoker.serverCreate({ url: 'url', urls: {avatar: 'avatar', upload: 'upload'}});
 	equals(server.urls.avatar, 'avatar');
 	equals(server.urls.upload, 'upload');
+    });
+
+test("jpoker.server.error: throw correct exception", function() {
+	expect(1);
+	var server = jpoker.serverCreate({ url: 'url' });
+	server.state = 'unknown';
+	server.registerHandler(0, function() {
+		server.notifyUpdate({});
+	    });
+	server.registerUpdate(function() {
+		throw 'dummy error';
+	    });
+	try {
+	    server.handle(0, {});
+	} catch (e) {
+	    equals(e, 'dummy error');
+	}
+	cleanup();
+    });
+
+test("jpoker.server.init/uninit: state running", function() {
+	expect(2);
+	var server = jpoker.serverCreate({ url: 'url' });
+	equals(server.state, 'running');
+	server.state = 'dummy';
+	server.uninit();
+	equals(server.state, 'running');
+	cleanup();
+    });
+
+test("jpoker.server.reset: call clearTimers", function() {
+	expect(1);
+	var server = jpoker.serverCreate({ url: 'url' });
+	server.clearTimers = function() {
+	    ok(true, "clearTimers called");
+	};
+	server.reset();
+	server.clearTimers = function() {};
+	server.uninit();
+	cleanup();
     });
 
 //
@@ -1641,7 +1683,7 @@ test("jpoker.connection:sendPacket error 404", function(){
         stop();
         var self = new jpoker.connection();
         
-        error = jpoker.error;
+        var error = jpoker.error;
         jpoker.error = function(reason) {
             jpoker.error = error;
             equals(reason.xhr.status, 404);
@@ -1657,7 +1699,7 @@ test("jpoker.connection:sendPacket error 500", function(){
         stop();
         var self = new jpoker.connection();
         
-        error = jpoker.error;
+        var error = jpoker.error;
         jpoker.error = function(reason) {
             jpoker.error = error;
             equals(reason.xhr.status, 500);
@@ -2514,6 +2556,22 @@ test("jpoker.player.sidepot", function(){
 	equals(player.side_pot, undefined, 'side pot reset');
     });
 
+test("jpoker.player.stats", function(){
+	expect(4);
+        var serial = 42;
+        var name = 'username';
+        var url = 'url';
+        var server = jpoker.serverCreate({ url: url });
+	var game_id = 100;
+        var player = new jpoker.player({ url: url }, { serial: serial, name: name });
+	equals(undefined, player.stats);
+	player.handler(server, game_id, {type: 'PacketPokerPlayerStats', serial: serial, rank: 1, percentile: 99, game_id: game_id});
+	equals(99, player.stats.percentile);
+	equals(1, player.stats.rank);
+	player.reset();
+	equals(undefined, player.stats);
+    });
+
 //
 // tableList
 //
@@ -3125,17 +3183,20 @@ test("jpoker.plugins.regularTourneyList empty", function(){
 
         var id = 'jpoker' + jpoker.serial;
         var place = $("#main");
+	var template = jpoker.plugins.regularTourneyList.templates.header;
+	jpoker.plugins.regularTourneyList.templates.header = '<table><thead><tr><th>{description_short}</th></tr><tr><th>{registered}</th></tr></thead><tbody>';
         place.jpoker('regularTourneyList', 'url', { delay: 30 });
         server.registerUpdate(function(server, what, data) {
                 var element = $("#" + id);
                 if(element.length > 0) {
                     var tr = $("#" + id + " tr", place);
-                    equals(tr.length, 1);
+                    equals(tr.length, 2);
 		    equals($(".header", element).length, 0, 'no tablesorter');
                     $("#" + id).remove();
                     return true;
                 } else {
                     window.setTimeout(function() {
+			    jpoker.plugins.regularTourneyList.templates.header = template;
                             start_and_cleanup();
                         }, 30);
                     return false;
@@ -3168,12 +3229,14 @@ test("jpoker.plugins.sitngoTourneyList empty", function(){
 
         var id = 'jpoker' + jpoker.serial;
         var place = $("#main");
+	var template = jpoker.plugins.sitngoTourneyList.templates.header;
+	jpoker.plugins.sitngoTourneyList.templates.header = '<table><thead><tr><th>{description_short}</th></tr><tr><th>{registered}</th></tr></thead><tbody>';
         place.jpoker('sitngoTourneyList', 'url', { delay: 30 });
         server.registerUpdate(function(server, what, data) {
                 var element = $("#" + id);
                 if(element.length > 0) {
                     var tr = $("#" + id + " tr", place);
-                    equals(tr.length, 1);
+                    equals(tr.length, 2);
 		    equals($(".header", element).length, 0, 'no tablesorter');
                     $("#" + id).remove();
                     return true;
@@ -4630,6 +4693,31 @@ test("jpoker.plugins.table: quit callback", function(){
 	
 	place.jpoker('table', 'url', game_id);
         $("#quit" + id).click();       	
+    });
+
+test("jpoker.plugins.table: quit non running", function(){
+	expect(1);
+	stop();
+
+        var server = jpoker.serverCreate({ url: 'url' });
+        var place = $("#main");
+        var id = 'jpoker' + jpoker.serial;
+        var game_id = 100;
+
+        var table_packet = { id: game_id };
+        server.tables[game_id] = new jpoker.table(server, table_packet);
+        var table = server.tables[game_id];	
+	place.jpoker('table', 'url', game_id);
+	server.setState('dummy');
+        $("#quit" + id).click();
+
+	var callback = jpoker.plugins.table.callback.quit;
+	jpoker.plugins.table.callback.quit = function(table) {
+	    jpoker.plugins.table.callback.quit = callback;
+	    equals(server.state, 'running', 'server running');
+	    start_and_cleanup();
+	};
+	setTimeout(function() {server.setState('running');}, 10);
     });
 
 test("jpoker.plugins.table: PacketPokerDealer", function(){

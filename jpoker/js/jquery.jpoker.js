@@ -608,6 +608,7 @@
             },
 
             error: function(reason) {
+		jpoker.watchable.prototype.setCallbacks.call(this);
                 this.reset();
                 this.setConnectionState('disconnected');
                 jpoker.error(reason);
@@ -903,6 +904,7 @@
             },
 
             reset: function() {
+		this.clearTimers();
                 jpoker.connection.prototype.reset.call(this);
                 this.stateQueue = [];
                 this.setState(this.RUNNING, 'reset');
@@ -940,10 +942,12 @@
 
             clearTimers: function() {
                 var $this = this;
-                $.each(this.timers, function(key, value) {
-                        $this.clearInterval(value.timer);
-                    });
-                this.timers = {};
+		if (this.timers) {
+		    $.each(this.timers, function(key, value) {
+			    $this.clearInterval(value.timer);
+			});
+		    this.timers = {};
+		}
             },
 
             handler: function(server, game_id, packet) {
@@ -1824,6 +1828,7 @@
                 this.bet = 0;
                 this.sit = false;
 		this.side_pot = undefined;
+		this.stats = undefined;
             },
 
             handler: function(server, game_id, packet) {
@@ -1903,6 +1908,7 @@
 		break;
 
 		case 'PacketPokerPlayerStats':
+		this.stats = packet;
 		this.notifyUpdate(packet);
 		break;
                 }
@@ -2282,7 +2288,7 @@
 				    })();
 				}
 			    }
-			    if ($('tr', element).length > 1) {
+			    if ($('tbody tr', element).length > 0) {
 				var t = jpoker.plugins.sitngoTourneyList.templates;
 				var options = {container: $('.pager', element),
 					       positionFixed: false,
@@ -2950,14 +2956,16 @@
             $('#muck_deny' + id).hide();
             $('#quit' + id).click(function() {
                     var server = jpoker.getServer(url);
-                    var table = jpoker.getTable(url, game_id);
-                    if(server) {
-                        server.sendPacket({ type: 'PacketPokerTableQuit', game_id: game_id });
-                        server.setTimeout(function() {
-                                table.handler(server, game_id, { type: 'PacketPokerTableDestroy',
-                                            game_id: game_id });
-                            }, 1);
-                    }
+		    var table = jpoker.getTable(url, game_id);
+		    if(server) {
+			server.sendPacket({ type: 'PacketPokerTableQuit', game_id: game_id });
+			server.setTimeout(function() {
+				server.queueRunning(function(server) {
+					table.handler(server, game_id, { type: 'PacketPokerTableDestroy',
+						    game_id: game_id });
+				    });
+			    }, 1);
+		    }
                 }).hover(function(){
 			$(this).addClass('hover');
 		    },function(){
