@@ -776,16 +776,9 @@
     <image
        xlink:href="../css/images/jpoker_table/status.png"
        x="154.98279"
-       y="626"
+       y="603"
        width="496.01721"
-       height="150"
-       id="chat_history" />
-    <image
-       xlink:href="../css/images/jpoker_table/status.png"
-       x="154.98279"
-       y="600"
-       width="496.01721"
-       height="24"
+       height="173"
        id="chat" />
     <image
        xlink:href="../css/images/jpoker_table/button.png"
@@ -836,5 +829,12 @@
        width="67"
        height="26"
        id="sitin" />
+    <image
+       xlink:href="../css/images/jpoker_table/status.png"
+       x="5.3428235"
+       y="710.26288"
+       width="132.63997"
+       height="66.000023"
+       id="powered_by" />
   </g>
 </svg>

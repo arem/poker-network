@@ -89,7 +89,8 @@ var cleanup = function(id) {
 	   });
     jpoker.uninit();
     $.cookie('jpoker_preferences_'+jpoker.url2hash('url'), null);
-    $.cookie('jpoker_serial_'+jpoker.url2hash('url'), null);
+    $.cookie('jpoker_count_'+jpoker.url2hash('url'), null);
+    $.cookie('jpoker_count_'+jpoker.url2hash('url2'), null);
     $('#jpokerDialog').dialog('close').remove();
     $('#jpokerRebuy').dialog('close').remove();
 };
@@ -435,18 +436,6 @@ test("jpoker.Crypto b32 str", function (){
 //
 // jpoker.server
 //
-
-test("jpoker.server.init increment serial cookie", function() {
-	expect(2);
-	
-	$.cookie('jpoker_serial_'+jpoker.url2hash('url'), null);
-	var server1 = jpoker.serverCreate({ url: 'url' });
-	equals($.cookie('jpoker_serial_'+jpoker.url2hash('url')), 1);
-	var server2 = jpoker.serverCreate({ url: 'url' });
-	equals($.cookie('jpoker_serial_'+jpoker.url2hash('url')), 2);
-	
-	cleanup();
-    });
 
 test("jpoker.server.uninit", function() {
 	expect(4);
@@ -1982,6 +1971,31 @@ test("jpoker.connection:cookie protocol", function() {
 	equals(connection.protocol(), document.location.protocol, 'protocol');
     });
 
+test("jpoker.connection:increment sessionCount", function() {
+	expect(3);
+	
+	$.cookie('jpoker_count_'+jpoker.url2hash('url'), null);
+	var server1 = new jpoker.connection({ url: 'url' });
+	equals($.cookie('jpoker_count_'+jpoker.url2hash('url')), 1);
+ 	var server2 = new jpoker.connection({ url: 'url' });
+	equals($.cookie('jpoker_count_'+jpoker.url2hash('url')), 2);
+ 	var server3 = new jpoker.connection({ url: 'url2' });
+	equals($.cookie('jpoker_count_'+jpoker.url2hash('url2')), 1);
+	
+	cleanup();
+    });
+
+test("jpoker.connection: ajax arguments", function() {
+	expect(2);
+	var server = new jpoker.connection({ url: 'url' });
+	server.ajax = function(options) {
+	    ok(options.url.indexOf("name=") >= 0, 'name');
+	    ok(options.url.indexOf("count=") >= 0, 'count');
+	};
+	server.sendPacket({});	
+	cleanup();
+    });
+
 //
 // jpoker.table
 //
@@ -3253,7 +3267,7 @@ test("jpoker.plugins.sitngoTourneyList empty", function(){
 // tourneyDetails
 //
 test("jpoker.plugins.tourneyDetails", function(){
-        expect(8);
+        expect(9);
         stop();
 
         var PokerServer = function() {};
@@ -3279,6 +3293,11 @@ test("jpoker.plugins.tourneyDetails", function(){
         var id = 'jpoker' + jpoker.serial;
         var place = $("#main");
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.tourneyDetails.callback.display_done;
+	jpoker.plugins.tourneyDetails.callback.display_done = function(element) {
+	    jpoker.plugins.tourneyDetails.callback.display_done = display_done;
+	    equals($(".jpoker_tourney_details_info", element).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('tourneyDetails', 'url', tourney_serial.toString());
         equals(server.callbacks.update.length, 1, 'tourneyDetails update registered');
         server.registerUpdate(function(server, what, data) {
@@ -4518,7 +4537,7 @@ test("jpoker.plugins.table.chat", function(){
         var table = server.tables[game_id];
 
         place.jpoker('table', 'url', game_id);
-        var chat = $("#chat" + id);
+        var chat = $("#chat"+id+" .jpoker_chat_input");
         equals(chat.size(), 1, "chat DOM element");
         equals(chat.is(':hidden'), true, "chat hidden");
         table.handler(server, game_id,
@@ -4747,7 +4766,7 @@ test("jpoker.plugins.table: PacketPokerDealer", function(){
     });
 
 test("jpoker.plugins.table: PacketPokerChat", function(){
-        expect(10);
+        expect(15);
 
         var server = jpoker.serverCreate({ url: 'url' });
         var place = $("#main");
@@ -4763,24 +4782,31 @@ test("jpoker.plugins.table: PacketPokerChat", function(){
         var player_seat = 2;
         var player_name = 'username';
         table.handler(server, game_id, { type: 'PacketPokerPlayerArrive', seat: player_seat, serial: player_serial, game_id: game_id, name: player_name });
-	var chat_history = $("#chat_history" + id);
-        equals(chat_history.size(), 1, "chat history DOM element");
-        equals($(".jpoker_chat_history_dealer", chat_history).size(), 1, "chat history DOM element");
-        equals($(".jpoker_chat_history_player", chat_history).size(), 1, "chat history DOM element");
+	var chat_element = $("#chat" + id);
+        equals(chat_element.size(), 1, "chat history DOM element");
+        equals($(".jpoker_chat_history_dealer", chat_element).size(), 1, "chat history DOM element");
+        equals($(".jpoker_chat_history_player", chat_element).size(), 1, "chat history DOM element");
         var message = 'voila\ntout';
-
         table.handler(server, game_id, { type: 'PacketPokerChat', message: message, game_id: game_id, serial: player_serial });
-        var content = $(".jpoker_chat_history_player", chat_history).text();
-        equals(content.indexOf(message) >= 0, false, "message is split");
-        equals(content.indexOf('tout') >= 0, true, "message part is displayed");
-        equals(content.indexOf(player_name+': ') >= 0, true, "player_name displayed");
+        var chat_history_player = $(".jpoker_chat_history_player", chat_element);
+	var chat_lines = $(".jpoker_chat_line", chat_history_player);
+	equals(chat_lines.length, 2);
+	equals($(".jpoker_chat_prefix", chat_lines.eq(0)).html(), "username: ");
+	equals($(".jpoker_chat_message", chat_lines.eq(0)).html(), "tout");	
+	equals($(".jpoker_chat_prefix", chat_lines.eq(1)).html(), "username: ");
+	equals($(".jpoker_chat_message", chat_lines.eq(1)).html(), "voila");
         equals($(".jpoker_chat_history_dealer").text(), "", "no dealer message");
-	
 	$(".jpoker_chat_history_player").text("");
-        table.handler(server, game_id, { type: 'PacketPokerChat', message: message, game_id: game_id, serial: 0 });	
-        content = $(".jpoker_chat_history_dealer", chat_history).text();
-        equals(content.indexOf(message) >= 0, false, "message is split");
-        equals(content.indexOf('tout') >= 0, true, "message part is displayed");
+
+	var dealer_message = 'Dealer: voila\nDealer: tout\n';
+        table.handler(server, game_id, { type: 'PacketPokerChat', message: dealer_message, game_id: game_id, serial: 0 });	
+        var chat_history_dealer = $(".jpoker_chat_history_dealer", chat_element);
+	var chat_lines_dealer = $(".jpoker_chat_line", chat_history_dealer);
+	equals(chat_lines_dealer.length, 2);
+	equals($(".jpoker_chat_prefix", chat_lines_dealer.eq(0)).html(), "Dealer: ");
+	equals($(".jpoker_chat_message", chat_lines_dealer.eq(0)).html(), "tout");	
+	equals($(".jpoker_chat_prefix", chat_lines_dealer.eq(1)).html(), "Dealer: ");
+	equals($(".jpoker_chat_message", chat_lines_dealer.eq(1)).html(), "voila");
         equals($(".jpoker_chat_history_player").text(), "", "no player message");
 
         cleanup();
@@ -5065,6 +5091,49 @@ test("jpoker.plugins.table: remove callbacks", function(){
 	equals(table.callbacks.update.length, 0, 'table updateCallback removed');
 	table.notifyReinit({type: 'PacketPing'});
 	equals(table.callbacks.reinit.length, 0, 'table reinitCallback removed');
+    });
+
+test("jpoker.plugins.table: powered_by", function(){
+        expect(4);
+	var packet = {"type": "PacketPokerTable", "id": 100, "name": "One", "percent_flop" : 98, "betting_structure": "15-30-no-limit"};
+        var server = jpoker.serverCreate({ url: 'url' });
+	server.tables[packet.id] = new jpoker.table(server, packet);
+        var place = $("#main");
+        var id = 'jpoker' + jpoker.serial;
+
+        var game_id = 100;
+
+        place.jpoker('table', 'url', game_id);
+
+	var powered_by_element = $('#powered_by'+id);
+	equals(powered_by_element.length, 1, 'table info');
+	ok(powered_by_element.hasClass('jpoker_powered_by'), 'jpoker_powered_by class');
+	equals($('a', powered_by_element).length, 1, 'a');
+	equals($('a span', powered_by_element).length, 1, 'span');
+	cleanup();
+    });
+
+test("jpoker.plugins.table: display done callback", function(){
+        expect(1);
+
+        var server = jpoker.serverCreate({ url: 'url' });
+        var player_serial = 1;
+        server.serial = player_serial; // pretend logged in
+        var place = $("#main");
+        var id = 'jpoker' + jpoker.serial;
+        var game_id = 100;
+
+        var table_packet = { id: game_id };
+        server.tables[game_id] = new jpoker.table(server, table_packet);
+        var table = server.tables[game_id];
+
+	var display_done = jpoker.plugins.table.callback.display_done;
+	jpoker.plugins.table.callback.display_done = function(element) {
+	    jpoker.plugins.table.callback.display_done = display_done;
+	    equals($(".jpoker_chat_input", element).length, 1);
+	};
+        place.jpoker('table', 'url', game_id);
+        cleanup(id);
     });
 
 //
