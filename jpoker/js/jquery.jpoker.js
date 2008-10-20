@@ -117,8 +117,14 @@
 
         uid: function() { return 'jpoker' + $.jpoker.serial++ ; },
 
+	console : window.console,
+
+	alert: function(str) {
+	    alert(str);
+	},
+
         message: function(str) {
-            if(window.console) { window.console.log(str); }
+            if(jpoker.console) { jpoker.console.log(str); }
         },
 
         dialog_options: { width: 'none', height: 'none', autoOpen: false, dialog: true },
@@ -140,7 +146,11 @@
         },
 
         errorHandler: function(reason) {
-            this.message(reason);
+	    if (jpoker.console) {
+		this.message(reason);
+	    } else {
+		this.alert(reason);
+	    }
         },
 
         serverCreate: function(options) {
@@ -655,13 +665,15 @@
             //     number of the poker game
             // packet: is the packet received from the server
             // 
-            // If the return value is false, the handler is discarded and will not
+            // If the return value of the handler function is false, 
+            // the handler is discarded and will not
             // be called again. If the return value is true, the handler is retained
-            // and will be called when the next packet matching the 'id' paramater
+            // and will be called when the next packet matching the 'id' parameter
             // arrives.
             //
             // If the handler throws an exception, the server will be killed and
-            // all communications interrupted. The handler must *not* call server.error.
+            // all communications interrupted. The handler must NOT call server.error, 
+            // it must throw an exception whenever a fatal error occurs.
             //
             registerHandler: function(id, handler, handler_data, signature) {
                 this.register(id, handler, handler_data, signature);
@@ -677,11 +689,17 @@
                 }
                 if(id in this.callbacks) {
                     delete packet.time__;
-                    packet.uid__ = jpoker.uid();
+                    if(jpoker.verbose > 1) {
+                        //
+                        // For debugging purposes associate a unique ID to each packet in
+                        // order to track it in the log messages.
+                        //
+                        packet.uid__ = jpoker.uid();
+                    }
                     try { 
                         this.notify(id, packet);
                     } catch(e) {
-                        this.error(e);
+                        this.error(e); // delegate exception handling to the error function
                         return false; // error will throw and this statement will never be reached
                     }
                     return true;
@@ -759,7 +777,12 @@
                     }, this.pingFrequency - delta);
             },
 
-            pinging: function() { return this.pingTimer >= 0; },
+            //
+            // Accessor for test purposes only
+            //
+            pinging: function() {
+                return this.pingTimer >= 0;
+            }, 
 
             queueIncoming: function(packets) {
                 if(!this.blocked) {
@@ -2402,17 +2425,7 @@
 					packet.tourney.rank2prize[i] /= 100;
 				    });
 			    }
-                            $(element).html(tourneyDetails.getHTML(id, packet, logged, registered, opts.link_pattern));
-			    
-			    var tourney_details_player_element = $('.jpoker_tourney_details_players', element);
-			    if ($('tbody tr', tourney_details_player_element).length > 0) {
-				var t = jpoker.plugins.tourneyDetails.templates.players;
-				var options = {container: $('.pager', element),
-					       positionFixed: false,
-					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
-					       next_label: t.next_label.supplant({next_label: _("Next page")})};
-				$('table', tourney_details_player_element).tablesorter({widgets: ['zebra']}).tablesorterPager(options);
-			    }
+                            $(element).html(tourneyDetails.getHTML(id, packet, logged, registered, opts.link_pattern));			    
 
 			    $('.jpoker_tourney_details_table', element).click(function() {
 				    $('.jpoker_tourney_details_table_details', element).html(tourneyDetails.getHTMLTableDetails(id, packet, $(this).attr('id')));
@@ -2486,7 +2499,6 @@
 		html.push(player_state_template.rows.supplant(player));
 	    }
 	    html.push(player_state_template.footer);
-	    html.push(t.players.pager);
 	    html.push(t.players.footer);
 	}
 	
@@ -2597,7 +2609,6 @@
 		footer : '</tbody></table>'
 	    },
 	    header: '<div class=\'jpoker_tourney_details_players\'>',
-	    pager: '<div class=\'pager\'><input class=\'pagesize\' value=\'10\'></input><ul class=\'pagelinks\'></ul></div>',
 	    next_label: '>>',
 	    previous_label: '<<',
 	    footer: '</div>'
