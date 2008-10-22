@@ -127,13 +127,16 @@
             if(jpoker.console) { jpoker.console.log(str); }
         },
 
-        dialog_options: { width: 'none', height: 'none', autoOpen: false, dialog: true },
+        dialog_options: { width: 'none', height: 'none', autoOpen: false, dialog: true, title: 'jpoker message'},
 
         dialog: function(content) {
             var message = $('#jpokerDialog');
             if(message.size() != 1) {
-                $('body').append('<div id=\'jpokerDialog\' class=\'jpoker_jquery_ui\' title=\'jpoker message\' />');
+                $('body').append('<div id=\'jpokerDialog\' class=\'jpoker_jquery_ui\' />');
                 message = $('#jpokerDialog');
+		if (jpoker.dialog_options.title) {
+		    message.attr('title', jpoker.dialog_options.title);
+		}
                 message.dialog(this.dialog_options);
             }
             message.html(content).dialog('open');
@@ -535,7 +538,7 @@
             mode: 'queue',
             url: '',
             async: true,
-            lagmax: 60,
+            lagmax: 15000,
             dequeueFrequency: 100,
             pingFrequency: 6000,
             timeout: 30000,
@@ -1022,6 +1025,14 @@
                 server.setState(server.RUNNING, 'PacketPokerUserInfo');
                 break;
 
+		case 'PacketPokerPlayerStats':
+		for (id in server.tables) {
+		    packet.game_id = id;
+		    server.tables[id].handler(server, id, packet);		    
+		}
+		delete packet.game_id;		
+		break;
+
                 }
 
                 return true;
@@ -1507,6 +1518,9 @@
     };
 
     jpoker.table.defaults = {
+	delay: {
+	    showdown: 10000
+	}
     };
 
     jpoker.table.prototype = $.extend({}, jpoker.watchable.prototype, {
@@ -1704,16 +1718,12 @@
 		case 'PacketPokerMuckRequest':
 		    table.notifyUpdate(packet);
 		    break;
-		    
-		case 'PacketPokerEndRoundLast':
-		    $.each(table.serial2player, function(serial, player) {
-			    player.handler(server, game_id, packet);
-			});
-		    table.notifyUpdate(packet);
-		    break;
 
 		case 'PacketPokerStart':
 		    table.level = packet.level;
+		    $.each(table.serial2player, function(serial, player) {
+			    player.handler(server, game_id, packet);
+			});
 		    table.notifyUpdate(packet);
 		    break;
 
@@ -1728,6 +1738,10 @@
 		case 'PacketPokerTourneyRank':
 		    table.tourney_rank = packet;
 		    table.notifyUpdate(packet);
+		    break;
+
+		case 'PacketPokerShowdown':
+		    server.delayQueue(game_id, jpoker.now()+table.delay.showdown);
 		    break;
                 }
 
@@ -1897,7 +1911,7 @@
 		this.notifyUpdate(packet);
 		break;
 
-		case 'PacketPokerEndRoundLast':
+		case 'PacketPokerStart':
 		this.action = '';
 		this.notifyUpdate(packet);
 		break;
@@ -2526,7 +2540,7 @@
 	    }
 	}
 
-	if (packet.tourney.state == "running" || packet.tourney.state == "complete" || packet.tourney.sit_n_go == "y") {
+	if (packet.tourney.state == "running" || packet.tourney.state == "complete" || packet.tourney.state == "break" || packet.tourney.state == "breakwait" || packet.tourney.sit_n_go == "y") {
 	    html.push(t.prizes.header.supplant({
                         'caption': _("Prizes"),
 			'rank': _("Rank"),
@@ -2542,7 +2556,7 @@
 	    }			    
 	    html.push(t.prizes.footer);
 	}
-	if (packet.tourney.state == "running") {
+	if (packet.tourney.state == "running" || packet.tourney.state == "break" || packet.tourney.state == "breakwait") {
 	    html.push(t.tables.header.supplant({
                         'caption': _("Tables"),
 			'table': _("Table"),
@@ -2611,6 +2625,16 @@
 		footer : '</tbody></table>'
 	    },
 	    running : {
+		header : '<table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'3\'>{caption}</th></tr><tr><th>{name}</th><th>{money}</th><th>{rank}</th></tr></thead><tbody>',
+		rows : '<tr><td>{name}</td><td>{money}</td><td>{rank}</td></tr>',
+		footer : '</tbody></table>'
+	    },
+	    "break" : {
+		header : '<table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'3\'>{caption}</th></tr><tr><th>{name}</th><th>{money}</th><th>{rank}</th></tr></thead><tbody>',
+		rows : '<tr><td>{name}</td><td>{money}</td><td>{rank}</td></tr>',
+		footer : '</tbody></table>'
+	    },
+	    breakwait : {
 		header : '<table cellspacing=\'0\'><thead><tr class=\'jpoker_thead_caption\'><th colspan=\'3\'>{caption}</th></tr><tr><th>{name}</th><th>{money}</th><th>{rank}</th></tr></thead><tbody>',
 		rows : '<tr><td>{name}</td><td>{money}</td><td>{rank}</td></tr>',
 		footer : '</tbody></table>'
@@ -3374,7 +3398,7 @@
 	    jpoker.plugins.player.action(player, id);
 	    break;
 
-	    case 'PacketPokerEndRoundLast':
+	    case 'PacketPokerStart':
 	    jpoker.plugins.cards.hide(player.cards, 'card_seat' + player.seat, id);
 	    jpoker.plugins.player.action(player, id);
 	    break;
@@ -3851,11 +3875,7 @@
                 var click;
                 if(betLimit.max > betLimit.min) {
                     var raise = $('#raise_range' + id);
-                    raise.empty();
-                    raise.append('<div class=\'jpoker_raise_bound jpoker_raise_min\'>' + jpoker.chips.SHORT(betLimit.min) + '</div> ');
-                    raise.append('<div class=\'jpoker_raise_current\' title=\'' + betLimit.min + '\'>' + jpoker.chips.SHORT(betLimit.min) + '</div> ');
-                    raise.append('<div class=\'jpoker_raise_bound jpoker_raise_max\'>' + jpoker.chips.SHORT(betLimit.max) + '</div> ');
-                    raise.append('<div class=\'ui-slider-1\'><div class=\'ui-slider-handle\'></div></div>');
+                    raise.html(jpoker.plugins.raise.getHTML(betLimit));
                     raise.show(); // must be visible otherwise outerWeight/outerWidth returns 0
 
 		    var raise_input = $('#raise_input' + id);
@@ -3967,6 +3987,21 @@
             }
         }
 
+    };
+
+    //
+    // raise (SelfPlayer plugin helper)
+    //
+    jpoker.plugins.raise = {
+	template: '<div class=\'jpoker_raise_label\'>{raise_label}</div><div class=\'jpoker_raise_bound jpoker_raise_min\'>{raise_min}</div><div class=\'jpoker_raise_current\' title=\'{raise_current_title}\'>{raise_current}</div><div class=\'jpoker_raise_bound jpoker_raise_max\'>{raise_max}</div><div class=\'ui-slider-1\'><div class=\'ui-slider-handle\'></div></div>',
+	getHTML: function(betLimit) {
+	    var t = this.template;
+	    return t.supplant({raise_label: _("raise"),
+						raise_min: jpoker.chips.SHORT(betLimit.min),
+						raise_current_title: betLimit.min,
+						raise_current: jpoker.chips.SHORT(betLimit.min),
+						raise_max: jpoker.chips.SHORT(betLimit.max)});
+	}
     };
 
     //
