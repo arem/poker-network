@@ -148,6 +148,16 @@ test("jpoker: get{Server,Table,Player}", function() {
         jpoker.servers = {};
     });
 
+test("jpoker.alert", function() {
+    expect(1);
+    var windowAlert = window.alert;
+    window.alert = function(message) {
+	equals(message, 'foo', 'alert called');
+    };
+    jpoker.alert('foo');
+    window.alert = windowAlert;
+});
+
 //
 // jpoker.error
 //
@@ -2893,6 +2903,21 @@ test("jpoker.plugins.tableList no table no tablesorter", function(){
                     return false;
                 }
             });
+    });
+
+test("jpoker.plugins.tableList getHTML should not list tourney table", function(){
+        expect(2);
+
+        var TABLE_LIST_PACKET = {"players": 4, "type": "PacketPokerTableList", "packets": []};
+	TABLE_LIST_PACKET.packets.push({"observers":0,"name":"Cayrryns","percent_flop":0,"average_pot":0,"skin":"default","variant":"holdem","hands_per_hour":0,"betting_structure":"100-200-no-limit","currency_serial":1,"muck_timeout":5,"players":0,"waiting":0,"tourney_serial":0,"seats":10,"player_timeout":60,"type":"PacketPokerTable","id":40});
+	TABLE_LIST_PACKET.packets.push({"observers":0,"name":"sitngo21","percent_flop":0,"average_pot":0,"skin":"default","variant":"holdem","hands_per_hour":0,"betting_structure":"level-15-30-no-limit","currency_serial":0,"muck_timeout":5,"players":2,"waiting":0,"tourney_serial":2,"seats":2,"player_timeout":60,"type":"PacketPokerTable","id":41});
+	
+	var id = jpoker.uid();
+	var element = $('<div class=\'jpoker_table_list\' id=\'' + id + '\'></div>').appendTo("#main");
+	element.html(jpoker.plugins.tableList.getHTML(id, TABLE_LIST_PACKET));
+	equals($("table tbody tr", element).length, 1, 'one table');
+	equals($("table tbody tr td").html(), "Cayrryns");
+	cleanup(id);
     });
 
 //
@@ -6209,6 +6234,7 @@ test("jpoker.plugins.player: rebuy", function(){
         _SelfPlayer(game_id, player_serial);
         var server = jpoker.getServer('url');
         var player = jpoker.getPlayer('url', game_id, player_serial);
+	var table = jpoker.getTable('url', game_id);
 
         // buy in
         var min = 10;
@@ -6300,7 +6326,7 @@ test("jpoker.plugins.player: rebuy if not enough money", function() {
 	rebuy.click(function() {
 		ok(true, 'rebuy clicked');
 	    });
-	table.handler(server, game_id, { type: 'PacketPokerPlayerChips',
+	server.tables[game_id].handler(server, game_id, { type: 'PacketPokerPlayerChips',
 		    money: 0,
 		    bet: 0,
 		    serial: player_serial,
@@ -6335,7 +6361,7 @@ test("jpoker.plugins.player: no rebuy in tourney", function() {
 	rebuy.click(function() {
 		ok(false, 'rebuy should not be clicked');
 	    });
-	table.handler(server, game_id, { type: 'PacketPokerPlayerChips',
+	server.tables[game_id].handler(server, game_id, { type: 'PacketPokerPlayerChips',
 		    money: 0,
 		    bet: 0,
 		    serial: player_serial,
@@ -6370,7 +6396,7 @@ test("jpoker.plugins.player: no rebuy if money", function() {
 	rebuy.click(function() {
 		ok(false, 'rebuy should not be clicked');
 	    });
-	table.handler(server, game_id, { type: 'PacketPokerPlayerChips',
+	server.tables[game_id].handler(server, game_id, { type: 'PacketPokerPlayerChips',
 		    money: 100,
 		    bet: 0,
 		    serial: player_serial,
