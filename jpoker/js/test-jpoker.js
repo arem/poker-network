@@ -216,6 +216,24 @@ test("jpoker.error alert", function() {
 	jpoker.console = jpokerConsole;
 });
 
+test("jpoker.error object", function() {
+        expect(2);
+	var error_reason = {message: "error reason"};
+	var jpokerConsole = jpoker.console;
+	jpoker.console = undefined;
+	var jpokerAlert = jpoker.alert;
+	jpoker.alert = function(reason) {
+	    jpoker.alert = jpokerAlert;
+	    equals(reason, JSON.stringify(error_reason), "jpoker.alert error_reason");
+	};
+	try {
+	    jpoker.error(error_reason);
+	} catch (reason) {
+	    equals(reason.message, error_reason.message, "error_reason thrown");
+	}
+	jpoker.console = jpokerConsole;
+});
+
 //
 // jpoker.watchable
 //
@@ -5614,6 +5632,34 @@ test("jpoker.plugins.player: avatar", function(){
         start_and_cleanup();
     });
 
+test("jpoker.plugins.player: avatar", function(){
+        expect(1);
+        stop();
+
+        var server = jpoker.serverCreate({ url: 'url', urls : {avatar : 'http://avatar-server/'}});
+        var place = $("#main");
+        var id = 'jpoker' + jpoker.serial;
+        var game_id = 100;
+
+        var table_packet = { id: game_id };
+        server.tables[game_id] = new jpoker.table(server, table_packet);
+        var table = server.tables[game_id];
+
+        place.jpoker('table', 'url', game_id);
+        var player_serial = 1;
+        server.serial = player_serial;
+        var player_seat = 2;
+	var send_auto_muck = jpoker.plugins.muck.sendAutoMuck;
+	jpoker.plugins.muck.sendAutoMuck = function() {};
+	server.ajax = function(options) {
+	    ok(false, 'ajax not called');
+	};
+        table.handler(server, game_id, { type: 'PacketPokerPlayerArrive', seat: player_seat, serial: player_serial, game_id: game_id, url: 'http://host/customavatar.png' });
+	ok($("#player_seat2_avatar" + id + " img").attr("src").indexOf('http://host/customavatar.png') >= 0, 'avatar');
+	jpoker.plugins.muck.sendAutoMuck = send_auto_muck;
+        start_and_cleanup();
+    });
+
 test("jpoker.plugins.player: avatar race condition", function(){
         expect(3);
         stop();
@@ -5724,7 +5770,7 @@ test("jpoker.plugins.player: seat hover default", function(){
 
 if (TEST_RANK) {
 test("jpoker.plugins.player: rank and level", function(){
-        expect(13);
+        expect(16);
         stop();
 
         var server = jpoker.serverCreate({ url: 'url', urls : {avatar : 'http://avatar-server/'}});
@@ -5750,19 +5796,23 @@ test("jpoker.plugins.player: rank and level", function(){
 	var seat_element = $("#player_seat2"+id);
 	ok(element.hasClass('jpoker_player_stats'), 'player stats seat class');
 	ok(element.hasClass('jpoker_ptable_player_seat2_stats'), 'player stats seat class');
+	equals(element.html(), '', 'no stats');
+	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: undefined, percentile: undefined});
+	equals($('.jpoker_player_rank', element).length, 0, 'player rank');
+	equals($('.jpoker_player_level', element).length, 0, 'player level');	
 	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: 1, percentile: 0});
 	equals($('.jpoker_player_rank', element).length, 1, 'player rank');
 	equals($('.jpoker_player_level', element).length, 1, 'player level');	
 	equals($('.jpoker_player_rank', element).html(), 1, 'player rank 100');
 	ok($('.jpoker_player_level', element).hasClass('jpoker_player_level_junior'), 'player level junior');
 	ok(seat_element.hasClass('jpoker_player_level_junior'), 'player level junior');
-	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: 1, percentile: 25});
+	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: 1, percentile: 1});
 	ok($('.jpoker_player_level', element).hasClass('jpoker_player_level_pro'), 'player level pro');
 	ok(seat_element.hasClass('jpoker_player_level_pro'), 'player level pro');
-	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: 1, percentile: 50});
+	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: 1, percentile: 2});
 	ok($('.jpoker_player_level', element).hasClass('jpoker_player_level_expert'), 'player level expert');
 	ok(seat_element.hasClass('jpoker_player_level_expert'), 'player level expert');
-	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: 1, percentile: 75});
+	server.handler(server, 0, {type: 'PacketPokerPlayerStats', serial: player_serial, rank: 1, percentile: 3});
 	ok($('.jpoker_player_level', element).hasClass('jpoker_player_level_master'), 'player level master');
 	ok(seat_element.hasClass('jpoker_player_level_master'), 'player level master');
 	start_and_cleanup();
@@ -5855,7 +5905,7 @@ test("jpoker.plugins.player: PacketPokerPlayerCards", function(){
 
 if (TEST_ACTION) {
 test("jpoker.plugins.player: PacketPokerPlayerCall/Fold/Raise/Check/Start", function(){
-        expect(7);
+        expect(8);
         stop();
 
         var server = jpoker.serverCreate({ url: 'url' });
@@ -5878,6 +5928,9 @@ test("jpoker.plugins.player: PacketPokerPlayerCall/Fold/Raise/Check/Start", func
 
         table.handler(server, game_id, { type: 'PacketPokerCall', serial: player_serial, game_id: game_id });
 	equals(player_action_element.html(), 'call');
+
+	table.handler(server, game_id, { type: 'PacketPokerEndRound', serial: 0, game_id: game_id });
+	equals(player_action_element.html(), '');
 
 	table.handler(server, game_id, { type: 'PacketPokerFold', serial: player_serial, game_id: game_id });
 	equals(player_action_element.html(), 'fold');
