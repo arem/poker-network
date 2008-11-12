@@ -440,7 +440,12 @@ test("jpoker.dialog msie", function(){
     });
 
 test("jpoker.copyright", function(){
-        expect(1);
+        expect(2);
+	var display_done = jpoker.copyright_callback.display_done;
+	jpoker.copyright_callback.display_done = function(element) {
+	    jpoker.copyright_callback.display_done = display_done;
+	    equals($("#jpoker_copyright", element).length, 1, 'display done called when DOM is done');
+	};
         var copyright = jpoker.copyright();
         equals(copyright.text().indexOf('GNU') >= 0, true, 'GNU');
         copyright.dialog('destroy');
@@ -2736,7 +2741,7 @@ test("jpoker.player.stats", function(){
 // tableList
 //
 test("jpoker.plugins.tableList", function(){
-        expect(11);
+        expect(12);
         stop();
 
         //
@@ -2764,6 +2769,11 @@ test("jpoker.plugins.tableList", function(){
         var id = 'jpoker' + jpoker.serial;
         var place = $("#main");
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.tableList.callback.display_done;
+	jpoker.plugins.tableList.callback.display_done = function(element) {
+	    jpoker.plugins.tableList.callback.display_done = display_done;
+	    equals($(".jpoker_table_list", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('tableList', 'url', { delay: 30 });
         equals(server.callbacks.update.length, 1, 'tableList update registered');
         server.registerUpdate(function(server, what, data) {		
@@ -3025,7 +3035,7 @@ test("jpoker.plugins.tableList getHTML should not list tourney table", function(
 // regularTourneyList
 //
 test("jpoker.plugins.regularTourneyList", function(){
-        expect(13);
+        expect(14);
         stop();
 
         //
@@ -3055,6 +3065,11 @@ test("jpoker.plugins.regularTourneyList", function(){
         var row_id = TOURNEY_LIST_PACKET.packets[1].serial + id;
         var place = $("#main");
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.regularTourneyList.callback.display_done;
+	jpoker.plugins.regularTourneyList.callback.display_done = function(element) {
+	    jpoker.plugins.regularTourneyList.callback.display_done = display_done;
+	    equals($(".jpoker_regular_tourney_list", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('regularTourneyList', 'url', { delay: 30 });
         equals(server.callbacks.update.length, 1, 'regularTourneyList update registered');
         server.registerUpdate(function(server, what, data) {
@@ -3207,7 +3222,7 @@ test("jpoker.plugins.regularTourneyList pager", function(){
 // sitngoTourneyList
 //
 test("jpoker.plugins.sitngoTourneyList", function(){
-        expect(13);
+        expect(14);
         stop();
 
         //
@@ -3237,6 +3252,11 @@ test("jpoker.plugins.sitngoTourneyList", function(){
         var row_id = TOURNEY_LIST_PACKET.packets[0].serial + id;
         var place = $("#main");
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.sitngoTourneyList.callback.display_done;
+	jpoker.plugins.sitngoTourneyList.callback.display_done = function(element) {
+	    jpoker.plugins.sitngoTourneyList.callback.display_done = display_done;
+	    equals($(".jpoker_sitngo_tourney_list", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('sitngoTourneyList', 'url', { delay: 30 });
         equals(server.callbacks.update.length, 1, 'sitngoTourneyList update registered');
         server.registerUpdate(function(server, what, data) {
@@ -4446,7 +4466,7 @@ test("jpoker.plugins.tourneyDetails.unregister", function(){
 // tourneyPlaceholder
 //
 test("jpoker.plugins.tourneyPlaceholder", function(){
-        expect(10);
+        expect(11);
         stop();
 
         var PokerServer = function() {};
@@ -4472,6 +4492,11 @@ test("jpoker.plugins.tourneyPlaceholder", function(){
         var id = 'jpoker' + jpoker.serial;
         var place = $("#main");
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.tourneyPlaceholder.callback.display_done;
+	jpoker.plugins.tourneyPlaceholder.callback.display_done = function(element) {
+	    jpoker.plugins.tourneyPlaceholder.callback.display_done = display_done;
+	    equals($(".jpoker_tourney_placeholder", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('tourneyPlaceholder', 'url', tourney_serial.toString());
         equals(server.callbacks.update.length, 1, 'tourneyPlaceholder update registered');
         server.registerUpdate(function(server, what, data) {
@@ -4587,7 +4612,7 @@ test("jpoker.plugins.featuredTable waiting", function(){
 // serverStatus
 //
 test("jpoker.plugins.serverStatus", function(){
-	expect(8);
+	expect(9);
 
         var server = jpoker.serverCreate({ url: 'url' });
 
@@ -4597,6 +4622,11 @@ test("jpoker.plugins.serverStatus", function(){
         //
         // disconnected
         //
+	var display_done = jpoker.plugins.serverStatus.callback.display_done;
+	jpoker.plugins.serverStatus.callback.display_done = function(element) {
+	    jpoker.plugins.serverStatus.callback.display_done = display_done;
+	    equals($(".jpoker_server_status", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
 	place.jpoker('serverStatus', 'url');
 	var content = $("#" + id).text();
 	equals(content.indexOf("disconnected") >= 0, true, "disconnected");
@@ -4639,12 +4669,17 @@ $.fn.triggerKeydown = function(keyCode) {
 };
 
 test("jpoker.plugins.login", function(){
-        expect(10);
+        expect(11);
 
         var server = jpoker.serverCreate({ url: 'url' });
         var place = $("#main");
         var id = 'jpoker' + jpoker.serial;
 
+	var display_done = jpoker.plugins.login.callback.display_done;
+	jpoker.plugins.login.callback.display_done = function(element) {
+	    jpoker.plugins.login.callback.display_done = display_done;
+	    equals($(".jpoker_login", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
 	place.jpoker('login', 'url');
         var content = null;
         
@@ -6708,7 +6743,7 @@ test("jpoker.plugins.player: no rebuy if money", function() {
 
 
 test("jpoker.plugins.userInfo", function(){
-        expect(22);
+        expect(23);
 	stop();
 
         var server = jpoker.serverCreate({ url: 'url' });
@@ -6731,6 +6766,11 @@ test("jpoker.plugins.userInfo", function(){
         var place = $('#main');
 
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.userInfo.callback.display_done;
+	jpoker.plugins.userInfo.callback.display_done = function(element) {
+	    jpoker.plugins.userInfo.callback.display_done = display_done;
+	    equals($(".jpoker_user_info", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('userInfo', 'url');
         equals(server.callbacks.update.length, 1, 'userInfo update registered');
 	equals($('.jpoker_user_info').length, 1, 'user info div');
@@ -7182,7 +7222,7 @@ test("jpoker.plugins.muck", function(){
     });
 
 test("jpoker.plugins.places", function(){
-        expect(8);
+        expect(9);
 	stop();
 
         var server = jpoker.serverCreate({ url: 'url' });
@@ -7203,6 +7243,11 @@ test("jpoker.plugins.places", function(){
         var place = $('#main');
 
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.places.callback.display_done;
+	jpoker.plugins.places.callback.display_done = function(element) {
+	    jpoker.plugins.places.callback.display_done = display_done;
+	    equals($(".jpoker_places", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('places', 'url');
         equals(server.callbacks.update.length, 1, 'places update registered');
 	equals($('.jpoker_places', place).length, 1, 'places div');
@@ -7484,7 +7529,7 @@ test("jpoker.plugins.playerLookup options", function(){
     });
 
 test("jpoker.plugins.cashier", function(){
-        expect(12);
+        expect(13);
 	stop();
 
         var server = jpoker.serverCreate({ url: 'url' });
@@ -7505,6 +7550,11 @@ test("jpoker.plugins.cashier", function(){
         var place = $('#main');
 
         equals('update' in server.callbacks, false, 'no update registered');
+	var display_done = jpoker.plugins.cashier.callback.display_done;
+	jpoker.plugins.cashier.callback.display_done = function(element) {
+	    jpoker.plugins.cashier.callback.display_done = display_done;
+	    equals($(".jpoker_cashier", $(element).parent()).length, 1, 'display done called when DOM is done');
+	};
         place.jpoker('cashier', 'url');
         equals(server.callbacks.update.length, 1, 'cashier update registered');
 	equals($('.jpoker_cashier').length, 1, 'cashier div');

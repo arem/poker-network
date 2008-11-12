@@ -33,6 +33,29 @@
         };
     }
 
+    //
+    // decoration divs to help CSS skining
+    // example $('.jpoker_download', copyright).frame('box1');
+    //
+    $.fn.extend({
+            frame: function(css) {
+                var box = '';
+                var positions = [ 'n', 's', 'w', 'e', 'se', 'sw', 'nw', 'ne' ];
+                for(var i = 0; i < positions.length; i++) {
+                    box += '<div style=\'position: absolute\' class=\'' + css + ' ' + css + '-' + positions[i] + '\'></div>';
+                }
+                var toggle = function() { $(this).toggleClass(css + '-hover'); };
+
+                return this.each(function() {
+                        var $this = $(this);
+                        $this.wrap('<div style=\'position: relative\' class=\'' + css + ' ' + css + '-container\'></div>');
+                        $this.before(box);
+                        $this.parent().hover(toggle, toggle);
+                        return this;
+                    });
+            }
+        });
+
     $.fn.jpoker = function() {
         var args = Array.prototype.slice.call(arguments);
         var name = args.shift();
@@ -92,12 +115,17 @@
 	     * the  margin is set explicitly. This causes ui.dialog to throw exceptions.
              */
             var copyright = $('<div style=\'margin:0px\'><div id=\'jpoker_copyright\'><div class=\'jpoker_copyright_image\'></div><div class=\'jpoker_software\'>jpoker-' + this.VERSION + '</div><div class=\'jpoker_authors\'><div><span>Copyright 2008 </span><a href=\'mailto:loic@dachary.org\'>Loic Dachary</a></div><div><span class=\'jpoker_click\'>Copyright 2008 </span><a href=\'mailto:proppy@aminche.com\'>Johan Euphrosine</a></div></div><div class=\'jpoker_explain\'>jpoker runs on this web browser and is Free Software. You may use jpoker to run a business without asking the authors permissions. You may give a copy to your friends. However, the authors do not want jpoker to be used with proprietary software.</div><div class=\'jpoker_license\'>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\'http://www.fsf.org/licensing/licenses/gpl.txt\'>GNU General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</div> <div class=\'jpoker_full_copyright\'>Read the full <a href=\'http://jspoker.pokersource.info/jpoker/#Copyright\'>copyright information page.</a></div><div class=\'jpoker_download\'>Download <a href=\'http://upstream.jspoker.pokersource.info/file/tip/jpoker/js/jquery.jpoker.js\'>jpoker sources.</a></div><div class=\'jpoker_dismiss\'><a href=\'javascript://\'>Dismiss</a></div></div></div>').dialog(this.copyright_options); 
-            $('.jpoker_download', copyright).frame('box1');
+            this.copyright_callback.display_done(copyright);
             $('.ui-dialog-titlebar', copyright.parents('.ui-dialog-container')).hide();
             var close = function() { copyright.dialog('destroy'); };
             window.setTimeout(close, this.copyrightTimeout);
             copyright.click(close);
             return copyright;
+        },
+
+        copyright_callback: {
+            display_done: function(element) {
+            }
         },
 
         serial: (new Date()).getTime(),
@@ -2133,7 +2161,8 @@
 					       previous_label: t.previous_label.supplant({previous_label: _("Previous page")}),
 					       next_label: t.next_label.supplant({next_label: _("Next page")})};
 				$('table', element).tablesorter({widgets: ['zebra']}).tablesorterPager(options);
-			    }			    
+			    }
+                            tableList.callback.display_done(element);
                         }
                         return true;
                     } else {
@@ -2201,6 +2230,10 @@
 	previous_label: '<<<'
     };
 
+    jpoker.plugins.tableList.callback = {
+	display_done: function(element) {
+	}
+    };
     //
     // regularTourneyList
     //
@@ -2247,6 +2280,7 @@
 					       next_label: t.next_label.supplant({next_label: _("Next page")})};
 				$('table', element).tablesorter({widgets: ['zebra'], sortList: [[4, 0]]}).tablesorterPager(options);
 			    }
+                            regularTourneyList.callback.display_done(element);
                         }
                         return true;
                     } else {
@@ -2313,6 +2347,11 @@
 	previous_label: '<<< {previous_label}'
     };
 
+    jpoker.plugins.regularTourneyList.callback = {
+	display_done: function(element) {
+	}
+    };
+
     //
     // sitngoTourneyList
     //
@@ -2359,6 +2398,7 @@
 					       next_label: t.next_label.supplant({next_label: _("Next page")})};
 				$('table', element).tablesorter({widgets: ['zebra'], sortList: [[3, 0]]}).tablesorterPager(options);				
 			    }
+                            sitngoTourneyList.callback.display_done(element);
                         }
                         return true;
                     } else {
@@ -2425,6 +2465,11 @@
 	previous_label: '<<< {previous_label}'	
     };
 
+    jpoker.plugins.sitngoTourneyList.callback = {
+	display_done: function(element) {
+	}
+    };
+
     //
     // tourneyDetails
     //
@@ -2488,7 +2533,7 @@
 					});
 				}
 			    }
-			    jpoker.plugins.tourneyDetails.callback.display_done(element);
+			    tourneyDetails.callback.display_done(element);
                         }
                         return true;
                     } else {
@@ -2717,6 +2762,7 @@
                     if(element) {
                         if(packet && packet.type == 'PacketPokerTourneyManager') {
                             $(element).html(tourneyPlaceholder.getHTML(id, packet));
+                            tourneyPlaceholder.callback.display_done(element);
                         }
                         return true;
                     } else {
@@ -2750,6 +2796,11 @@
 	starttime: '<div class=\'jpoker_tourney_placeholder_starttime\'>{tourney_starttime}</div>'
     };
     
+    jpoker.plugins.tourneyPlaceholder.callback = {
+	display_done: function(element) {
+	}
+    };
+
     //
     // serverStatus
     //
@@ -2770,6 +2821,7 @@
                     var element = document.getElementById(id);
                     if(element) {
                         $(element).html(serverStatus.getHTML(server));
+                        serverStatus.callback.display_done(element);
                         return true;
                     } else {
                         return false;
@@ -2820,6 +2872,11 @@
         players_tourneys: '<div class=\'jpoker_server_status_players_tourneys\'> <span class=\'jpoker_server_status_players_tourneys_count\'>{count}</span> <span class=\'jpoker_server_status_players_tourneys_label\'>{players_tourneys}</span> </div>',
 
         tourneys: '<div class=\'jpoker_server_status_tourneys\'> <span class=\'jpoker_server_status_tourneys_count\'>{count}</span> <span class=\'jpoker_server_status_tourneys_label\'>{tourneys}</span> </div>'
+    };
+
+    jpoker.plugins.serverStatus.callback = {
+	display_done: function(element) {
+	}
     };
 
     //
@@ -2874,6 +2931,7 @@
                                     }
                                 });
                         }
+                        login.callback.display_done(element);
                         return true;
                     } else {
                         return false;
@@ -2909,6 +2967,11 @@
     jpoker.plugins.login.templates = {
 	login: '<table>\n<tbody><tr>\n<td class=\'jpoker_login_name_label\'><b>{login}</b></td>\n<td><input type=\'text\' class=\'jpoker_login_name\' size=\'10\'/></td>\n<td><input type=\'submit\' class=\'jpoker_login_submit\' value=\'{go}\' /></td>\n</tr>\n<tr>\n<td class=\'jpoker_login_name_label\'><b>{password}</b></td>\n<td><input type=\'password\' class=\'jpoker_login_password\' size=\'10\'/></td>\n<td><input type=\'submit\' class=\'jpoker_login_signup\' value=\'{signup}\' /></td>\n</tr>\n</tbody></table>',
 	logout: '<div class=\'jpoker_logout\'>{logout}<div>'
+    };
+
+    jpoker.plugins.login.callback = {
+	display_done: function(element) {
+	}
     };
 
     //
@@ -2956,28 +3019,6 @@
         string: '',
         compare: function(a, b) { return a && b && b.players - a.players; }
     };
-
-    //
-    // decoration divs to help CSS skining
-    //
-    $.fn.extend({
-            frame: function(css) {
-                var box = '';
-                var positions = [ 'n', 's', 'w', 'e', 'se', 'sw', 'nw', 'ne' ];
-                for(var i = 0; i < positions.length; i++) {
-                    box += '<div style=\'position: absolute\' class=\'' + css + ' ' + css + '-' + positions[i] + '\'></div>';
-                }
-                var toggle = function() { $(this).toggleClass(css + '-hover'); };
-
-                return this.each(function() {
-                        var $this = $(this);
-                        $this.wrap('<div style=\'position: relative\' class=\'' + css + ' ' + css + '-container\'></div>');
-                        $this.before(box);
-                        $this.parent().hover(toggle, toggle);
-                        return this;
-                    });
-            }
-        });
 
     //
     // table
@@ -3260,12 +3301,14 @@
 
     jpoker.plugins.table.destroy = function(table, what, dummy, id) {
         // it is enough to destroy the DOM elements, even for players
-        jpoker.message('plugins.table.destroy ' + id + ' game: ' + table.game_id);
+        if(jpoker.verbose) {
+            jpoker.message('plugins.table.destroy ' + id + ' game: ' + table.game_id);
+        }
+	jpoker.plugins.table.callback.quit(table);
         $('#game_window' + id).remove();
 	if (table.tourney_rank !== undefined) {
 	    jpoker.plugins.table.callback.tourney_end(table);
 	}
-	jpoker.plugins.table.callback.quit(table);
         return false;
     };
 
@@ -3977,6 +4020,42 @@
     };
 
     //
+    // muck (table plugin helper)
+    //
+
+    jpoker.plugins.muck = {
+	AUTO_MUCK_WIN: 1,
+	AUTO_MUCK_LOSE: 2,
+	templates : {
+	    muck_accept: '<div class=\'jpoker_muck jpoker_muck_accept\'><a href=\'javascript://\'>{muck_accept_label}</a></div>',
+	    muck_deny: '<div class=\'jpoker_muck jpoker_muck_deny\'><a href=\'javascript://\'>{muck_deny_label}</a></div>',
+	    auto_muck: '<div class=\'jpoker_auto_muck\'><div class=\'jpoker_auto_muck_win\'><input type=\'checkbox\' name=\'auto_muck_win\' id=\'auto_muck_win{id}\'></input><label for=\'auto_muck_win{id}\'>{auto_muck_win_label}</label></div><div class=\'jpoker_auto_muck_lose\'><input type=\'checkbox\' name=\'auto_muck_lose\' id=\'auto_muck_lose{id}\'></input><label for=\'auto_muck_lose{id}\'>{auto_muck_lose_label}</label></div></div>'
+	},
+	muckRequest: function(server, packet, id) {
+	    if ($.inArray(server.serial, packet.muckable_serials) != -1) {
+		$('#muck_accept' + id).show();
+		$('#muck_deny' + id).show();
+	    }
+	},
+
+	muckRequestTimeout: function(id) {
+	    $('#muck_accept' + id).hide();
+	    $('#muck_deny' + id).hide();
+	},
+	sendAutoMuck: function(server, game_id, id) {
+	    var auto_muck = 0;
+	    if ($('#auto_muck_win' + id).is(':checked')) {
+		auto_muck |= jpoker.plugins.muck.AUTO_MUCK_WIN;
+	    }
+	    if ($('#auto_muck_lose' + id).is(':checked')) {
+		auto_muck |= jpoker.plugins.muck.AUTO_MUCK_LOSE;
+	    }
+	    server.sendPacket({type: 'PacketPokerAutoMuck', serial: server.serial, game_id: game_id, auto_muck: auto_muck});
+	    server.preferences.extend({auto_muck_win: $('#auto_muck_win' + id).is(':checked'), auto_muck_lose: $('#auto_muck_lose' + id).is(':checked')});
+	}
+    };
+
+    //
     // cards (table plugin helper)
     //
     jpoker.plugins.cards = {
@@ -4090,6 +4169,7 @@
 					}
 				    }
 				});
+                            userInfo.callback.display_done(element);
 			}
                         return true;
                     } else {
@@ -4140,6 +4220,11 @@
 	avatar: '<div class=\'jpoker_user_info_avatar_preview\'></div><form class=\'jpoker_user_info_avatar_upload\' action=\'{upload_url}?name={hash}\' method=\'post\' enctype=\'multipart/form-data\'><input type=\'file\' name=\'filename\'></input><input type=\'submit\' value=\'{upload}\'></input></form><div class=\'jpoker_user_info_avatar_upload_feedback\'></div>'
     };
 
+    jpoker.plugins.userInfo.callback = {
+	display_done: function(element) {
+	}
+    };
+
     //
     // places
     //
@@ -4187,6 +4272,7 @@
 					    });
 				    });
 			    }
+                            places.callback.display_done(element);
 			}
                         return true;
                     } else {
@@ -4246,6 +4332,11 @@
 	}
     };
 
+    jpoker.plugins.places.callback = {
+	display_done: function(element) {
+	}
+    };
+
     //
     // playerLookup
     //
@@ -4267,29 +4358,30 @@
 			if(packet) {
 			    if (packet.type == 'PacketPokerPlayerPlaces') {
 				$('.jpoker_player_lookup_result', element).html(playerLookup.getHTML(packet, opts.table_link_pattern, opts.tourney_link_pattern));
-			    if (opts.table_link_pattern === undefined) {
-				$.each(packet.tables, function(i, table) {
-					$('#' + table, element).click(function() {
-						var server = jpoker.getServer(url);
-						if(server) {
-						    server.tableJoin(table);
-						}
-					    });
-				    });
-			    }
-			    if (opts.tourney_link_pattern === undefined) {
-				$.each(packet.tourneys, function(i, tourney) {
-					$('#' + tourney, element).click(function() {
-						var server = jpoker.getServer(url);
-						if(server) {
-						    var packet = {game_id: tourney, name: ''};
-						    server.placeTourneyRowClick(server, packet);
-						}
-					    });
-				    });
-			    }
+                                if (opts.table_link_pattern === undefined) {
+                                    $.each(packet.tables, function(i, table) {
+                                            $('#' + table, element).click(function() {
+                                                    var server = jpoker.getServer(url);
+                                                    if(server) {
+                                                        server.tableJoin(table);
+                                                    }
+                                                });
+                                        });
+                                }
+                                if (opts.tourney_link_pattern === undefined) {
+                                    $.each(packet.tourneys, function(i, tourney) {
+                                            $('#' + tourney, element).click(function() {
+                                                    var server = jpoker.getServer(url);
+                                                    if(server) {
+                                                        var packet = {game_id: tourney, name: ''};
+                                                        server.placeTourneyRowClick(server, packet);
+                                                    }
+                                                });
+                                        });
+                                }
+                                playerLookup.callback.display_done(element);
 			    } else if ((packet.type == 'PacketError') && (packet.other_type == jpoker.packetName2Type.PACKET_POKER_PLAYER_PLACES)) {
-				jpoker.plugins.playerLookup.callback.error(packet);
+				playerLookup.callback.error(packet);
 			    }
 			}
                         return true;
@@ -4364,7 +4456,10 @@
 
     jpoker.plugins.playerLookup.callback = {
 	error: function(packet) {
-	}
+	},
+        
+        display_done: function(element) {
+        }
     };
 
     //
@@ -4388,6 +4483,7 @@
                     if(element) {
 			if(packet && packet.type == 'PacketPokerUserInfo') {
 			    $(element).html(cashier.getHTML(packet));
+                            cashier.callback.display_done(element);
 			}
                         return true;
                     } else {
@@ -4431,38 +4527,14 @@
 	}
     };
 
-    jpoker.plugins.muck = {
-	AUTO_MUCK_WIN: 1,
-	AUTO_MUCK_LOSE: 2,
-	templates : {
-	    muck_accept: '<div class=\'jpoker_muck jpoker_muck_accept\'><a href=\'javascript://\'>{muck_accept_label}</a></div>',
-	    muck_deny: '<div class=\'jpoker_muck jpoker_muck_deny\'><a href=\'javascript://\'>{muck_deny_label}</a></div>',
-	    auto_muck: '<div class=\'jpoker_auto_muck\'><div class=\'jpoker_auto_muck_win\'><input type=\'checkbox\' name=\'auto_muck_win\' id=\'auto_muck_win{id}\'></input><label for=\'auto_muck_win{id}\'>{auto_muck_win_label}</label></div><div class=\'jpoker_auto_muck_lose\'><input type=\'checkbox\' name=\'auto_muck_lose\' id=\'auto_muck_lose{id}\'></input><label for=\'auto_muck_lose{id}\'>{auto_muck_lose_label}</label></div></div>'
-	},
-	muckRequest: function(server, packet, id) {
-	    if ($.inArray(server.serial, packet.muckable_serials) != -1) {
-		$('#muck_accept' + id).show();
-		$('#muck_deny' + id).show();
-	    }
-	},
-
-	muckRequestTimeout: function(id) {
-	    $('#muck_accept' + id).hide();
-	    $('#muck_deny' + id).hide();
-	},
-	sendAutoMuck: function(server, game_id, id) {
-	    var auto_muck = 0;
-	    if ($('#auto_muck_win' + id).is(':checked')) {
-		auto_muck |= jpoker.plugins.muck.AUTO_MUCK_WIN;
-	    }
-	    if ($('#auto_muck_lose' + id).is(':checked')) {
-		auto_muck |= jpoker.plugins.muck.AUTO_MUCK_LOSE;
-	    }
-	    server.sendPacket({type: 'PacketPokerAutoMuck', serial: server.serial, game_id: game_id, auto_muck: auto_muck});
-	    server.preferences.extend({auto_muck_win: $('#auto_muck_win' + id).is(':checked'), auto_muck_lose: $('#auto_muck_lose' + id).is(':checked')});
+    jpoker.plugins.cashier.callback = {
+	display_done: function(element) {
 	}
     };
 
+    //
+    // user preferences
+    //
     jpoker.preferences = function(hash) {
 	    var cookie = 'jpoker_preferences_'+hash;
 	    if ($.cookie(cookie)) {
