@@ -68,7 +68,9 @@
 
         sound: 'embed width=\'1\' height=\'1\' pluginspage=\'http://getgnash.org/\' type=\'application/x-shockwave-flash\' ',
 
-        packetName2Type: { NONE: 0, STRING: 1, INT: 2, ERROR: 3, ACK: 4, PING: 5, SERIAL: 6, QUIT: 7, AUTH_OK: 8, AUTH_REFUSED: 9, LOGIN: 10, AUTH_REQUEST: 11, LIST: 12, LOGOUT: 13, BOOTSTRAP: 14, PROTOCOL_ERROR: 15, MESSAGE: 16, POKER_SEATS: 50, POKER_ID: 51, POKER_MESSAGE: 52, ERROR: 53, POKER_POSITION: 54, POKER_INT: 55, POKER_BET: 56, POKER_FOLD: 57, POKER_STATE: 58, POKER_WIN: 59, POKER_CARDS: 60, POKER_PLAYER_CARDS: 61, POKER_BOARD_CARDS: 62, POKER_CHIPS: 63, POKER_PLAYER_CHIPS: 64, POKER_CHECK: 65, POKER_START: 66, POKER_IN_GAME: 67, POKER_CALL: 68, POKER_RAISE: 69, POKER_DEALER: 70, POKER_TABLE_JOIN: 71, POKER_TABLE_SELECT: 72, POKER_TABLE: 73, POKER_TABLE_LIST: 74, POKER_SIT: 75, POKER_TABLE_DESTROY: 76, POKER_TIMEOUT_WARNING: 77, POKER_TIMEOUT_NOTICE: 78, POKER_SEAT: 79, POKER_TABLE_MOVE: 80, POKER_PLAYER_LEAVE: 81, POKER_SIT_OUT: 82, POKER_TABLE_QUIT: 83, POKER_BUY_IN: 84, POKER_REBUY: 85, POKER_CHAT: 86, POKER_PLAYER_INFO: 87, POKER_PLAYER_ARRIVE: 88, POKER_HAND_SELECT: 89, POKER_HAND_LIST: 90, POKER_HAND_SELECT_ALL: 91, POKER_USER_INFO: 92, POKER_GET_USER_INFO: 93, POKER_ANTE: 94, POKER_BLIND: 95, POKER_WAIT_BIG_BLIND: 96, POKER_AUTO_BLIND_ANTE: 97, POKER_NOAUTO_BLIND_ANTE: 98, POKER_CANCELED: 99, POKER_BLIND_REQUEST: 100, POKER_ANTE_REQUEST: 101, POKER_AUTO_FOLD: 102, POKER_WAIT_FOR: 103, POKER_STREAM_MODE: 104, POKER_BATCH_MODE: 105, POKER_LOOK_CARDS: 106, POKER_TABLE_REQUEST_PLAYERS_LIST: 107, POKER_PLAYERS_LIST: 108, POKER_PERSONAL_INFO: 109, POKER_GET_PERSONAL_INFO: 110, POKER_TOURNEY_SELECT: 111, POKER_TOURNEY: 112, POKER_TOURNEY_INFO: 113, POKER_TOURNEY_LIST: 114, POKER_TOURNEY_REQUEST_PLAYERS_LIST: 115, POKER_TOURNEY_REGISTER: 116, POKER_TOURNEY_UNREGISTER: 117, POKER_TOURNEY_PLAYERS_LIST: 118, POKER_HAND_HISTORY: 119, POKER_SET_ACCOUNT: 120, POKER_CREATE_ACCOUNT: 121, POKER_PLAYER_SELF: 122, POKER_GET_PLAYER_INFO: 123, POKER_ROLES: 124, POKER_SET_ROLE: 125, POKER_READY_TO_PLAY: 126, POKER_PROCESSING_HAND: 127, POKER_MUCK_REQUEST: 128, POKER_AUTO_MUCK: 129, POKER_MUCK_ACCEPT: 130, POKER_MUCK_DENY: 131, POKER_CASH_IN: 132, POKER_CASH_OUT: 133, POKER_CASH_OUT_COMMIT: 134, POKER_CASH_QUERY: 135, POKER_RAKE: 136, POKER_TOURNEY_RANK: 137, POKER_PLAYER_IMAGE: 138, POKER_GET_PLAYER_IMAGE: 139, POKER_HAND_REPLAY: 140, POKER_GAME_MESSAGE: 141, POKER_EXPLAIN: 142, POKER_STATS_QUERY: 143, POKER_STATS: 144, PACKET_POKER_PLAYER_PLACES: 152, PACKET_POKER_BEST_CARDS: 170, PACKET_POKER_POT_CHIPS: 171, PACKET_POKER_CLIENT_ACTION: 172, PACKET_POKER_BET_LIMIT: 173, POKER_SIT_REQUEST: 174, POKER_PLAYER_NO_CARDS: 175, PACKET_POKER_CHIPS_PLAYER2BET: 176, PACKET_POKER_CHIPS_BET2POT: 177, PACKET_POKER_CHIPS_POT2PLAYER: 178, PACKET_POKER_CHIPS_POT_MERGE: 179, POKER_CHIPS_POT_RESET: 180, POKER_CHIPS_BET2PLAYER: 181, POKER_END_ROUND: 182, PACKET_POKER_DISPLAY_NODE: 183, PACKET_POKER_DEAL_CARDS: 184, POKER_CHAT_HISTORY: 185, POKER_DISPLAY_CARD: 186, POKER_SELF_IN_POSITION: 187, POKER_SELF_LOST_POSITION: 188, POKER_HIGHEST_BET_INCREASE: 189, POKER_PLAYER_WIN: 190, POKER_ANIMATION_PLAYER_NOISE: 191, POKER_ANIMATION_PLAYER_FOLD: 192, POKER_ANIMATION_PLAYER_BET: 193, POKER_ANIMATION_PLAYER_CHIPS: 194, POKER_ANIMATION_DEALER_CHANGE: 195, POKER_ANIMATION_DEALER_BUTTON: 196, POKER_BEGIN_ROUND: 197, POKER_CURRENT_GAMES: 198, POKER_END_ROUND_LAST: 199, POKER_PYTHON_ANIMATION: 200, POKER_SIT_OUT_NEXT_TURN: 201, POKER_RENDERER_STATE: 202, POKER_CHAT_WORD: 203, POKER_SHOWDOWN: 204, POKER_CLIENT_PLAYER_CHIPS: 205, POKER_INTERFACE_COMMAND: 206, POKER_PLAYER_ME_LOOK_CARDS: 207, POKER_PLAYER_ME_IN_FIRST_PERSON: 208, POKER_ALLIN_SHOWDOWN: 209 },
+        packetName2Type: { NONE: 0, STRING: 1, INT: 2, ERROR: 3, ACK: 4, PING: 5, SERIAL: 6, QUIT: 7, AUTH_OK: 8, AUTH_REFUSED: 9, LOGIN: 10, AUTH_REQUEST: 11, LIST: 12, LOGOUT: 13, BOOTSTRAP: 14, PROTOCOL_ERROR: 15, MESSAGE: 16, POKER_SEATS: 50, POKER_ID: 51, POKER_MESSAGE: 52, ERROR: 53, POKER_POSITION: 54, POKER_INT: 55, POKER_BET: 56, POKER_FOLD: 57, POKER_STATE: 58, POKER_WIN: 59, POKER_CARDS: 60, POKER_PLAYER_CARDS: 61, POKER_BOARD_CARDS: 62, POKER_CHIPS: 63, POKER_PLAYER_CHIPS: 64, POKER_CHECK: 65, POKER_START: 66, POKER_IN_GAME: 67, POKER_CALL: 68, POKER_RAISE: 69, POKER_DEALER: 70, POKER_TABLE_JOIN: 71, POKER_TABLE_SELECT: 72, POKER_TABLE: 73, POKER_TABLE_LIST: 74, POKER_SIT: 75, POKER_TABLE_DESTROY: 76, POKER_TIMEOUT_WARNING: 77, POKER_TIMEOUT_NOTICE: 78, POKER_SEAT: 79, POKER_TABLE_MOVE: 80, POKER_PLAYER_LEAVE: 81, POKER_SIT_OUT: 82, POKER_TABLE_QUIT: 83, POKER_BUY_IN: 84, POKER_REBUY: 85, POKER_CHAT: 86, POKER_PLAYER_INFO: 87, POKER_PLAYER_ARRIVE: 88, POKER_HAND_SELECT: 89, POKER_HAND_LIST: 90, POKER_HAND_SELECT_ALL: 91, POKER_USER_INFO: 92, POKER_GET_USER_INFO: 93, POKER_ANTE: 94, POKER_BLIND: 95, POKER_WAIT_BIG_BLIND: 96, POKER_AUTO_BLIND_ANTE: 97, POKER_NOAUTO_BLIND_ANTE: 98, POKER_CANCELED: 99, POKER_BLIND_REQUEST: 100, POKER_ANTE_REQUEST: 101, POKER_AUTO_FOLD: 102, POKER_WAIT_FOR: 103, POKER_STREAM_MODE: 104, POKER_BATCH_MODE: 105, POKER_LOOK_CARDS: 106, POKER_TABLE_REQUEST_PLAYERS_LIST: 107, POKER_PLAYERS_LIST: 108, POKER_PERSONAL_INFO: 109, POKER_GET_PERSONAL_INFO: 110, POKER_TOURNEY_SELECT: 111, POKER_TOURNEY: 112, POKER_TOURNEY_INFO: 113, POKER_TOURNEY_LIST: 114, POKER_TOURNEY_REQUEST_PLAYERS_LIST: 115, POKER_TOURNEY_REGISTER: 116, POKER_TOURNEY_UNREGISTER: 117, POKER_TOURNEY_PLAYERS_LIST: 118, POKER_HAND_HISTORY: 119, POKER_SET_ACCOUNT: 120, POKER_CREATE_ACCOUNT: 121, POKER_PLAYER_SELF: 122, POKER_GET_PLAYER_INFO: 123, POKER_ROLES: 124, POKER_SET_ROLE: 125, POKER_READY_TO_PLAY: 126, POKER_PROCESSING_HAND: 127, POKER_MUCK_REQUEST: 128, POKER_AUTO_MUCK: 129, POKER_MUCK_ACCEPT: 130, POKER_MUCK_DENY: 131, POKER_CASH_IN: 132, POKER_CASH_OUT: 133, POKER_CASH_OUT_COMMIT: 134, POKER_CASH_QUERY: 135, POKER_RAKE: 136, POKER_TOURNEY_RANK: 137, POKER_PLAYER_IMAGE: 138, POKER_GET_PLAYER_IMAGE: 139, POKER_HAND_REPLAY: 140, POKER_GAME_MESSAGE: 141, POKER_EXPLAIN: 142, POKER_STATS_QUERY: 143, POKER_STATS: 144, PACKET_POKER_PLAYER_PLACES: 152, PACKET_POKER_SET_LOCALE: 153, PACKET_POKER_BEST_CARDS: 170, PACKET_POKER_POT_CHIPS: 171, PACKET_POKER_CLIENT_ACTION: 172, PACKET_POKER_BET_LIMIT: 173, POKER_SIT_REQUEST: 174, POKER_PLAYER_NO_CARDS: 175, PACKET_POKER_CHIPS_PLAYER2BET: 176, PACKET_POKER_CHIPS_BET2POT: 177, PACKET_POKER_CHIPS_POT2PLAYER: 178, PACKET_POKER_CHIPS_POT_MERGE: 179, POKER_CHIPS_POT_RESET: 180, POKER_CHIPS_BET2PLAYER: 181, POKER_END_ROUND: 182, PACKET_POKER_DISPLAY_NODE: 183, PACKET_POKER_DEAL_CARDS: 184, POKER_CHAT_HISTORY: 185, POKER_DISPLAY_CARD: 186, POKER_SELF_IN_POSITION: 187, POKER_SELF_LOST_POSITION: 188, POKER_HIGHEST_BET_INCREASE: 189, POKER_PLAYER_WIN: 190, POKER_ANIMATION_PLAYER_NOISE: 191, POKER_ANIMATION_PLAYER_FOLD: 192, POKER_ANIMATION_PLAYER_BET: 193, POKER_ANIMATION_PLAYER_CHIPS: 194, POKER_ANIMATION_DEALER_CHANGE: 195, POKER_ANIMATION_DEALER_BUTTON: 196, POKER_BEGIN_ROUND: 197, POKER_CURRENT_GAMES: 198, POKER_END_ROUND_LAST: 199, POKER_PYTHON_ANIMATION: 200, POKER_SIT_OUT_NEXT_TURN: 201, POKER_RENDERER_STATE: 202, POKER_CHAT_WORD: 203, POKER_SHOWDOWN: 204, POKER_CLIENT_PLAYER_CHIPS: 205, POKER_INTERFACE_COMMAND: 206, POKER_PLAYER_ME_LOOK_CARDS: 207, POKER_PLAYER_ME_IN_FIRST_PERSON: 208, POKER_ALLIN_SHOWDOWN: 209 },
+
+	locales: {en: 'en_US.UTF-8', fr: 'fr_FR.UTF-8', ja: 'ja_JP.UTF-8'},
 
         verbose: 0,
 
@@ -109,12 +111,14 @@
 
         copyright_options: { width: 'none', height: 'none' },
 
+        copyright_text: '<div id=\'jpoker_copyright\'><div class=\'jpoker_copyright_image\'></div><div class=\'jpoker_software\'>jpoker-{version}</div><div class=\'jpoker_authors\'><div><span>Copyright 2008 </span><a onclick=\'window.open(this.href); return false\' href=\'mailto:loic@dachary.org\'>Loic Dachary</a>, <a onclick=\'window.open(this.href); return false\' href=\'mailto:proppy@aminche.com\'>Johan Euphrosine</a></div></div><div class=\'jpoker_explain\'>jpoker runs on this web browser and is Free Software. You may use jpoker to run a business without asking the authors permissions. You may give a copy to your friends. However, the authors do not want jpoker to be used with proprietary software.</div><div class=\'jpoker_license\'>This program is free software: you can redistribute it and/or modify it under the terms of the <a onclick=\'window.open(this.href); return false\' href=\'http://www.fsf.org/licensing/licenses/gpl.txt\'>GNU General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</div> <div class=\'jpoker_full_copyright\'>Read the full <a onclick=\'window.open(this.href); return false\' href=\'http://jspoker.pokersource.info/jpoker/#Copyright\'>copyright information page.</a></div><div class=\'jpoker_download\'>Download <a onclick=\'window.open(this.href); return false\' href=\'http://upstream.jspoker.pokersource.info/file/tip/jpoker/js/jquery.jpoker.js\'>jpoker sources.</a></div>',
+
         copyright: function() {
             /*
              * On IE7, css('margin') returns 'auto' instead of the actual margin value unless
 	     * the  margin is set explicitly. This causes ui.dialog to throw exceptions.
              */
-            var copyright = $('<div style=\'margin:0px\'><div id=\'jpoker_copyright\'><div class=\'jpoker_copyright_image\'></div><div class=\'jpoker_software\'>jpoker-' + this.VERSION + '</div><div class=\'jpoker_authors\'><div><span>Copyright 2008 </span><a href=\'mailto:loic@dachary.org\'>Loic Dachary</a></div><div><span class=\'jpoker_click\'>Copyright 2008 </span><a href=\'mailto:proppy@aminche.com\'>Johan Euphrosine</a></div></div><div class=\'jpoker_explain\'>jpoker runs on this web browser and is Free Software. You may use jpoker to run a business without asking the authors permissions. You may give a copy to your friends. However, the authors do not want jpoker to be used with proprietary software.</div><div class=\'jpoker_license\'>This program is free software: you can redistribute it and/or modify it under the terms of the <a href=\'http://www.fsf.org/licensing/licenses/gpl.txt\'>GNU General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</div> <div class=\'jpoker_full_copyright\'>Read the full <a href=\'http://jspoker.pokersource.info/jpoker/#Copyright\'>copyright information page.</a></div><div class=\'jpoker_download\'>Download <a href=\'http://upstream.jspoker.pokersource.info/file/tip/jpoker/js/jquery.jpoker.js\'>jpoker sources.</a></div><div class=\'jpoker_dismiss\'><a href=\'javascript://\'>Dismiss</a></div></div></div>').dialog(this.copyright_options); 
+            var copyright = $('<div style=\'margin:0px\'>' + this.copyright_text.supplant({ version: this.VERSION }) + '<div class=\'jpoker_dismiss\'><a href=\'javascript://\'>Dismiss</a></div></div>').dialog(this.copyright_options); 
             this.copyright_callback.display_done(copyright);
             $('.ui-dialog-titlebar', copyright.parents('.ui-dialog-container')).hide();
             var close = function() { copyright.dialog('destroy'); };
@@ -172,20 +176,27 @@
         },
 
         error: function(reason) {
-            this.errorHandler(reason);
+            var str = reason;
+            if (str.xhr) {
+                // We need to give stringify a whitelist so that it doesn't throw an error if it's called on a 
+                // XMLHttpRequest object, and we can't really detect it with instanceof... so let's assume all .xhr
+                // are XMLHttpRequest objects
+                str.xhr = JSON.stringify(str.xhr, ['status', 'responseText', 'readyState']);
+            }
+            str = JSON.stringify(str) + '\n\n' + printStackTrace({guess:true}).slice(2).join('\n');
             this.uninit();
+            this.errorHandler(reason, str);
+        },
+
+        errorHandler: function(reason, str) {
+            if (jpoker.console) {
+                this.message(str);
+	    } else {
+		this.alert(str);
+	    }
             throw reason;
         },
-
-        errorHandler: function(reason) {
-	    var message = (typeof reason == 'string') ? reason : JSON.stringify(reason);
-	    if (jpoker.console) {
-		this.message(message);
-	    } else {
-		this.alert(message);
-	    }
-        },
-
+        
         serverCreate: function(options) {
             this.servers[options.url] = new jpoker.server(options);
             return this.servers[options.url];
@@ -594,6 +605,7 @@
 	    PERSONAL_INFO: 'getting personal info',
 	    PLACES: 'getting player places',
 	    STATS: 'getting player stats',
+	    LOCALE: 'setting locales',
 
             blocked: false,
 
@@ -788,6 +800,7 @@
                         } else {
                             $this.error({ xhr: xhr,
                                           status: status,
+                                          url: this.url,
                                           error: error
                                 });
                         }
@@ -945,6 +958,7 @@
                 this.serial = 0;
                 this.userInfo = {};
 		this.preferences = new jpoker.preferences(jpoker.url2hash(this.url));
+		this.lang = $('html').attr('lang');
                 this.registerHandler(0, this.handler);
                 if(jpoker.doReconnect && (this.sessionExists() || this.protocol() == 'file:')) {
                     this.reconnect();
@@ -1229,6 +1243,10 @@
                     });
                 this.ping();
                 this.getUserInfo(); // will fire when login is complete
+		var locale = jpoker.locales[this.lang];
+		if (locale !== undefined) {
+		    this.setLocale(locale);
+		}
                 var answer = function(server, game_id, packet) {
                     switch(packet.type) {
 
@@ -1533,7 +1551,27 @@
 				return true;
 			    });
 		    });
-	    }	    
+	    },
+
+	    setLocale: function(locale) {
+		this.queueRunning(function(server) {
+			server.setState(server.LOCALE);
+			server.sendPacket({'type': 'PacketPokerSetLocale', 'serial': server.serial, 'locale': locale});
+			server.registerHandler(0, function(server, unused_game_id, packet) {
+				if (packet.type == 'PacketAck') {
+				    server.notifyUpdate(packet);
+				    server.setState(server.RUNNING, 'PacketAck');
+				    return false;
+				}
+				else if (packet.type == 'PacketError' && packet.other_type == jpoker.packetName2Type.PACKET_POKER_SET_LOCALE) {
+				    jpoker.dialog(packet.message);
+				    server.notifyUpdate(packet);
+				    server.setState(server.RUNNING, 'PacketError');
+				}
+				return true;
+			    });
+		    });
+	    }
         });
 
     //
@@ -1553,7 +1591,7 @@
 
     jpoker.table.defaults = {
 	delay: {
-	    showdown: 10000
+	    showdown: 5000
 	}
     };
 
@@ -1885,6 +1923,7 @@
     };
 
     jpoker.player.defaults = {
+        sit_out: true
     };
 
     jpoker.player.prototype = $.extend({}, jpoker.watchable.prototype, {
@@ -1910,7 +1949,6 @@
                 this.cards = [ null, null, null, null, null, null, null ];
                 this.money = 0;
                 this.bet = 0;
-                this.sit = false;
 		this.side_pot = undefined;
 		this.stats = undefined;
             },
@@ -1969,22 +2007,22 @@
                 break;
 
                 case 'PacketPokerSit':
-                this.sit = true;
+                this.sit_out = false;
                 this.notifyUpdate(packet);
                 break;
 
                 case 'PacketPokerSitOut':
-                this.sit = false;
+                this.sit_out = true;
                 this.notifyUpdate(packet);
                 break;
 
                 case 'PacketPokerAutoFold':
-                this.sit = false;
+                this.sit_out = true;
                 this.notifyUpdate(packet);
                 break;
 
 		case 'PacketPokerPotChips':
-		if (this.sit && (this.side_pot === undefined) && (this.money === 0)) {
+		if (!this.sit_out && (this.side_pot === undefined) && (this.money === 0)) {
 		    this.side_pot = {bet: jpoker.chips.chips2value(packet.bet),
 				     index: packet.index};
 		}
@@ -2015,8 +2053,8 @@
         this.init();
     };
 
-    jpoker.playerSelf.defaults = {
-    };
+    jpoker.playerSelf.defaults = $.extend(jpoker.player.defaults, {
+    });
 
     jpoker.playerSelf.prototype = $.extend({}, jpoker.player.prototype, {
             init: function() {
@@ -3142,7 +3180,7 @@
         var in_position = table.serial2player[serial_in_position];
         for(var seat = 0; seat < table.seats.length; seat++) {
             var seat_element = $('#player_seat' + seat + id);
-            if(in_position && in_position.sit === true && in_position.seat == seat) {
+            if(in_position && in_position.sit_out === false && in_position.seat == seat) {
                 if(!seat_element.hasClass('jpoker_position')) {
                     seat_element.addClass('jpoker_position');
                 }
@@ -3158,7 +3196,7 @@
         var in_position = table.serial2player[serial_in_position];
         for(var seat = 0; seat < table.seats.length; seat++) {
 	    var timeout_element = $('#player_seat' + seat + '_timeout' + id);
-            if(in_position && in_position.sit === true && in_position.seat == seat) {
+            if(in_position && in_position.sit_out === false && in_position.seat == seat) {
 		$('.jpoker_timeout_progress', timeout_element).stop().css({width: ratio*100+'%'}).show().animate({width: '0%'}, {duration: ratio*table.player_timeout*1000, queue: false});
 		timeout_element.attr('pcur', ratio*100).show();
             } else {
@@ -3328,7 +3366,7 @@
     jpoker.plugins.table.templates = {
         room: 'expected to be overriden by mockup.js but was not',
 	tourney_break: '<div>{label}</div><div>{date}</div>',
-	powered_by: '<a title=\'Powered by Pokersource\' onclick=\'window.open(this.href); return false\' href=\'http://pokersource.info/\'><span>Powered by Pokersource</span></a>',
+	powered_by: '<a title=\'Powered by Pokersource\' href=\'javascript://\' ><span>Powered by Pokersource</span><span class=\'jpoker_powered_by_info\'>' + jpoker.copyright_text.supplant({ version: jpoker.VERSION }) + '</span></a>',
 	chat: '<div class=\'jpoker_chat_input\'><input value=\'chat here\' type=\'text\' width=\'100%\' /></div><div class=\'jpoker_chat_history\'><div class=\'jpoker_chat_history_player\'></div><div class=\'jpoker_chat_history_dealer\'></div></div>',
         placeholder: _("connecting to table {name}")
     };
@@ -3405,7 +3443,7 @@
             if(server.serial == serial) {
                 jpoker.plugins.playerSelf.create(table, packet, id);
             }
-            if(player.sit) {
+            if(!player.sit_out && !player.auto) {
                 jpoker.plugins.player.sit(player, id);
             } else {
                 jpoker.plugins.player.sitOut(player, id);
@@ -4552,6 +4590,13 @@
 	auto_muck_lose: true
     };
 
-    if($.browser.msie) { jpoker.msie_compatibility(); } // no coverage
+    jpoker.compatibility = function(msie) {
+	if(msie) {
+	    jpoker.msie_compatibility();
+	} else {
+	    jpoker.other_compatibility();
+	}
+    };
 
+    jpoker.compatibility($.browser.msie); // no coverage
 })(jQuery);
