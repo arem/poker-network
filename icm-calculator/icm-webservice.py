@@ -1,4 +1,4 @@
-#!/usr/bin/env pythons
+#!/usr/bin/env python
 import web
 import json
 from sys import stderr
@@ -11,11 +11,11 @@ class ICM:
 		self.stacks = stacks
 		self.payouts = payouts
 		self.equities = []
+		self.perpare()
 	def prepare(self):
 		total = sum(self.stacks)
 		for k,v in enumerate(stacks):
-			self.equities.append(round(Decimal(str(self.getEquities(total i,0))),4))
-		return self.equities
+			self.equities.append(round(Decimal(str(self.getEquities(total, k,0))),4))
 	def getEquities(self, total, player, depth):
 		D = Decimal
 		eq = D(self.stacks[player]) / total * D(str(self.payouts[depth]))
@@ -35,8 +35,8 @@ class ICMWebService:
 		stacks=json.read(input["stacks"])
 		payouts=json.read(input["payouts"])
 		icm = ICM(stacks,payouts)
-		print json.write(icm.prepare())
-		
-		
+		print json.write(icm.equities)
+
+
 
 if __name__ == "__main__": web.run(urls, globals())
