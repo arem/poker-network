@@ -11,7 +11,7 @@ class ICM:
 		self.stacks = stacks
 		self.payouts = payouts
 		self.equities = []
-		self.perpare()
+		self.prepare()
 	def prepare(self):
 		total = sum(self.stacks)
 		for k,v in enumerate(stacks):
