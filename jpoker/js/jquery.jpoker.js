@@ -176,14 +176,20 @@
         },
 
         error: function(reason) {
-            var str = reason;
-            if (str.xhr) {
+            if (reason.xhr) {
                 // We need to give stringify a whitelist so that it doesn't throw an error if it's called on a 
                 // XMLHttpRequest object, and we can't really detect it with instanceof... so let's assume all .xhr
                 // are XMLHttpRequest objects
-                str.xhr = JSON.stringify(str.xhr, ['status', 'responseText', 'readyState']);
+                var copy = {};
+                for(key in reason) {
+                    copy[key] = reason[key];
+                }
+                copy.xhr = JSON.stringify(copy.xhr, ['status', 'responseText', 'readyState']);
+                var str = JSON.stringify(copy);
+            } else {
+                var str = JSON.stringify(reason);
             }
-            str = JSON.stringify(str) + '\n\n' + printStackTrace({guess:true}).slice(2).join('\n');
+            str += '\n\n' + printStackTrace({guess:true}).slice(2).join('\n');
             this.uninit();
             this.errorHandler(reason, str);
         },
@@ -2264,8 +2270,8 @@
         footer : '</tbody></table>',
 	link: '<a href=\'{link}\'>{name}</a>',
 	pager: '<div class=\'pager\'><input class=\'pagesize\' value=\'10\'></input><ul class=\'pagelinks\'></ul></div>',
-	next_label: '>>>',
-	previous_label: '<<<'
+	next_label: '{next_label} >>>',
+	previous_label: '<<< {previous_label}'
     };
 
     jpoker.plugins.tableList.callback = {
@@ -2747,8 +2753,6 @@
 		footer : '</tbody></table>'
 	    },
 	    header: '<div class=\'jpoker_tourney_details_players\'>',
-	    next_label: '>>',
-	    previous_label: '<<',
 	    footer: '</div>'
 	},
 	tables : {
