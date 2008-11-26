@@ -205,3 +205,4 @@ poker-eval/include/Makefile.in
 poker-eval/lib/Makefile.in
 poker-eval/new-check.log
 poker-eval/tests/Makefile.in
+poker-network/examples/merged-translation-import.plx
