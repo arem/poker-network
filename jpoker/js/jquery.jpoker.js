@@ -1653,6 +1653,9 @@
 
 	    poll: function() {
 		var server = jpoker.getServer(this.url);
+		if (server === undefined) {
+		    return;
+		}
 		server.sendPacket({type: 'PacketPokerPoll',
 			    game_id: this.id});
 		var $this  = this;
@@ -1881,6 +1884,9 @@
 
 	    poll: function() {
 		var server = jpoker.getServer(this.url);
+		if (server === undefined) {
+		    return;
+		}
 		server.sendPacket({type: 'PacketPokerPoll',
 			    tourney_serial: this.game_id});
 		var $this  = this;
