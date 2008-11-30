@@ -3,6 +3,7 @@
 *.[oa]
 *.pyc
 *.loT
+*.lo
 */po/*.gmo
 *~
 TAGS
