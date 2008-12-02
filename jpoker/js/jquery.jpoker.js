@@ -1694,7 +1694,7 @@
                     server.setState(server.RUNNING, 'PacketPokerStreamMode');
                     break;
 
-                case 'PacketPokerTableMove':
+                    //                case 'PacketPokerTableMove':
                 case 'PacketPokerTableDestroy':
                     table.uninit(packet);
                     delete server.tables[game_id];
@@ -1918,7 +1918,7 @@
 
                 switch(packet.type) {
 
-                case 'PacketPokerTourneyFinish':
+                    //                case 'PacketPokerTourneyFinish':
                 case 'PacketPokerTourneyUnregister':
                      tourney.uninit();
                      delete server.tourneys[tourney_serial];
