@@ -2,6 +2,7 @@
 //     Copyright (C) 2008 Loic Dachary <loic@dachary.org>
 //     Copyright (C) 2008 Johan Euphrosine <proppy@aminche.com>
 //     Copyright (C) 2008 Saq Imtiaz <lewcid@gmail.com>
+//     Copyright (C) 2008 Frank Denis <fdenis@skyrock.com>
 //
 //     This program is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
@@ -598,6 +599,7 @@
             dequeueFrequency: 100,
             pingFrequency: 6000,
             timeout: 30000,
+	    retryCount: 10,
             clearTimeout: function(id) { return window.clearTimeout(id); },
             setTimeout: function(cb, delay) { return window.setTimeout(cb, delay); },
             ajax: function(o) { return jQuery.ajax(o); },
@@ -793,6 +795,7 @@
                 if(jpoker.verbose > 0) {
                     jpoker.message('sendPacket ' + json_data);
                 }
+		var retry = 0;
                 var args = {
                     async: this.async,
                     data: json_data,
@@ -813,11 +816,22 @@
                             $this.setConnectionState('disconnected');
                             $this.reset();
                         } else {
-                            $this.error({ xhr: xhr,
-                                          status: status,
-                                          url: this.url,
-                                          error: error
-                                });
+			    switch (xhr.status) {
+			    case 12152:
+			    case 12030:
+			    case 12031:
+			    ++retry;
+			    if (retry < $this.retryCount) {
+				return false; // retry
+			    }
+			    error = 'ajax retry count exceeded: '+ retry;
+			    break;
+			    }			    
+			    $this.error({ xhr: xhr,
+					  status: status,
+					  url: $this.url,
+					  error: error
+				});
                         }
                     }
                 };
@@ -3211,11 +3225,7 @@
 
             $('.jpoker_table', element).append(jpoker.copyright_text);
 
-	    $('#powered_by' + id).addClass('jpoker_powered_by').html(this.templates.powered_by).hover(function(){
-                    $('.jpoker_copyright', element).addClass('hover');
-                },function(){
-                    $('.jpoker_copyright', element).removeClass('hover');
-                });
+	    $('#powered_by' + id).addClass('jpoker_powered_by').html(this.templates.powered_by);
 
             // it does not matter to register twice as long as the same key is used
             // because the second registration will override the first
@@ -3370,10 +3380,11 @@
 		    if (packet.serial === 0) {
 			message = message.replace(/^Dealer: /, '');
 		    }
-		    var chat_line = $('<div class=\'jpoker_chat_line\'>').prependTo(chat);
+		    var chat_line = $('<div class=\'jpoker_chat_line\'>').appendTo(chat);
 		    var chat_prefix = $('<span class=\'jpoker_chat_prefix\'></span>').appendTo(chat_line).text(prefix);
 	            var chat_message = $('<span class=\'jpoker_chat_message\'></span>').appendTo(chat_line).text(message);
                 }
+                chat.attr('scrollTop', chat.attr('scrollHeight') || 0);
                 break;
 
 	    case 'PacketPokerMuckRequest':

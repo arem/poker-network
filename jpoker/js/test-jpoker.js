@@ -223,14 +223,16 @@ test("jpoker.error alert", function() {
 });
 
 test("jpoker.error object", function() {
-        expect(2);
-	var error_reason = {message: "error reason"};
+        expect(4);
+	var error_reason = {message: "error reason", "xhr": {status: 500, foo: 'bar'}};
 	var jpokerConsole = jpoker.console;
 	jpoker.console = undefined;
 	var jpokerAlert = jpoker.alert;
 	jpoker.alert = function(reason) {
 	    jpoker.alert = jpokerAlert;
-	    equals(reason.indexOf(JSON.stringify(error_reason)) >= 0, true, "jpoker.alert error_reason");
+	    equals(reason.indexOf('error reason') >= 0, true, "jpoker.alert error reason");
+	    equals(reason.indexOf('status') >= 0, true, "jpoker.alert status not filtered");
+	    equals(reason.indexOf('foo') >= 0, false, "jpoker.alert foo filtered");
 	};
 	try {
 	    jpoker.error(error_reason);
@@ -1967,6 +1969,135 @@ test("jpoker.connection:sendPacket error 500", function(){
         ActiveXObject.defaults.status = 200;
     });
 
+test("jpoker.connection:sendPacket retry 12152", function(){
+        expect(2);
+        stop();
+        var self = new jpoker.connection(); 
+	var _ajax = self.ajax;
+        var jpokerError = jpoker.error;
+        jpoker.error = function(reason) {
+            ok(false, 'jpoker error not called');
+        };
+	self.ajax = function(settings) {
+	    var _error = settings.error;
+	    settings.error = function(xhr, status, error) {
+		var result = _error(xhr, status, error);
+		ActiveXObject.defaults.status = 200;
+		ok(true, 'error');
+		return result;
+	    };
+	    settings.success = function() {
+		ok(true, 'retry success');
+		jpoker.error = jpokerError;
+		start_and_cleanup();
+	    };
+	    _ajax(settings);
+	};
+        ActiveXObject.defaults.status = 12152;
+        self.sendPacket({type: 'type'});
+    });
+
+test("jpoker.connection:sendPacket retry 12030", function(){
+        expect(2);
+        stop();
+        var self = new jpoker.connection(); 
+	var _ajax = self.ajax;
+        var jpokerError = jpoker.error;
+        jpoker.error = function(reason) {
+            ok(false, 'jpoker error not called');
+        };
+	self.ajax = function(settings) {
+	    var _error = settings.error;
+	    settings.error = function(xhr, status, error) {
+		var result = _error(xhr, status, error);
+		ActiveXObject.defaults.status = 200;
+		ok(true, 'error');
+		return result;
+	    };
+	    settings.success = function() {
+		ok(true, 'retry success');
+		jpoker.error = jpokerError;
+		start_and_cleanup();
+	    };
+	    _ajax(settings);
+	};
+        ActiveXObject.defaults.status = 12152;
+        self.sendPacket({type: 'type'});
+    });
+
+test("jpoker.connection:sendPacket retry 12031", function(){
+        expect(2);
+        stop();
+        var self = new jpoker.connection(); 
+	var _ajax = self.ajax;
+        var jpokerError = jpoker.error;
+        jpoker.error = function(reason) {
+            ok(false, 'jpoker error not called');
+        };
+	self.ajax = function(settings) {
+	    var _error = settings.error;
+	    settings.error = function(xhr, status, error) {
+		var result = _error(xhr, status, error);
+		ActiveXObject.defaults.status = 200;
+		ok(true, 'error');
+		return result;
+	    };
+	    settings.success = function() {
+		ok(true, 'retry success');
+		jpoker.error = jpokerError;
+		start_and_cleanup();
+	    };
+	    _ajax(settings);
+	};
+        ActiveXObject.defaults.status = 12152;
+        self.sendPacket({type: 'type'});
+    });
+
+test("jpoker.connection:sendPacket retry count", function(){
+        expect(3);
+        stop();
+        var self = new jpoker.connection();
+	self.retryCount = 42;
+        
+        var error = jpoker.error;
+        jpoker.error = function(reason) {
+            jpoker.error = error;
+            equals(reason.xhr.status, 12152);
+	    ok(reason.error.indexOf('retry') >= 0, 'retry error');
+	    ok(reason.error.indexOf(self.retryCount) >= 0, 'retryCount');
+	    ActiveXObject.defaults.status = 200;
+            start_and_cleanup();
+        };
+        ActiveXObject.defaults.status = 12152;
+        self.sendPacket({type: 'type'});
+    });
+
+test("jquery ajaxQueue retry", function() {
+	expect(3);
+	stop();
+	var ajaxQueue = $.ajax_queue;
+	var retry = false;
+	var settings = {
+	    mode: "queue",
+	    error: function() {
+		ActiveXObject.defaults.status = 200;
+		retry = true;
+		return false; // retry
+	    },
+	    success: function() {
+		ok(retry, 'retry');
+		equals(jQuery([$.ajax_queue]).queue('ajaxundefined').length, 1, 'queue not cleared');
+		setTimeout(function() {
+			equals(jQuery([$.ajax_queue]).queue('ajaxundefined').length, 0, 'queue cleared');
+			start_and_cleanup();
+		    }, 0);
+	    },
+	    data: 'foo'
+	};
+        ActiveXObject.defaults.status = 500;
+	$.ajax(settings);
+    });
+
 test("jpoker.connection:sendPacket timeout", function(){
         expect(1);
         stop();
@@ -2640,6 +2771,15 @@ test("jpoker.table.handler: unknown table", function(){
 	jpoker.verbose = 0;
 	table.handler(server, game_id, packet);
 	jpoker.verbose = verbose;
+    });
+
+test("jpoker.table: max_player", function() {
+        var server = jpoker.serverCreate({ url: 'url' });
+        var table = new jpoker.table(server, {id: 42});
+	equals(table.max_players, 10, 'max_players default');
+        table = new jpoker.table(server, {id: 42, seats: 5});
+	equals(table.max_players, 5, 'max_players frmo packet');
+	cleanup();
     });
 
 //
@@ -5226,10 +5366,10 @@ test("jpoker.plugins.table: PacketSerial/PacketLogout", function(){
         var id = 'jpoker' + jpoker.serial;
         var game_id = 100;
 
-        var table_packet = { id: game_id };
+        var table_packet = { id: game_id, seats: 5 };
         server.tables[game_id] = new jpoker.table(server, table_packet);
         var table = server.tables[game_id];
-	equals(table.max_players, 10, 'default max_players');
+	equals(table.max_players, 5, 'max_players');
 	for (var i = 2; i <= 10; ++i) {
 	    table.max_players = i;
 	    table.resetSeatsLeft();
@@ -5434,7 +5574,7 @@ test("jpoker.plugins.table: PacketPokerDealer", function(){
     });
 
 test("jpoker.plugins.table: PacketPokerChat", function(){
-        expect(15);
+        expect(19);
 
         var server = jpoker.serverCreate({ url: 'url' });
         var place = $("#main");
@@ -5460,9 +5600,10 @@ test("jpoker.plugins.table: PacketPokerChat", function(){
 	var chat_lines = $(".jpoker_chat_line", chat_history_player);
 	equals(chat_lines.length, 2);
 	equals($(".jpoker_chat_prefix", chat_lines.eq(0)).html(), "username: ");
-	equals($(".jpoker_chat_message", chat_lines.eq(0)).html(), "tout");	
+	equals($(".jpoker_chat_message", chat_lines.eq(0)).html(), "voila");	
 	equals($(".jpoker_chat_prefix", chat_lines.eq(1)).html(), "username: ");
-	equals($(".jpoker_chat_message", chat_lines.eq(1)).html(), "voila");
+	equals($(".jpoker_chat_message", chat_lines.eq(1)).html(), "tout");
+	equals($(".jpoker_chat_history_player").attr('scrollTop'), 0);
         equals($(".jpoker_chat_history_dealer").text(), "", "no dealer message");
 	$(".jpoker_chat_history_player").text("");
 
@@ -5472,10 +5613,18 @@ test("jpoker.plugins.table: PacketPokerChat", function(){
 	var chat_lines_dealer = $(".jpoker_chat_line", chat_history_dealer);
 	equals(chat_lines_dealer.length, 2);
 	equals($(".jpoker_chat_prefix", chat_lines_dealer.eq(0)).html(), "Dealer: ");
-	equals($(".jpoker_chat_message", chat_lines_dealer.eq(0)).html(), "tout");	
+	equals($(".jpoker_chat_message", chat_lines_dealer.eq(0)).html(), "voila");	
 	equals($(".jpoker_chat_prefix", chat_lines_dealer.eq(1)).html(), "Dealer: ");
-	equals($(".jpoker_chat_message", chat_lines_dealer.eq(1)).html(), "voila");
+	equals($(".jpoker_chat_message", chat_lines_dealer.eq(1)).html(), "tout");
+	equals($(".jpoker_chat_history_dealer").attr('scrollTop'), 0);
         equals($(".jpoker_chat_history_player").text(), "", "no player message");
+
+	for (var i = 0; i < 42; ++i) {
+	    table.handler(server, game_id, { type: 'PacketPokerChat', message: dealer_message, game_id: game_id, serial: 0 });	
+	    table.handler(server, game_id, { type: 'PacketPokerChat', message: message, game_id: game_id, serial: player_serial });	
+	}
+	ok($(".jpoker_chat_history_player").attr('scrollTop') > 0, 'scrollTop');
+	ok($(".jpoker_chat_history_dealer").attr('scrollTop') > 0, 'scrollTop');
 
         cleanup();
     });
