@@ -12,8 +12,8 @@
  >
   <mx:Script>
  	<![CDATA[
- 	    import aspoker.com.bubsy.poker.model.PokerUser;
- 		import aspoker.com.bubsy.poker.event.LoginEvent;
+ 	    import aspoker.com.bubsy.poker.client.model.PokerUser;
+ 		import aspoker.com.bubsy.poker.client.event.LoginEvent;
                 
  		private function loginSuccessfull(evt:LoginEvent):void 
  		{

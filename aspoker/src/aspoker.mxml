@@ -2,25 +2,42 @@
 <mx:Application 
 		xmlns:mx="http://www.adobe.com/2006/mxml" 
 		layout="vertical" 
-		xmlns:local="aspoker.com.bubsy.poker.component.*" 
-		height="100%"
-		width="100%"
+		xmlns:local="aspoker.com.bubsy.poker.client.component.*" 
+		height="600"
+		width="800"
 		>
+    
 	<mx:Script>
-		<![CDATA[	
-			import aspoker.com.bubsy.poker.model.PokerBase;
-			
+		<![CDATA[
+		    import mx.events.DataGridEvent;
+		    import mx.events.ListEvent;
+		    import aspoker.com.bubsy.poker.client.model.PokerTableList;
+		    import aspoker.com.bubsy.poker.client.model.PokerUser;
+  		    
+		    private var pokerTables:PokerTableList ;
+
+		    
+		    private function initTableGrid():void
+		    {
+    	        pokerTables = new PokerTableList(tableinfo);	    
+		    }
+		    
+		  
+          private function itemClickEvent(event:ListEvent):void 
+          {
+             PokerUser.tableJoin(event.currentTarget.selectedItem.id) ;
+          }
+
 		]]>
  </mx:Script>
-
 	<mx:HBox id="actionPanel">
-		<mx:Button label="Sit" click="PokerBase.getInstance().sit()" />
-		<mx:Button label="Seat" click="PokerBase.getInstance().seat()" />
-		<mx:Button label="GetTable" click="PokerBase.getInstance().getTables()" />
-		<mx:Button label="GetPersonalInfo" click="PokerBase.getInstance().getPersonalInfo()" />
-		<mx:Button label="TableJoin" click="PokerBase.getInstance().tableJoin()" />
-		<mx:Button label="buyIn" click="PokerBase.getInstance().buyIn()" />
-		<mx:Button label="setol" click="PokerBase.getInstance().setRole()" />
+    <mx:Button label="Sit" click="PokerUser.pokerConnection.sit()" />
+		<mx:Button label="Seat" click="PokerUser.pokerConnection..seat()" />
+		<mx:Button label="GetTable" click="PokerUser.pokerConnection.getTables()" />
+		<mx:Button label="GetPersonalInfo" click="PokerUser.pokerConnection.getPersonalInfo()" />
+		<mx:Button label="buyIn" click="PokerUser.pokerConnection.buyIn()" />
+		<mx:Button label="setol" click="PokerUser.pokerConnection.setRole()" />
+		<mx:Button label="getCashier" click="PokerUser.pokerConnection.getCashier()" />
 	</mx:HBox>
 	
 	<mx:HBox width="100%">
@@ -29,8 +46,16 @@
 	</mx:HBox>
 	
 	<mx:Panel title="Tables" width="100%" >
-		<mx:DataGrid id="tableinfo" width="100%" />	
+		<mx:DataGrid id="tableinfo" width="100%" initialize="initTableGrid()"
+		doubleClickEnabled="true" itemDoubleClick="itemClickEvent(event);">
+        		    <mx:columns>
+      <mx:Array>
+        <mx:DataGridColumn headerText="Tables" dataField="name" visible="true" />
+        <mx:DataGridColumn headerText="Players" dataField="players" visible="true" />
+        <mx:DataGridColumn headerText="Seats" dataField="seats" visible="true" />
+        <mx:DataGridColumn headerText="Bettings" dataField="betting_structure" visible="true" />
+       </mx:Array>
+    </mx:columns>   
+  </mx:DataGrid>	
 	</mx:Panel>
-
-
 </mx:Application>
