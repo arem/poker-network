@@ -1,28 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//     Copyright (C) 2008 Bruno Garnier <bruno.garnier@gmail.com>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
 <mx:Application 
-		xmlns:mx="http://www.adobe.com/2006/mxml" 
+ 		xmlns:mx="http://www.adobe.com/2006/mxml" 
 		layout="vertical" 
 		xmlns:local="aspoker.com.bubsy.poker.client.component.*" 
 		height="600"
 		width="800"
-		>
-    
+ >
+ 
 	<mx:Script>
 		<![CDATA[
 		    import mx.events.DataGridEvent;
 		    import mx.events.ListEvent;
 		    import aspoker.com.bubsy.poker.client.model.PokerTableList;
 		    import aspoker.com.bubsy.poker.client.model.PokerUser;
-  		    
+  		   
 		    private var pokerTables:PokerTableList ;
-
-		    
 		    private function initTableGrid():void
 		    {
     	        pokerTables = new PokerTableList(tableinfo);	    
 		    }
 		    
-		  
           private function itemClickEvent(event:ListEvent):void 
           {
              PokerUser.tableJoin(event.currentTarget.selectedItem.id) ;
@@ -58,4 +77,5 @@
     </mx:columns>   
   </mx:DataGrid>	
 	</mx:Panel>
+	
 </mx:Application>
