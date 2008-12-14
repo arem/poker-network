@@ -19,13 +19,14 @@
 
 package aspoker.com.bubsy.poker.client.communication
 {
-
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
 import aspoker.com.bubsy.poker.client.model.PokerSession;
+
 import com.adobe.serialization.json.JSON;
 import com.bubzy.net.http.HTTPClient;
 import com.bubzy.utils.Logger;
+
 import flash.events.Event;
 import flash.events.EventDispatcher;
 import flash.events.HTTPStatusEvent;
@@ -44,7 +45,7 @@ public class PokerConnection extends EventDispatcher
         _httpClient.addEventListener("close", handleError);
     }
 
-    private  function sendREST(packet:Object,session:PokerSession=null):void
+    protected  function sendREST(packet:Object,session:PokerSession=null):void
     {
       var request:URLRequest = new URLRequest();
       _restURL = PokerSession.getUrl();
@@ -53,47 +54,12 @@ public class PokerConnection extends EventDispatcher
       _httpClient.httpPOST(request);
     }
 
-   private function _dispatchEvent(pokerPacket:Object):void
+   protected function _dispatchEvent(pokerPacket:Object):void
    {
+   		Logger.log(pokerPacket.type);
+
         switch(pokerPacket.type)
         {
-            case "PacketAuthOk":
-            {    dispatchEvent
-                    (new LoginEvent(LoginEvent.onPacketAuthOk
-                        ,pokerPacket));
-                break;
-            }
-            case "PacketSerial":
-            {
-            //  PokerSession.UserSerial = results[i].serial;
-              PokerSession.setCookie(pokerPacket.cookie);
-
-                dispatchEvent(
-                    new LoginEvent(LoginEvent.onPacketSerial
-                        ,pokerPacket
-                    )
-                );
-                break;
-            }
-            case "PacketAuthRefused":
-            {
-               dispatchEvent(
-                    new LoginEvent(
-                    LoginEvent.onPacketAuthRefused
-                    )
-                );
-                break;
-            }
-            case "PacketPokerTableList":
-            {
-                dispatchEvent(
-                    new TableListEvent(
-                    TableListEvent.onPacketPokerTableList,
-                    pokerPacket
-                    )
-                );
-                break;
-            }
             case "PacketAuthRequest" :
             case "PacketPokerTable":
             case "PacketPokerBuyInLimits":
@@ -103,9 +69,9 @@ public class PokerConnection extends EventDispatcher
             case "PacketPokerError":
             case "PacketPokerPlayerInfo":
             case "PacketAuthRefused":
-            default:
+            default: trace(JSON.encode(pokerPacket));
             {
-               Logger.log(pokerPacket.type);
+
             }
          }
    }
@@ -114,12 +80,13 @@ public class PokerConnection extends EventDispatcher
     {
         var responseContent:String = HTTPClient(event.target).responseContent ;
         var results:Array = JSON.decode(responseContent);
-        //Logger.log(responseContent);
 
         for (var i:int=0; i < results.length; i++)
         {
             if (results[i])
+            {
                 _dispatchEvent(results[i]);
+            }
         }
     }
 
@@ -193,8 +160,7 @@ public class PokerConnection extends EventDispatcher
         var packetPokerTableJoin:Object = {};
         packetPokerTableJoin.type = "PacketPokerTableJoin";
         packetPokerTableJoin.game_id = gameid;
-        trace('userSerial'+userSerial);
-        packetPokerTableJoin.serial = 6;
+        packetPokerTableJoin.serial = userSerial;
         sendREST(packetPokerTableJoin);
     }
 
@@ -215,22 +181,6 @@ public class PokerConnection extends EventDispatcher
         packetPokerBuyIn.game_id = 1;
         packetPokerBuyIn.serial = 6;
         sendREST(packetPokerBuyIn);
-    }
-
-    public function loggin(userName:String,userPassword:String):void
-    {
-        var packetLogin:Object = {};
-        packetLogin.password = userPassword;
-        packetLogin.name = userName;
-        packetLogin.type = "PacketLogin";
-        sendREST(packetLogin);
-    }
-
-    public function logout():void
-    {
-        var packetPokerGetPersonalInfo:Object = {};
-        packetPokerGetPersonalInfo.type = "PacketLogout";
-        sendREST(packetPokerGetPersonalInfo);
     }
 }
 }

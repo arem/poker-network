@@ -20,18 +20,23 @@
 package aspoker.com.bubsy.poker.client.model
 {
 
-import aspoker.com.bubsy.poker.client.communication.PokerConnection;
+import aspoker.com.bubsy.poker.client.communication.TableListJsonStream;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
+
 import flash.events.TimerEvent;
 import flash.utils.Timer;
+
 import mx.controls.DataGrid;
 
 public class PokerTableList
 {
-    private var _pokerConnection:PokerConnection = new PokerConnection();
+    private var _pokerConnection:TableListJsonStream
+    			= new TableListJsonStream();
     public var data:Array = [];
     private var ticker:Timer;
     private var tableGrid:DataGrid;
+    private var players:int;
+    private var tables:int;
 
     public function PokerTableList(tableGrid:DataGrid)
     {
@@ -51,8 +56,8 @@ public class PokerTableList
 
     private function _onPacketPokerTableList(evt:TableListEvent):void
     {
-        this.data = evt.packet.packets;
-        tableGrid.dataProvider=data;
+        data = evt.packet.packets;
+        tableGrid.dataProvider = data;
     }
 }
 

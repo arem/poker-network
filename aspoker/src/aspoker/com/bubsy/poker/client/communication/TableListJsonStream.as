@@ -17,40 +17,39 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package aspoker.com.bubsy.poker.client.model
+package aspoker.com.bubsy.poker.client.communication
 {
-
-import aspoker.com.bubsy.poker.client.communication.UserJsonStream;
 
 import com.bubzy.utils.Logger;
+import aspoker.com.bubsy.poker.client.event.TableListEvent;
+import aspoker.com.bubsy.poker.client.model.PokerSession;
+import com.adobe.serialization.json.JSON;
 
-public class PokerUser
+public class TableListJsonStream extends PokerConnection
 {
-    public static var UserPassword:String;
-    public static var userName:String;
-    public static var UserSerial:int;
-    public static var pokerConnection:UserJsonStream = new UserJsonStream();
-
-	public function PokerUser()
+	public function TableListJsonStream()
 	{
-
+		super();
 	}
 
-    public static function tableJoin(gameid:int):void
+	override protected function _dispatchEvent(pokerPacket:Object):void
     {
-        Logger.log(UserSerial +  " join table" + gameid);
-        pokerConnection.tableJoin(gameid,UserSerial);
-    }
+   		Logger.log(pokerPacket.type);
 
-    public static function loggin():void
-    {
-        pokerConnection.loggin(userName,UserPassword);
-    }
-
-    public static function logout():void
-    {
-        pokerConnection.logout();
-    }
+        switch(pokerPacket.type)
+        {
+            case "PacketPokerTableList":
+            {
+                dispatchEvent(
+                    new TableListEvent(
+                    TableListEvent.onPacketPokerTableList,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+            default: trace(JSON.encode(pokerPacket));
+         }
+	}
 }
-
 }
