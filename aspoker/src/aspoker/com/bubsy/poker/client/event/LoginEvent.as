@@ -20,8 +20,8 @@
 package aspoker.com.bubsy.poker.client.event
 {
 
-import aspoker.com.bubsy.poker.client.model.PokerSession;
-import aspoker.com.bubsy.poker.client.model.PokerUser;
+import aspoker.com.bubsy.poker.client.model.Session;
+import aspoker.com.bubsy.poker.client.model.User;
 
 import flash.events.Event;
 
@@ -43,7 +43,7 @@ public class LoginEvent extends Event
             case "PacketAuthOk": break;
             case "PacketSerial":
             {
-                PokerUser.UserSerial = data.serial;
+                User.UserSerial = data.serial;
                 break;
             }
             default: trace(type);

@@ -33,30 +33,31 @@
 		<![CDATA[
 		    import mx.events.DataGridEvent;
 		    import mx.events.ListEvent;
-		    import aspoker.com.bubsy.poker.client.model.PokerTableList;
-		    import aspoker.com.bubsy.poker.client.model.PokerUser;
+		    import aspoker.com.bubsy.poker.client.model.TableList;
+		    import aspoker.com.bubsy.poker.client.model.User;
   		   
-		    private var pokerTables:PokerTableList ;
+		    private var Tables:TableList ;
+		    
 		    private function initTableGrid():void
 		    {
-    	        pokerTables = new PokerTableList(tableinfo);	    
+    	        Tables = new TableList(tableinfo);	    
 		    }
 		    
           private function itemClickEvent(event:ListEvent):void 
           {
-             PokerUser.tableJoin(event.currentTarget.selectedItem.id) ;
+             User.tableJoin(event.currentTarget.selectedItem.id) ;
           }
 
 		]]>
  </mx:Script>
 	<mx:HBox id="actionPanel">
-    <mx:Button label="Sit" click="PokerUser.pokerConnection.sit()" />
-		<mx:Button label="Seat" click="PokerUser.pokerConnection..seat()" />
-		<mx:Button label="GetTable" click="PokerUser.pokerConnection.getTables()" />
-		<mx:Button label="GetPersonalInfo" click="PokerUser.pokerConnection.getPersonalInfo()" />
-		<mx:Button label="buyIn" click="PokerUser.pokerConnection.buyIn()" />
-		<mx:Button label="setol" click="PokerUser.pokerConnection.setRole()" />
-		<mx:Button label="getCashier" click="PokerUser.pokerConnection.getCashier()" />
+    <mx:Button label="Sit" click="User.pokerConnection.sit()" />
+		<mx:Button label="Seat" click="User.pokerConnection..seat()" />
+		<mx:Button label="GetTable" click="User.pokerConnection.getTables()" />
+		<mx:Button label="GetPersonalInfo" click="User.pokerConnection.getPersonalInfo()" />
+		<mx:Button label="buyIn" click="User.pokerConnection.buyIn()" />
+		<mx:Button label="setol" click="User.pokerConnection.setRole()" />
+		<mx:Button label="getCashier" click="User.pokerConnection.getCashier()" />
 	</mx:HBox>
 	
 	<mx:HBox width="100%">

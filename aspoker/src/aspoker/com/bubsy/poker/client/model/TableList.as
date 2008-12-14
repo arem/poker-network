@@ -28,7 +28,7 @@ import flash.utils.Timer;
 
 import mx.controls.DataGrid;
 
-public class PokerTableList
+public class TableList
 {
     private var _pokerConnection:TableListJsonStream
     			= new TableListJsonStream();
@@ -38,7 +38,7 @@ public class PokerTableList
     private var players:int=0;
     private var tables:int=0;
 
-    public function PokerTableList(tableGrid:DataGrid)
+    public function TableList(tableGrid:DataGrid)
     {
         this.tableGrid = tableGrid ;
         ticker = new Timer(6000);
@@ -46,7 +46,7 @@ public class PokerTableList
         ticker.start();
          _pokerConnection.addEventListener(
             TableListEvent.onPacketPokerTableList,
-            _onPacketPokerTableList);
+            _onPacketTableList);
     }
 
     private function doStep(evt:TimerEvent):void
@@ -54,7 +54,7 @@ public class PokerTableList
         _pokerConnection.getTables();
     }
 
-    private function _onPacketPokerTableList(evt:TableListEvent):void
+    private function _onPacketTableList(evt:TableListEvent):void
     {
         data = evt.packet.packets;
         tableGrid.dataProvider = data;

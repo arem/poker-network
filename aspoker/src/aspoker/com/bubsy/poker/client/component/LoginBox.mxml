@@ -12,7 +12,7 @@
  >
   <mx:Script>
  	<![CDATA[
- 	    import aspoker.com.bubsy.poker.client.model.PokerUser;
+ 	    import aspoker.com.bubsy.poker.client.model.User;
  		import aspoker.com.bubsy.poker.client.event.LoginEvent;
                 
  		private function loginSuccessfull(evt:LoginEvent):void 
@@ -23,15 +23,15 @@
  		
  		private function loggin(username:String,password:String):void
  		{
- 		    PokerUser.UserPassword = password;
- 		    PokerUser.userName = username;
- 		    PokerUser.loggin();
+ 		    User.UserPassword = password;
+ 		    User.userName = username;
+ 		    User.loggin();
  		    
  		}
  		
  		private function logout():void
  		{
- 		    PokerUser.logout();
+ 		    User.logout();
  		    this.currentState='LogginState';
  		}
  		
@@ -44,12 +44,12 @@
 	
  		private function init():void 
  		{
-		    PokerUser.pokerConnection.addEventListener(
+		    User.pokerConnection.addEventListener(
 		        LoginEvent.onPacketAuthOk,
 		        loginSuccessfull
 		    ); 	
             
-            PokerUser.pokerConnection.addEventListener(
+            User.pokerConnection.addEventListener(
 		        LoginEvent.onPacketAuthRefused,
 		        loginRefused
 		   ); 

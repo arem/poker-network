@@ -22,7 +22,7 @@ package aspoker.com.bubsy.poker.client.model
 
 import mx.messaging.channels.StreamingAMFChannel;
 
-public class PokerSession
+public class Session
 {
     private static var _sessionCount:int = 0;
     private static var _twistedSession:String="";

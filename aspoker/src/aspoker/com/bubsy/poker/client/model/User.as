@@ -24,14 +24,14 @@ import aspoker.com.bubsy.poker.client.communication.UserJsonStream;
 
 import com.bubzy.utils.Logger;
 
-public class PokerUser
+public class User
 {
     public static var UserPassword:String;
     public static var userName:String;
     public static var UserSerial:int;
     public static var pokerConnection:UserJsonStream = new UserJsonStream();
 
-	public function PokerUser()
+	public function User()
 	{
 
 	}

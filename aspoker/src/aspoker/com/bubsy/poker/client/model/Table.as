@@ -19,9 +19,9 @@
 
 package aspoker.com.bubsy.poker.client.model
 {
-	public class PokerTable
+	public class Table
 	{
-		public function PokerTable()
+		public function Table()
 		{
 		}
 

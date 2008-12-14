@@ -21,7 +21,7 @@ package aspoker.com.bubsy.poker.client.communication
 {
 import com.bubzy.utils.Logger;
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
-import aspoker.com.bubsy.poker.client.model.PokerSession;
+import aspoker.com.bubsy.poker.client.model.Session;
 import com.adobe.serialization.json.JSON;
 
 public class UserJsonStream extends JsonStream
@@ -71,7 +71,7 @@ public class UserJsonStream extends JsonStream
             }
             case "PacketSerial":
             {
-              PokerSession.setCookie(pokerPacket.cookie);
+              Session.setCookie(pokerPacket.cookie);
 
                 dispatchEvent(
                     new LoginEvent(LoginEvent.onPacketSerial

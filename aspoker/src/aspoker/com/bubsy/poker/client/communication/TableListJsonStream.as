@@ -22,7 +22,7 @@ package aspoker.com.bubsy.poker.client.communication
 
 import com.bubzy.utils.Logger;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
-import aspoker.com.bubsy.poker.client.model.PokerSession;
+import aspoker.com.bubsy.poker.client.model.Session;
 import com.adobe.serialization.json.JSON;
 
 public class TableListJsonStream extends JsonStream

@@ -21,7 +21,7 @@ package aspoker.com.bubsy.poker.client.communication
 {
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
-import aspoker.com.bubsy.poker.client.model.PokerSession;
+import aspoker.com.bubsy.poker.client.model.Session;
 
 import com.adobe.serialization.json.JSON;
 import com.bubzy.net.http.HTTPClient;
@@ -45,10 +45,10 @@ public class JsonStream extends EventDispatcher
         _httpClient.addEventListener("close", handleError);
     }
 
-    protected  function sendREST(packet:Object,session:PokerSession=null):void
+    protected  function sendREST(packet:Object,session:Session=null):void
     {
       var request:URLRequest = new URLRequest();
-      _restURL = PokerSession.getUrl();
+      _restURL = Session.getUrl();
       request.url = _restURL;
       request.data=JSON.encode(packet);
       _httpClient.httpPOST(request);
