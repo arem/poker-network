@@ -24,7 +24,7 @@ import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.model.PokerSession;
 import com.adobe.serialization.json.JSON;
 
-public class UserJsonStream extends PokerConnection
+public class UserJsonStream extends JsonStream
 {
 	public function UserJsonStream()
 	{

@@ -32,12 +32,12 @@ import flash.events.EventDispatcher;
 import flash.events.HTTPStatusEvent;
 import flash.net.URLRequest;
 
-public class PokerConnection extends EventDispatcher
+public class JsonStream extends EventDispatcher
 {
     private var _restURL:String = "";
     private var _httpClient:HTTPClient = new HTTPClient;
 
-    public function PokerConnection():void
+    public function JsonStream():void
     {
         _httpClient = new HTTPClient();
         _httpClient.addEventListener("complete", onComplete);

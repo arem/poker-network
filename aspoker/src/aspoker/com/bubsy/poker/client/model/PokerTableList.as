@@ -35,8 +35,8 @@ public class PokerTableList
     public var data:Array = [];
     private var ticker:Timer;
     private var tableGrid:DataGrid;
-    private var players:int;
-    private var tables:int;
+    private var players:int=0;
+    private var tables:int=0;
 
     public function PokerTableList(tableGrid:DataGrid)
     {
