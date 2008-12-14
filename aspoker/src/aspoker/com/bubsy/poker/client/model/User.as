@@ -22,24 +22,23 @@ package aspoker.com.bubsy.poker.client.model
 
 import aspoker.com.bubsy.poker.client.communication.UserJsonStream;
 
-import com.bubzy.utils.Logger;
-
 public class User
 {
     public static var UserPassword:String;
     public static var userName:String;
     public static var UserSerial:int;
     public static var pokerConnection:UserJsonStream = new UserJsonStream();
+	public static var tablesList:Array/* of poker tables */=[];
 
 	public function User()
 	{
 
 	}
 
-    public static function tableJoin(gameid:int):void
+    public static function tableJoin(gameId:int):void
     {
-        Logger.log(UserSerial +  " join table" + gameid);
-        pokerConnection.tableJoin(gameid,UserSerial);
+        //Logger.log(UserSerial +  " join table" + gameid);
+      	tablesList[gameId] = new Table(gameId);
     }
 
     public static function loggin():void

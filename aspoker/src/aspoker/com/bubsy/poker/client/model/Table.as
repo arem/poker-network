@@ -19,11 +19,72 @@
 
 package aspoker.com.bubsy.poker.client.model
 {
-	public class Table
+
+import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
+import aspoker.com.bubsy.poker.client.event.TableEvent;
+
+public class Table
+{
+	private var tableInfo:Object;
+	private var _gameID:int = 0;
+	private var _seats:Array;
+	/*max_players = packet.seats;
+	is_tourney
+	this.board = [ null, null, null, null, null ];
+    this.pots = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+    this.buyIn = { min: 1000000000, max: 1000000000, best: 1000000000, bankroll: 0 };
+    this.dealer = -1;
+    this.position = -1;
+    this.state = 'end';
+    seat
+    */
+    private var _pokerConnection:TableJsonStream = new TableJsonStream();
+
+	public function Table(gameId:int)
 	{
-		public function Table()
-		{
-		}
+ 		_pokerConnection.addEventListener(
+            TableEvent.onPacketPokerTable,
+            _onPacketPokerTable);
+
+		_pokerConnection.addEventListener(
+            TableEvent.onPacketPokerSeats,
+            _onPacketPokerSeat);
+
+   		join(gameId);
 
 	}
+
+	private function _onPacketPokerSeat(evt:TableEvent):void
+	{
+		_seats = evt.packet.seats;
+		trace(_seats);
+		trace("SeatCount: "+ _seats.length);
+	}
+
+	private function _onPacketPokerTable(evt:TableEvent):void
+	{
+		tableInfo = evt.packet;
+
+		trace("tableName: " + tableInfo.name);
+		trace("tableVariant: " + tableInfo.variant);
+		trace("tablePercent_flop: " + tableInfo.percent_flop);
+		trace("tableBetting_structure: " + tableInfo.betting_structure);
+		trace("tableAverage_pot: " + tableInfo.average_pot);
+		trace("tableMuck_timeout: " + tableInfo.muck_timeout);
+		trace("tableHands_per_hour: " + tableInfo.hands_per_hour);
+		trace("tableTourney_serial: " + tableInfo.tourney_serial);
+		trace("tableSeats:" + tableInfo.seats);
+		trace("tableObservers: " + tableInfo.observers);
+		trace("tablePlayer_timeout: " + tableInfo.player_timeout);
+		trace("tableCurrency_serial: " + tableInfo.currency_serial);
+		trace("tableSkin: " + tableInfo.skin);
+	}
+
+	public function join(gameId:int):void
+	{
+    	//Logger.log(UserSerial +  " join table" + gameid);
+    	_gameID = gameId;
+		_pokerConnection.tableJoin(gameId,User.UserSerial);
+	}
+}
 }

@@ -90,9 +90,6 @@ public class UserJsonStream extends JsonStream
                 break;
             }
             default: trace(JSON.encode(pokerPacket));
-            {
-
-            }
    		}
    }
 }

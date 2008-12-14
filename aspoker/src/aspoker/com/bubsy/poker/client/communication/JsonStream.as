@@ -70,9 +70,6 @@ public class JsonStream extends EventDispatcher
             case "PacketPokerPlayerInfo":
             case "PacketAuthRefused":
             default: trace(JSON.encode(pokerPacket));
-            {
-
-            }
          }
    }
 
@@ -123,14 +120,6 @@ public class JsonStream extends EventDispatcher
         sendREST(packetPokerSeat);
     }
 
-    public function getTables():void
-    {
-        var packetPokerTableSelect:Object = {};
-        packetPokerTableSelect.type = "PacketPokerTableSelect";
-        packetPokerTableSelect.string = "";
-        sendREST(packetPokerTableSelect);
-    }
-
     public function plocale():void
     {
         var plocale:Object = {};
@@ -153,15 +142,6 @@ public class JsonStream extends EventDispatcher
         packetPokerGetPersonalInfo.type = "PacketPokerGetUserInfo";
         packetPokerGetPersonalInfo.serial = 6;
         sendREST(packetPokerGetPersonalInfo);
-    }
-
-    public function tableJoin(gameid:int,userSerial:int):void
-    {
-        var packetPokerTableJoin:Object = {};
-        packetPokerTableJoin.type = "PacketPokerTableJoin";
-        packetPokerTableJoin.game_id = gameid;
-        packetPokerTableJoin.serial = userSerial;
-        sendREST(packetPokerTableJoin);
     }
 
     public function sit():void

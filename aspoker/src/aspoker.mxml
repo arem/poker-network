@@ -52,8 +52,7 @@
  </mx:Script>
 	<mx:HBox id="actionPanel">
     <mx:Button label="Sit" click="User.pokerConnection.sit()" />
-		<mx:Button label="Seat" click="User.pokerConnection..seat()" />
-		<mx:Button label="GetTable" click="User.pokerConnection.getTables()" />
+		<mx:Button label="Seat" click="User.pokerConnection.seat()" />
 		<mx:Button label="GetPersonalInfo" click="User.pokerConnection.getPersonalInfo()" />
 		<mx:Button label="buyIn" click="User.pokerConnection.buyIn()" />
 		<mx:Button label="setol" click="User.pokerConnection.setRole()" />

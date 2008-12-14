@@ -35,7 +35,7 @@ public class TableListJsonStream extends JsonStream
 	override protected function _dispatchEvent(pokerPacket:Object):void
     {
    		Logger.log(pokerPacket.type);
-
+		trace(JSON.encode(pokerPacket));
         switch(pokerPacket.type)
         {
             case "PacketPokerTableList":
@@ -51,5 +51,13 @@ public class TableListJsonStream extends JsonStream
             default: trace(JSON.encode(pokerPacket));
          }
 	}
+
+	public function getTables():void
+    {
+        var packetPokerTableSelect:Object = {};
+        packetPokerTableSelect.type = "PacketPokerTableSelect";
+        packetPokerTableSelect.string = "";
+        sendREST(packetPokerTableSelect);
+    }
 }
 }
