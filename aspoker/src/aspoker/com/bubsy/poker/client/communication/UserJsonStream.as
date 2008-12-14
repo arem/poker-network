@@ -26,12 +26,12 @@ import com.adobe.serialization.json.JSON;
 
 public class UserJsonStream extends JsonStream
 {
-	public function UserJsonStream()
-	{
-		super();
-	}
+    public function UserJsonStream()
+    {
+        super();
+    }
 
-	public function loggin(userName:String,userPassword:String):void
+    public function loggin(userName:String,userPassword:String):void
     {
         var packetLogin:Object = {};
         packetLogin.password = userPassword;
@@ -47,9 +47,9 @@ public class UserJsonStream extends JsonStream
         sendREST(packetPokerGetPersonalInfo);
     }
 
-	override protected function _dispatchEvent(pokerPacket:Object):void
+    override protected function _dispatchEvent(pokerPacket:Object):void
     {
-   		Logger.log(pokerPacket.type);
+           Logger.log(pokerPacket.type);
 
         switch(pokerPacket.type)
         {
@@ -90,7 +90,7 @@ public class UserJsonStream extends JsonStream
                 break;
             }
             default: trace(JSON.encode(pokerPacket));
-   		}
-   }
+        }
+    }
 }
 }

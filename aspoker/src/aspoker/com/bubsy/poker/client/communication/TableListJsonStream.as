@@ -27,15 +27,15 @@ import com.adobe.serialization.json.JSON;
 
 public class TableListJsonStream extends JsonStream
 {
-	public function TableListJsonStream()
-	{
-		super();
-	}
-
-	override protected function _dispatchEvent(pokerPacket:Object):void
+    public function TableListJsonStream()
     {
-   		Logger.log(pokerPacket.type);
-		trace(JSON.encode(pokerPacket));
+        super();
+    }
+
+    override protected function _dispatchEvent(pokerPacket:Object):void
+    {
+        Logger.log(pokerPacket.type);
+        trace(JSON.encode(pokerPacket));
         switch(pokerPacket.type)
         {
             case "PacketPokerTableList":
@@ -50,9 +50,9 @@ public class TableListJsonStream extends JsonStream
             }
             default: trace(JSON.encode(pokerPacket));
          }
-	}
+    }
 
-	public function getTables():void
+    public function getTables():void
     {
         var packetPokerTableSelect:Object = {};
         packetPokerTableSelect.type = "PacketPokerTableSelect";

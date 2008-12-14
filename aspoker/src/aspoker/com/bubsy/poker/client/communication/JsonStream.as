@@ -54,9 +54,9 @@ public class JsonStream extends EventDispatcher
       _httpClient.httpPOST(request);
     }
 
-   protected function _dispatchEvent(pokerPacket:Object):void
-   {
-   		Logger.log(pokerPacket.type);
+    protected function _dispatchEvent(pokerPacket:Object):void
+    {
+           Logger.log(pokerPacket.type);
 
         switch(pokerPacket.type)
         {

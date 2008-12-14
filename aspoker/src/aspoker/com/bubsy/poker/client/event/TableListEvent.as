@@ -32,7 +32,6 @@ public class TableListEvent extends Event
         this.packet = data;
         super(type);
     }
-
 }
 
 }

@@ -19,28 +19,28 @@
 
 package aspoker.com.bubsy.poker.client.event
 {
-	import flash.events.Event;
+    import flash.events.Event;
 
-	public class TableEvent extends Event
-	{
-		public static const onPacketPokerTable:String = "PacketPokerTable";
-		public static const onPacketPokerBuyInLimits:String = "PacketPokerBuyInLimits";
-		public static const onPacketPokerBatchMode:String = "PacketPokerBatchMode";
-		public static const onPacketPokerSeats:String = "PacketPokerSeats";
-		public static const onPacketPokerStreamMode:String = "PacketPokerStreamMode";
-		public static const onPacketPokerPlayerArrive:String = "PacketPokerPlayerArrive";
-		public static const onPacketPokerPlayerStats:String = "PacketPokerPlayerStats";
-		public static const onPacketPokerPlayerChips:String = "PacketPokerPlayerChips";
-		public static const onPacketPokerClientPlayerChips:String = "PacketPokerClientPlayerChips";
-		public static const onPacketPokerSeat:String = "PacketPokerSeat";
+    public class TableEvent extends Event
+    {
+        public static const onPacketPokerTable:String = "PacketPokerTable";
+        public static const onPacketPokerBuyInLimits:String = "PacketPokerBuyInLimits";
+        public static const onPacketPokerBatchMode:String = "PacketPokerBatchMode";
+        public static const onPacketPokerSeats:String = "PacketPokerSeats";
+        public static const onPacketPokerStreamMode:String = "PacketPokerStreamMode";
+        public static const onPacketPokerPlayerArrive:String = "PacketPokerPlayerArrive";
+        public static const onPacketPokerPlayerStats:String = "PacketPokerPlayerStats";
+        public static const onPacketPokerPlayerChips:String = "PacketPokerPlayerChips";
+        public static const onPacketPokerClientPlayerChips:String = "PacketPokerClientPlayerChips";
+        public static const onPacketPokerSeat:String = "PacketPokerSeat";
 
-		public var packet:Object;
+        public var packet:Object;
 
-		public function TableEvent(type:String,packet:Object)
-		{
-			this.packet = packet;
-			super(type);
-		}
+        public function TableEvent(type:String,packet:Object)
+        {
+            this.packet = packet;
+            super(type);
+        }
 
-	}
+    }
 }

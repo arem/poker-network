@@ -9,20 +9,20 @@ import com.bubzy.utils.Logger;
 public class TableJsonStream extends JsonStream
 {
 
-	public function TableJsonStream()
-	{
-		super();
-	}
-
-	override protected function _dispatchEvent(pokerPacket:Object):void
+    public function TableJsonStream()
     {
-   		Logger.log(pokerPacket.type);
-		trace(JSON.encode(pokerPacket));
+        super();
+    }
+
+    override protected function _dispatchEvent(pokerPacket:Object):void
+    {
+           Logger.log(pokerPacket.type);
+        trace(JSON.encode(pokerPacket));
         switch(pokerPacket.type)
         {
-        	case "PacketPokerTable":
-        	{
-        		dispatchEvent(
+            case "PacketPokerTable":
+            {
+                dispatchEvent(
                     new TableEvent(
                     TableEvent.onPacketPokerTable,
                     pokerPacket
@@ -31,20 +31,20 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-			case "PacketPokerBuyInLimits":
-			{
-        		dispatchEvent(
+            case "PacketPokerBuyInLimits":
+            {
+                dispatchEvent(
                     new TableEvent(
-					TableEvent.onPacketPokerBuyInLimits,
+                    TableEvent.onPacketPokerBuyInLimits,
                     pokerPacket
                     )
                 );
                 break;
             }
 
-			case "PacketPokerBatchMode":
-			{
-        		dispatchEvent(
+            case "PacketPokerBatchMode":
+            {
+                dispatchEvent(
                     new TableEvent(
                     TableEvent.onPacketPokerBatchMode,
                     pokerPacket
@@ -53,9 +53,9 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-			case "PacketPokerSeats":
-			{
-        		dispatchEvent(
+            case "PacketPokerSeats":
+            {
+                dispatchEvent(
                     new TableEvent(
                     TableEvent.onPacketPokerSeats,
                     pokerPacket
@@ -64,9 +64,9 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-			case "PacketPokerStreamMode":
-			{
-        		dispatchEvent(
+            case "PacketPokerStreamMode":
+            {
+                dispatchEvent(
                     new TableEvent(
                     TableEvent.onPacketPokerStreamMode,
                     pokerPacket
@@ -77,9 +77,9 @@ public class TableJsonStream extends JsonStream
 
             default: trace("unknown paket");
          }
-	}
+    }
 
-	public function tableJoin(gameid:int,userSerial:int):void
+    public function tableJoin(gameid:int,userSerial:int):void
     {
         var packetPokerTableJoin:Object = {};
         packetPokerTableJoin.type = "PacketPokerTableJoin";

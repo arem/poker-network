@@ -33,7 +33,7 @@ import mx.controls.DataGrid;
 public class TableList
 {
     private var _pokerConnection:TableListJsonStream
-    			= new TableListJsonStream();
+                = new TableListJsonStream();
     private var _data:Array = [];
     private var _ticker:Timer;
     private var _tableGrid:DataGrid;
@@ -51,15 +51,15 @@ public class TableList
             _onPacketTableList);
     }
 
-	public function get playersCount():int
-	{
-		return _playersCount ;
-	}
+    public function get playersCount():int
+    {
+        return _playersCount ;
+    }
 
-	public function get tablesCount():int
-	{
-		return _tablesCount;
-	}
+    public function get tablesCount():int
+    {
+        return _tablesCount;
+    }
 
     private function doStep(evt:TimerEvent):void
     {
@@ -69,10 +69,10 @@ public class TableList
     private function _onPacketTableList(evt:TableListEvent):void
     {
         _data = evt.packet.packets;
-       	_playersCount = evt.packet.players;
-     	_tablesCount = evt.packet.tables;
-     	Logger.log("playersCount:" + _playersCount
-     				+ " tablesCount:" + _tablesCount);
+           _playersCount = evt.packet.players;
+         _tablesCount = evt.packet.tables;
+         Logger.log("playersCount:" + _playersCount
+                     + " tablesCount:" + _tablesCount);
         _tableGrid.dataProvider = _data;
     }
 }
