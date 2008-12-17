@@ -47,6 +47,22 @@ public class UserJsonStream extends JsonStream
         sendREST(packetPokerGetPersonalInfo);
     }
 
+    public function getPersonalInfo():void
+    {
+        var packetPokerGetPersonalInfo:Object = {};
+        packetPokerGetPersonalInfo.type = "PacketPokerGetPlayerInfo";
+       //packetPokerGetPersonalInfo.serial = 6;
+        sendREST(packetPokerGetPersonalInfo);
+     }
+
+    public function getCashier(userSerial:int):void
+    {
+        var packetPokerGetPersonalInfo:Object = {};
+        packetPokerGetPersonalInfo.type = "PacketPokerGetUserInfo";
+        packetPokerGetPersonalInfo.serial = userSerial;
+        sendREST(packetPokerGetPersonalInfo);
+    }
+
     override protected function _dispatchEvent(pokerPacket:Object):void
     {
            Logger.log(pokerPacket.type);
@@ -64,18 +80,21 @@ public class UserJsonStream extends JsonStream
             }
 
             case "PacketAuthOk":
-            {    dispatchEvent
-                    (new LoginEvent(LoginEvent.onPacketAuthOk
-                        ,pokerPacket));
+            {    dispatchEvent(
+                    new LoginEvent(
+                    LoginEvent.onPacketAuthOk,
+                    pokerPacket.serial)
+                   );
                 break;
             }
             case "PacketSerial":
             {
-              Session.setCookie(pokerPacket.cookie);
+                Session.setCookie(pokerPacket.cookie);
 
                 dispatchEvent(
-                    new LoginEvent(LoginEvent.onPacketSerial
-                        ,pokerPacket
+                    new LoginEvent(
+                        LoginEvent.onPacketSerial,
+                        pokerPacket.serial
                     )
                 );
                 break;
@@ -84,7 +103,7 @@ public class UserJsonStream extends JsonStream
             {
                dispatchEvent(
                     new LoginEvent(
-                    LoginEvent.onPacketAuthRefused
+                        LoginEvent.onPacketAuthRefused
                     )
                 );
                 break;

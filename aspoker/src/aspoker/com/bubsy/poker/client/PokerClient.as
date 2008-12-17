@@ -1,10 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
-	layout="absolute" xmlns:flexui="flexunit.flexui.*"
-	width="1000" height="800" creationComplete="init()">
-<!--
 ////////////////////////////////////////////////////////////////////////////////
-//urns the child display object that exists with the specified nam
+//
 //     Copyright (C) 2008 Bruno Garnier <bruno.garnier@gmail.com>
 //
 //     This program is free software: you can redistribute it and/or modify
@@ -21,25 +16,24 @@
 //     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////////////////////
--->
 
-	<mx:Script>
-	<![CDATA[
-	
-	import aspoker.com.bubsy.poker.client.test.TestAspoker;
-	import flexunit.framework.TestSuite;
-			
-	private function init():void
-	{
- 		var ts:TestSuite = new TestSuite();
- 		ts.addTest(TestAspoker.suite());
- 		testRunner.initialize();
- 		testRunner.test = ts;
- 		testRunner.startTest();
- 	}
- 		
-	]]>
-	</mx:Script>
-	<flexui:TestRunnerBase id="testRunner" width="100%" height="100%"  />
+package aspoker.com.bubsy.poker.client
+{
+    import aspoker.com.bubsy.poker.client.model.User;
 
-</mx:Application>
+    public class PokerClient
+    {
+        private static var _user:User = new User();
+
+        public function PokerClient()
+        {
+
+        }
+
+        public static function get user():User
+        {
+            return _user;
+        }
+
+    }
+}

@@ -49,6 +49,8 @@ public class TableList
          _pokerConnection.addEventListener(
             TableListEvent.onPacketPokerTableList,
             _onPacketTableList);
+
+       refreshTablelist();
     }
 
     public function get playersCount():int
@@ -61,9 +63,14 @@ public class TableList
         return _tablesCount;
     }
 
-    private function doStep(evt:TimerEvent):void
+    private function refreshTablelist():void
     {
         _pokerConnection.getTables();
+    }
+
+    private function doStep(evt:TimerEvent):void
+    {
+        refreshTablelist();
     }
 
     private function _onPacketTableList(evt:TableListEvent):void

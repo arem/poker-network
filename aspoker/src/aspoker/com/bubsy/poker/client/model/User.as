@@ -21,35 +21,90 @@ package aspoker.com.bubsy.poker.client.model
 {
 
 import aspoker.com.bubsy.poker.client.communication.UserJsonStream;
+import aspoker.com.bubsy.poker.client.event.LoginEvent;
 
-public class User
+import flash.events.EventDispatcher;
+
+public class User extends EventDispatcher
 {
-    public static var UserPassword:String;
-    public static var userName:String;
-    public static var UserSerial:int;
-    public static var pokerConnection:UserJsonStream = new UserJsonStream();
-	public static var tablesList:Array/* of poker tables */=[];
+    private var _userPassword:String= "";
+    private var _userName:String = "";
+    private var _userSerial:int= -1;
+    private var _stream:UserJsonStream = new UserJsonStream();
+    private var _tablesList:Array/* of poker tables */=[];
 
-	public function User()
-	{
+    public function User()
+    {
+        _stream.addEventListener(
+            LoginEvent.onPacketAuthOk,
+            _loginSuccessfull
+        );
 
-	}
+        _stream.addEventListener(
+            LoginEvent.onPacketAuthRefused,
+            _loginRefused
+        );
 
-    public static function tableJoin(gameId:int):void
+        _stream.addEventListener(
+            LoginEvent.onPacketSerial,
+            onPacketSerial
+        );
+    }
+
+    private function onPacketSerial(evt:LoginEvent):void
+    {
+        _userSerial = evt.userSerial;
+        trace("userserial"+_userSerial);
+    }
+
+    private function _loginSuccessfull(evt:LoginEvent):void
+    {
+        dispatchEvent(
+            new LoginEvent(
+            LoginEvent.onPacketAuthOk,
+            _userSerial
+            )
+        );
+    }
+
+    private function _loginRefused(evt:LoginEvent):void
+    {
+        dispatchEvent(
+            new LoginEvent(
+            LoginEvent.onPacketAuthRefused
+            )
+        );
+    }
+
+    public function tableJoin(gameId:int):void
     {
         //Logger.log(UserSerial +  " join table" + gameid);
-      	tablesList[gameId] = new Table(gameId);
+        _tablesList[gameId] = new Table(gameId);
     }
 
-    public static function loggin():void
+    public function loggin(userName:String,userPassword:String):void
     {
-        pokerConnection.loggin(userName,UserPassword);
+        _userName = userName;
+        _userPassword = userPassword;
+        _stream.loggin(_userName,_userPassword);
     }
 
-    public static function logout():void
+    public function logout():void
     {
-        pokerConnection.logout();
+        _userPassword= "";
+        _userName = "";
+        _userSerial= -1;
+        _stream.logout();
+    }
+
+    public function get userName():String
+    {
+        return _userName;
+    }
+
+    public function get userSerial():int
+    {
+        return _userSerial;
     }
 }
-
 }

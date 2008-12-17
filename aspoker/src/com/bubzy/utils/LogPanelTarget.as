@@ -45,7 +45,8 @@ package com.bubzy.utils
         public function LogPanelTarget(console:TextArea):void
         {
             super();
-            setPanelTarget(console);
+            if (console)
+                setPanelTarget(console);
             this.level = LogEventLevel.ALL;
             this.includeDate = true;
             this.includeTime = true;
@@ -55,7 +56,8 @@ package com.bubzy.utils
 
         override mx_internal function internalLog(message : String) : void
         {
-            this.console.text += message + "\n";
+            if (console)
+                this.console.text += message + "\n";
         }
     }
 }

@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//     Copyright (C) 2008 Bruno Garnier <bruno.garnier@gmail.com>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
 
  <mx:Panel 
  width="294" 
@@ -12,26 +32,20 @@
  >
   <mx:Script>
  	<![CDATA[
+ 		import aspoker.com.bubsy.poker.client.PokerClient;
  	    import aspoker.com.bubsy.poker.client.model.User;
  		import aspoker.com.bubsy.poker.client.event.LoginEvent;
-                
+        
+        private var _user:User = PokerClient.user;
+        
  		private function loginSuccessfull(evt:LoginEvent):void 
  		{
- 			
  			this.currentState='cashierState';		
  		}
  		
- 		private function loggin(username:String,password:String):void
+	    private function logout():void
  		{
- 		    User.UserPassword = password;
- 		    User.userName = username;
- 		    User.loggin();
- 		    
- 		}
- 		
- 		private function logout():void
- 		{
- 		    User.logout();
+ 		    _user.logout();
  		    this.currentState='LogginState';
  		}
  		
@@ -44,12 +58,12 @@
 	
  		private function init():void 
  		{
-		    User.pokerConnection.addEventListener(
+		    _user.addEventListener(
 		        LoginEvent.onPacketAuthOk,
 		        loginSuccessfull
 		    ); 	
             
-            User.pokerConnection.addEventListener(
+            _user.addEventListener(
 		        LoginEvent.onPacketAuthRefused,
 		        loginRefused
 		   ); 
@@ -62,7 +76,7 @@
   <mx:State name="cashierState">
        <mx:RemoveChild target="{loginCanvas}"/>
        <mx:SetProperty target="{this}" name="width" value="340"/>
-       <mx:SetProperty target="{this}" name="height" value="266"/>
+       <mx:SetProperty target="{this}" name="height" value="100"/>
        <mx:AddChild relativeTo="{this}" position="lastChild">
             <mx:Canvas id="registerCanvas" left="0" top="0" right="0" bottom="0">
                  <mx:Label text="Welcome!" 
@@ -93,7 +107,7 @@
             </mx:FormItem>
        </mx:Form>
        <mx:Button label="Login" right="25" bottom="18" id="button1" 
-           click="loggin(username.text,password.text)"
+           click="_user.loggin(username.text,password.text)"
        />
        </mx:Canvas>
       </mx:AddChild>

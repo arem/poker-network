@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//     Copyright (C) 2008 Bruno Garnier <bruno.garnier@gmail.com>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="65" height="80" creationComplete="_init();">
+	  <mx:Script>
+ 	<![CDATA[
+ 		import mx.core.Application;
+ 	
+ 		private var _tableId:int=0;
+ 		private var _seatId:int=0;
+ 		
+ 		public function set tableId(tableId:int):void
+ 		{
+ 			_tableId = tableId;
+ 		}
+ 		
+ 		public function set seatId(seatId:int):void
+ 		{
+ 			_seatId = seatId;
+ 		}
+ 			
+ 		private function _init():void
+ 		{
+ 			this.currentState = "sitin";
+ 			seatname.text = "seat: " + _seatId;
+ 		}
+ 		
+ 	 ]]>
+ 	</mx:Script>
+ 	
+ 	<mx:states>
+ 		 <mx:State name="sitin" basedOn="">
+ 		  <mx:AddChild >
+	 	<mx:VBox borderColor="red" borderStyle="solid" id="seat">
+		 	<mx:Label id="seatname" text="" />
+	  		<mx:Button id="seatbutton" label="sit" click="this.currentState='sitout'" /> 		
+	 	</mx:VBox> 	
+ 		  </mx:AddChild>
+	 	</mx:State>
+	 	
+		<mx:State name="sitout" basedOn="sitin">
+		<mx:RemoveChild target="{seatbutton}"  />
+		 <mx:AddChild relativeTo="{seat}" >
+	  		<mx:Button label="sitout" click="this.currentState='sitin'" /> 			
+ 		  </mx:AddChild>
+	 	</mx:State>
+	 	
+	</mx:states>
+
+</mx:Canvas>

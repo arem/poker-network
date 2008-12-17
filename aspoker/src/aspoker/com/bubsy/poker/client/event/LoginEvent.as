@@ -20,9 +20,6 @@
 package aspoker.com.bubsy.poker.client.event
 {
 
-import aspoker.com.bubsy.poker.client.model.Session;
-import aspoker.com.bubsy.poker.client.model.User;
-
 import flash.events.Event;
 
 public class LoginEvent extends Event
@@ -30,20 +27,16 @@ public class LoginEvent extends Event
     public static const onPacketAuthOk:String = "PacketAuthOk";
     public static const onPacketSerial:String = "PacketSerial";
     public static const onPacketAuthRefused:String = "PacketAuthRefused";
-    public var packet:Object;
+    public var userSerial:int = 0 ;
 
-    public function LoginEvent(type:String,data:Object=null,
-        header:Array=null
-        )
+    public function LoginEvent(type:String,userSerial:int=0)
     {
-        this.packet = data ;
-
         switch(type)
         {
             case "PacketAuthOk": break;
             case "PacketSerial":
             {
-                User.UserSerial = data.serial;
+               this.userSerial = userSerial
                 break;
             }
             default: trace(type);

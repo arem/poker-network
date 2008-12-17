@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
-	layout="absolute" xmlns:flexui="flexunit.flexui.*"
-	width="1000" height="800" creationComplete="init()">
 <!--
 ////////////////////////////////////////////////////////////////////////////////
-//urns the child display object that exists with the specified nam
+//
 //     Copyright (C) 2008 Bruno Garnier <bruno.garnier@gmail.com>
 //
 //     This program is free software: you can redistribute it and/or modify
@@ -23,23 +20,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 
-	<mx:Script>
-	<![CDATA[
-	
-	import aspoker.com.bubsy.poker.client.test.TestAspoker;
-	import flexunit.framework.TestSuite;
-			
-	private function init():void
-	{
- 		var ts:TestSuite = new TestSuite();
- 		ts.addTest(TestAspoker.suite());
- 		testRunner.initialize();
- 		testRunner.test = ts;
- 		testRunner.startTest();
- 	}
- 		
-	]]>
-	</mx:Script>
-	<flexui:TestRunnerBase id="testRunner" width="100%" height="100%"  />
-
-</mx:Application>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" xmlns:component="aspoker.com.bubsy.poker.client.component.*" borderColor="red" borderStyle="solid">
+	<mx:VBox>
+			<mx:Label text="table numero 1" />	
+			<mx:HBox >
+				<component:CSeat tableId="1" seatId="1"/>
+				<component:CSeat tableId="1" seatId="2"/>
+				<component:CSeat tableId="1" seatId="3"/>
+				<component:CSeat tableId="1" seatId="4"/>
+				<component:CSeat tableId="1" seatId="5"/>
+				<component:CSeat tableId="1" seatId="6"/>
+				<component:CSeat tableId="1" seatId="7"/>
+				<component:CSeat tableId="1" seatId="8"/>
+				<component:CSeat tableId="1" seatId="9"/>
+				<component:CSeat tableId="1" seatId="10"/>
+			</mx:HBox>
+	</mx:VBox>		
+</mx:Canvas>

@@ -19,8 +19,6 @@
 
 package aspoker.com.bubsy.poker.client.communication
 {
-import aspoker.com.bubsy.poker.client.event.LoginEvent;
-import aspoker.com.bubsy.poker.client.event.TableListEvent;
 import aspoker.com.bubsy.poker.client.model.Session;
 
 import com.adobe.serialization.json.JSON;
@@ -57,21 +55,7 @@ public class JsonStream extends EventDispatcher
     protected function _dispatchEvent(pokerPacket:Object):void
     {
            Logger.log(pokerPacket.type);
-
-        switch(pokerPacket.type)
-        {
-            case "PacketAuthRequest" :
-            case "PacketPokerTable":
-            case "PacketPokerBuyInLimits":
-            case "PacketPokerBatchMode":
-            case "PacketPokerSeats":
-            case "PacketPokerStreamMode":
-            case "PacketPokerError":
-            case "PacketPokerPlayerInfo":
-            case "PacketAuthRefused":
-            default: trace(JSON.encode(pokerPacket));
-         }
-   }
+    }
 
     private function onComplete(event:Event):void
     {
@@ -99,17 +83,7 @@ public class JsonStream extends EventDispatcher
 
     private function onHTTPStatus(event:HTTPStatusEvent):void
     {
-        Logger.log("httpStatus " + event.status);
-    }
-
-    public function seat():void
-    {
-        var packetPokerSeat:Object = {};
-        packetPokerSeat.type = "PacketPokerSeat";
-        packetPokerSeat.seat = 1;
-        packetPokerSeat.game_id = 1;
-        packetPokerSeat.serial = 6;
-        sendREST(packetPokerSeat);
+       // Logger.log("httpStatus " + event.status);
     }
 
     public function setRole():void
@@ -126,41 +100,6 @@ public class JsonStream extends EventDispatcher
         plocale.serial = 6;
         plocale.locale = "en_US.UTF-8";
         sendREST(plocale);
-    }
-
-    public function getPersonalInfo():void
-    {
-        var packetPokerGetPersonalInfo:Object = {};
-        packetPokerGetPersonalInfo.type = "PacketPokerGetPlayerInfo";
-       //packetPokerGetPersonalInfo.serial = 6;
-        sendREST(packetPokerGetPersonalInfo);
-     }
-
-    public function getCashier():void
-    {
-        var packetPokerGetPersonalInfo:Object = {};
-        packetPokerGetPersonalInfo.type = "PacketPokerGetUserInfo";
-        packetPokerGetPersonalInfo.serial = 6;
-        sendREST(packetPokerGetPersonalInfo);
-    }
-
-    public function sit():void
-    {
-        var packetPokerSit:Object = {};
-        packetPokerSit.type = "PacketPokerSit",
-        packetPokerSit.game_id =1,
-        packetPokerSit.serial = 6
-        sendREST(packetPokerSit);
-    }
-
-    public function buyIn():void
-    {
-        var packetPokerBuyIn:Object = {};
-        packetPokerBuyIn.type = "PacketPokerBuyIn";
-        packetPokerBuyIn.amount = 200000;
-        packetPokerBuyIn.game_id = 1;
-        packetPokerBuyIn.serial = 6;
-        sendREST(packetPokerBuyIn);
     }
 }
 }

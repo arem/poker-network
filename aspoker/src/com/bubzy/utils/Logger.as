@@ -37,7 +37,13 @@ package com.bubzy.utils
             if (!_instance)
             {
                 _instance = new Logger();
-                addTarget(Application.application.log);
+
+                if (Application.application.hasOwnProperty("log"))
+                {
+                    addTarget(Application.application.log);
+                } else {
+                    addTarget(new TextArea());
+                }
             }
             _logger.log(LogEventLevel.DEBUG,str);
         }

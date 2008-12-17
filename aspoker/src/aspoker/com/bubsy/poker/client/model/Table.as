@@ -20,6 +20,7 @@
 package aspoker.com.bubsy.poker.client.model
 {
 
+import aspoker.com.bubsy.poker.client.PokerClient;
 import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
 
@@ -28,6 +29,7 @@ public class Table
     private var tableInfo:Object;
     private var _gameID:int = 0;
     private var _seats:Array;
+    private var _user:User = PokerClient.user;
     /*max_players = packet.seats;
     is_tourney
     this.board = [ null, null, null, null, null ];
@@ -83,7 +85,7 @@ public class Table
     {
         //Logger.log(UserSerial +  " join table" + gameid);
         _gameID = gameId;
-        _pokerConnection.tableJoin(gameId,User.UserSerial);
+        _pokerConnection.tableJoin(gameId,_user.userSerial);
     }
 }
 }
