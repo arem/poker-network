@@ -145,6 +145,8 @@ public class HTTPClient extends EventDispatcher
 
     private function _onCloseEvent(event:Event):void
     {
+                _loadComplete = true;
+        _parseResponse();
         dispatchEvent(new Event(Event.COMPLETE));
     }
 
@@ -255,7 +257,7 @@ public class HTTPClient extends EventDispatcher
         var headerArr:Array = response[0].split(HTTP_END_LINE);
 
         _httpResponseContent += response[1];
-
+        trace(_httpResponseContent);
         for each(var p:String in headerArr)
         {
             _parseResponseHeaderStatus(p);
@@ -279,16 +281,8 @@ public class HTTPClient extends EventDispatcher
         );
 
         buffer = _httpSocket.readUTFBytes(_httpSocket.bytesAvailable);
-
-        if (buffer.indexOf(HTTP_END_HEADER)< 0)
-        {
-            _httpResponseBuffer += buffer;
-            return ;
-        }
-
         _httpResponseBuffer += buffer;
-        _loadComplete = true;
-        _parseResponse();
+
     }
 
     private function _initResquestHeaders():void
