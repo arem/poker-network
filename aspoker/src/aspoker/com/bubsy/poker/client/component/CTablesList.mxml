@@ -21,7 +21,6 @@
           {
              _user.tableJoin(event.currentTarget.selectedItem.id) ;
           }
-
 		]]>
  	</mx:Script>
  	

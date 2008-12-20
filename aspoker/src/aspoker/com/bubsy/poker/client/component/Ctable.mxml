@@ -20,20 +20,127 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" xmlns:component="aspoker.com.bubsy.poker.client.component.*" borderColor="red" borderStyle="solid">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" 
+	xmlns:component="aspoker.com.bubsy.poker.client.component.*" 
+	creationComplete="setSeat()">
+	
+	  <mx:Script>
+ 	<![CDATA[
+ 		import aspoker.com.bubsy.poker.client.model.Table;
+		import aspoker.com.bubsy.poker.client.event.TableEvent;
+		
+		private var _table:Table;
+		
+		public function set gameId(gameId:int):void
+		{
+			_table = new Table(gameId);
+		}
+		
+		private function setSeat():void
+ 		{
+ 			for each (var item:CSeat in seats.getChildren()) 
+ 			{
+				item.gameId= _table.gameId;
+			}
+ 		}
+ 		
+ 		public function onSeat(evt:TableEvent):void
+ 		{
+ 			for each (var item:CSeat in seats.getChildren()) 
+ 			{
+    			if (evt.packet.seat != item.seatId 
+    				&& item.currentState=='free'
+    			)
+    			{
+    				item.currentState= 'disabled';
+    			}
+			}
+ 		}
+ 		
+ 		public function onSitOut(evt:TableEvent):void
+ 		{
+ 			for each (var item:CSeat in seats.getChildren()) 
+ 			{
+    			if (evt.packet.seat != item.seatId 
+    				&& item.currentState=='disabled'
+    			)
+    			{
+    				item.currentState= 'free';
+    			}
+			}
+ 		}
+ 		
+ 	 ]]>
+ 	</mx:Script>
+ 	
 	<mx:VBox>
-			<mx:Label text="table numero 1" />	
-			<mx:HBox >
-				<component:CSeat tableId="1" seatId="1"/>
-				<component:CSeat tableId="1" seatId="2"/>
-				<component:CSeat tableId="1" seatId="3"/>
-				<component:CSeat tableId="1" seatId="4"/>
-				<component:CSeat tableId="1" seatId="5"/>
-				<component:CSeat tableId="1" seatId="6"/>
-				<component:CSeat tableId="1" seatId="7"/>
-				<component:CSeat tableId="1" seatId="8"/>
-				<component:CSeat tableId="1" seatId="9"/>
-				<component:CSeat tableId="1" seatId="10"/>
+			<mx:Canvas id="seats" >
+				<component:CSeat id="seat1" seatId="1" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="0"/>
+				
+				<component:CSeat id="seat2" seatId="2" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="90"/>
+				
+				<component:CSeat id="seat3" seatId="3" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="180"/>
+				
+				<component:CSeat id="seat4" seatId="4" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="270"/>
+				
+				<component:CSeat id="seat5" seatId="5" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="360"
+					/>
+					
+				<component:CSeat id="seat6" seatId="6" 
+					PacketPokerSeat="onSeat(event)"
+					PacketPokerSitOut="onSitOut(event)"
+					left="0" 
+					top="90" />
+					
+				<component:CSeat id="seat7" seatId="7" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="90"
+					top="90"/>
+					
+				<component:CSeat id="seat8" seatId="8" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="180"
+					top="90"/>
+					
+				<component:CSeat id="seat9" seatId="9" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="270"
+					top="90"/>
+					
+				<component:CSeat id="seat0" seatId="0" 
+					PacketPokerSeat="onSeat(event)" 
+					PacketPokerSitOut="onSitOut(event)"
+					left="360"
+					top="90"/>
+					
+			</mx:Canvas>
+			<mx:HBox>
+				<mx:Button label="fold" />
+				<mx:Button label="check" />
+				<mx:Button label="call" />
+				<mx:Button label="raise" />
+				<mx:Button label="rebuy" />
+				<mx:Button label="exit" />
+				<mx:Button label="sit out" />
+				<mx:Button label="sit" />
 			</mx:HBox>
 	</mx:VBox>		
 </mx:Canvas>

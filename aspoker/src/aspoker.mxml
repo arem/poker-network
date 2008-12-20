@@ -30,15 +30,8 @@
  >
  
 
-	<mx:HBox id="actionPanel" width="100%">
-		<local:Ctable/>	
-<!--    <mx:Button label="Sit" click="User.pokerConnection.sit()" />
-		<mx:Button label="Seat" click="User.pokerConnection.seat()" />
-		<mx:Button label="GetPersonalInfo" click="User.pokerConnection.getPersonalInfo()" />
-		<mx:Button label="buyIn" click="User.pokerConnection.buyIn()" />
-		<mx:Button label="setol" click="User.pokerConnection.setRole()" />
-		<mx:Button label="getCashier" click="User.pokerConnection.getCashier()" />
--->
+	<mx:HBox id="actionPanel" horizontalAlign="center">
+		<local:Ctable gameId="1"/>	
 	</mx:HBox>
 	
 	<mx:HBox width="100%">
