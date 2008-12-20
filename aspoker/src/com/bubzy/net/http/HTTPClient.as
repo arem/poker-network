@@ -145,7 +145,7 @@ public class HTTPClient extends EventDispatcher
 
     private function _onCloseEvent(event:Event):void
     {
-                _loadComplete = true;
+        _loadComplete = true;
         _parseResponse();
         dispatchEvent(new Event(Event.COMPLETE));
     }
