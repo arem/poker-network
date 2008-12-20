@@ -23,8 +23,9 @@ package aspoker.com.bubsy.poker.client.model
 import aspoker.com.bubsy.poker.client.PokerClient;
 import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
+import aspoker.com.bubsy.poker.client.util.PollTimer;
 
-public class Table
+public class Table extends PollTimer
 {
     private var tableInfo:Object;
     private var _gameID:int = 0;
@@ -53,6 +54,11 @@ public class Table
             _onPacketPokerSeat);
 
          join(gameId);
+    }
+
+    public function get gameId():int
+    {
+        return _gameID;
     }
 
     private function _onPacketPokerSeat(evt:TableEvent):void

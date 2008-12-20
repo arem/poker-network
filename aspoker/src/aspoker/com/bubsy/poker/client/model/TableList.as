@@ -22,6 +22,7 @@ package aspoker.com.bubsy.poker.client.model
 
 import aspoker.com.bubsy.poker.client.communication.TableListJsonStream;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
+import aspoker.com.bubsy.poker.client.util.PollTimer;
 
 import com.bubzy.utils.Logger;
 
@@ -30,12 +31,11 @@ import flash.utils.Timer;
 
 import mx.controls.DataGrid;
 
-public class TableList
+public class TableList extends PollTimer
 {
     private var _pokerConnection:TableListJsonStream
                 = new TableListJsonStream();
     private var _data:Array = [];
-    private var _ticker:Timer;
     private var _tableGrid:DataGrid;
     private var _playersCount:int=0;
     private var _tablesCount:int=0;
@@ -43,14 +43,11 @@ public class TableList
     public function TableList(tableGrid:DataGrid)
     {
         _tableGrid = tableGrid ;
-        _ticker = new Timer(6000);
-        _ticker.addEventListener(TimerEvent.TIMER, doStep);
-        _ticker.start();
-         _pokerConnection.addEventListener(
+        _pokerConnection.addEventListener(
             TableListEvent.onPacketPokerTableList,
             _onPacketTableList);
-
-       refreshTablelist();
+         refreshTablelist();
+         super();
     }
 
     public function get playersCount():int
@@ -68,7 +65,7 @@ public class TableList
         _pokerConnection.getTables();
     }
 
-    private function doStep(evt:TimerEvent):void
+    protected override function doStep(evt:TimerEvent):void
     {
         refreshTablelist();
     }
@@ -83,5 +80,4 @@ public class TableList
         _tableGrid.dataProvider = _data;
     }
 }
-
 }
