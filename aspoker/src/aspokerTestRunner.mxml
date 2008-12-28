@@ -33,7 +33,7 @@
 	{
  		var ts:TestSuite = new TestSuite();
  		ts.addTest(TestAspoker.suite());
- 		testRunner.initialize();
+		testRunner.initialize();
  		testRunner.test = ts;
  		testRunner.startTest();
  	}

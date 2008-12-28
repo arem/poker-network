@@ -1,38 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
-	
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" 
+	height="100%">
+    
+    <mx:Metadata>
+		 [Event(name="tableSelected")]
+  	</mx:Metadata>
+  		
 	<mx:Script>
 		<![CDATA[
+			import mx.core.Application;
 			import aspoker.com.bubsy.poker.client.PokerClient;
 		    import mx.events.DataGridEvent;
 		    import mx.events.ListEvent;
 		    import aspoker.com.bubsy.poker.client.model.TableList;
 		    import aspoker.com.bubsy.poker.client.model.User;
   		   
-		    private var Tables:TableList ;
+		    public var tableList:TableList ;
 		    private var _user:User = PokerClient.user;
 		    
 		    private function initTableGrid():void
 		    {
-    	        Tables = new TableList(tableinfo);	    
+    	        tableList = new TableList(tableinfo);	    
 		    }
 		    
-          private function itemClickEvent(event:ListEvent):void 
-          {
-             _user.tableJoin(event.currentTarget.selectedItem.id) ;
-          }
+		    private function selectTable(evt:MouseEvent):void
+		    {
+		    	dispatchEvent(new Event('tableSelected'))
+		    }
+		    
 		]]>
  	</mx:Script>
  	
-	<mx:DataGrid id="tableinfo" width="100%" initialize="initTableGrid()"
-		doubleClickEnabled="true" itemDoubleClick="itemClickEvent(event);">
+	<mx:DataGrid id="tableinfo" 
+		width="100%" height="100%" 
+		initialize="initTableGrid()"
+		doubleClickEnabled="true" doubleClick="selectTable(event)">
 		<mx:columns>
       		<mx:Array>
-        		<mx:DataGridColumn headerText="Tables" dataField="name" visible="true" />
-        		<mx:DataGridColumn headerText="Players" dataField="players" visible="true" />
-        		<mx:DataGridColumn headerText="Seats" dataField="seats" visible="true" />
-        		<mx:DataGridColumn headerText="Obervers" dataField="observers" visible="true" />
-        		<mx:DataGridColumn headerText="Bettings" dataField="betting_structure" visible="true" />
+	      		<mx:DataGridColumn headerText="id" 
+	      			dataField="id" 
+	      			visible="true" />
+        		<mx:DataGridColumn headerText="Tables" 
+        			dataField="name" 
+        			visible="true" />
+        		<mx:DataGridColumn headerText="Players" 
+        			dataField="players" 
+        			visible="true" />
+        		<mx:DataGridColumn headerText="Seats" 
+        			dataField="seats" 
+        			visible="true" />
+        		<mx:DataGridColumn headerText="Obervers" 
+        			dataField="observers" 
+        			visible="true" />
+        		<mx:DataGridColumn headerText="Bettings" 
+        			dataField="betting_structure" 
+        			visible="true" />
        		</mx:Array>
     	</mx:columns>   
 	</mx:DataGrid>	

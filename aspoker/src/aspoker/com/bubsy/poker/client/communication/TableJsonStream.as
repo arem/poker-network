@@ -20,10 +20,8 @@
 package aspoker.com.bubsy.poker.client.communication
 {
 import aspoker.com.bubsy.poker.client.event.TableEvent;
-import aspoker.com.bubsy.poker.client.event.TableListEvent;
 
 import com.adobe.serialization.json.JSON;
-import com.bubzy.utils.Logger;
 
 public class TableJsonStream extends JsonStream
 {
@@ -35,11 +33,20 @@ public class TableJsonStream extends JsonStream
 
     override protected function _dispatchEvent(pokerPacket:Object):void
     {
-           Logger.log(pokerPacket.type);
-        trace(JSON.encode(pokerPacket));
         switch(pokerPacket.type)
         {
-            case "PacketPokerTable":
+            case TableEvent.onPacketPokerSeat:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerSeat,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerTable:
             {
                 dispatchEvent(
                     new TableEvent(
@@ -50,7 +57,52 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-            case "PacketPokerBuyInLimits":
+            case TableEvent.onPacketPokerPlayerArrive:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerPlayerArrive,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerError:
+            {
+                trace("erreur" + JSON.encode(pokerPacket));
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerError,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerPlayerStats:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerPlayerStats,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerPlayerChips:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerPlayerChips,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerBuyInLimits:
             {
                 dispatchEvent(
                     new TableEvent(
@@ -61,7 +113,18 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-            case "PacketPokerBatchMode":
+            case TableEvent.onPacketPokerUserInfo:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerUserInfo,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerBatchMode:
             {
                 dispatchEvent(
                     new TableEvent(
@@ -72,7 +135,7 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-            case "PacketPokerSeats":
+            case TableEvent.onPacketPokerSeats:
             {
                 dispatchEvent(
                     new TableEvent(
@@ -83,7 +146,7 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-            case "PacketPokerStreamMode":
+            case TableEvent.onPacketPokerStreamMode:
             {
                 dispatchEvent(
                     new TableEvent(
@@ -94,8 +157,22 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-            default: trace("unknown packet");
-         }
+            case TableEvent.onPacketPokerPlayerLeave:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerPlayerLeave,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            default:
+            {
+                trace("unknown packet:" + pokerPacket.type);
+            }
+        }
     }
 
     public function tableJoin(gameid:int,userSerial:int):void
@@ -103,7 +180,7 @@ public class TableJsonStream extends JsonStream
         var packetPokerTableJoin:Object = {};
         packetPokerTableJoin.type = "PacketPokerTableJoin";
         packetPokerTableJoin.game_id = gameid;
-        packetPokerTableJoin.serial = userSerial;
+      //  packetPokerTableJoin.serial = userSerial;
         sendREST(packetPokerTableJoin);
     }
 
@@ -125,14 +202,31 @@ public class TableJsonStream extends JsonStream
         sendREST(packetPokerSitOut);
     }
 
+    public function Poll(gameid:int):void
+    {
+        var packetPokerSeat:Object = {};
+        packetPokerSeat.type = "PacketPokerPoll",
+        packetPokerSeat.game_id =gameid;
+        sendREST(packetPokerSeat);
+    }
+
     public function seat(gameid:int,userSerial:int,seat:int):void
     {
         var packetPokerSeat:Object = {};
+
         packetPokerSeat.type = "PacketPokerSeat",
-        packetPokerSeat.game_id =gameid;
         packetPokerSeat.serial = userSerial;
+        packetPokerSeat.game_id =gameid;
         packetPokerSeat.seat = seat;
         sendREST(packetPokerSeat);
+    }
+
+    public function quit(gameid:int):void
+    {
+        var packetPacketPokerTableQuit:Object = {};
+        packetPacketPokerTableQuit.type = "PacketPokerTableQuit",
+        packetPacketPokerTableQuit.game_id =gameid;
+        sendREST(packetPacketPokerTableQuit);
     }
 
     public function buyIn(gameid:int,userSerial:int):void
@@ -143,15 +237,6 @@ public class TableJsonStream extends JsonStream
         packetPokerBuyIn.game_id = gameid;
         packetPokerBuyIn.serial = userSerial;
         sendREST(packetPokerBuyIn);
-    }
-
-    public function leave(gameid:int,userSerial:int):void
-    {
-        var packetPokerPlayerLeave:Object = {};
-        packetPokerPlayerLeave.type = "PacketPokerPlayerLeave",
-        packetPokerPlayerLeave.game_id =gameid;
-        packetPokerPlayerLeave.serial = userSerial;
-        sendREST(packetPokerPlayerLeave);
     }
 }
 }

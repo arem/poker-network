@@ -25,12 +25,19 @@ import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
 import aspoker.com.bubsy.poker.client.util.PollTimer;
 
+import com.adobe.serialization.json.JSON;
+import com.bubzy.utils.Logger;
+
+import flash.events.TimerEvent;
+
 public class Table extends PollTimer
 {
     private var tableInfo:Object;
     private var _gameID:int = 0;
-    private var _seats:Array;
+    private var _seats:Array=[];
+    private var _players:Array=[]/* of Player */;
     private var _user:User = PokerClient.user;
+
     /*max_players = packet.seats;
     is_tourney
     this.board = [ null, null, null, null, null ];
@@ -41,19 +48,72 @@ public class Table extends PollTimer
     this.state = 'end';
     seat
     */
-    private var _pokerConnection:TableJsonStream = new TableJsonStream();
+    private var _actionJsonStream:TableJsonStream = new TableJsonStream();
+    private var _pollJsonStream:TableJsonStream = new TableJsonStream();
 
     public function Table(gameId:int)
     {
-        _pokerConnection.addEventListener(
+        stopPoll();
+        _gameID = gameId;
+        //add Listeners for user action stream
+        _actionJsonStream.addEventListener(
           TableEvent.onPacketPokerTable,
           _onPacketPokerTable);
 
-        _pokerConnection.addEventListener(
+        _actionJsonStream.addEventListener(
             TableEvent.onPacketPokerSeats,
             _onPacketPokerSeat);
 
-         join(gameId);
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerPlayerArrive,
+            _onPacketPokerPlayerArrive);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerPlayerLeave,
+            _onPacketPokerPlayerLeave);
+
+        //add Listeners for poll stream
+       _pollJsonStream.addEventListener(
+           TableEvent.onPacketPokerPlayerArrive,
+           _onPacketPokerPlayerArrive);
+
+       _pollJsonStream.addEventListener(
+           TableEvent.onPacketPokerPlayerLeave,
+           _onPacketPokerPlayerLeave);
+
+    }
+
+    public function destroy():void
+    {
+        stopPoll();
+
+        //remove Listeners for user action stream
+        _actionJsonStream.removeEventListener(
+          TableEvent.onPacketPokerTable,
+          _onPacketPokerTable);
+
+        _actionJsonStream.removeEventListener(
+            TableEvent.onPacketPokerSeats,
+            _onPacketPokerSeat);
+
+        _actionJsonStream.removeEventListener(
+            TableEvent.onPacketPokerPlayerArrive,
+            _onPacketPokerPlayerArrive);
+
+        _actionJsonStream.removeEventListener(
+            TableEvent.onPacketPokerPlayerLeave,
+            _onPacketPokerPlayerLeave);
+
+        //remove Listeners for poll stream
+        _pollJsonStream.removeEventListener(
+           TableEvent.onPacketPokerPlayerArrive,
+           _onPacketPokerPlayerArrive);
+
+        _pollJsonStream.removeEventListener(
+           TableEvent.onPacketPokerPlayerLeave,
+           _onPacketPokerPlayerLeave);
+
+        _players = null;
     }
 
     public function get gameId():int
@@ -61,17 +121,62 @@ public class Table extends PollTimer
         return _gameID;
     }
 
+    public function getPlayerFromSeat(seat:int):Player
+    {
+        return _players[_seats[seat]];
+    }
+
+    public function getPlayer(serial:int):Player
+    {
+        return _players[serial];
+    }
+
+    private function _onPacketPokerPlayerArrive(evt:TableEvent):void
+    {
+        _seats[evt.packet.seat] = evt.packet.serial;
+        _players[evt.packet.serial] = new Player(evt.packet);
+
+        dispatchEvent(
+            new TableEvent(
+            TableEvent.onPacketPokerPlayerArrive,
+            evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerPlayerLeave(evt:TableEvent):void
+    {
+      _players[evt.packet.seat] = null;
+       dispatchEvent(
+            new TableEvent(
+            TableEvent.onPacketPokerPlayerLeave,
+            evt.packet
+            )
+        );
+    }
+
     private function _onPacketPokerSeat(evt:TableEvent):void
     {
-      _seats = evt.packet.seats;
-      trace(_seats);
-      trace("SeatCount: "+ _seats.length);
+        if (_seats && _seats.join() != evt.packet.seats.join())
+        {
+            _seats = evt.packet.seats;
+            dispatchEvent(
+                new TableEvent(
+                TableEvent.onPacketPokerSeats,
+                evt.packet
+                )
+            );
+         }
+    }
+
+    public function get seats():Array
+    {
+        return _seats;
     }
 
     private function _onPacketPokerTable(evt:TableEvent):void
     {
         tableInfo = evt.packet;
-
         trace("tableName: " + tableInfo.name);
         trace("tableVariant: " + tableInfo.variant);
         trace("tablePercent_flop: " + tableInfo.percent_flop);
@@ -87,11 +192,47 @@ public class Table extends PollTimer
         trace("tableSkin: " + tableInfo.skin);
     }
 
+    public function quit():void
+    {
+        if (_user.userSerial==-1 || !_players[_user.userSerial] )
+        {/* user not logged or without seat */
+            dispatchEvent(
+                new TableEvent(
+                    TableEvent.onPacketPokerPlayerLeave,
+                    null
+                )
+            );
+        } else {
+        /* user logged */
+            _actionJsonStream.quit(_gameID);
+        }
+    }
     public function join(gameId:int):void
     {
-        //Logger.log(UserSerial +  " join table" + gameid);
+        startPoll();
         _gameID = gameId;
-        _pokerConnection.tableJoin(gameId,_user.userSerial);
+        _actionJsonStream.tableJoin(gameId,_user.userSerial);
+    }
+
+    public function seat(seat:int):void
+    {
+        _actionJsonStream.seat(_gameID,_user.userSerial,seat);
+    }
+
+    public function buyIn():void
+    {
+        _actionJsonStream.buyIn(_gameID,_user.userSerial);
+    }
+
+    public function poll():void
+    {
+        Logger.log("poll gameID:" + _gameID);
+        _pollJsonStream.Poll(_gameID);
+    }
+
+    protected override function doStep(evt:TimerEvent):void
+    {
+        poll();
     }
 }
 }

@@ -7,7 +7,7 @@ import flash.utils.Timer;
     public class PollTimer extends EventDispatcher
     {
         private var _poll:Timer;
-        public static var pollFrequency:int = 10000;
+        protected static var pollFrequency:int = 5000;
 
 
         public function PollTimer()
@@ -29,7 +29,7 @@ import flash.utils.Timer;
 
         public function stopPoll():void
         {
-            _poll.start();
+            _poll.stop();
         }
     }
 }

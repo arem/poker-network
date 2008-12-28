@@ -20,10 +20,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="70" height="80" creationComplete="_init();">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="120" height="120" 
+	borderColor="blue"
+	borderStyle="solid"
+	borderThickness="2"
+	cornerRadius="15"
+	
+	creationComplete="_init();">
 
 	<mx:Script>
 	  <![CDATA[
+	  	import aspoker.com.bubsy.poker.client.model.Table;
  		import aspoker.com.bubsy.poker.client.PokerClient;
  		import aspoker.com.bubsy.poker.client.model.User;
  		import aspoker.com.bubsy.poker.client.event.TableEvent;
@@ -31,6 +39,12 @@
  	
  		private var _gameId:int=0;
  		private var _seatId:int=0;
+		private var _table:Table;
+		
+		public function set table(table:Table):void
+ 		{
+ 			_table=table;
+		}
 		
  		public function set gameId(gameId:int):void
  		{
@@ -54,51 +68,27 @@
  			seatname.text = "seat: " + _seatId;
  		}
 		
-		private function sitOut():void
-		{
-			
-			this.currentState='free';
-			var packetPokerSeat:Object = {};
-        	packetPokerSeat.type = "PacketPokerSitOut",
-    	    packetPokerSeat.game_id =_gameId;
-	        packetPokerSeat.serial = PokerClient.user.userSerial;
-        	packetPokerSeat.seat = _seatId;
-  			
-			dispatchEvent(
-            	new TableEvent(
-                    TableEvent.onPacketPokerSitOut,
-                    packetPokerSeat
-                )
-            );
-		}
-				 		
-		private function seat():void
-		{
-			
-			this.currentState='used';
-			var packetPokerSeat:Object = {};
-        	packetPokerSeat.type = "PacketPokerSeat",
-    	    packetPokerSeat.game_id =_gameId;
-	        packetPokerSeat.serial = PokerClient.user.userSerial;
-        	packetPokerSeat.seat = _seatId;
-  			
-			dispatchEvent(
-            	new TableEvent(
-                    TableEvent.onPacketPokerSeat,
-                    packetPokerSeat
-                )
-            );
-		}
-		
+	private function setPlayerName():String
+ 	{
+ 		return "player: " + _table.getPlayerFromSeat(_seatId).name;
+ 	}
+ 			
  	 ]]>
  	</mx:Script>
- 	
  	<mx:states>
  		 <mx:State name="free" basedOn="">
  		 	<mx:AddChild >
-	 			<mx:VBox borderColor="red" borderStyle="solid" id="seats">
-		 			<mx:Label id="seatname" text="" />
-	  				<mx:Button id="seatbutton" label="choose" click="seat();" /> 		
+	 			<mx:VBox id="seats">
+		 			<mx:Label id="seatname" 
+		 				text="" />
+	  				<mx:Text
+	  					id="seatbutton" 
+	  					textAlign="center"
+	  					text="Click here to get a seat"
+	  					selectable="false"
+	  					width="100"
+	  					fontWeight="bold" 
+	  					click="_table.seat(_seatId);" /> 		
 	 			</mx:VBox> 	
  			</mx:AddChild>
 	 	</mx:State>
@@ -106,8 +96,9 @@
 		<mx:State name="used" basedOn="free">
 			<mx:RemoveChild target="{seatbutton}"  />
 		 	<mx:AddChild relativeTo="{seats}" >
-	  			<mx:Button label="sitout" click="sitOut();" /> 			
- 		  	</mx:AddChild>
+		 		<mx:Label name="playerName" text="{setPlayerName()}" />
+ 		  	</mx:AddChild>			
+
 	 	</mx:State>
 	 	
 		<mx:State name="disabled" basedOn="free">
@@ -117,14 +108,5 @@
 	 	</mx:State>
 	</mx:states>
 
-    <mx:Metadata>
-       [Event(name="PacketPokerSeat", 
-       		type="aspoker.com.bubsy.poker.client.event.TableEvent")
-       ]
-       
-       [Event(name="PacketPokerSitOut", 
-       		type="aspoker.com.bubsy.poker.client.event.TableEvent")
-       ]
-  	</mx:Metadata>
     	
 </mx:Canvas>

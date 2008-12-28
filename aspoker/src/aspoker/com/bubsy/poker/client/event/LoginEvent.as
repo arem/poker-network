@@ -28,18 +28,28 @@ public class LoginEvent extends Event
     public static const onPacketSerial:String = "PacketSerial";
     public static const onPacketAuthRefused:String = "PacketAuthRefused";
     public var userSerial:int = 0 ;
+    public var message:String="";
 
-    public function LoginEvent(type:String,userSerial:int=0)
+    public function LoginEvent(type:String,userSerial:int=0,message:String="")
     {
         switch(type)
         {
-            case "PacketAuthOk": break;
-            case "PacketSerial":
+            case "PacketAuthRefused":
             {
-               this.userSerial = userSerial
+                this.message = message;
                 break;
             }
-            default: trace(type);
+
+            case "PacketSerial":
+            {
+                this.userSerial = userSerial
+                break;
+            }
+
+            default:
+            {
+                trace(type);
+            }
         }
         super(type);
     }

@@ -20,7 +20,6 @@
 package com.bubzy.net.http
 {
 
-import com.bubzy.utils.Logger;
 import flash.events.*;
 import flash.net.*;
 import flash.system.Security;
@@ -35,12 +34,11 @@ public class HTTPClient extends EventDispatcher
     public  var useCookie:Boolean = true;
 
     private var _httpRequest:URLRequest;
-    private var _loadComplete:Boolean = false;
     private var _httpResponseHeaders:Array /* of String */ = [];
     private var _httpResponseContent:String = "";
     private var _httpResponseBuffer:String = "";
     private var _httpResponseStatusText:String = "";
-    private var _httpResponseCookies:Array=[];
+    private var _httpResponseCookies:Array=[]/* of CookieItem */;
     private var _httpResponseVersion:Number;
     private var _httpResponseStatusCode:int;
 
@@ -81,7 +79,7 @@ public class HTTPClient extends EventDispatcher
 
     public function close():void
     {
-        if(_httpSocket.connected)
+       if(_httpSocket.connected)
         {
             _httpSocket.close();
             dispatchEvent(new Event(Event.CLOSE));
@@ -113,6 +111,7 @@ public class HTTPClient extends EventDispatcher
         Security.allowDomain("*");
         Security.loadPolicyFile("xmlsocket://"
             + _httpRequestServer + ":843");
+
         _httpSocket.connect(_httpRequestServer, _httpPort);
         return true;
     }
@@ -130,7 +129,6 @@ public class HTTPClient extends EventDispatcher
         _bytesTotal = 0;
         _httpResponseHeaders = [];
         _httpResponseContent = "";
-        _loadComplete = false;
         _httpResponseBuffer = "";
         _httpResponseVersion = 0
         _httpResponseStatusCode = 0
@@ -145,18 +143,19 @@ public class HTTPClient extends EventDispatcher
 
     private function _onCloseEvent(event:Event):void
     {
-        _loadComplete = true;
         _parseResponse();
         dispatchEvent(new Event(Event.COMPLETE));
     }
 
     private function _onIOErrorEvent(event:IOErrorEvent):void
     {
+       trace("IOErrorEvent");
         dispatchEvent(event);
     }
 
     private function _onSecurityErrorEvent(event:SecurityErrorEvent):void
     {
+        trace("SecurityErrorEvent");
         dispatchEvent(event.clone());
     }
 
@@ -168,23 +167,32 @@ public class HTTPClient extends EventDispatcher
         for each(var s:String in p)
         {
             var c:Array = s.split("=");
-            var cookie:Array = [];
-            cookie.name = c[0];
-            cookie.value = c[1];
-            _httpResponseCookies.push(cookie);
+            var cookieItem:CookieItem = new CookieItem(c[0],c[1]);
+            _httpResponseCookies.push(cookieItem);
         }
         return _httpResponseCookies;
     }
 
-    public function get cookie():Array {
+    public function get cookie():Array
+    {
         return _httpResponseCookies;
+    }
+
+    public function set cookie(cookie:Array/* of CookieItem */):void
+     {
+            _httpResponseCookies = cookie;
     }
 
     private function cookieToString():String
     {
         var cookieString:String = "";
 
-        for each(var p:Array in _httpResponseCookies)
+        if (_httpResponseCookies.length<=0)
+        {
+            return cookieString;
+        }
+
+        for each(var p:CookieItem in _httpResponseCookies)
         {
             cookieString+= p.name
                 + "="
@@ -205,6 +213,8 @@ public class HTTPClient extends EventDispatcher
             if ( results[1] == "Set-Cookie" )
             {
                 _setCookie(results[2]);
+            } else {
+                _httpResponseCookies = [];
             }
 
             _httpResponseHeaders[results[1]] = results[2];
@@ -257,7 +267,7 @@ public class HTTPClient extends EventDispatcher
         var headerArr:Array = response[0].split(HTTP_END_LINE);
 
         _httpResponseContent += response[1];
-        trace(_httpResponseContent);
+
         for each(var p:String in headerArr)
         {
             _parseResponseHeaderStatus(p);
@@ -282,7 +292,6 @@ public class HTTPClient extends EventDispatcher
 
         buffer = _httpSocket.readUTFBytes(_httpSocket.bytesAvailable);
         _httpResponseBuffer += buffer;
-
     }
 
     private function _initResquestHeaders():void
@@ -322,7 +331,9 @@ public class HTTPClient extends EventDispatcher
 
         if (_httpRequest.method == URLRequestMethod.POST)
             _httpSocket.writeUTFBytes(_httpRequest.data  + HTTP_END_LINE);
+
         _httpSocket.flush();
     }
 }
+
 }

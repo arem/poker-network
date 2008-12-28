@@ -54,7 +54,7 @@ public class User extends EventDispatcher
     private function onPacketSerial(evt:LoginEvent):void
     {
         _userSerial = evt.userSerial;
-        trace("userserial"+_userSerial);
+        trace("new user: "+_userSerial);
     }
 
     private function _loginSuccessfull(evt:LoginEvent):void
@@ -71,14 +71,15 @@ public class User extends EventDispatcher
     {
         dispatchEvent(
             new LoginEvent(
-            LoginEvent.onPacketAuthRefused
+            LoginEvent.onPacketAuthRefused,
+            -1,
+            evt.message
             )
         );
     }
 
     public function tableJoin(gameId:int):void
     {
-        //Logger.log(UserSerial +  " join table" + gameid);
         _tablesList[gameId] = new Table(gameId);
     }
 
@@ -87,7 +88,23 @@ public class User extends EventDispatcher
         _userName = userName;
         _userPassword = userPassword;
         _stream.loggin(_userName,_userPassword);
+      }
+
+    public function userpersonalinfo():void
+    {
+         _stream.personalInfo(_userSerial);
     }
+
+    public function setRole():void
+    {
+         _stream.setRole();
+    }
+
+    public function plocale():void
+    {
+         _stream.plocale();
+    }
+
 
     public function logout():void
     {
@@ -95,6 +112,7 @@ public class User extends EventDispatcher
         _userName = "";
         _userSerial= -1;
         _stream.logout();
+        Session.flush();
     }
 
     public function get userName():String

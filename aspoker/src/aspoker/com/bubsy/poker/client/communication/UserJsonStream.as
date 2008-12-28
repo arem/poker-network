@@ -47,33 +47,26 @@ public class UserJsonStream extends JsonStream
         sendREST(packetPokerGetPersonalInfo);
     }
 
-    public function getPersonalInfo():void
+    public function personalInfo(userSerial:int):void
     {
         var packetPokerGetPersonalInfo:Object = {};
-        packetPokerGetPersonalInfo.type = "PacketPokerGetPlayerInfo";
-       //packetPokerGetPersonalInfo.serial = 6;
-        sendREST(packetPokerGetPersonalInfo);
-     }
-
-    public function getCashier(userSerial:int):void
-    {
-        var packetPokerGetPersonalInfo:Object = {};
-        packetPokerGetPersonalInfo.type = "PacketPokerGetUserInfo";
+        packetPokerGetPersonalInfo.type = "PacketPokerGetPersonalInfo";
         packetPokerGetPersonalInfo.serial = userSerial;
         sendREST(packetPokerGetPersonalInfo);
     }
 
     override protected function _dispatchEvent(pokerPacket:Object):void
     {
-           Logger.log(pokerPacket.type);
-
         switch(pokerPacket.type)
         {
             case "PacketAuthRefused":
             {
+               trace(JSON.encode(pokerPacket));
                dispatchEvent(
                     new LoginEvent(
-                    LoginEvent.onPacketAuthRefused
+                    LoginEvent.onPacketAuthRefused,
+                    -1,
+                    pokerPacket.message
                     )
                 );
                 break;
@@ -87,11 +80,10 @@ public class UserJsonStream extends JsonStream
                    );
                 break;
             }
+
             case "PacketSerial":
             {
-                Session.setCookie(pokerPacket.cookie);
-
-                dispatchEvent(
+               dispatchEvent(
                     new LoginEvent(
                         LoginEvent.onPacketSerial,
                         pokerPacket.serial
@@ -99,6 +91,7 @@ public class UserJsonStream extends JsonStream
                 );
                 break;
             }
+
             case "PacketAuthRefused":
             {
                dispatchEvent(
@@ -108,7 +101,11 @@ public class UserJsonStream extends JsonStream
                 );
                 break;
             }
-            default: trace(JSON.encode(pokerPacket));
+
+            default:
+            {
+                trace(JSON.encode(pokerPacket));
+            }
         }
     }
 }

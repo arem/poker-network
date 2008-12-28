@@ -30,6 +30,7 @@
  title="AsPoker Login"
  initialize="init()"
  >
+ 
   <mx:Script>
  	<![CDATA[
  		import aspoker.com.bubsy.poker.client.PokerClient;
@@ -42,6 +43,11 @@
  		{
  			this.currentState='cashierState';		
  		}
+ 		private function login():void
+ 		{
+ 			_user.setRole();
+ 			_user.loggin(username.text,password.text);
+ 		}
  		
 	    private function logout():void
  		{
@@ -52,7 +58,7 @@
         private function loginRefused(evt:LoginEvent):void
  		{
  		    
- 		    errorMessage.text="Erreur!";
+ 		    errorMessage.text=evt.message;
  		    this.currentState='LogginState';
  		}
 	
@@ -76,13 +82,17 @@
   <mx:State name="cashierState">
        <mx:RemoveChild target="{loginCanvas}"/>
        <mx:SetProperty target="{this}" name="width" value="340"/>
-       <mx:SetProperty target="{this}" name="height" value="100"/>
+       <mx:SetProperty target="{this}" name="height" value="150"/>
        <mx:AddChild relativeTo="{this}" position="lastChild">
             <mx:Canvas id="registerCanvas" left="0" top="0" right="0" bottom="0">
                  <mx:Label text="Welcome!" 
                       fontWeight="bold" fontStyle="italic" 
                       horizontalCenter="0" top="5"/>
                  <mx:Label id="cash" text="" />
+                 <mx:HBox top="20">
+					<mx:Button label="plocale" click="PokerClient.user.plocale()" > </mx:Button>
+					<mx:Button label="getCashier" click="PokerClient.user.userpersonalinfo()" > </mx:Button>
+				</mx:HBox>
                  <mx:Button label="Log out" 
                       right="25" bottom="21" id="logoutButton"
                       click="logout()"
@@ -107,7 +117,7 @@
             </mx:FormItem>
        </mx:Form>
        <mx:Button label="Login" right="25" bottom="18" id="button1" 
-           click="_user.loggin(username.text,password.text)"
+           click="login()"
        />
        </mx:Canvas>
       </mx:AddChild>

@@ -29,11 +29,20 @@ import flash.events.Event;
 import flash.events.EventDispatcher;
 import flash.events.HTTPStatusEvent;
 import flash.net.URLRequest;
+import flash.utils.setTimeout;
 
 public class JsonStream extends EventDispatcher
 {
     private var _restURL:String = "";
     private var _httpClient:HTTPClient = new HTTPClient;
+
+    public static const QUEUE_RUNNING:int=1;
+    public static const QUEUE_WAIT:int=0;
+
+    private var maxPoolSize:int=5;
+    private var queue:Array = new Array();
+    private var state:int = QUEUE_WAIT;
+
 
     public function JsonStream():void
     {
@@ -43,13 +52,35 @@ public class JsonStream extends EventDispatcher
         _httpClient.addEventListener("close", handleError);
     }
 
-    protected  function sendREST(packet:Object,session:Session=null):void
+    private function sendNext():void
     {
-      var request:URLRequest = new URLRequest();
-      _restURL = Session.getUrl();
-      request.url = _restURL;
-      request.data=JSON.encode(packet);
-      _httpClient.httpPOST(request);
+        if (state == QUEUE_WAIT && queue.length>0)
+        {
+            state = QUEUE_RUNNING;
+            var packet:Object = queue.pop();
+            var request:URLRequest = new URLRequest();
+            _restURL = Session.getUrl();
+            request.url = _restURL;
+            request.data=JSON.encode(packet);
+            _httpClient.cookie = Session.cookie;
+            _httpClient.useCookie = true;
+            _httpClient.httpPOST(request);
+        }
+    }
+
+    protected  function sendREST(packet:Object):void
+    {
+        if (queue.length<=maxPoolSize)
+        {
+            queue.push(packet);
+        } else {
+            throw new Error("Pool size is too big");
+        }
+
+        if (state == QUEUE_WAIT)
+        {
+            sendNext();
+        }
     }
 
     protected function _dispatchEvent(pokerPacket:Object):void
@@ -62,18 +93,23 @@ public class JsonStream extends EventDispatcher
         var responseContent:String = HTTPClient(event.target).responseContent ;
         var results:Array = JSON.decode(responseContent);
 
+        Session.cookie = HTTPClient(event.target).cookie;
+
         for (var i:int=0; i < results.length; i++)
         {
             if (results[i])
             {
+                trace(results[i].type);
                 _dispatchEvent(results[i]);
             }
         }
+        state = QUEUE_WAIT;
+        setTimeout(sendNext,1);
     }
 
     private function handleError():void
     {
-         Logger.log("soket closed");
+         trace("soket closed");
     }
 
     private function httpStatusHandler(event:Event):void
@@ -83,7 +119,7 @@ public class JsonStream extends EventDispatcher
 
     private function onHTTPStatus(event:HTTPStatusEvent):void
     {
-       // Logger.log("httpStatus " + event.status);
+        trace("httpStatus " + event.status);
     }
 
     public function setRole():void
@@ -91,14 +127,17 @@ public class JsonStream extends EventDispatcher
         var packetPokerSeat:Object = {};
         packetPokerSeat.type = "PacketPokerSetRole",
         packetPokerSeat.roles = "PLAY";
+        packetPokerSeat.serial = 4;
         sendREST(packetPokerSeat);
     }
 
     public function plocale():void
     {
         var plocale:Object = {};
-        plocale.serial = 6;
-        plocale.locale = "en_US.UTF-8";
+        plocale.type = "PacketPokerSetLocale";
+        plocale.serial = 4;
+        plocale.locale = "en";
+        plocale.game_id = 1;
         sendREST(plocale);
     }
 }

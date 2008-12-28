@@ -23,7 +23,12 @@ package aspoker.com.bubsy.poker.client
 
     public class PokerClient
     {
+        public static const VIEW_IS_BOARD:int=1;
+        public static const VIEW_IS_TABLE:int=1;
+        public static const VIEW_IS_CASHIER:int=1;
+
         private static var _user:User = new User();
+        private static var _currentState:int = VIEW_IS_BOARD;
 
         public function PokerClient()
         {
@@ -34,6 +39,5 @@ package aspoker.com.bubsy.poker.client
         {
             return _user;
         }
-
     }
 }

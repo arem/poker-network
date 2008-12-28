@@ -34,8 +34,6 @@ public class TableListJsonStream extends JsonStream
 
     override protected function _dispatchEvent(pokerPacket:Object):void
     {
-        Logger.log(pokerPacket.type);
-        trace(JSON.encode(pokerPacket));
         switch(pokerPacket.type)
         {
             case "PacketPokerTableList":
@@ -48,7 +46,11 @@ public class TableListJsonStream extends JsonStream
                 );
                 break;
             }
-            default: trace(JSON.encode(pokerPacket));
+
+            default:
+            {
+                trace("tablelist" + JSON.encode(pokerPacket));
+            }
          }
     }
 

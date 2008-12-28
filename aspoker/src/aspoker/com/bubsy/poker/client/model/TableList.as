@@ -46,8 +46,8 @@ public class TableList extends PollTimer
         _pokerConnection.addEventListener(
             TableListEvent.onPacketPokerTableList,
             _onPacketTableList);
+
          refreshTablelist();
-         super();
     }
 
     public function get playersCount():int

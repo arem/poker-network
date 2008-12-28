@@ -26,12 +26,27 @@ public class Session
 {
     private static var _sessionCount:int = 0;
     private static var _twistedSession:String="";
-    private static var restUrl:String = "http://192.168.0.7:19382/REST";
+    private static var _cookie:Array/*of cookieItem*/=[];
+
+    private static var restUrl:String = "http://127.0.0.1:19382/REST";
     public static var UserSerial:int;
 
-    public static function setCookie(twistedSession:String):void
+    public static function set cookie(cookie:Array):void
     {
-        _twistedSession = twistedSession ;
+        if (_cookie.length<=0 && cookie.length>0)
+        {
+            _cookie = cookie;
+        }
+    }
+
+    public static function flush():void
+    {
+          _cookie = [];
+    }
+
+    public static function get cookie():Array
+    {
+        return _cookie;
     }
 
     public static function getUrl():String

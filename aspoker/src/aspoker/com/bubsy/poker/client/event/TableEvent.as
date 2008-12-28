@@ -34,7 +34,9 @@ package aspoker.com.bubsy.poker.client.event
         public static const onPacketPokerClientPlayerChips:String = "PacketPokerClientPlayerChips";
         public static const onPacketPokerSeat:String = "PacketPokerSeat";
         public static const onPacketPokerSitOut:String = "PacketPokerSitOut";
-
+        public static const onPacketPokerError:String = "PacketPokerError";
+        public static const onPacketPokerUserInfo:String = "PacketPokerUserInfo"
+        public static const onPacketPokerPlayerLeave:String = "PacketPokerPlayerLeave"
 
         public var packet:Object;
 
