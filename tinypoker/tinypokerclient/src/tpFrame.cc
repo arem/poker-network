@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Thomas Cort <tom@tomcort.com>
+// Copyright (C) 2008 Thomas Cort <linuxgeek@gmail.com>
 //
 // This file is part of tinypokerclient.
 //
@@ -66,10 +66,10 @@ void tpFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
 	info.SetName(_("TinyPoker Client"));
 	info.SetVersion(_(VERSION));
 	info.SetDescription(_("basic GUI designed for use with tinypokerd"));
-	info.SetCopyright(_("(C) 2008 Thomas Cort <tom@tomcort.com>"));
+	info.SetCopyright(_("(C) 2008 Thomas Cort <linuxgeek@gmail.com>"));
 	info.SetWebSite(_("http://tinypoker.org/"));
 
-	info.AddDeveloper(_("Thomas Cort <tom@tomcort.com>"));
+	info.AddDeveloper(_("Thomas Cort <linuxgeek@gmail.com>"));
 
 	info.SetLicence(
 		_(

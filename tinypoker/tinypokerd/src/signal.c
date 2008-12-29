@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <linuxgeek@gmail.com>
  * 
  * This file is part of tinypokerd.
  * 
@@ -89,7 +89,7 @@ void handle_sigsegv(int sig)
 	daemon_log(LOG_ERR, " ");
 	daemon_log(LOG_ERR, "A fatal error occured causing this application to crash. Please report the");
 	daemon_log(LOG_ERR, "entire error (everything between the 'Segmentation fault' lines) to the");
-	daemon_log(LOG_ERR, "following developer: Tom Cort <tom@tomcort.com>");
+	daemon_log(LOG_ERR, "following developer: Tom Cort <linuxgeek@gmail.com>");
 	daemon_log(LOG_ERR, " ");
 	daemon_log(LOG_ERR, "%s version %s was compiled at %s on %s", TINYPOKERD_NAME, TINYPOKERD_VERSION, __TIME__, __DATE__);
 

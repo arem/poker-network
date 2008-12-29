@@ -4,7 +4,7 @@
 	| |_| | | | | |_| | |_) | (_) |   <  __/ | | (__| | |  __/ | | | |_ 
 	 \__|_|_| |_|\__, | .__/ \___/|_|\_\___|_|  \___|_|_|\___|_| |_|\__|
 	             |___/|_|                                               
-	Copyright (C) 2008 Thomas Cort <tom@tomcort.com>
+	Copyright (C) 2008 Thomas Cort <linuxgeek@gmail.com>
 
 tinypokerclient is a basic GUI designed for use with tinypokerd. The primary
 purpose is to provide a way for humans to more easily debug poker bots and

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>
+ * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <linuxgeek@gmail.com>
  * 
  * This file is part of tinypokerd.
  * 
@@ -59,7 +59,7 @@ int killed;
 void display_version(void)
 {
 	daemon_log(LOG_INFO, "%s/%s", TINYPOKERD_NAME, TINYPOKERD_VERSION);
-	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <tom@tomcort.com>");
+	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <linuxgeek@gmail.com>");
 	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
 	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 }

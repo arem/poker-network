@@ -1,4 +1,4 @@
-.TH "tinypokerd" "8" "0.0.0" "Thomas Cort <tom@tomcort.com>" "tinypoker"
+.TH "tinypokerd" "8" "0.0.0" "Thomas Cort <linuxgeek@gmail.com>" "tinypoker"
 .SH "NAME"
 .LP 
 tinypokerd \- Implementation of Internet Poker Protocol (IPP) v2.0.
@@ -30,7 +30,7 @@ Use an alternate config.
 \fI/etc/tinypokerd/tinypokerd.conf\fP 
 .SH "AUTHORS"
 .LP 
-Thomas Cort <tom@tomcort.com>
+Thomas Cort <linuxgeek@gmail.com>
 .SH "SEE ALSO"
 .LP 
 tinypokerd.conf(5)

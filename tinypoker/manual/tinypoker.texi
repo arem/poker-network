@@ -14,7 +14,7 @@ The full transparent copy and helpful shell scripts can be found here:
 @url{http://svn.gna.org/viewcvs/pokersource/trunk/tinypoker/manual/}
 @*
 
-Copyright @copyright{} 2008 Thomas Cort (@email{tom@@tomcort.com})
+Copyright @copyright{} 2008 Thomas Cort (@email{linuxgeek@@gmail.com})
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -30,7 +30,7 @@ Free Documentation License".
 @titlepage
 @title TinyPoker
 @subtitle for version @value{VERSION}, @value{UPDATED}
-@author Thomas Cort (@email{tom@@tomcort.com})
+@author Thomas Cort (@email{linuxgeek@@gmail.com})
 @page
 @vskip 0pt plus 1filll
 @insertcopying
