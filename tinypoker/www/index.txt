@@ -19,7 +19,7 @@ and poker bot programming framework. It has evolved since then and is
 currently undergoing a major re-write. The new library, *libtinypoker*,
 just had its first release. The new server, *tinypokerd*, needs
 additional game logic. The target release date for *tinypokerd*
-is July 1, 2008.
+is February 1, 2009.
 
 .Features
 - Secure client/server communications with Transport Layer Security.

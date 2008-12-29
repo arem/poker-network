@@ -20,7 +20,7 @@
 #ifndef __TINYPOKERD_H
 #define __TINYPOKERD_H
 
-
+#define VERSION "0.0.0"
 #define TINYPOKERD_NAME "tinypokerd"
 #define TINYPOKERD_VERSION VERSION
 

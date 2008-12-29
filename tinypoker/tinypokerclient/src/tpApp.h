@@ -23,6 +23,8 @@
 
 #include "tpFrame.h"
 
+#define VERSION "0.0.0"
+
 class tpApp: public wxApp {
 	public:
 		virtual bool OnInit();

@@ -25,6 +25,7 @@
 #include "tpConnectionWizard.h"
 #include "tpFrame.h"
 #include "tpLog.h"
+#include "tpApp.h"
 
 tpFrame::tpFrame(const wxString& title, const wxPoint& pos, const wxSize& size, wxLocale& locale): wxFrame((wxFrame *)NULL, -1, title, pos, size), m_locale(locale) {
 	ipp_init();

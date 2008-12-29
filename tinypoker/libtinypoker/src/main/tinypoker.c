@@ -1786,6 +1786,71 @@ ipp_message *ipp_eval(ipp_card * cards[5])
 }
 
 /**
+ * Factorial function used internally by ipp_best_permutation().
+ * @param x an integer between 1 and 13.
+ * @return the factorial of x (i.e. x!).
+ */
+int __ipp_fact(int x) {
+	if (x == 1) {
+		return 1;
+	} else {
+		return x * __ipp_fact(x - 1);
+	}
+}
+
+ipp_message *ipp_best_combination(ipp_table * table, int playerid) {
+	int i;
+	int N = 7, R = 5;
+	int ncombinations = __ipp_fact(N) / (__ipp_fact(R) * __ipp_fact(N-R));
+	ipp_message *combinations[ncombinations];
+	ipp_card *cards[7], *toeval[5];
+        int a, b, c, d, e;
+
+	if (!ipp_initialized) {
+		ipp_init();
+	}
+
+	if (!table) {
+		return NULL;
+	}
+
+	if (playerid >= table->nplayers) {
+		return NULL;
+	}
+
+	for (i = 0; i < HOLDEM_BOARD_CARDS; i++) {
+		cards[i] = table->board[i];
+	}
+
+	cards[5] = table->players[playerid]->hole[0];
+	cards[6] = table->players[playerid]->hole[1];
+
+	i = 0;
+	for (a = 0; a < N - R + 1; a++) {
+		for (b = a+1; b < N - R + 2; b++) {
+			for (c = b+1; c < N - R + 3; c++) {
+				for (d = c+1; d < N - R + 4; d++) {
+					for (e = d+1; e < N - R + 5; e++) {
+						toeval[0] = cards[a];
+						toeval[1] = cards[b];
+						toeval[2] = cards[c];
+						toeval[3] = cards[d];
+						toeval[4] = cards[e];
+
+						combinations[i] = ipp_eval(toeval);
+						i++;
+					}
+				}
+			}
+		}
+	}
+
+	/* TODO qsort combinations and return the best, add function prototype and test */
+
+	return NULL;
+}
+
+/**
  * Comparator for qsort and other similar sorting functions.
  * @param ipp_message_a an ipp_message pointer.
  * @param ipp_message_b an ipp_message pointer.
@@ -2195,7 +2260,6 @@ void ipp_deal(ipp_table * table, int timeout, void (*logger) (char *))
 	}
 
 	/* TODO Support for Stud and Draw */
-
 	for (i = 0; i < HOLDEM_HOLE_CARDS; i++) {
 		for (j = 0; j < HOLDEM_PLAYERS_PER_TABLE; j++) {
 			if (table->players[j]) {

@@ -8,8 +8,13 @@
 @comment %**end of header
 @copying
 This manual is for TinyPoker (version @value{VERSION}, @value{UPDATED}).
+@*
+The full transparent copy and helpful shell scripts can be found here:
 
-Copyright @copyright{} 2008 Thomas Cort
+@url{http://svn.gna.org/viewcvs/pokersource/trunk/tinypoker/manual/}
+@*
+
+Copyright @copyright{} 2008 Thomas Cort (@email{tom@@tomcort.com})
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -40,19 +45,69 @@ This manual is for TinyPoker (version @value{VERSION}, @value{UPDATED}).
 @end ifnottex
 
 @chapter Introduction
-@section Background
 
 @url{http://tinypoker.org/,TinyPoker} is a collection of poker software
 written by @url{http://www.tomcort.com/,Thomas Cort}.
-Originally the code was written as part of a poker bot programming competition
-for the @url{http://j9.ubishops.ca/,Computer Science Club} at
+Originally the software was written as part of a poker bot programming competition
+held by the @url{http://j9.ubishops.ca/,Computer Science Club} at
 @url{http://www.ubishops.ca/,Bishop's University} in Lennoxville,
 Quebec, Canada. It has evolved since then and is currently undergoing a
 major re-write that will include support for the
 @cindex Internet Poker Protocol
 Internet Poker Protocol (IPP) version 2.0 and a number of new features.
+The TinyPoker project maintains the following components:
+@itemize @bullet
+@item
+@cindex libtinypoker
+libtinypoker (development library)
 
-@section libtinypoker
+@item
+@cindex tinypokerd
+tinypokerd (server)
+
+@item
+@cindex tinypokerclient
+tinypokerclient (client)
+
+@item
+@cindex tinypokerbot
+@cindex bot
+tinypokerbot (bot)
+@end itemize
+
+@section TinyPoker Software is Free Software
+
+All software distributed by the TinyPoker project is 
+@cindex Free Software
+@url{http://www.gnu.org/philosophy/free-sw.html,Free Software}.
+TinyPoker is not freeware, not shareware nor public domain software, but
+@cindex Free Software
+Free Software as defined by the
+@cindex Free Software Foundation
+@url{http://www.fsf.org/,Free Software Foundation}.
+This gives users the freedom to run, study, distribute and modify
+the software. To protect these freedoms for everyone who obtains
+a copy of any part of the TinyPoker software, all TinyPoker software
+is released under the terms of the
+@cindex GNU General Public License
+@ref{GNU General Public License version 3}, or (at your option) any later version.
+
+@section TinyPoker Documentation is Free Documentation
+
+All documentation distributed by the TinyPoker project is
+@cindex Free Documentation
+@url{http://www.gnu.org/philosophy/free-doc.html,Free Documentation}.
+This gives users the freedom to read, translate, distribute, modify
+and print the documentation in any form. To protect these freedoms
+for everyone who obtains a copy of TinyPoker documentation,
+all TinyPoker documentation is released under the terms of the 
+@cindex GNU Free Documentation License
+@ref{GNU Free Documentation License version 1.2}, or (at your option)
+any later version.
+
+@chapter libtinypoker
+
+@section Overview
 
 @cindex libtinypoker
 libtinypoker provides application programming interfaces
@@ -67,7 +122,83 @@ and bad input. IPP message validation, normalization and parsing
 functions are available to developers as are several predefined types
 for representing poker games, players and cards.
 
-@section tinypokerd
+@section Obtaining the Source Code
+
+Source code can be contaibed be done by checking out a fresh copy from 
+the subversion repository or by downloading the latest release from the 
+TinyPoker website.
+
+@subsection Download from TinyPoker.org
+
+The latest release will always be available at:
+@url{http://tinypoker.org/download.html}
+
+@subsection Subversion
+
+This project uses
+@cindex subversion
+@url{http://subversion.tigris.org/,subversion} to 
+manage its source code. Instructions on 
+subversion installation and general use can be found at 
+@url{http://svnbook.red-bean.com/}. To obtain the source code from the 
+TinyPoker subversion repository, use this command:
+
+@smallexample
+@group
+$ svn co svn://svn.gna.org/svn/pokersource/trunk/tinypoker/libtinypoker
+@end group
+@end smallexample
+
+@section Installation
+
+@cindex libtinypoker
+libtinypoker uses the
+@cindex cmake
+@url{http://cmake.org/,cmake} cross-platform, free software build system 
+to auto-configure the build and generate files for
+@cindex GNU Make
+@url{http://www.gnu.org/software/make/,GNU Make}. GNU Make is used to 
+compile, link and install the software.
+
+@smallexample
+@group
+  $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
+  $ make
+  # make install
+@end group
+@end smallexample
+
+@section libtinypoker C API
+
+This section descibes how to use 
+@cindex libtinypoker
+libtinypoker in your own C applications.
+It is important to remember that 
+@cindex libtinypoker
+libtinypoker is strictly licensed for inclusion in
+@cindex Free Software
+@url{http://www.gnu.org/philosophy/free-sw.html,Free Software}.
+Please read and make sure you understand the
+@cindex GNU General Public License
+@ref{GNU General Public License version 3} before proceeding.
+
+@subsection Library Initialization and Destruction
+
+Several GNU TLS resources need to be allocated before network
+communications begin and deallocated after network connications
+end. Two functions are provided to accomplish this, ipp_init()
+and ipp_exit(). Additionally, the random number generator is
+allocated and freed in those functions. The one and only header file
+needed to use the API is "tinypoker.h".
+
+What follows is an example that simply initializes and cleans up
+after
+@cindex libtinypoker
+libtinypoker.
+
+@chapter tinypokerd
+
+@section Overview
 
 @cindex tinypokerd
 tinypokerd is the TinyPoker server. It will use
@@ -78,14 +209,112 @@ Internet Poker Protocol (IPP). The code will be based on the pokerd
 code base and experience implementing pokerd. An effort will be made
 to make the server footprint even smaller than pokerd.
 
-@section tinypokerclient
+@section Obtaining the Source Code
+
+Source code can be contaibed be done by checking out a fresh copy from 
+the subversion repository or by downloading the latest release from the 
+TinyPoker website.
+
+@subsection Download from TinyPoker.org
+
+The latest release will always be available at:
+@url{http://tinypoker.org/download.html}
+
+@subsection Subversion
+
+This project uses
+@cindex subversion
+@url{http://subversion.tigris.org/,subversion} to 
+manage its source code. Instructions on 
+subversion installation and general use can be found at 
+@url{http://svnbook.red-bean.com/}. To obtain the source code from the 
+TinyPoker subversion repository, use this command:
+
+@smallexample
+@group
+$ svn co svn://svn.gna.org/svn/pokersource/trunk/tinypoker/tinypokerd
+@end group
+@end smallexample
+
+@section Installation
+
+@cindex tinypokerd
+tinypokerd uses the
+@cindex cmake
+@url{http://cmake.org/,cmake} cross-platform, free software build system 
+to auto-configure the build and generate files for
+@cindex GNU Make
+@url{http://www.gnu.org/software/make/,GNU Make}. GNU Make is used to 
+compile, link and install the software.
+
+@smallexample
+@group
+  $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
+  $ make
+  # make install
+@end group
+@end smallexample
+
+@chapter tinypokerclient
+
+@section Overview
 
 @cindex tinypokerclient
 tinypokerclient provides a basic GUI designed for use with tinypokerd. The primary
-purpose is to provide a way for humans to more easily debug poker bots and
-tinypokerd.
+purpose is to provide a way for humans to more easily debug poker
+@cindex bot
+@cindex tinypokerd
+bots and tinypokerd.
 
-@section tinypokerbot
+@section Obtaining the Source Code
+
+Source code can be contaibed be done by checking out a fresh copy from 
+the subversion repository or by downloading the latest release from the 
+TinyPoker website.
+
+@subsection Download from TinyPoker.org
+
+The latest release will always be available at:
+@url{http://tinypoker.org/download.html}
+
+@subsection Subversion
+
+This project uses
+@cindex subversion
+@url{http://subversion.tigris.org/,subversion} to 
+manage its source code. Instructions on 
+subversion installation and general use can be found at 
+@url{http://svnbook.red-bean.com/}. To obtain the source code from the 
+TinyPoker subversion repository, use this command:
+
+@smallexample
+@group
+$ svn co svn://svn.gna.org/svn/pokersource/trunk/tinypoker/tinypokerclient
+@end group
+@end smallexample
+
+@section Installation
+
+@cindex tinypokerclient
+tinypokerclient uses the
+@cindex cmake
+@url{http://cmake.org/,cmake} cross-platform, free software build system 
+to auto-configure the build and generate files for
+@cindex GNU Make
+@url{http://www.gnu.org/software/make/,GNU Make}. GNU Make is used to 
+compile, link and install the software.
+
+@smallexample
+@group
+  $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
+  $ make
+  # make install
+@end group
+@end smallexample
+
+@chapter tinypokerbot
+
+@section Overview
 
 @cindex tinypokerbot
 tinypokerbot is a basic bot designed for use with tinypokerd. This
@@ -94,8 +323,59 @@ bot connects to the server, joins the game, and folds every chance it gets. It i
 intended to be used as an example for creating a new bots. You just have
 to add the programming logic to determine to fold, raise, bet, or call.
 
+@section Obtaining the Source Code
+
+Source code can be contaibed be done by checking out a fresh copy from 
+the subversion repository or by downloading the latest release from the 
+TinyPoker website.
+
+@subsection Download from TinyPoker.org
+
+The latest release will always be available at:
+@url{http://tinypoker.org/download.html}
+
+@subsection Subversion
+
+This project uses
+@cindex subversion
+@url{http://subversion.tigris.org/,subversion} to 
+manage its source code. Instructions on 
+subversion installation and general use can be found at 
+@url{http://svnbook.red-bean.com/}. To obtain the source code from the 
+TinyPoker subversion repository, use this command:
+
+@smallexample
+@group
+$ svn co svn://svn.gna.org/svn/pokersource/trunk/tinypoker/tinypokerbot
+@end group
+@end smallexample
+
+@section Installation
+
+@cindex tinypokerbot
+tinypokerbot uses the
+@cindex cmake
+@url{http://cmake.org/,cmake} cross-platform, free software build system 
+to auto-configure the build and generate files for
+@cindex GNU Make
+@url{http://www.gnu.org/software/make/,GNU Make}. GNU Make is used to 
+compile, link and install the software.
+
+@smallexample
+@group
+  $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
+  $ make
+  # make install
+@end group
+@end smallexample
+
+@node GNU Free Documentation License version 1.2
 @appendix GNU Free Documentation License
 @include fdl.texi
+
+@node GNU General Public License version 3
+@appendix GNU General Public License
+@include gpl.texi
 
 @unnumbered Index
 

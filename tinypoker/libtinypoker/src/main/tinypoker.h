@@ -64,6 +64,8 @@ extern "C" {
  */
 #define LIBTINYPOKER_PATCH_VERSION 0
 
+#define VERSION "0.1.0"
+
 #define LIBTINYPOKER_VERSION VERSION
 
 /* TODO Support for Stud and Draw */

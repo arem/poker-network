@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with tinypokerbot.  If not, see <http://www.gnu.org/licenses/>.
 
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 PROJECT(tinypokerbot C)
 
 # Version Information
@@ -24,7 +26,6 @@ SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 SET(VERSION "${CPACK_PACKAGE_VERSION}")
 SET(SOVERSION "${CPACK_PACKAGE_VERSION}")
-ADD_DEFINITIONS("-DVERSION=\\\"${VERSION}\\\"")
 
 SET (libdirs /usr/lib /usr/local/lib /usr/lib32 /usr/local/lib32 /usr/lib64 /usr/local/lib64)
 

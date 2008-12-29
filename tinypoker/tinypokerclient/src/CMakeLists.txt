@@ -21,7 +21,6 @@ SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 SET(VERSION "${CPACK_PACKAGE_VERSION}")
-ADD_DEFINITIONS("-DVERSION=\\\"${VERSION}\\\"")
 
 SET (libdirs /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/local/lib64 /usr/lib32 /usr/local/lib32)
 SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)

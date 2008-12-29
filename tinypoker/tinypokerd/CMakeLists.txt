@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
 
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 PROJECT(tinypokerd C)
 
 # Version Information
@@ -23,7 +25,5 @@ SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 SET(VERSION "${CPACK_PACKAGE_VERSION}")
-ADD_DEFINITIONS("-DVERSION=\\\"${VERSION}\\\"")
-
 
 ADD_SUBDIRECTORY(src)

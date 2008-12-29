@@ -1,3 +1,0 @@
-This is the output directory for documentation generated from the source code.
-To get something useful here you must install doxygen and graphviz, run 
-`cmake .` and `make doc` in the main source directory.
