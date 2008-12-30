@@ -793,7 +793,7 @@ void ipp_free_table(ipp_table * table)
 		}
 		table->nplayers = 0;
 		table->amt_to_call = 0;
-		table->stage = 0;
+		table->stage = PREFLOP;
 
 		pthread_mutex_destroy(&(table->lock));
 
@@ -1790,7 +1790,8 @@ ipp_message *ipp_eval(ipp_card * cards[5])
  * @param x an integer between 1 and 13.
  * @return the factorial of x (i.e. x!).
  */
-int __ipp_fact(int x) {
+int __ipp_fact(int x)
+{
 	if (x == 1) {
 		return 1;
 	} else {
@@ -1798,39 +1799,61 @@ int __ipp_fact(int x) {
 	}
 }
 
-ipp_message *ipp_best_combination(ipp_table * table, int playerid) {
-	int i;
-	int N = 7, R = 5;
-	int ncombinations = __ipp_fact(N) / (__ipp_fact(R) * __ipp_fact(N-R));
+/**
+ * This method evaluates all of possible hands that can be made out of a player's hole cards and the board cards.
+ * @param table a table where stage is set to SHOWDOWN, the board has all its cards, and the player has all his or her cards.
+ * @param playerid the index of the player in the table->players array.
+ * @return a message representing the best hand. NULL is returned when this function is called with bad parameters.
+ */
+ipp_message *ipp_best_combination(ipp_table * table, int playerid)
+{
+	int i;			/* TODO: support for draw and stud */
+	int N = HOLDEM_HOLE_CARDS + HOLDEM_BOARD_CARDS, R = HOLDEM_BOARD_CARDS;
+	int ncombinations = __ipp_fact(N) / (__ipp_fact(R) * __ipp_fact(N - R));
 	ipp_message *combinations[ncombinations];
-	ipp_card *cards[7], *toeval[5];
-        int a, b, c, d, e;
+	ipp_card *cards[N], *toeval[R];
+	int a, b, c, d, e;
+
+	memset(combinations, '\0', sizeof(ipp_message *) * ncombinations);
+	memset(cards, '\0', sizeof(ipp_card *) * N);
+	memset(toeval, '\0', sizeof(ipp_card *) * R);
 
 	if (!ipp_initialized) {
 		ipp_init();
 	}
 
-	if (!table) {
+	if (table == NULL) {
 		return NULL;
 	}
 
-	if (playerid >= table->nplayers) {
+	if (playerid >= HOLDEM_PLAYERS_PER_TABLE || table->players[playerid] == NULL) {
 		return NULL;
 	}
 
-	for (i = 0; i < HOLDEM_BOARD_CARDS; i++) {
+	if (table->stage != SHOWDOWN) {
+		return NULL;
+	}
+
+	for (i = 0; i < R; i++) {
 		cards[i] = table->board[i];
+		if (cards[i] == NULL) {
+			return NULL;
+		}
 	}
 
-	cards[5] = table->players[playerid]->hole[0];
-	cards[6] = table->players[playerid]->hole[1];
+	for (i = 0; i < N - R; i++) {
+		cards[R + i] = table->players[playerid]->hole[i];
+		if (cards[R + i] == NULL) {
+			return NULL;
+		}
+	}
 
 	i = 0;
 	for (a = 0; a < N - R + 1; a++) {
-		for (b = a+1; b < N - R + 2; b++) {
-			for (c = b+1; c < N - R + 3; c++) {
-				for (d = c+1; d < N - R + 4; d++) {
-					for (e = d+1; e < N - R + 5; e++) {
+		for (b = a + 1; b < N - R + 2; b++) {
+			for (c = b + 1; c < N - R + 3; c++) {
+				for (d = c + 1; d < N - R + 4; d++) {
+					for (e = d + 1; e < N - R + 5; e++) {
 						toeval[0] = cards[a];
 						toeval[1] = cards[b];
 						toeval[2] = cards[c];
@@ -1845,9 +1868,14 @@ ipp_message *ipp_best_combination(ipp_table * table, int playerid) {
 		}
 	}
 
-	/* TODO qsort combinations and return the best, add function prototype and test */
+	qsort(combinations, ncombinations, sizeof(ipp_message *), ipp_hand_compar);
 
-	return NULL;
+	for (i = 0; i < ncombinations - 1; i++) {
+		ipp_free_message(combinations[i]);
+		combinations[i] = NULL;
+	}
+
+	return combinations[ncombinations - 1];
 }
 
 /**

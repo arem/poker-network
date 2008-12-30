@@ -24,15 +24,14 @@
 extern "C" {
 #endif
 
-typedef struct {
-	char *name;
-	char *version;
-	void *handle;
-	void (*play)(ipp_socket *sock);
-} tpb_agent;
+	typedef struct {
+		char *name;
+		char *version;
+		void *handle;
+		void (*play) (ipp_socket * sock);
+	} tpb_agent;
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

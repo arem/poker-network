@@ -16,6 +16,6 @@ Configure, compile, install...
 
 Setup the connection settings...
 
-	$ nano /etc/bagelbot.conf
+	$ nano /etc/tinypokerbot.conf
 
 Note: command line options for all configurable values is coming soon.

@@ -280,6 +280,10 @@ ADD_EXECUTABLE(testAddPlayer testAddPlayer.c)
 TARGET_LINK_LIBRARIES(testAddPlayer tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSLCBLAS} ${LIBGSL})
 ADD_TEST(testAddPlayer testAddPlayer)
 
+ADD_EXECUTABLE(testBestCombination testBestCombination.c)
+TARGET_LINK_LIBRARIES(testBestCombination tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSLCBLAS} ${LIBGSL})
+ADD_TEST(testBestCombination testBestCombination)
+
 ADD_EXECUTABLE(testEnumerateAllHands testEnumerateAllHands.c)
 TARGET_LINK_LIBRARIES(testEnumerateAllHands tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSLCBLAS} ${LIBGSL})
 ADD_TEST(testEnumerateAllHands testEnumerateAllHands)

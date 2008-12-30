@@ -1,5 +1,7 @@
  * man pages
  * programming guide
- * hand ranking (given X hands who beats who -- partly completed -- just need to call qsort with ipp_hand_compar())
- * best permutation (given 5 cards on the board and 2 hole cards, what is the best hand one can make).
+ * hand ranking (i.e. which player wins?)
+   - call ipp_best_combination for each player
+     + if feeling lucky, use threads and compute best hand in parallel
+   - use qsort, ipp_hand_compar, and some new code to determine the ranking.
  * stud and draw

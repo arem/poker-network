@@ -29,16 +29,19 @@
 
 #include "agent.h"
 
-void play(ipp_socket * sock) {
+void play(ipp_socket * sock)
+{
 }
 
-void agent_init(tpb_agent *a) {
+void agent_init(tpb_agent * a)
+{
 	a->name = strdup("origami");
 	a->version = strdup("0.0.0");
 	a->play = play;
 }
 
-void agent_exit(tpb_agent *a) {
+void agent_exit(tpb_agent * a)
+{
 	if (a->name) {
 		free(a->name);
 		a->name = NULL;
