@@ -39,7 +39,11 @@
 #include <gnutls/gnutls.h>
 #include <gnutls/x509.h>
 #include <gcrypt.h>
+
+#include <gsl/gsl_combination.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_result.h>
 
 #include <errno.h>
 #include <pthread.h>
@@ -1786,20 +1790,6 @@ ipp_message *ipp_eval(ipp_card * cards[5])
 }
 
 /**
- * Factorial function used internally by ipp_best_permutation().
- * @param x an integer between 1 and 13.
- * @return the factorial of x (i.e. x!).
- */
-int __ipp_fact(int x)
-{
-	if (x == 1) {
-		return 1;
-	} else {
-		return x * __ipp_fact(x - 1);
-	}
-}
-
-/**
  * This method evaluates all of possible hands that can be made out of a player's hole cards and the board cards.
  * @param table a table where stage is set to SHOWDOWN, the board has all its cards, and the player has all his or her cards.
  * @param playerid the index of the player in the table->players array.
@@ -1807,12 +1797,15 @@ int __ipp_fact(int x)
  */
 ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 {
-	int i;			/* TODO: support for draw and stud */
+	/* TODO: support for draw and stud */
 	int N = HOLDEM_HOLE_CARDS + HOLDEM_BOARD_CARDS, R = HOLDEM_BOARD_CARDS;
-	int ncombinations = __ipp_fact(N) / (__ipp_fact(R) * __ipp_fact(N - R));
+	gsl_sf_result gslresult;
+	int i, j = gsl_sf_choose_e(N, R, &gslresult);
+	int ncombinations = (int) gslresult.val;
 	ipp_message *combinations[ncombinations];
 	ipp_card *cards[N], *toeval[R];
-	int a, b, c, d, e;
+	gsl_combination *c;
+	size_t *cdata;
 
 	memset(combinations, '\0', sizeof(ipp_message *) * ncombinations);
 	memset(cards, '\0', sizeof(ipp_card *) * N);
@@ -1848,25 +1841,22 @@ ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 		}
 	}
 
-	i = 0;
-	for (a = 0; a < N - R + 1; a++) {
-		for (b = a + 1; b < N - R + 2; b++) {
-			for (c = b + 1; c < N - R + 3; c++) {
-				for (d = c + 1; d < N - R + 4; d++) {
-					for (e = d + 1; e < N - R + 5; e++) {
-						toeval[0] = cards[a];
-						toeval[1] = cards[b];
-						toeval[2] = cards[c];
-						toeval[3] = cards[d];
-						toeval[4] = cards[e];
-
-						combinations[i] = ipp_eval(toeval);
-						i++;
-					}
-				}
-			}
-		}
+	c = gsl_combination_calloc(N, R);
+	if (c == NULL) {
+		return NULL;
 	}
+
+	i = 0;
+	do {
+		cdata = gsl_combination_data(c);
+		for (j = 0; j < R; j++) {
+			toeval[j] = cards[cdata[j]];
+		}
+		combinations[i] = ipp_eval(toeval);
+		i++;
+	} while (gsl_combination_next(c) == GSL_SUCCESS);
+	gsl_combination_free(c);
+	c = NULL;
 
 	qsort(combinations, ncombinations, sizeof(ipp_message *), ipp_hand_compar);
 
@@ -1994,7 +1984,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		return NULL;
 	}
 
-	len = strlen("IPP 2.0 ") + strlen(server_tag) + 3;
+	len = strlen(CMD_IPP) + strlen(" 2.0 ") + strlen(server_tag) + 3;
 	if (len <= 0) {
 		return NULL;
 	}
@@ -2012,7 +2002,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		return NULL;
 	}
 	memset(msg->payload, '\0', len);
-	snprintf(msg->payload, len - 1, "IPP 2.0 %s", server_tag);
+	snprintf(msg->payload, len - 1, "%s 2.0 %s", CMD_IPP, server_tag);
 
 	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, logger);
 	if (!rc) {

@@ -1059,13 +1059,6 @@ extern "C" {
 	ipp_message *ipp_eval(ipp_card * cards[5]);
 
 /**
- * Factorial function used internally by ipp_best_permutation().
- * @param x an integer between 1 and 13.
- * @return the factorial of x (i.e. x!).
- */
-	int __ipp_fact(int x);
-
-/**
  * This method evaluates all of possible hands that can be made out of a player's hole cards and the board cards.
  * @param table a table where stage is set to SHOWDOWN, the board has all its cards, and the player has all his or her cards.
  * @param playerid the index of the player in the table->players array.
