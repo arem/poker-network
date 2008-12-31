@@ -21,16 +21,15 @@
 -->
 
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
-	width="120" height="120" 
-	borderColor="blue"
-	borderStyle="solid"
-	borderThickness="2"
-	cornerRadius="15"
-	
-	creationComplete="_init();">
+	width="115" height="115" 
+	creationComplete="_init();"
+	horizontalCenter="true"
+	>
 
 	<mx:Script>
 	  <![CDATA[
+	  	import mx.controls.Alert;
+	  	import aspoker.com.bubsy.poker.client.model.Player;
 	  	import aspoker.com.bubsy.poker.client.model.Table;
  		import aspoker.com.bubsy.poker.client.PokerClient;
  		import aspoker.com.bubsy.poker.client.model.User;
@@ -68,45 +67,117 @@
  			seatname.text = "seat: " + _seatId;
  		}
 		
-	private function setPlayerName():String
- 	{
- 		return "player: " + _table.getPlayerFromSeat(_seatId).name;
- 	}
- 			
+		private function setPlayerName():String
+ 		{
+ 			return _table.getPlayerFromSeat(_seatId).name;
+ 		}
+ 		
+ 		public function setPlayerChips():void
+ 		{
+ 			var chips:TextArea =  seats.getChildByName("chips") as TextArea;
+ 			chips.text = "" + _table.getPlayerFromSeat(_seatId).money as String;
+ 		}
  	 ]]>
  	</mx:Script>
+ 	
+ 	<mx:VBox id="seats" name="seats" 
+		horizontalAlign="center"
+ 		verticalAlign="bottom"
+ 		width="100%" height="100%" />
+ 		
  	<mx:states>
- 		 <mx:State name="free" basedOn="">
- 		 	<mx:AddChild >
-	 			<mx:VBox id="seats">
+ 		 <mx:State name="free">
+ 		 	<mx:AddChild relativeTo="{seats}">
 		 			<mx:Label id="seatname" 
 		 				text="" />
-	  				<mx:Text
-	  					id="seatbutton" 
-	  					textAlign="center"
-	  					text="Click here to get a seat"
-	  					selectable="false"
-	  					width="100"
-	  					fontWeight="bold" 
-	  					click="_table.seat(_seatId);" /> 		
-	 			</mx:VBox> 	
+		 	</mx:AddChild>
+		 	
+		 	<mx:AddChild relativeTo="{seats}">	
+	  			<mx:TextArea id="seatbutton" 
+	  				textAlign="center"
+	  				borderStyle="solide"
+	  				backgroundAlpha="0.8"
+	  				dropShadowEnabled="true"
+	  				selectable="false"
+	  				editable="false"
+	  				width="100"
+	  				text="Click here to get a seat"
+					cornerRadius="5"
+	  				fontWeight="bold" 
+	  				click="_table.seat(_seatId);" /> 		
  			</mx:AddChild>
 	 	</mx:State>
 	 	
-		<mx:State name="used" basedOn="free">
-			<mx:RemoveChild target="{seatbutton}"  />
-		 	<mx:AddChild relativeTo="{seats}" >
-		 		<mx:Label name="playerName" text="{setPlayerName()}" />
- 		  	</mx:AddChild>			
-
+	 	<mx:State name="sitin" basedOn="arrive">
+	 		<mx:SetProperty target="{playerName}" name="enabled" value="true"/>
+	 		<mx:SetProperty target="{playerState}" name="text" value="Ready to play"/>
+	 		<mx:SetProperty target="{playerState}" name="enabled" value="true"/>
+	 		<mx:SetProperty target="{chips}" name="enabled" value="true"/>
 	 	</mx:State>
 	 	
-		<mx:State name="disabled" basedOn="free">
-			<mx:RemoveChild target="{seatbutton}"  />
-		 	<mx:AddChild relativeTo="{seats}" >
- 		  	</mx:AddChild>
+	 	<mx:State name="sitout" basedOn="arrive">
+	 		<mx:SetProperty target="{playerName}" name="enabled" value="false"/>
+	 		<mx:SetProperty target="{playerState}" name="text" value="Sit out"/>
+	 		<mx:SetProperty target="{playerState}" name="enabled" value="false"/>
+	 		<mx:SetProperty target="{chips}" name="enabled" value="false"/>
 	 	</mx:State>
-	</mx:states>
+	 	
+		<mx:State name="arrive" id="arrive">
+		 	<mx:AddChild relativeTo="{seats}" >
+		 		<mx:TextArea name="playerName" 
+		 			id="playerName" 
+		 			text="{setPlayerName()}" 
+	  				selectable="false"
+	  				editable="false"
+	  				enabled="false"
+		 			width="100"
+		 			height="20"
+		 			cornerRadius="5"
+		 			color="green"
+  					dropShadowEnabled="true"
+	  				fontWeight="bold" 
+		 			textAlign="center"
+  					backgroundAlpha="0.8"/>			
+ 		  	</mx:AddChild>			
+ 		  	
+ 		  	<mx:AddChild relativeTo="{seats}" >
+		 		<mx:TextArea name="chips" 
+		 			id="chips"
+		 			text="0" 
+					selectable="false"
+					enabled="false"
+	  				editable="false"
+		 			width="100"
+		 			height="20"
+		 			color="green"
+		 			cornerRadius="5"
+  					dropShadowEnabled="true"
+	  				fontWeight="bold" 
+		 			textAlign="center"
+  					backgroundAlpha="0.8"/>
+			</mx:AddChild>
+			
+			<mx:AddChild relativeTo="{seats}" >
+		 		<mx:TextArea name="playerState" 
+		 			id="playerState" 
+		 			text="Sit out" 
+		 			enabled="false"
+		 			selectable="false"
+		 			editable="false"
+	  				width="100"
+		 			height="20"
+		 			color="green"
+		 			cornerRadius="5"
+  					dropShadowEnabled="true"
+	  				fontWeight="bold" 
+		 			textAlign="center"
+  					backgroundAlpha="0.8"/>
+			</mx:AddChild>
+			
+	 	</mx:State>
+	 	
+		<mx:State name="disabled" basedOn="">
 
-    	
+	 	</mx:State>
+	</mx:states>   	
 </mx:Canvas>
