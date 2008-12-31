@@ -795,6 +795,10 @@ void ipp_free_table(ipp_table * table)
 				}
 			}
 		}
+		if (table->deck) {
+			ipp_free_deck(table->deck);
+			table->deck = NULL;
+		}
 		table->nplayers = 0;
 		table->amt_to_call = 0;
 		table->stage = PREFLOP;

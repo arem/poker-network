@@ -89,6 +89,9 @@ int main()
 	gsl_combination_free(c);
 	c = NULL;
 
+	ipp_free_deck(deck);
+	deck = NULL;
+
 	printf("+-----------------+----------+\n");
 	printf("| Straight flush  | %8d |\n", straightflush);
 	printf("| Four of a kind  | %8d |\n", fourofakind);
