@@ -26,6 +26,7 @@ public class LoginEvent extends Event
 {
     public static const onPacketAuthOk:String = "PacketAuthOk";
     public static const onPacketSerial:String = "PacketSerial";
+    public static const onPacketAuthRequest:String = "PacketAuthRequest";
     public static const onPacketAuthRefused:String = "PacketAuthRefused";
     public var userSerial:int = 0 ;
     public var message:String="";
@@ -44,11 +45,6 @@ public class LoginEvent extends Event
             {
                 this.userSerial = userSerial
                 break;
-            }
-
-            default:
-            {
-                trace(type);
             }
         }
         super(type);
