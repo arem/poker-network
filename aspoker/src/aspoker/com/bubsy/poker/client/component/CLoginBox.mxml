@@ -20,19 +20,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 
- <mx:Panel 
- width="294" 
- height="208" 
- layout="absolute" 
- horizontalCenter="0" 
- verticalCenter="0"  
+ <mx:Canvas 
  xmlns:mx="http://www.adobe.com/2006/mxml"
- title="AsPoker Login"
  initialize="init()"
+ borderColor="red"
+ borderStyle="solid"
  >
- 
+
   <mx:Script>
  	<![CDATA[
+
  		import aspoker.com.bubsy.poker.client.PokerClient;
  	    import aspoker.com.bubsy.poker.client.model.User;
  		import aspoker.com.bubsy.poker.client.event.LoginEvent;
@@ -81,44 +78,44 @@
  <mx:states>
   <mx:State name="cashierState">
        <mx:RemoveChild target="{loginCanvas}"/>
-       <mx:SetProperty target="{this}" name="width" value="340"/>
-       <mx:SetProperty target="{this}" name="height" value="150"/>
+       <mx:SetProperty target="{this}" name="width" value="250"/>
+       <mx:SetProperty target="{this}" name="height" value="60"/>
        <mx:AddChild relativeTo="{this}" position="lastChild">
-            <mx:Canvas id="registerCanvas" left="0" top="0" right="0" bottom="0">
-                 <mx:Label text="Welcome!" 
-                      fontWeight="bold" fontStyle="italic" 
-                      horizontalCenter="0" top="5"/>
-                 <mx:Label id="cash" text="" />
-                 <mx:HBox top="20">
-					<mx:Button label="plocale" click="PokerClient.user.plocale()" > </mx:Button>
-					<mx:Button label="getCashier" click="PokerClient.user.userpersonalinfo()" > </mx:Button>
+            <mx:VBox id="registerCanvas">
+                 <mx:Label text="Welcome!{username.text}" 
+                      fontWeight="bold" fontStyle="italic" />
+                 <mx:HBox>
+					<mx:Button label="plocale" 
+						click="PokerClient.user.plocale()" />
+					<mx:Button label="getCashier" 
+						click="PokerClient.user.userpersonalinfo()" /> 
+					<mx:Button label="Log out" id="logoutButton"
+                      click="logout()"/>
 				</mx:HBox>
-                 <mx:Button label="Log out" 
-                      right="25" bottom="21" id="logoutButton"
-                      click="logout()"
-                 />
-            </mx:Canvas>
+            </mx:VBox>
        </mx:AddChild>
   </mx:State>
   
     <mx:State name="LogginState">
-         <mx:RemoveChild target="{loginCanvas}"/>
-       <mx:SetProperty target="{this}" name="width" value="340"/>
-       <mx:SetProperty target="{this}" name="height" value="266"/>
+       <mx:RemoveChild target="{loginCanvas}"/>
+       <mx:SetProperty target="{this}" name="width" value="600"/>
+       <mx:SetProperty target="{this}" name="height" value="60"/>
        <mx:AddChild relativeTo="{this}" position="lastChild">
-           <mx:Canvas id="loginCanvas" left="0" top="0" right="0" bottom="0">
+           <mx:Canvas id="loginCanvas">
            <mx:Label id="errorMessage" color="red"/>
-       <mx:Form id="loginForm" left="5" right="5" verticalCenter="-20">
-            <mx:FormItem label="User name:" required="true" >
-                 <mx:TextInput id="username" width="150" text="bruno"/>
-            </mx:FormItem>
-            <mx:FormItem  label="Password:" required="true" >
-                 <mx:TextInput id="password" width="150" text="onurb"/>
-            </mx:FormItem>
-       </mx:Form>
-       <mx:Button label="Login" right="25" bottom="18" id="button1" 
-           click="login()"
-       />
+           <mx:Form id="loginForm" >
+           		<mx:HBox>
+	           		<mx:FormItem label="User name:" required="true" 
+	           			direction="horizontal" >
+    	            	<mx:TextInput id="username" width="100%" text="bruno"/>
+        	    	</mx:FormItem>
+            		<mx:FormItem  label="Password:" required="true" 
+            			direction="horizontal">
+                		<mx:TextInput id="password" width="100%" text="onurb"/>
+            		</mx:FormItem>      
+            		<mx:Button label="Login" id="button1" click="login()"/>      	           			
+           		</mx:HBox>
+       		</mx:Form>
        </mx:Canvas>
       </mx:AddChild>
    </mx:State>
@@ -140,6 +137,6 @@
                 <mx:AddChildAction target="{loginCanvas}"/>
            </mx:Sequence>
       </mx:Transition>
-  
  </mx:transitions>
- </mx:Panel>
+ 
+ </mx:Canvas>
