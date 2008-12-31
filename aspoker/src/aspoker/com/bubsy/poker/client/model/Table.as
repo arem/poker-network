@@ -22,6 +22,7 @@ package aspoker.com.bubsy.poker.client.model
 
 import aspoker.com.bubsy.poker.client.PokerClient;
 import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
+import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
 import aspoker.com.bubsy.poker.client.util.PollTimer;
 
@@ -32,29 +33,39 @@ import flash.events.TimerEvent;
 
 public class Table extends PollTimer
 {
-    private var tableInfo:Object;
     private var _gameID:int = 0;
-    private var _seats:Array=[];
+    private var _seats:Array=[];/*[0,0,0,0,0,0,0,0,0,0]*/
     private var _players:Array=[]/* of Player */;
     private var _user:User = PokerClient.user;
 
-    /*max_players = packet.seats;
-    is_tourney
-    this.board = [ null, null, null, null, null ];
-    this.pots = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
-    this.buyIn = { min: 1000000000, max: 1000000000, best: 1000000000, bankroll: 0 };
-    this.dealer = -1;
-    this.position = -1;
-    this.state = 'end';
-    seat
-    */
     private var _actionJsonStream:TableJsonStream = new TableJsonStream();
-    private var _pollJsonStream:TableJsonStream = new TableJsonStream();
+
+    /* table info*/
+    private var _name:String;
+    private var _variant:String;
+    private var _percent_flop:int;
+    private var _betting_structure:String;
+    private var _average_pot:int;
+    private var _muck_timeout:int;
+    private var _hands_per_hour:int;
+    private var _tourney_serial:int;
+    private var _numSeats:int;
+    private var _numObservers:int;
+    private var _player_timeout:int;
+    private var _currency_serial:int;
+    private var _skin:String
+
+    /*buying limits*/
+    private var _BuyInLimitMin:Number;
+    private var _BuyInLimitbest:Number;
+    private var _rebuy_min:Number;
+    private var _BuyInLimitmax:Number;
 
     public function Table(gameId:int)
     {
         stopPoll();
         _gameID = gameId;
+
         //add Listeners for user action stream
         _actionJsonStream.addEventListener(
           TableEvent.onPacketPokerTable,
@@ -62,7 +73,7 @@ public class Table extends PollTimer
 
         _actionJsonStream.addEventListener(
             TableEvent.onPacketPokerSeats,
-            _onPacketPokerSeat);
+            _onPacketPokerSeats);
 
         _actionJsonStream.addEventListener(
             TableEvent.onPacketPokerPlayerArrive,
@@ -72,15 +83,91 @@ public class Table extends PollTimer
             TableEvent.onPacketPokerPlayerLeave,
             _onPacketPokerPlayerLeave);
 
-        //add Listeners for poll stream
-       _pollJsonStream.addEventListener(
-           TableEvent.onPacketPokerPlayerArrive,
-           _onPacketPokerPlayerArrive);
+        _actionJsonStream.addEventListener(
+            LoginEvent.onPacketAuthRequest,
+            _onPacketAuthRequest);
 
-       _pollJsonStream.addEventListener(
-           TableEvent.onPacketPokerPlayerLeave,
-           _onPacketPokerPlayerLeave);
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerPlayerStats,
+            _onPlayerStats);
 
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerPlayerChips,
+            _onPlayerChips);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerBuyInLimits,
+            _onBuyInLimits);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerSit,
+            _onSit);
+
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerSitOut,
+            _onSitOut);
+
+    }
+
+    private function _onBuyInLimits(evt:TableEvent):void
+    {
+        var BuyInLimits:Object = evt.packet;
+        _BuyInLimitMin = BuyInLimits.min;
+        _BuyInLimitbest = BuyInLimits.best;
+        _rebuy_min = BuyInLimits.rebuy_min;
+        _BuyInLimitmax = BuyInLimits.max;
+    }
+
+    private function _onSitOut(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.setStats(evt.packet);
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerSitOut,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onSit(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.setStats(evt.packet);
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerSit,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPlayerStats(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.setStats(evt.packet);
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerPlayerStats,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPlayerChips(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.setChips(evt.packet);
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerPlayerChips,
+                evt.packet
+            )
+        );
     }
 
     public function destroy():void
@@ -94,7 +181,7 @@ public class Table extends PollTimer
 
         _actionJsonStream.removeEventListener(
             TableEvent.onPacketPokerSeats,
-            _onPacketPokerSeat);
+            _onPacketPokerSeats);
 
         _actionJsonStream.removeEventListener(
             TableEvent.onPacketPokerPlayerArrive,
@@ -104,16 +191,27 @@ public class Table extends PollTimer
             TableEvent.onPacketPokerPlayerLeave,
             _onPacketPokerPlayerLeave);
 
-        //remove Listeners for poll stream
-        _pollJsonStream.removeEventListener(
-           TableEvent.onPacketPokerPlayerArrive,
-           _onPacketPokerPlayerArrive);
-
-        _pollJsonStream.removeEventListener(
-           TableEvent.onPacketPokerPlayerLeave,
-           _onPacketPokerPlayerLeave);
-
         _players = null;
+    }
+
+    public function get numSeats():int
+    {
+        return _numSeats;
+    }
+
+    public function get BuyInLimitMin():int
+    {
+        return _BuyInLimitMin;
+    }
+
+    public function get BuyInLimitbest():int
+    {
+        return _BuyInLimitbest;
+    }
+
+    public function get BuyInLimitmax():int
+    {
+        return _BuyInLimitmax;
     }
 
     public function get gameId():int
@@ -155,18 +253,24 @@ public class Table extends PollTimer
         );
     }
 
-    private function _onPacketPokerSeat(evt:TableEvent):void
+    private function _onPacketAuthRequest(evt:LoginEvent):void
     {
-        if (_seats && _seats.join() != evt.packet.seats.join())
-        {
-            _seats = evt.packet.seats;
-            dispatchEvent(
-                new TableEvent(
-                TableEvent.onPacketPokerSeats,
-                evt.packet
-                )
-            );
-         }
+        dispatchEvent(
+            new LoginEvent(
+            LoginEvent.onPacketAuthRequest
+            )
+        );
+    }
+
+    private function _onPacketPokerSeats(evt:TableEvent):void
+    {
+        _seats = evt.packet.seats;
+        dispatchEvent(
+            new TableEvent(
+            TableEvent.onPacketPokerSeats,
+            evt.packet
+            )
+        );
     }
 
     public function get seats():Array
@@ -176,20 +280,20 @@ public class Table extends PollTimer
 
     private function _onPacketPokerTable(evt:TableEvent):void
     {
-        tableInfo = evt.packet;
-        trace("tableName: " + tableInfo.name);
-        trace("tableVariant: " + tableInfo.variant);
-        trace("tablePercent_flop: " + tableInfo.percent_flop);
-        trace("tableBetting_structure: " + tableInfo.betting_structure);
-        trace("tableAverage_pot: " + tableInfo.average_pot);
-        trace("tableMuck_timeout: " + tableInfo.muck_timeout);
-        trace("tableHands_per_hour: " + tableInfo.hands_per_hour);
-        trace("tableTourney_serial: " + tableInfo.tourney_serial);
-        trace("tableSeats:" + tableInfo.seats);
-        trace("tableObservers: " + tableInfo.observers);
-        trace("tablePlayer_timeout: " + tableInfo.player_timeout);
-        trace("tableCurrency_serial: " + tableInfo.currency_serial);
-        trace("tableSkin: " + tableInfo.skin);
+        var tableInfo:Object = evt.packet;
+        _name = tableInfo.name;
+        _variant = tableInfo.variant;
+        _percent_flop = tableInfo.percent_flop;
+        _betting_structure = tableInfo.betting_structure;
+        _average_pot = tableInfo.average_pot;
+        _muck_timeout = tableInfo.muck_timeout;
+        _hands_per_hour = tableInfo.hands_per_hour;
+        _tourney_serial = tableInfo.tourney_serial;
+        _numSeats = tableInfo.seats;
+        _numObservers = tableInfo.observers;
+        _player_timeout = tableInfo.player_timeout;
+        _currency_serial = tableInfo.currency_serial;
+        _skin = tableInfo.skin;
     }
 
     public function quit():void
@@ -219,15 +323,20 @@ public class Table extends PollTimer
         _actionJsonStream.seat(_gameID,_user.userSerial,seat);
     }
 
-    public function buyIn():void
+    public function buyIn(amount:Number):void
     {
-        _actionJsonStream.buyIn(_gameID,_user.userSerial);
+        _actionJsonStream.buyIn(_gameID,_user.userSerial,amount);
+    }
+
+    public function sit():void
+    {
+        _actionJsonStream.sit(_gameID,_user.userSerial);
     }
 
     public function poll():void
     {
         Logger.log("poll gameID:" + _gameID);
-        _pollJsonStream.Poll(_gameID);
+        _actionJsonStream.Poll(_gameID);
     }
 
     protected override function doStep(evt:TimerEvent):void
