@@ -129,7 +129,7 @@ var odds_calculator = new Class({
 		player.hc_player.addClass('hc_player_empty');
 		player.active = false;
 		if (this.current_sel) {
-			this.current_sel.setStyle('border', 'none');
+			this.current_sel.setStyle('background-color', 'transparent');
 			this.current_sel = false;
 		}
 	},
@@ -174,7 +174,7 @@ var odds_calculator = new Class({
 	
 	selcard: function(that) {
 		
-		$$('.updatable').setStyle('border', 'none'); // On enleve les border rouge
+		$$('.updatable').setStyle('background-color', 'transparent'); // On enleve les border rouge
 		that.setStyle('background-color', '#C66D6D'); // on met du rouge sur la carte en question
 		this.current_sel = that;	// On defini la carte selectionne	
 	},
