@@ -22,123 +22,117 @@
 -->
 
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
-		layout="vertical" 
-		xmlns:local="aspoker.com.bubsy.poker.client.component.*" 
-		height="700"
-		width="800">
-		
-	<mx:Script>
-		<![CDATA[
-			import flash.utils.getQualifiedSuperclassName;
-			import flash.utils.getQualifiedClassName;
-			import mx.core.Container;
-			import aspoker.com.bubsy.poker.client.component.Ctable;
-			import mx.events.ListEvent;
-			import mx.events.IndexChangedEvent;
-			import aspoker.com.bubsy.poker.client.model.Table;
-			import aspoker.com.bubsy.poker.client.PokerClient;	
-			
-			private function changeView(evt:IndexChangedEvent):void
-			{
-				var currentView:DisplayObject = myViewStack.getChildAt(
-					evt.newIndex);
-		
-				try 
-				{
-					var oldView:DisplayObject = myViewStack.getChildAt(
-							evt.oldIndex)
-				} catch(err:RangeError){
-					trace("view not exist");	
-				} finally {
-																	
-					if (getQualifiedClassName(oldView) 
-						== getQualifiedClassName(Ctable)
-					)
-					{
-					 	trace("stop poll for:" + oldView.name);
-					 	(oldView as Ctable).table.stopPoll();
-					}
-					
-					if (getQualifiedClassName(currentView) 
-						== getQualifiedClassName(Ctable)
-					)
-					{
-					 	trace("restart poll for:" + currentView.name);
-					 	var aTable:Table = (currentView as Ctable).table;
-					 	aTable.startPoll();
-					}
-				}
-				
-				switch(currentView.name)
-				{
-					case "tableListView":
-					{
-						trace("restart poll for the tables list");
-						aTableList.tableList.startPoll();
-						break;
-					}
-					default:
-					{
-						trace("stop poll for the tables list");
-						aTableList.tableList.stopPoll();
-					}
-				}
-			}
-			
-			private function itemClickEvent(event:Event):void 
+        layout="vertical" 
+        xmlns:local="aspoker.com.bubsy.poker.client.component.*" 
+        height="700"
+        width="800">
+        
+    <mx:Script>
+        <![CDATA[
+            import mx.controls.Alert;
+            import flash.utils.getQualifiedSuperclassName;
+            import flash.utils.getQualifiedClassName;
+            import mx.core.Container;
+            import aspoker.com.bubsy.poker.client.component.Ctable;
+            import mx.events.ListEvent;
+            import mx.events.IndexChangedEvent;
+            import aspoker.com.bubsy.poker.client.model.Table;
+            import aspoker.com.bubsy.poker.client.PokerClient;  
+            
+            private function changeView(evt:IndexChangedEvent):void
+            {
+                var currentView:DisplayObject = myViewStack.getChildAt(
+                    evt.newIndex);
+        
+                try 
+                {
+                    var oldView:DisplayObject = myViewStack.getChildAt(
+                            evt.oldIndex)
+                } catch(err:RangeError){
+                    trace("view not exist");    
+                } finally {
+                                                                    
+                    if (getQualifiedClassName(oldView) 
+                        == getQualifiedClassName(Ctable)
+                    )
+                    {
+                        trace("stop poll for:" + oldView.name);
+                        (oldView as Ctable).table.stopPoll();
+                    }
+                    
+                    if (getQualifiedClassName(currentView) 
+                        == getQualifiedClassName(Ctable)
+                    )
+                    {
+                        trace("restart poll for:" + currentView.name);
+                        var aTable:Table = (currentView as Ctable).table;
+                        aTable.startPoll();
+                    }
+                }
+                
+                switch(currentView.name)
+                {
+                    case "tableListView":
+                    {
+                        trace("restart poll for the tables list");
+                        aTableList.tableList.startPoll();
+                        break;
+                    }
+                    default:
+                    {
+                        trace("stop poll for the tables list");
+                        aTableList.tableList.stopPoll();
+                    }
+                }
+            }
+            
+            private function itemClickEvent(event:Event):void 
            {
-          		var tableName:String = "Table:" + 
-          			aTableList.tableinfo.selectedItem.id;
-          		
-          		if (!myViewStack.getChildByName(tableName))
-          		{
-          			var ctable:Ctable = new Ctable();
-	            	ctable.gameId = aTableList.tableinfo.selectedItem.id;
-    	        	ctable.name = tableName;
-    	        	ctable.label = "Table:" + 
-    	        		aTableList.tableinfo.selectedItem.name;
-					myViewStack.addChildAt(ctable,myViewStack.numChildren);
-					myViewStack.selectedChild = ctable;
-          		} else {
-          			myViewStack.selectedChild = 
-          				myViewStack.getChildByName(tableName) as Container;
-          		}
+                var tableName:String = "Table:" + 
+                    aTableList.tableinfo.selectedItem.id;
+                
+                if (!myViewStack.getChildByName(tableName))
+                {
+                    var ctable:Ctable = new Ctable();
+                    ctable.gameId = aTableList.tableinfo.selectedItem.id;
+                    ctable.name = tableName;
+                    ctable.label = "Table:" + 
+                        aTableList.tableinfo.selectedItem.name;
+                    myViewStack.addChildAt(ctable,myViewStack.numChildren);
+                    myViewStack.selectedChild = ctable;
+                } else {
+                    myViewStack.selectedChild = 
+                        myViewStack.getChildByName(tableName) as Container;
+                }
           }
           
-		]]>
-	</mx:Script>
-	
-	<mx:LinkBar color="#0000FF" fontWeight="bold" dataProvider="{myViewStack}"/>
+        ]]>
+    </mx:Script>
 
-     <!-- Define the ViewStack and the three child containers. -->
-    <mx:ViewStack 
-    	id="myViewStack" 
-    	borderStyle="solid" 
-    	width="100%" 
-    	height="80%"
-    	change="changeView(event)"
-    	>
-    	
-    	<mx:HBox label="Login" width="100%" height="100%">
-			<mx:TextArea 
-				id="log" 
-				name="log" 
-				width="90%" 
-				height="100%"/> 
-				
-			<local:CLoginBox/>
-		</mx:HBox>
-			 
-		 <mx:Canvas 
-		 	id="tableListView" 
-		 	label="Tables list" 
-		 	width="100%" 
-		 	height="100%">
-		 		
-			<local:CTablesList 
-				id="aTableList" 
-				tableSelected="itemClickEvent(event)" />
-				
-    	</mx:Canvas> 	
+    <local:CLoginBox/>
+        
+    <mx:LinkBar color="#0000FF" fontWeight="bold" dataProvider="{myViewStack}"/>
+
+    <mx:ViewStack id="myViewStack" 
+        borderStyle="solid" 
+        width="100%" 
+        height="80%"
+        change="changeView(event)"
+        >
+        <mx:Canvas id="tableListView" 
+            label="Tables list" 
+            width="100%" 
+            height="100%">
+                
+            <local:CTablesList id="aTableList" 
+                tableSelected="itemClickEvent(event)" />    
+        </mx:Canvas>
+            
     </mx:ViewStack>
+    
+    <mx:TextArea id="log" 
+    name="log" 
+    width="90%" 
+    height="20%"/> 
+    
 </mx:Application>
