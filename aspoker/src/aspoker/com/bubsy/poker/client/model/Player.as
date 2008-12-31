@@ -2,6 +2,9 @@ package aspoker.com.bubsy.poker.client.model
 {
     public class Player
     {
+
+        private var _state:int;
+
         private var _name:String;
         private var _url:String;
         private var _auto:Boolean;
@@ -15,6 +18,15 @@ package aspoker.com.bubsy.poker.client.model
         private var _remove_next_turn:Boolean;
         private var _game_id:Boolean;
 
+        /*Player Stats*/
+        private var _rank:int;
+        private var _percentile:int;
+
+        /*Player Chips*/
+        private var _money:Number;
+        private var _bet:Number;
+
+
         public function Player(PacketPokerPlayerArrive:Object)
         {
             setPlayer(PacketPokerPlayerArrive);
@@ -23,6 +35,16 @@ package aspoker.com.bubsy.poker.client.model
         public function get name():String
         {
             return _name;
+        }
+
+        public function get seat():int
+        {
+            return _seat;
+        }
+
+        public function get money():int
+        {
+            return _money;
         }
 
         public function setPlayer(PacketPokerPlayerArrive:Object):void
@@ -40,5 +62,18 @@ package aspoker.com.bubsy.poker.client.model
             _remove_next_turn = PacketPokerPlayerArrive.remove_next_turn;
             _game_id = PacketPokerPlayerArrive.game_id;
         }
+
+        public function setChips(PacketPokerPlayerChips:Object):void
+        {
+             _money = PacketPokerPlayerChips.money;
+             _bet =  PacketPokerPlayerChips.bet;
+        }
+
+        public function setStats(PacketPokerPlayerStats:Object):void
+        {
+            _rank = PacketPokerPlayerStats.rank;
+            _percentile =  PacketPokerPlayerStats.percentile;
+        }
+
     }
 }
