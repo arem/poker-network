@@ -26,6 +26,11 @@
 	
 	  <mx:Script>
  	<![CDATA[
+ 		import aspoker.com.bubsy.poker.client.model.User;
+ 		import aspoker.com.bubsy.poker.client.model.BuyInPopup;
+ 		import mx.controls.Alert;
+ 		import mx.logging.Log;
+ 		import aspoker.com.bubsy.poker.client.event.LoginEvent;
  		import mx.core.Container;
  		import aspoker.com.bubsy.poker.client.PokerClient;
  		import mx.core.Application;
@@ -40,15 +45,40 @@
 			
 			table.addEventListener(
 				TableEvent.onPacketPokerPlayerArrive,
-				onPlayerArrive
+				_onPlayerArrive
 			);
 			
 			table.addEventListener(
 				TableEvent.onPacketPokerPlayerLeave,
-				onPlayerLeave
+				_onPlayerLeave
 			);
+			
+			table.addEventListener(
+				LoginEvent.onPacketAuthRequest,
+				_onAuthRequest
+			);
+			
+			table.addEventListener(
+				TableEvent.onPacketPokerPlayerChips,
+				_onPlayerChips
+			);
+			
+			table.addEventListener(
+				TableEvent.onPacketPokerSit,
+				_onSit
+			);
+			
+			table.addEventListener(
+				TableEvent.onPacketPokerSeats,
+				_onSeats
+			);
+			
+			table.addEventListener(
+				TableEvent.onPacketPokerSitOut,
+				_onSitOut
+			);		
 		}
-		
+
 		private function _init():void
 		{
 			setSeat();
@@ -59,11 +89,11 @@
 		{
 			table.removeEventListener(
 				TableEvent.onPacketPokerPlayerArrive,
-				onPlayerArrive);
+				_onPlayerArrive);
 				
 			table.removeEventListener(
 				TableEvent.onPacketPokerPlayerLeave,
-				onPlayerLeave
+				_onPlayerLeave
 			);
 			
 			table.destroy();
@@ -86,60 +116,128 @@
 			}
  		}
  		
- 		public function onPlayerLeave(evt:TableEvent):void
+ 		private function _onPlayerChips(evt:TableEvent):void
  		{
- 						
+ 			var cseat:CSeat= seats.getChildByName(
+				"seat"+ table.getPlayer(evt.packet.serial).seat
+			) as CSeat ;
+			cseat.setPlayerChips();
+ 		}
+ 		
+ 		private function _onAuthRequest(evt:LoginEvent):void
+ 		{
+ 			Alert.show("You must authenticate before to select a seat");
+ 		}
+ 		
+ 		private function _onPlayerLeave(evt:TableEvent):void
+ 		{
+
+ 			/* if user leaves the table */
  			if (!evt.packet || 
  				(evt.packet.serial == PokerClient.user.userSerial)
- 			)
+ 				)
  			{
  				 quit();
- 			} else {
- 				var cseat:CSeat= seats.getChildByName(
+ 				 return;
+ 			} 
+ 			
+ 			/* if a player leaves the table */
+			var cseat:CSeat= seats.getChildByName(
 				"seat"+evt.packet.seat
-				) as CSeat ;
+			) as CSeat ;
 				
+ 			if (table.seats.indexOf(PokerClient.user.userSerial) < 0 )
+ 			/* is user has a seat?
+ 			FIXME: To use "user.isSit()" instead indexof ..
+ 			*/	
+ 			{ 
 				cseat.currentState = "free";
-				cseat = null;
+ 			} else {
+ 				/*if user has a seat else others free seats can be hidden*/	
+				cseat.currentState = "disabled";
  			}
  		}
- 		 		
- 		public function onSeat(evt:TableEvent):void
+ 		
+ 		private function setSeatState(state:String):void
  		{
  			var i:int=0;
 			for each (var seat:int in table.seats)
 			{
-				if(seat>0) {
+				if(seat==0) {
 					var cseat:CSeat= seats.getChildByName("seat"+i) as CSeat ;
-
-					cseat.currentState = "used";
+					cseat.currentState = state;
 					cseat = null;
 				}
 				i++;
 			}
  		}
+ 		
+ 		private function showSeats(visible:Boolean=true):void
+ 		{
+ 			var i:int=0;
+			for each (var seat:int in table.seats)
+			{
+				if (i==table.numSeats) 
+				{
+					//no more seat are available at this table
+					break;
+				} else {
+					var cseat:CSeat= seats.getChildByName("seat"+i) as CSeat ;
+					cseat.visible = visible;
+					cseat = null;
+					i++;
+				}
+			}
+ 		}
+ 		
+ 		private function _onSeats(evt:TableEvent):void
+ 		{
+ 			
+ 			showSeats();
+ 			/* is user has a seat?
+ 			FIXME: To use "user.isSit()" instead indexof ..
+ 			*/
+ 			if ( table.seats.indexOf(PokerClient.user.userSerial) < 0 )
+ 			{
+ 				return;	
+ 			}
+
+ 			/*if user has a seat else others free seats can be hidden*/	
+ 			setSeatState("disabled");
+ 		}
 		
-		public function onPlayerArrive(evt:TableEvent):void
+		private function _onSit(evt:TableEvent):void
+ 		{
+			var cseat:CSeat= seats.getChildByName(
+				"seat"+ table.getPlayer(evt.packet.serial).seat
+				) as CSeat ;
+
+			cseat.currentState = "sitin";
+			cseat = null;
+ 		}
+ 		
+ 		private function _onSitOut(evt:TableEvent):void
+ 		{
+			var cseat:CSeat= seats.getChildByName(
+				"seat"+ table.getPlayer(evt.packet.serial).seat
+				) as CSeat ;
+				
+			cseat.currentState = "sitout";
+			cseat = null;
+ 		}
+ 		
+		private function _onPlayerArrive(evt:TableEvent):void
  		{
 			var cseat:CSeat= seats.getChildByName(
 				"seat"+evt.packet.seat
 				) as CSeat ;
-				
-			cseat.currentState = "used";
+			cseat.currentState = "arrive";
 			cseat = null;
  		}
- 		
- 		public function onSitOut(evt:TableEvent):void
+ 			
+ 		public function Buyin():void
  		{
- 			for each (var item:CSeat in seats.getChildren()) 
- 			{
-    			if (evt.packet.seat != item.seatId 
-    				&& item.currentState=='disabled'
-    			)
-    			{
-    				item.currentState= 'free';
-    			}
-			}
+			var toto:BuyInPopup = new BuyInPopup(this,table);
  		}
  		
  	 ]]>
@@ -151,77 +249,86 @@
 					id="seat1" 
 					name="seat1"
 					seatId="1" 
-					left="0"/>
+					left="0"
+					visible="false"/>
 				
 				<component:CSeat 
 					id="seat2" 
 					seatId="2" 
 					name="seat2"
-					left="150"/>
+					left="150"
+					visible="false"/>
 				
 				<component:CSeat 
 					id="seat3" 
 					name="seat3"
 					seatId="3" 
-					left="300"/>
+					left="300"
+					visible="false"/>
 				
 				<component:CSeat 
 					id="seat4" 
 					seatId="4" 
 					name="seat4"
-					left="450"/>
+					left="450"
+					visible="false"/>
 				
 				<component:CSeat 
 					id="seat5" 
 					seatId="5" 
 					name="seat5"
 					left="600"
-					/>
+					visible="false"/>
 					
 				<component:CSeat 
 					id="seat6" 
 					seatId="6" 
 					name="seat6"
 					left="0" 
-					top="200" />
+					top="200" 
+					visible="false"/>
 					
 				<component:CSeat 
 					id="seat7" 
 					seatId="7" 
 					name="seat7"
 					left="150"
-					top="200"/>
+					top="200"
+					visible="false"/>
 					
 				<component:CSeat 
 					id="seat8" 
 					seatId="8" 
 					name="seat8"
 					left="300"
-					top="200"/>
+					top="200"
+					visible="false"/>
 					
 				<component:CSeat 
 					id="seat9" 
 					seatId="9" 
 					name="seat9"
 					left="450"
-					top="200"/>
+					top="200"
+					visible="false"/>
 					
 				<component:CSeat 
 					id="seat0" 
 					seatId="0" 
 					name="seat0"
 					left="600"
-					top="200"/>
+					top="200"
+					visible="false"/>
 			</mx:Canvas>
 			
 			<mx:HBox>
-				<mx:Button label="fold" />
+				<!--<mx:Button label="fold" />
 				<mx:Button label="check" />
 				<mx:Button label="call" />
-				<mx:Button label="raise" />
-				<mx:Button label="rebuy" click="table.buyIn()" />
-				<mx:Button label="sit out" />
-				<mx:Button label="sit" />
+				<mx:Button label="sit out"  />
+				<mx:Button label="raise" /> -->
+				<mx:Button label="rebuy" click="Buyin()" />
+				<mx:Button label="sit" click="table.sit()"/>
 				<mx:Button label="exit"  click="table.quit()"/>
 			</mx:HBox>
 	</mx:VBox>		

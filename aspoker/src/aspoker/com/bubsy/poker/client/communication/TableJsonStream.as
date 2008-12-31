@@ -19,6 +19,7 @@
 
 package aspoker.com.bubsy.poker.client.communication
 {
+import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
 
 import com.adobe.serialization.json.JSON;
@@ -80,6 +81,16 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
+            case LoginEvent.onPacketAuthRequest:
+            {
+                dispatchEvent(
+                    new LoginEvent(
+                        LoginEvent.onPacketAuthRequest
+                    )
+                );
+                break;
+            }
+
             case TableEvent.onPacketPokerPlayerStats:
             {
                 dispatchEvent(
@@ -104,6 +115,7 @@ public class TableJsonStream extends JsonStream
 
             case TableEvent.onPacketPokerBuyInLimits:
             {
+                trace(JSON.encode(pokerPacket))
                 dispatchEvent(
                     new TableEvent(
                     TableEvent.onPacketPokerBuyInLimits,
@@ -157,6 +169,17 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
+            case TableEvent.onPacketPokerSitOut:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerSitOut,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
             case TableEvent.onPacketPokerPlayerLeave:
             {
                 dispatchEvent(
@@ -168,9 +191,22 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
+            case TableEvent.onPacketPokerSit:
+            {
+                trace(JSON.encode(pokerPacket));
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerSit,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
             default:
             {
                 trace("unknown packet:" + pokerPacket.type);
+                trace(JSON.encode(pokerPacket));
             }
         }
     }
@@ -188,7 +224,7 @@ public class TableJsonStream extends JsonStream
     {
         var packetPokerSit:Object = {};
         packetPokerSit.type = "PacketPokerSit",
-        packetPokerSit.game_id =gameid;
+        packetPokerSit.game_id = gameid;
         packetPokerSit.serial = userSerial;
         sendREST(packetPokerSit);
     }
@@ -197,7 +233,7 @@ public class TableJsonStream extends JsonStream
     {
         var packetPokerSitOut:Object = {};
         packetPokerSitOut.type = "PacketPokerSitOut",
-        packetPokerSitOut.game_id =gameid;
+        packetPokerSitOut.game_id = gameid;
         packetPokerSitOut.serial = userSerial;
         sendREST(packetPokerSitOut);
     }
@@ -229,11 +265,11 @@ public class TableJsonStream extends JsonStream
         sendREST(packetPacketPokerTableQuit);
     }
 
-    public function buyIn(gameid:int,userSerial:int):void
+    public function buyIn(gameid:int,userSerial:int,amount:Number):void
     {
         var packetPokerBuyIn:Object = {};
         packetPokerBuyIn.type = "PacketPokerBuyIn";
-        packetPokerBuyIn.amount = 200000;
+        packetPokerBuyIn.amount = amount;
         packetPokerBuyIn.game_id = gameid;
         packetPokerBuyIn.serial = userSerial;
         sendREST(packetPokerBuyIn);
