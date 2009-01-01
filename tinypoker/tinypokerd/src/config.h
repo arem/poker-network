@@ -20,6 +20,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#include <confuse.h>
 #include <tinypoker.h>
 
 char *setuid_name;
@@ -65,9 +66,34 @@ char *x509_key;
 #define DEFAULT_X509_KEY "/etc/tinypokerd/key.pem"
 
 /**
+ * Protocol logging flag. When true, protocol messages are written to protocol_log_file.
+ */
+cfg_bool_t protocol_log_enabled;
+
+/**
+ * The default setting for the protocol logging flag (false).
+ */
+#define DEFAULT_PROTOCOL_LOG_ENABLED cfg_false
+
+/**
+ * Protocol log file location
+ */
+char *protocol_log_file;
+
+/**
+ * The default protocol log file location.
+ */
+#define DEFAULT_PROTOCOL_LOG_FILE "/var/log/tinypokerd/protocol.log"
+
+/**
  * The type of game we're playing (holdem, draw, stud)
  */
 enum game_type game_type;
+
+/**
+ * The default value for game_type (Texas Holdem).
+ */
+#define DEFAULT_GAME_TYPE HOLDEM
 
 /**
  * The path to the configuration file.

@@ -71,6 +71,13 @@ void config_free(void)
 		x509_key = NULL;
 	}
 
+	protocol_log_enabled = cfg_false;
+
+	if (protocol_log_file) {
+		free(protocol_log_file);
+		protocol_log_file = NULL;
+	}
+
 	game_type = UNSPECIFIED;
 }
 
@@ -80,8 +87,12 @@ void config_free(void)
  */
 static void config_with_defaults(void)
 {
+	if (protocol_log_enabled != cfg_false && protocol_log_enabled != cfg_true) {
+		protocol_log_enabled = DEFAULT_PROTOCOL_LOG_ENABLED;
+	}
+
 	if (game_type == UNSPECIFIED) {
-		game_type = HOLDEM;
+		game_type = DEFAULT_GAME_TYPE;
 	}
 
 	if (setuid_name == NULL) {
@@ -107,6 +118,10 @@ static void config_with_defaults(void)
 	if (x509_key == NULL) {
 		x509_key = strdup(DEFAULT_X509_KEY);
 	}
+
+	if (protocol_log_file == NULL) {
+		protocol_log_file = strdup(DEFAULT_PROTOCOL_LOG_FILE);
+	}
 }
 
 /**
@@ -126,13 +141,15 @@ void config_parse(void)
 		CFG_SIMPLE_STR("x509_crl", &x509_crl),
 		CFG_SIMPLE_STR("x509_cert", &x509_cert),
 		CFG_SIMPLE_STR("x509_key", &x509_key),
+		CFG_SIMPLE_BOOL("protocol_log_enabled", &protocol_log_enabled),
+		CFG_SIMPLE_STR("protocol_log_file", &protocol_log_file),
 		CFG_SIMPLE_INT("game_type", &game_type),
 		CFG_END()
 	};
 
 	cfg = NULL;
 
-	/* daemon_log(LOG_INFO, "[CONF] parsing config file"); */
+	daemon_log(LOG_DEBUG, "[CONF] parsing config file");
 
 	cfg = cfg_init(opts, 0);
 	if (!cfg) {
@@ -171,6 +188,14 @@ void config_parse(void)
 
 	if (x509_key == NULL) {
 		daemon_log(LOG_ERR, "[CONF] x509_key not present in config file, defaulting to '%s'", DEFAULT_X509_KEY);
+	}
+
+	if (protocol_log_enabled != cfg_false && protocol_log_enabled != cfg_true) {
+		daemon_log(LOG_ERR, "[CONF] rotocol_log_enabled not present in config file, defaulting to 'false'");
+	}
+
+	if (protocol_log_file == NULL) {
+		daemon_log(LOG_ERR, "[CONF] protocol_log_file not present in config file, defaulting to '%s'", DEFAULT_PROTOCOL_LOG_FILE);
 	}
 
 	if (game_type < 0 || game_type > 3) {

@@ -33,6 +33,10 @@
  */
 int exit_now;
 
+/*
+ * TODO: handle_sighup
+ */
+
 /**
  * Signal handler for SIGKILL
  * @param sig signal to handle.
@@ -42,7 +46,7 @@ void handle_sigkill(int sig)
 	if (sig == SIGKILL) {
 		raise(SIGUSR2);
 		exit_now = 1;
-		/* daemon_log(LOG_INFO, "[SIGN] SIGKILL Caught ; preparing to exit"); */
+		daemon_log(LOG_DEBUG, "[SIGN] SIGKILL Caught ; preparing to exit");
 	}
 }
 
@@ -55,7 +59,7 @@ void handle_sigquit(int sig)
 	if (sig == SIGQUIT) {
 		raise(SIGUSR2);
 		exit_now = 1;
-		/* daemon_log(LOG_INFO, "[SIGN] SIGQUIT Caught ; preparing to exit"); */
+		daemon_log(LOG_DEBUG, "[SIGN] SIGQUIT Caught ; preparing to exit");
 	}
 }
 
@@ -68,7 +72,7 @@ void handle_sigint(int sig)
 	if (sig == SIGINT) {
 		raise(SIGUSR2);
 		exit_now = 1;
-		/* daemon_log(LOG_INFO, "[SIGN] SIGINT Caught ; preparing to exit"); */
+		daemon_log(LOG_DEBUG, "[SIGN] SIGINT Caught ; preparing to exit");
 	}
 }
 

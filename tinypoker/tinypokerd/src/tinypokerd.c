@@ -36,6 +36,7 @@
 
 #include <unistd.h>
 
+#include "log.h"
 #include "config.h"
 #include "monitor.h"
 #include "pokerserv.h"
@@ -362,44 +363,51 @@ int main(int argc, char *argv[], char *envp[])
 		return 1;
 	}
 
-	/*
-	   daemon_log(LOG_INFO, "[MAIN] configuration set");
-	   daemon_log(LOG_INFO, "[MAIN] setuid => '%s'", setuid_name);
-	   daemon_log(LOG_INFO, "[MAIN] setgid => '%s'", setgid_name);
-	   daemon_log(LOG_INFO, "[MAIN] x509_ca => '%s'", x509_ca);
-	   daemon_log(LOG_INFO, "[MAIN] x509_crl => '%s'", x509_crl);
-	   daemon_log(LOG_INFO, "[MAIN] x509_cert => '%s'", x509_cert);
-	   daemon_log(LOG_INFO, "[MAIN] x509_key => '%s'", x509_key);
-	 */
+	daemon_log(LOG_DEBUG, "[MAIN] configuration set");
+	daemon_log(LOG_DEBUG, "[MAIN] setuid => '%s'", setuid_name);
+	daemon_log(LOG_DEBUG, "[MAIN] setgid => '%s'", setgid_name);
+	daemon_log(LOG_DEBUG, "[MAIN] x509_ca => '%s'", x509_ca);
+	daemon_log(LOG_DEBUG, "[MAIN] x509_crl => '%s'", x509_crl);
+	daemon_log(LOG_DEBUG, "[MAIN] x509_cert => '%s'", x509_cert);
+	daemon_log(LOG_DEBUG, "[MAIN] x509_key => '%s'", x509_key);
+	daemon_log(LOG_DEBUG, "[MAIN] protocol_log_file => '%s'", protocol_log_file);
 
-	/* setup tiny poker */
+	/* setup libtinypoker */
 	ipp_init();
 
-	/* daemon_log(LOG_INFO, "[MAIN] libtinypoker initialized"); */
+	daemon_log(LOG_DEBUG, "[MAIN] libtinypoker initialized");
 
 	/* Install Signal Handlers */
 	install_signal_handlers();
-	/* daemon_log(LOG_INFO, "[MAIN] signal handlers set"); */
+	daemon_log(LOG_DEBUG, "[MAIN] signal handlers set");
 
 	/* this must run before any threads are created */
 	monitor_init();
-	/* daemon_log(LOG_INFO, "[MAIN] monitor set"); */
+	daemon_log(LOG_DEBUG, "[MAIN] monitor set");
+
+	/* configure protocol logger - call this even when protocol logging is disabled */
+	protocol_logger_init();
+	daemon_log(LOG_DEBUG, "[MAIN] protocol logger opened");
 
 	/* Play some poker until we get a SIGINT, SIGQUIT, or SIGKILL */
 	pokerserv();
-	/* daemon_log(LOG_INFO, "[MAIN] shutting down"); */
+	daemon_log(LOG_DEBUG, "[MAIN] shutting down");
 
 	monitor_wait();		/* thread cleanup */
-	/* daemon_log(LOG_INFO, "[MAIN] threads all cleaned up"); */
+	daemon_log(LOG_DEBUG, "[MAIN] threads all cleaned up");
+
+	/* clean up protocol logger - call this even when protocol logging is disabled */
+	protocol_logger_exit();
+	daemon_log(LOG_DEBUG, "[MAIN] protocol logger closed");
 
 	ipp_exit();
-	/* daemon_log(LOG_INFO, "[MAIN] libtinypoker cleared"); */
+	daemon_log(LOG_DEBUG, "[MAIN] libtinypoker cleared");
 
 	config_free();
-	/* daemon_log(LOG_INFO, "[MAIN] config cleared"); */
+	daemon_log(LOG_DEBUG, "[MAIN] config cleared");
 
 	daemon_pid_file_remove();
-	/* daemon_log(LOG_INFO, "[MAIN] Exiting..."); */
+	daemon_log(LOG_DEBUG, "[MAIN] Exiting...");
 
 	return 0;
 }

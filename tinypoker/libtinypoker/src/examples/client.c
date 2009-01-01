@@ -34,7 +34,7 @@ int main(int argc, char **argv, char **envp)
 	ipp_socket *sock;
 	ipp_init();
 
-	sock = ipp_client_handshake("localhost", "ca.pem", "TEST", "ABC123", "500", logger);
+	sock = ipp_client_handshake("localhost", "ca.pem", "JSMITH", "ABC123", "500", logger);
 	if (sock) {
 		printf("- HANDSHAKE OK\n");
 		ipp_disconnect(sock);

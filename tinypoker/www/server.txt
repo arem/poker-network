@@ -49,6 +49,55 @@ Build and Install tinypokerd
  # make install
 --------------------------------------
 
+Add a tinypokerd User and Group
+-------------------------------
+
+*tinypokerd* needs root privileges to do some setup when it first starts up,
+and as soon as it's done, *tinypokerd* drops root privileges. A user must
+exist for *tinypokerd* to run as after it drops root privileges. In the example
+below we create that user and set the shell to 'nologin'.
+
+------------------------------------------
+ # useradd tinypokerd
+ # chsh tinypokerd
+	Login Shell [/bin/sh]: /bin/nologin
+------------------------------------------
+
+You can pick a different username and group if you wish. Both are 
+configurable via 'tinypokerd.conf'.
+
+Create a directory for configuration Data
+-----------------------------------------
+
+The certificate files and configuration file are stored in 
+'/etc/tinypokerd' by default. You can use an alternate location by 
+invoking *tinypokerd* with a command line argument (see the bottom of 
+this document for details).
+
+------------------------------------------
+ # mkdir /etc/tinypokerd
+ # chown tinypokerd:tinypokerd /etc/tinypokerd
+ # chmod 700 /etc/tinypokerd
+------------------------------------------
+
+Create a directory for protocol Logs (Optional)
+-----------------------------------------------
+
+The server provides the option to log all protocol messages sent and received.
+This could be useful for statistics or research. The feature is disabled by
+default since it eats up disk space and may make the server slightly slower.
+It can be enabled via 'tinypokerd.conf'. If enabled, a directory is needed to
+store the log.
+
+------------------------------------------
+ # mkdir /var/log/tinypokerd
+ # chown tinypokerd:tinypokerd /var/log/tinypokerd
+ # chmod 700 /var/log/tinypokerd
+------------------------------------------
+
+Note, regular log messages generally will not show up in this directory.
+They are sent directly to syslog.
+
 Generate X.509 Certificates
 ---------------------------
 
@@ -64,7 +113,8 @@ obtain a certificate from a trusted certificate authority or you can create your
 certificate authority and sign your own certificates. The example below
 demonstrates how to create your own certificate authority and sign your
 own certificates using the *certtool* program that comes with
-http://www.gnu.org/software/gnutls/[GNU TLS].
+http://www.gnu.org/software/gnutls/[GNU TLS]. The package in
+http://www.gnewsense.org/[gNewSense] is *gnutls-bin*.
 
 .ca.tmpl
 --------------------------------
@@ -97,21 +147,20 @@ Once you have the certificate files generated, you should copy them to
 the '/etc/tinypokerd/' directory. In that directory, you will also need
 to create an empty file named 'crl.pem'.
 
-Add a tinypokerd User and Group
--------------------------------
-
-*tinypokerd* needs root privileges to do some setup when it first starts up,
-and as soon as it's done, *tinypokerd* drops root privileges. A user must
-exist for *tinypokerd* to run as after it drops root privileges. In the example
-below we create that user and set the shell to 'nologin'.
-
 ------------------------------------------
- # useradd tinypokerd
- # chsh tinypokerd
-	Login Shell [/bin/sh]: /bin/nologin
+ # cp ca.pem /etc/tinypokerd/ca.pem
+ # chmod 400 /etc/tinypokerd/ca.pem
+ # chown tinypokerd:tinypokerd /etc/tinypokerd/ca.pem
+ # cp cert.pem /etc/tinypokerd/cert.pem
+ # chmod 400 /etc/tinypokerd/cert.pem
+ # chown tinypokerd:tinypokerd /etc/tinypokerd/cert.pem
+ # cp key.pem /etc/tinypokerd/key.pem
+ # chmod 400 /etc/tinypokerd/key.pem
+ # chown tinypokerd:tinypokerd /etc/tinypokerd/key.pem
+ # touch /etc/tinypokerd/crl.pem
+ # chown 400 /etc/tinypokerd/crl.pem
+ # chown tinypokerd:tinypokerd /etc/tinypokerd/crl.pem
 ------------------------------------------
-
-You can pick a different username and group if you wish. Both are configurable.
 
 Create a run Directory
 ----------------------
@@ -132,16 +181,26 @@ Configure PAM
 *tinypokerd* uses http://www.kernel.org/pub/linux/libs/pam/[Pluggable Authentication Modules for Linux]
 to handle user authentication. This provides an integrated and extremely configurable authentication
 system. It allows *tinypokerd* to authenticate players against any PAM supported authentication system
-(example: LDAP server, system accounts, a simple password file or something else).
+(example: LDAP server, system accounts, a simple password file, or something else).
 
 In this example we only show how to setup a simple password file. Read more about PAM to find out how
-to configure something more fancy. The first thing to do is to create a *tinypoker* file. See the example
+to configure something more fancy. Be sure that you have the pwdfile PAM module installed. The package
+in http://www.gnewsense.org/[gNewSense] is *libpam-pwdfile*.
+
+The first thing to do is to create a *tinypoker* file. See the example
 below.
 
 ./etc/pam.d/tinypoker
 --------------------------------
 auth    required pam_pwdfile.so pwdfile /etc/tinypokerd/passwd
 account required pam_permit.so
+--------------------------------
+
+The permissions should be configured as shown below.
+
+--------------------------------
+ # chown root:root /etc/pam.d/tinypoker
+ # chmod 644 /etc/pam.d/tinypoker
 --------------------------------
 
 Next, we create the password file and add two users, *JDOE* and *JSMITH*. The *-c* option is only needed
@@ -222,6 +281,9 @@ x509_ca = /etc/tinypokerd/ca.pem
 x509_crl = /etc/tinypokerd/crl.pem
 x509_cert = /etc/tinypokerd/cert.pem
 x509_key = /etc/tinypokerd/key.pem
+
+protocol_log_enabled = true
+protocol_log_file = /var/log/tinypokerd/protocol.log
 
 # Texas Hold'em
 game_type = 1

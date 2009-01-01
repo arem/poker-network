@@ -64,9 +64,10 @@ extern "C" {
  */
 #define LIBTINYPOKER_PATCH_VERSION 0
 
-#define VERSION "0.1.0"
-
-#define LIBTINYPOKER_VERSION VERSION
+/**
+ * Version number as a string.
+ */
+#define LIBTINYPOKER_VERSION "0.1.0"
 
 /* TODO Support for Stud and Draw */
 #define HOLDEM_HOLE_CARDS 2

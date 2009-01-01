@@ -2,4 +2,4 @@ Each program has its own TODO file. This file lists general TODOs that
 don't fit into any of those files.
 
  - Develop a proxy server.
- - Develop a protocol logger and log analyzer (like webalizer, but for IPP).
+ - Develop XSLTs to output spiffy HTML pages from the protocol log files.

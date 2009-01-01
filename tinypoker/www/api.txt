@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 
 	ipp_init();
 
-	sock = ipp_client_handshake("localhost", "ca.pem", "TEST", "ABC123", "500", NULL);
+	sock = ipp_client_handshake("localhost", "ca.pem", "JSMITH", "ABC123", "500", NULL);
 	if (!sock) {
 		ipp_exit();
 		return 1;
@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
 
 	ipp_init();
 
-	sock = ipp_client_handshake("localhost", "ca.pem", "TEST", "ABC123", "500", protocol_logger);
+	sock = ipp_client_handshake("localhost", "ca.pem", "JSMITH", "ABC123", "500", protocol_logger);
 	if (!sock) {
 		ipp_exit();
 		return 1;

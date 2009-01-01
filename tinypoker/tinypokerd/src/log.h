@@ -21,9 +21,26 @@
 #define __LOG_H
 
 /**
+ * XML Date Format
+ */
+#define ISO8601_FORMAT "%Y-%m-%dT%H:%M:%S"
+
+/**
  * Logs internet poker protocol messages.
  * @param msg the message to log.
  */
 void protocol_logger(char *msg);
+
+/**
+ */
+char *protocol_logger_timestamp(void);
+
+/**
+ */
+void protocol_logger_init(void);
+
+/**
+ */
+void protocol_logger_exit(void);
 
 #endif

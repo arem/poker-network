@@ -8,6 +8,7 @@ You need the following to build this library...
         gcc             http://gcc.gnu.org/
 	libtinypoker	http://tinypoker.org/
 	libpam		http://www.kernel.org/pub/linux/libs/pam/
+	libxml2		http://xmlsoft.org/
 
 Configure, compile, test, install...
 

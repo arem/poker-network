@@ -86,12 +86,12 @@ int pokerserv(void)
 		return -1;
 	}
 
-	/* daemon_log(LOG_INFO, "[SERV] Dealer Thread Started"); */
+	daemon_log(LOG_DEBUG, "[SERV] Dealer Thread Started");
 
 	/* Start listening for connections */
 	ipp_servloop(client_connect_callback, x509_ca, x509_crl, x509_cert, x509_key);
 
-	/* daemon_log(LOG_INFO, "[SERV] Server Loop Exited"); */
+	daemon_log(LOG_DEBUG, "[SERV] Server Loop Exited");
 
 	if (!exit_now) {
 		raise(SIGQUIT);

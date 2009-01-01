@@ -287,3 +287,7 @@ ADD_TEST(testBestCombination testBestCombination)
 ADD_EXECUTABLE(testEnumerateAllHands testEnumerateAllHands.c)
 TARGET_LINK_LIBRARIES(testEnumerateAllHands tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSLCBLAS} ${LIBGSL})
 ADD_TEST(testEnumerateAllHands testEnumerateAllHands)
+
+ADD_EXECUTABLE(testVersion testVersion.c)
+TARGET_LINK_LIBRARIES(testVersion tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSLCBLAS} ${LIBGSL})
+ADD_TEST(testVersion testVersion)
