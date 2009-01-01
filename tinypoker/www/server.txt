@@ -1,5 +1,5 @@
 // TinyPoker.org
-// Copyright (C) 2007, 2008 Thomas Cort
+// Copyright (C) 2007, 2008, 2009 Thomas Cort
 //
 // Permission is granted to copy, distribute and/or modify this document
 // under the terms of the GNU Free Documentation License, Version 1.2 or

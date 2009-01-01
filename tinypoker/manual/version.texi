@@ -1,4 +1,4 @@
-@c Copyright (C) 2008 Thomas Cort
+@c Copyright (C) 2008, 2009 Thomas Cort
 @c
 @c Permission is granted to copy, distribute and/or modify this document
 @c under the terms of the GNU Free Documentation License, Version 1.2
@@ -7,6 +7,6 @@
 @c Texts.  A copy of the license is included in the section entitled "GNU
 @c Free Documentation License".
 @c
-@set UPDATED 19 April 2008
+@set UPDATED 1 January 2009
 @set EDITION 0.1.0
 @set VERSION 0.1.0

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <linuxgeek@gmail.com>
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
  * 
  * This file is part of tinypokerbot.
  * 
@@ -44,7 +44,7 @@ void display_help(char *program)
 void display_version(void)
 {
 	daemon_log(LOG_INFO, "%s v%s", PROGRAM, VERSION);
-	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008 Thomas Cort <linuxgeek@gmail.com>");
+	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>");
 	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
 	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 }
