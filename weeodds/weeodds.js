@@ -240,6 +240,7 @@ var odds_calculator = new Class({
 		if($type(el)!='array'){
 			el = new Array(el);
 		}
+
 		el.each(function(card){
 			card_size = 'card_small';
 			if(card.hasClass('card_big')){
@@ -250,7 +251,11 @@ var odds_calculator = new Class({
 				card.addClass('card_'+card_value);
 			}
 			card.addClass(card_size + ' updatable');
-			card.setProperty("title", card_value);
+			if (card_value == "back") {
+				card.removeProperty("title");
+			} else {
+				card.setProperty("title", card_value);
+			}
 		});
 	},
 	
