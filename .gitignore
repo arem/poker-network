@@ -178,6 +178,7 @@ poker-network/tests/test-pokersite.py
 poker-network/tests/test-pokertable.py
 poker-network/tests/test-protocol.py
 poker-network/tests/test-proxyfilter.py
+poker-network/tests/test-tourneytablebalance.py
 poker-network/tests/test-pygame.py
 poker-network/tests/test-quit.py
 poker-network/tests/test-servercrash.py
