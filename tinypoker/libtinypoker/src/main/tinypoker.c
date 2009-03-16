@@ -1804,10 +1804,9 @@ ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 {
 	/* TODO: support for draw and stud */
 	int N = HOLDEM_HOLE_CARDS + HOLDEM_BOARD_CARDS, R = HOLDEM_BOARD_CARDS;
-	gsl_sf_result gslresult;
-	int i, j = gsl_sf_choose_e(N, R, &gslresult);
-	int ncombinations = (int) gslresult.val;
-	ipp_message *combinations[ncombinations];
+	int i, j;
+	int ncombinations = 21;
+	ipp_message *combinations[21];
 	ipp_card *cards[N], *toeval[R];
 	gsl_combination *c;
 	size_t *cdata;
