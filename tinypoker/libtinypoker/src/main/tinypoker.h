@@ -1067,6 +1067,12 @@ extern "C" {
  */
 	ipp_message *ipp_best_combination(ipp_table * table, int playerid);
 
+/**
+ * Ranks players based on their best hand.
+ * @param table a table in the SHOWDOWN stage.
+ * @return a list of playerid's sorted by 1st place, 2nd place, etc. Don't forget to free the result.
+ */
+	int *ipp_rank_players(ipp_table * table);
 
 /**
  * Comparitor for qsort and other similar sorting functions.

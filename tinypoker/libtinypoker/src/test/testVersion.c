@@ -41,12 +41,12 @@ int main()
 	len = strlen(LIBTINYPOKER_VERSION);
 
 	version_expected = (char *) malloc(sizeof(char) * (len + 1));
-	assertNotNull("malloc failed", version_expected);	
+	assertNotNull("malloc failed", version_expected);
 	memset(version_expected, '\0', sizeof(char) * (len + 1));
 	memcpy(version_expected, LIBTINYPOKER_VERSION, len);
 
 	version_actual = (char *) malloc(sizeof(char) * (len + 2));
-	assertNotNull("malloc failed", version_actual);	
+	assertNotNull("malloc failed", version_actual);
 	memset(version_actual, '\0', sizeof(char) * (len + 2));
 	snprintf(version_actual, len + 1, "%d.%d.%d", major, minor, patch);
 

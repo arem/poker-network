@@ -1,7 +1,3 @@
  * man pages
  * programming guide
- * hand ranking (i.e. which player wins?)
-   - call ipp_best_combination for each player
-     + if feeling lucky, use threads and compute best hand in parallel
-   - use qsort, ipp_hand_compar, and some new code to determine the ranking.
  * stud and draw

@@ -355,6 +355,27 @@ int main()
 
 /* =-=-=-=-=-= */
 
+	hand[0] = _9s;
+	hand[1] = Ad;
+	hand[2] = _7s;
+	hand[3] = Ts;
+	hand[4] = As;
+
+	msga = ipp_eval(hand);
+	assertNotNull("ipp_eval() returned null", msga);
+	assertStringEqual("Didn't detect proper hand.", "ONEPAIR A T 9 7", msga->payload);
+	assertEqual("Didn't detect proper hand.", msga->type, MSG_ONEPAIR);
+	assertEqual("Didn't detect proper hand.", ipp_validate_unknown_msg(msga->payload), MSG_ONEPAIR);
+
+	assertEqual("msga should beat NULL", 1, ipp_hand_compar(msga, NULL));
+	assertEqual("msga should beat NULL", -1, ipp_hand_compar(NULL, msga));
+	assertEqual("msga should equal msga", 0, ipp_hand_compar(msga, msga));
+	assertEqual("NULL should equal NULL", 0, ipp_hand_compar(NULL, NULL));
+
+	ipp_free_message(msga);
+
+/* =-=-=-=-=-= */
+
 	ipp_free_card(_6s);
 	ipp_free_card(_7s);
 	ipp_free_card(_9s);

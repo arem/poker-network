@@ -758,6 +758,7 @@ int ipp_add_player(ipp_table * table, ipp_player * player)
 	for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
 		if (table->players[i] == NULL) {
 			table->players[i] = player;
+			table->players[i]->still_in = 1;
 			table->nplayers++;
 			added = 1;
 			break;
@@ -1872,6 +1873,102 @@ ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 	return combinations[ncombinations - 1];
 }
 
+typedef struct __ipp_combination {
+	int playerid;
+	ipp_message *hand;
+} __ipp_combination;
+
+/**
+ * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
+ * Comparator for qsort and other similar sorting functions.
+ * @param ipp_combination_a an ipp_combination pointer.
+ * @param ipp_combination_b an ipp_combination pointer.
+ * @return integer less than, equal to, or greater than zero if
+ *         the first argument is considered to be respectively
+ *         less than, equal to, or greater than the second.
+ *         Failures also return zero.
+ */
+int __ipp_combination_compar(const void *a, const void *b)
+{
+
+	__ipp_combination *x = (__ipp_combination *) a;
+	__ipp_combination *y = (__ipp_combination *) b;
+
+	if (x == y) {
+		return 0;
+	}
+
+	/* allow a list containing NULLs to be sorted */
+	if (x == NULL && y != NULL) {
+		return 1;
+	} else if (x != NULL && y == NULL) {
+		return -1;
+	}
+
+	if (x->hand == NULL && y->hand != NULL) {
+		return 1;
+	} else if (x->hand != NULL && y->hand == NULL) {
+		return -1;
+	}
+
+	return -ipp_hand_compar(x->hand, y->hand);
+}
+
+/**
+ * Ranks players based on their best hand.
+ * @param table a table in the SHOWDOWN stage.
+ * @return a list of playerid's sorted by 1st place, 2nd place, etc. Don't forget to free the result.
+ */
+int *ipp_rank_players(ipp_table * table)
+{
+	int i;
+	int *result;
+
+	__ipp_combination combinations[HOLDEM_PLAYERS_PER_TABLE];
+
+	/* TODO support for stud and draw */
+
+	result = NULL;
+	memset(combinations, '\0', sizeof(__ipp_combination) * HOLDEM_PLAYERS_PER_TABLE);
+
+	if (table == NULL || table->stage != SHOWDOWN) {
+		return NULL;
+	}
+
+
+	result = (int *) malloc(sizeof(int) * HOLDEM_PLAYERS_PER_TABLE);
+	if (result == NULL) {
+		return NULL;
+	}
+
+	for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
+		result[i] = -1;
+		combinations[i].playerid = i;
+		if (table->players[i] != NULL && table->players[i]->still_in) {
+			combinations[i].hand = ipp_best_combination(table, i);
+		} else {
+			combinations[i].hand = NULL;
+		}
+	}
+
+	qsort(combinations, HOLDEM_PLAYERS_PER_TABLE, sizeof(__ipp_combination), __ipp_combination_compar);
+
+	for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
+		if (combinations[i].hand != NULL) {
+			ipp_free_message(combinations[i].hand);
+			combinations[i].hand = NULL;
+		}
+	}
+
+	for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
+		result[i] = combinations[i].playerid;
+	}
+
+	/* TODO consider maybe storing the place in the ipp_table structure */
+
+	return result;
+}
+
 /**
  * Comparator for qsort and other similar sorting functions.
  * @param ipp_message_a an ipp_message pointer.
@@ -1890,6 +1987,13 @@ int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b)
 
 	if (!ipp_initialized) {
 		ipp_init();
+	}
+
+	/* allow a list containing NULLs to be sorted */
+	if (x == NULL && y != NULL) {
+		return -1;
+	} else if (x != NULL && y == NULL) {
+		return 1;
 	}
 
 	/* safety check -- our paranoid checks propbably impact performance */
