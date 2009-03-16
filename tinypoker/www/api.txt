@@ -207,6 +207,9 @@ int main(int argc, char *argv[]) {
 }
 ------------------------------------------
 
+*tinypokerd* includes its own protocol logger which writes the messages 
+to an XML file using *libxml2*.
+
 To be continued
 ---------------
 

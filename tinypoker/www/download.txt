@@ -23,12 +23,13 @@ The underlying code is designed to gracefully handle network problems
 such as unexpected disconnections and bad input. IPP message validation,
 normalization and parsing functions are available to developers as are
 several predefined types for representing poker games, players and cards.
+Functions for evaluating hands and determining the winner(s) are also provided.
 *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
 http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://www.gnu.org/software/gnutls/[GNU Transport Layer Security] and
 http://www.gnu.org/software/gsl/[GNU Scientific Library].
 
- * http://tinypoker.org/code/libtinypoker-20080413.tar.bz2[libtinypoker-20080413.tar.bz2] (April 13, 2008)
+ * http://tinypoker.org/code/libtinypoker-0.1.0.tar.gz[libtinypoker-0.1.0.tar.gz] (March 15, 2009)
  * http://tinypoker.org/code/libtinypoker-0.0.0.tar.gz[libtinypoker-0.0.0.tar.gz] (April 1, 2008)
 
 tinypokerd

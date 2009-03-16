@@ -31,15 +31,14 @@ is February 1, 2009.
 News
 ----
 
-April 13, 2008 - libtinypoker 20080413 Snapshot Available
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A development snapshot of *libtinypoker* is now available                         
+March 15, 2009 - libtinypoker 0.1.0 Released
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The second release of *libtinypoker* is now available
 in the http://tinypoker.org/download.html[downloads] section.
-The snapshot was created so that interested developers could follow the new
-http://tinypoker.org/api.html[tutorial] without having to do a checkout from
-http://tinypoker.org/subversion.html[subversion]. Within the next few weeks
-the hand evaluator and ranking features should be complete enough for a formal
-release. As always, *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software]
+This release improves upon the prior release by providing
+functions for evaluating hands and determining the winner(s).
+*libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software]
 and is licensed under the terms of the
 http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
 
