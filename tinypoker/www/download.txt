@@ -2,7 +2,7 @@
 // Copyright (C) 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
 //
 // Permission is granted to copy, distribute and/or modify this document
-// under the terms of the GNU Free Documentation License, Version 1.2 or
+// under the terms of the GNU Free Documentation License, Version 1.3 or
 // any later version published by the Free Software Foundation; with no
 // Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
 // copy of the license is included in the section entitled "GNU Free
@@ -25,18 +25,18 @@ normalization and parsing functions are available to developers as are
 several predefined types for representing poker games, players and cards.
 Functions for evaluating hands and determining the winner(s) are also provided.
 *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
-http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+link:gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://www.gnu.org/software/gnutls/[GNU Transport Layer Security] and
 http://www.gnu.org/software/gsl/[GNU Scientific Library].
 
- * http://tinypoker.org/code/libtinypoker-0.1.0.tar.gz[libtinypoker-0.1.0.tar.gz] (March 15, 2009)
- * http://tinypoker.org/code/libtinypoker-0.0.0.tar.gz[libtinypoker-0.0.0.tar.gz] (April 1, 2008)
+ * link:code/libtinypoker-0.1.0.tar.gz[libtinypoker-0.1.0.tar.gz] (March 15, 2009)
+ * link:code/libtinypoker-0.0.0.tar.gz[libtinypoker-0.0.0.tar.gz] (April 1, 2008)
 
 tinypokerd
 ----------
 
 *tinypokerd* is a small poker server. It is free software and is licensed under the 
-terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse],
 http://www.kernel.org/pub/linux/libs/pam/[libpam] and
 http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
@@ -47,7 +47,7 @@ tinypokerclient
 ---------------
 
 *tinypokerclient* is a graphical *tinypokerd* client. It free software and is licensed under the
-terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker] and
 http://www.wxwidgets.org/[wxWidgets].
 
@@ -59,7 +59,7 @@ tinypokerbot
 *tinypokerbot* is a trivial client for *tinypokerd*. It will connect to 
 a server, join a game, and fold every hand. It is intended
 to be a base for building a poker bot. It free software and is licensed under the
-terms of the http://tinypoker.org/gpl-3.html[GNU General Public License version 3 or Later].
+terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker],
 http://www.gnu.org/software/libc/[libdl] and
 http://www.gnu.org/software/binutils/[libbfd].
@@ -79,6 +79,6 @@ with the link below. Some scripts for transforming the transparent
 copy into the opaque copy with the *asciidoc* program are also
 included. The *asciidoc* program is free software. The website
 and its scripts are licensed under the terms of the
-http://tinypoker.org/gfdl-1.2.html[GNU Free Documentation License version 1.2 or Later].
+link:gfdl-1.3.html[GNU Free Documentation License version 1.3 or Later].
 
- * http://tinypoker.org/tinypoker.org.tar.gz[Full Transparent Copy and Scripts] (Last Published: {localdate} {localtime})
+ * link:tinypoker.org.tar.gz[Full Transparent Copy and Scripts] (Last Published: {localdate} {localtime})
