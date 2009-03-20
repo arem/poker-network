@@ -29,9 +29,19 @@ extern "C" {
 #include <string.h>
 #include <gnutls/gnutls.h>
 #include <gnutls/x509.h>
-#include <netinet/in.h>
 #include <sys/types.h>
+
+#ifdef WIN32
+
+	typedef int socklen_t;
+
+#else
+
+#include <netinet/in.h>
 #include <pthread.h>
+	typedef int SOCKET;
+
+#endif
 
 #ifndef TRUE
 #define TRUE (1)
@@ -57,17 +67,17 @@ extern "C" {
 /**
  * Minor version number.
  */
-#define LIBTINYPOKER_MINOR_VERSION 1
+#define LIBTINYPOKER_MINOR_VERSION 2
 
 /**
  * Patch version number.
  */
-#define LIBTINYPOKER_PATCH_VERSION 1
+#define LIBTINYPOKER_PATCH_VERSION 0
 
 /**
  * Version number as a string.
  */
-#define LIBTINYPOKER_VERSION "0.1.1"
+#define LIBTINYPOKER_VERSION "0.2.0"
 
 /* TODO Support for Stud and Draw */
 #define HOLDEM_HOLE_CARDS 2
@@ -125,7 +135,7 @@ extern "C" {
  * Structure used to hold network communications information.
  */
 	typedef struct ipp_socket {
-		int sd;
+		SOCKET sd;
 		struct sockaddr_storage sockaddr;
 		socklen_t sockaddrlen;
 
@@ -194,7 +204,11 @@ extern "C" {
 		ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
 		ipp_card *board[HOLDEM_BOARD_CARDS];
 		ipp_deck *deck;
+#ifdef _WIN32
+		HANDLE lock;
+#else
 		pthread_mutex_t lock;
+#endif
 	} ipp_table;
 
 /**

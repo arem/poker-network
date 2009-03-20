@@ -7,7 +7,6 @@ You need the following to build this library...
         make            http://www.gnu.org/software/make/
         gcc             http://gcc.gnu.org/
 	gnutls		http://www.gnu.org/software/gnutls/
-	gsl		http://www.gnu.org/software/gsl/
 
 Configure, compile, test, install...
 
@@ -15,4 +14,9 @@ Configure, compile, test, install...
         $ make
 	$ make test
         # make install
+
+Cross Compile (GNU/Linux -> wine)
+	Note: this requires mingw32 cross compiler and gnutls DLLs
+
+	$ ./scripts/build-mingw32.sh
 

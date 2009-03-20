@@ -20,8 +20,6 @@
 #include "../main/tinypoker.h"
 #include "test.h"
 
-#include <gsl/gsl_combination.h>
-
 #define N (52)
 #define R (5)
 
@@ -31,63 +29,70 @@ int main()
 	int flush = 0, straight = 0, threeofakind = 0;
 	int twopair = 0, onepair = 0, highcard = 0;
 	int i;
-	size_t *cdata;
+	int a, b, c, d, e;
 	ipp_deck *deck;
 	ipp_card *cards[R];
 	ipp_message *msg;
-	gsl_combination *c;
 
 	ipp_init();
 	deck = ipp_new_deck();
 	assertNotNull("ipp_new_deck() failed", deck);
 
-	c = gsl_combination_calloc(N, R);
-	do {
-		cdata = gsl_combination_data(c);
-		for (i = 0; i < R; i++) {
-			cards[i] = deck->cards[cdata[i]];
+	for (a = 0; a < N - R + 1; a++) {
+		for (b = a + 1; b < N - R + 2; b++) {
+			for (c = b + 1; c < N - R + 3; c++) {
+				for (d = c + 1; d < N - R + 4; d++) {
+					for (e = d + 1; e < N - R + 5; e++) {
+
+						cards[0] = deck->cards[a];
+						cards[1] = deck->cards[b];
+						cards[2] = deck->cards[c];
+						cards[3] = deck->cards[d];
+						cards[4] = deck->cards[e];
+
+						msg = ipp_eval(cards);
+						assertNotNull("ipp_eval() really screwed up", msg);
+
+						switch (msg->type) {
+						case MSG_STRAIGHTFLUSH:
+							straightflush++;
+							break;
+						case MSG_FOUROFAKIND:
+							fourofakind++;
+							break;
+						case MSG_FULLHOUSE:
+							fullhouse++;
+							break;
+						case MSG_FLUSH:
+							flush++;
+							break;
+						case MSG_STRAIGHT:
+							straight++;
+							break;
+						case MSG_THREEOFAKIND:
+							threeofakind++;
+							break;
+						case MSG_TWOPAIR:
+							twopair++;
+							break;
+						case MSG_ONEPAIR:
+							onepair++;
+							break;
+						case MSG_HIGHCARD:
+							highcard++;
+							break;
+						default:
+							assertNotNull("Unknown message type.", NULL);
+							break;
+						}
+
+						ipp_free_message(msg);
+
+					}
+				}
+			}
 		}
-
-		msg = ipp_eval(cards);
-		assertNotNull("ipp_eval() really screwed up", msg);
-
-		switch (msg->type) {
-		case MSG_STRAIGHTFLUSH:
-			straightflush++;
-			break;
-		case MSG_FOUROFAKIND:
-			fourofakind++;
-			break;
-		case MSG_FULLHOUSE:
-			fullhouse++;
-			break;
-		case MSG_FLUSH:
-			flush++;
-			break;
-		case MSG_STRAIGHT:
-			straight++;
-			break;
-		case MSG_THREEOFAKIND:
-			threeofakind++;
-			break;
-		case MSG_TWOPAIR:
-			twopair++;
-			break;
-		case MSG_ONEPAIR:
-			onepair++;
-			break;
-		case MSG_HIGHCARD:
-			highcard++;
-			break;
-		default:
-			assertNotNull("Unknown message type.", NULL);
-			break;
-		}
-
-		ipp_free_message(msg);
-	} while (gsl_combination_next(c) == GSL_SUCCESS);
-	gsl_combination_free(c);
-	c = NULL;
+	}
 
 	ipp_free_deck(deck);
 	deck = NULL;

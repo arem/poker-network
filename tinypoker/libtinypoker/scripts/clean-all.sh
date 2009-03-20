@@ -1,3 +1,4 @@
+#!/bin/sh
 # Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
 #
 # This file is part of libtinypoker.
@@ -6,7 +7,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # libtinypoker is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -15,21 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
+set -e
 
-PROJECT(libtinypoker C)
+if [ -f Makefile ]
+then
+	make clean
+fi
 
-INCLUDE(InstallRequiredSystemLibraries)
-
-# Version Information
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "2")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-SET(VERSION "${CPACK_PACKAGE_VERSION}")
-SET(SOVERSION "${CPACK_PACKAGE_VERSION}")
-
-INCLUDE(CTest)
-ENABLE_TESTING()
-
-ADD_SUBDIRECTORY(src)
+rm -rf Testing CMakeCache.txt DartConfiguration.tcl install_manifest.txt DartTestfile.txt Makefile cmake_install.cmake CMakeFiles
+rm -rf src/CMakeFiles src/Makefile src/cmake_install.cmake src/DartTestfile.txt
+rm -rf src/main/CMakeFiles src/main/cmake_install.cmake src/main/DartTestfile.txt src/main/Makefile
+rm -rf src/examples/CMakeFiles src/examples/cmake_install.cmake src/examples/DartTestfile.txt src/examples/Makefile
+rm -rf src/test/CMakeFiles src/test/cmake_install.cmake src/test/DartTestfile.txt src/test/Makefile

@@ -19,20 +19,38 @@
 
 #define _GNU_SOURCE
 
+#ifdef _WIN32
+
+#include <winsock2.h>
+#include <io.h>
+
+#define SHUT_RDWR SD_BOTH
+
+#else
+
+#include <netdb.h>
 #include <regex.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/poll.h>
+#include <sys/socket.h>
+
+#define closesocket(sd) close(sd)
+
+#endif
+
+#ifndef SOMAXCONN
+#define SOMAXCONN 5
+#endif
+
 #include <ctype.h>
 #include <fcntl.h>
-#include <netdb.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/poll.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -40,15 +58,74 @@
 #include <gnutls/x509.h>
 #include <gcrypt.h>
 
-#include <gsl/gsl_combination.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_sf_result.h>
-
 #include <errno.h>
-#include <pthread.h>
 
+#ifdef _WIN32
+#include <windows.h>
+
+static int gcry_mingw32_mutex_init(void **priv)
+{
+	if (!priv) {
+		return -1;
+	}
+
+	*priv = CreateMutex(0, FALSE, 0);
+	if (*priv == NULL) {
+		return -1;
+	}
+
+	return 0;
+}
+
+static int gcry_mingw32_mutex_destroy(void **lock)
+{
+	int rc;
+
+	rc = CloseHandle(*lock);
+	if (rc == 0) {
+		return -1;
+	} else {
+		*lock = NULL;
+		return 0;
+	}
+}
+
+static int gcry_mingw32_mutex_lock(void **lock)
+{
+	int rc;
+
+	rc = WaitForSingleObject(*lock, INFINITE);
+	if (rc == WAIT_FAILED) {
+		return -1;
+	} else {
+		return 0;
+	}
+}
+
+static int gcry_mingw32_mutex_unlock(void **lock)
+{
+	int rc;
+
+	rc = ReleaseMutex(*lock);
+	if (rc == 0) {
+		return -1;
+	} else {
+		return 0;
+	}
+}
+
+static struct gcry_thread_cbs gcry_threads_mingw32 = { GCRY_THREAD_OPTION_USER, NULL,
+	gcry_mingw32_mutex_init, gcry_mingw32_mutex_destroy,
+	gcry_mingw32_mutex_lock, gcry_mingw32_mutex_unlock,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
+
+#else
+
+#include <pthread.h>
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
+
+#endif
 
 #include <limits.h>
 #if (LLONG_MAX < 9223372036854775807ll)
@@ -131,12 +208,6 @@ static const long long ipp_eval_primes[] = {
 	IPP_EVAL_A		/* 16 */
 };
 
-
-/**
- * random number generator
- */
-static gsl_rng *rng = NULL;
-
 /**
  * Flag used to determine if ipp_init() has been called.
  * If this is false, then we call ipp_init() for the user.
@@ -148,23 +219,44 @@ static int ipp_initialized = FALSE;
  */
 void ipp_init(void)
 {
-	const gsl_rng_type *T;
-
+	/* TODO mutex around this whole function */
 	if (ipp_initialized) {
-		/* we already setup TLS and GSL */
+		/* we already setup GNU TLS */
 		return;
 	}
 
-	T = gsl_rng_ranlux;
-
 	/* GNU TLS */
+#ifdef _WIN32
+	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_mingw32);
+#else
 	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+#endif
 	gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
 	gnutls_global_init();
 
-	/* GNU Sci Lib */
-	gsl_rng_env_setup();
-	rng = gsl_rng_alloc(T);
+	/* Random Number Generator */
+	srand((int) getpid());
+
+#ifdef _WIN32
+	/* Winsock */
+	int rc;
+	WORD wVersionRequested = MAKEWORD(1, 1);
+	WSADATA wsaData;
+
+	memset(&(wsaData), '\0', sizeof(WSADATA));
+
+	rc = WSAStartup(wVersionRequested, &(wsaData));
+	if (rc == -1) {
+		gnutls_global_deinit();
+		return;
+	}
+
+	if (wsaData.wVersion != wVersionRequested) {
+		gnutls_global_deinit();
+		WSACleanup();
+		return;
+	}
+#endif
 
 	ipp_initialized = TRUE;
 }
@@ -178,16 +270,16 @@ void ipp_exit(void)
 		ipp_init();
 	}
 
-	ipp_initialized = FALSE;
-
-	/* GNU Sci Lib */
-	if (rng) {
-		gsl_rng_free(rng);
-		rng = NULL;
-	}
-
 	/* GNU TLS */
 	gnutls_global_deinit();
+
+#ifdef _WIN32
+	/* Winsock */
+	WSACleanup();
+#endif
+
+
+	ipp_initialized = FALSE;
 }
 
 /**
@@ -422,7 +514,7 @@ void ipp_parse_msg(ipp_message * msg)
 			memset(msg->parsed[i], '\0', ((t - s) + (sizeof(char) * 1)));
 			memcpy(msg->parsed[i], s, t - s);
 		} else {
-			msg->parsed[i] = strdup(s);
+			msg->parsed[i] = (char *) strdup(s);
 		}
 
 		t++;
@@ -623,7 +715,7 @@ void ipp_shuffle_deck(ipp_deck * deck)
 	}
 
 	for (x = 0; x < DECKSIZE - 1; x++) {
-		y = gsl_rng_uniform_int(rng, DECKSIZE - x) + x;
+		y = (rand() % (DECKSIZE - x)) + x;
 
 		/* swap deck->cards[x] and deck->cards[y] */
 		tmp = deck->cards[x];
@@ -733,8 +825,11 @@ ipp_table *ipp_new_table(void)
 		free(table);
 		return NULL;
 	}
-
+#ifdef _WIN32
+	table->lock = CreateMutex(NULL, FALSE, NULL);
+#else
 	pthread_mutex_init(&(table->lock), 0);
+#endif
 
 	return table;
 }
@@ -804,7 +899,11 @@ void ipp_free_table(ipp_table * table)
 		table->amt_to_call = 0;
 		table->stage = PREFLOP;
 
+#ifdef _WIN32
+		CloseHandle(table->lock);
+#else
 		pthread_mutex_destroy(&(table->lock));
+#endif
 
 		free(table);
 		table = NULL;
@@ -1011,7 +1110,7 @@ void ipp_disconnect(ipp_socket * sock)
 	if (sock->sd) {
 		/* close the connection */
 		shutdown(sock->sd, SHUT_RDWR);
-		close(sock->sd);
+		closesocket(sock->sd);
 		sock->sd = 0;
 	}
 
@@ -1302,7 +1401,8 @@ void __ipp_handle_sigusr2(int sig)
  */
 void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
 {
-	int slave, rc, optval;
+	SOCKET slave;
+	int rc, optval;
 	ipp_socket *ipp_slave;
 
 	struct addrinfo *ai;
@@ -1361,14 +1461,14 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 
 		rc = bind(sds[nsds].fd, runp->ai_addr, runp->ai_addrlen);
 		if (rc != 0) {
-			close(sds[nsds].fd);
+			closesocket(sds[nsds].fd);
 			sds[nsds].fd = -1;
 			continue;
 		}
 
 		rc = listen(sds[nsds].fd, SOMAXCONN);
 		if (rc != 0) {
-			close(sds[nsds].fd);
+			closesocket(sds[nsds].fd);
 			sds[nsds].fd = -1;
 			continue;
 		}
@@ -1413,7 +1513,7 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 						} else {
 							for (i = 0; i < nsds; i++) {
 								shutdown(sds[i].fd, SHUT_RDWR);
-								close(sds[i].fd);
+								closesocket(sds[i].fd);
 							}
 
 							gnutls_certificate_free_credentials(x509_cred);
@@ -1434,14 +1534,14 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 					rc = gnutls_handshake(session);
 					if (rc < 0) {
 						shutdown(slave, SHUT_RDWR);
-						close(slave);
+						closesocket(slave);
 						gnutls_deinit(session);
 						continue;
 					}
 					ipp_slave = ipp_new_socket();
 					if (!ipp_slave) {
 						shutdown(slave, SHUT_RDWR);
-						close(slave);
+						closesocket(slave);
 						gnutls_deinit(session);
 						continue;
 					}
@@ -1463,7 +1563,7 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 
 	for (i = 0; i < nsds; i++) {
 		shutdown(sds[i].fd, SHUT_RDWR);
-		close(sds[i].fd);
+		closesocket(sds[i].fd);
 	}
 
 	gnutls_certificate_free_credentials(x509_cred);
@@ -1804,12 +1904,11 @@ ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 {
 	/* TODO: support for draw and stud */
 	int N = HOLDEM_HOLE_CARDS + HOLDEM_BOARD_CARDS, R = HOLDEM_BOARD_CARDS;
-	int i, j;
+	int i;
+	int a, b, c, d, e;
 	int ncombinations = 21;
 	ipp_message *combinations[21];
 	ipp_card *cards[N], *toeval[R];
-	gsl_combination *c;
-	size_t *cdata;
 
 	memset(combinations, '\0', sizeof(ipp_message *) * ncombinations);
 	memset(cards, '\0', sizeof(ipp_card *) * N);
@@ -1845,22 +1944,24 @@ ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 		}
 	}
 
-	c = gsl_combination_calloc(N, R);
-	if (c == NULL) {
-		return NULL;
-	}
-
 	i = 0;
-	do {
-		cdata = gsl_combination_data(c);
-		for (j = 0; j < R; j++) {
-			toeval[j] = cards[cdata[j]];
+	for (a = 0; a < N - R + 1; a++) {
+		for (b = a + 1; b < N - R + 2; b++) {
+			for (c = b + 1; c < N - R + 3; c++) {
+				for (d = c + 1; d < N - R + 4; d++) {
+					for (e = d + 1; e < N - R + 5; e++) {
+						toeval[0] = cards[a];
+						toeval[1] = cards[b];
+						toeval[2] = cards[c];
+						toeval[3] = cards[d];
+						toeval[4] = cards[e];
+						combinations[i] = ipp_eval(toeval);
+						i++;
+					}
+				}
+			}
 		}
-		combinations[i] = ipp_eval(toeval);
-		i++;
-	} while (gsl_combination_next(c) == GSL_SUCCESS);
-	gsl_combination_free(c);
-	c = NULL;
+	}
 
 	qsort(combinations, ncombinations, sizeof(ipp_message *), ipp_hand_compar);
 
@@ -2134,7 +2235,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		return NULL;
 	}
 
-	user = strdup(msg->parsed[1]);
+	user = (char *) strdup(msg->parsed[1]);
 	if (!user) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
@@ -2144,7 +2245,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		return NULL;
 	}
 
-	buyin_amt = strdup(msg->parsed[2]);
+	buyin_amt = (char *) strdup(msg->parsed[2]);
 	if (!buyin_amt) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
@@ -2159,7 +2260,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	pass = strchr(user, ':');
 	if (pass == NULL) {
-		pass = strdup("NOPASS");
+		pass = (char *) strdup("NOPASS");
 		if (pass == NULL) {
 			ipp_disconnect(sock);
 			ipp_free_socket(sock);
@@ -2170,7 +2271,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		}
 	} else {
 		*pass = '\0';
-		pass = strdup(pass + sizeof(char));
+		pass = (char *) strdup(pass + sizeof(char));
 		if (pass == NULL) {
 			ipp_disconnect(sock);
 			ipp_free_socket(sock);

@@ -1,5 +1,6 @@
 Each program has its own TODO file. This file lists general TODOs that 
-don't fit into any of those files.
+don't fit into any of those files or fit into all of them.
 
  - Develop a proxy server.
  - Develop XSLTs to output spiffy HTML pages from the protocol log files.
+ - Portability improvements.

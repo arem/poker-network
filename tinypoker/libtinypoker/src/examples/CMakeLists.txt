@@ -15,6 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
+IF (WIN32)
+
+  SET(LIBPTHREAD "")
+  SET(LIBPTHREAD_INCLUDE_DIR "")
+
+ELSE (WIN32)
+
 #############################################
 # libpthread checks
 #############################################
@@ -34,6 +41,8 @@ IF (LIBPTHREAD_INCLUDE_DIR)
 ELSE (LIBPTHREAD_INCLUDE_DIR)
   MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
 ENDIF (LIBPTHREAD_INCLUDE_DIR)
+
+ENDIF (WIN32)
 
 #############################################
 # libgnutls checks
@@ -56,39 +65,11 @@ ELSE (LIBGNUTLS_INCLUDE_DIR)
 ENDIF (LIBGNUTLS_INCLUDE_DIR)
 
 #############################################
-# libgsl checks
-#############################################
-
-FIND_LIBRARY(LIBGSL gsl ${libdirs})
-
-IF (LIBGSL)
-  MESSAGE(STATUS "Found libgsl: ${LIBGSL}")
-ELSE (LIBGSL)
-  MESSAGE (FATAL_ERROR "libgsl not found.")
-ENDIF (LIBGSL)
-
-FIND_LIBRARY(LIBGSLCBLAS gslcblas ${libdirs})
-
-IF (LIBGSLCBLAS)
-  MESSAGE(STATUS "Found libgslcblas: ${LIBGSLCBLAS}")
-ELSE (LIBGSLCBLAS)
-  MESSAGE (FATAL_ERROR "libgslcblas not found.")
-ENDIF (LIBGSLCBLAS)
-
-FIND_PATH(LIBGSL_INCLUDE_DIR gsl/gsl_rng.h ${incdirs})
-
-IF (LIBGSL_INCLUDE_DIR)
-  MESSAGE(STATUS "Found gsl/gsl_rng.h in ${LIBGSL_INCLUDE_DIR}")
-ELSE (LIBGSL_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "gsl/gsl_rng.h not found.")
-ENDIF (LIBGSL_INCLUDE_DIR)
-
-#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR})
 ADD_EXECUTABLE(client client.c)
 SET_TARGET_PROPERTIES(client PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
-TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNUTLS} ${LIBPTHREAD} ${LIBGSL} ${LIBGSLCBLAS})
+TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 

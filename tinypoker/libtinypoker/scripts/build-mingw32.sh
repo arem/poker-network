@@ -1,3 +1,4 @@
+#!/bin/sh
 # Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
 #
 # This file is part of libtinypoker.
@@ -6,7 +7,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # libtinypoker is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -15,21 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
+set -e
 
-PROJECT(libtinypoker C)
+echo "*************************************************************************"
+echo "*************************************************************************"
+echo "*** WARNING: The wine port is BROKEN. Script only works on Fedora 10. ***"
+echo "*************************************************************************"
+echo "*************************************************************************"
 
-INCLUDE(InstallRequiredSystemLibraries)
-
-# Version Information
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "2")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-SET(VERSION "${CPACK_PACKAGE_VERSION}")
-SET(SOVERSION "${CPACK_PACKAGE_VERSION}")
-
-INCLUDE(CTest)
-ENABLE_TESTING()
-
-ADD_SUBDIRECTORY(src)
+scripts/clean-all.sh
+cmake -DCMAKE_TOOLCHAIN_FILE=toolchains/i686-pc-mingw32.cmake .
+make && make test

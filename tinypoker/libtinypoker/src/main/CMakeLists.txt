@@ -19,25 +19,34 @@ SET (libdirs /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/pkg/lib64 /usr
 SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)
 SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/include/mysql /usr/local/include/mysql /usr/pkg/include/mysql /usr/include/poker-eval /usr/local/include/poker-eval /usr/pkg/include/poker-eval)
 
+IF (WIN32)
+
+  SET(LIBPTHREAD "")
+  SET(LIBPTHREAD_INCLUDE_DIR "")
+
+ELSE (WIN32)
+
 #############################################
 # libpthread checks
 #############################################
 
-FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
+  FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
 
-IF (LIBPTHREAD)
-  MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
-ELSE (LIBPTHREAD)
-  MESSAGE (FATAL_ERROR "libpthread not found. See: http://www.gnu.org/software/libc/")
-ENDIF (LIBPTHREAD)
+  IF (LIBPTHREAD)
+    MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
+  ELSE (LIBPTHREAD)
+    MESSAGE (FATAL_ERROR "libpthread not found. See: http://www.gnu.org/software/libc/")
+  ENDIF (LIBPTHREAD)
 
-FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
+  FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
 
-IF (LIBPTHREAD_INCLUDE_DIR)
-  MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
-ELSE (LIBPTHREAD_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
-ENDIF (LIBPTHREAD_INCLUDE_DIR)
+  IF (LIBPTHREAD_INCLUDE_DIR)
+    MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
+  ELSE (LIBPTHREAD_INCLUDE_DIR)
+    MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
+  ENDIF (LIBPTHREAD_INCLUDE_DIR)
+
+ENDIF (WIN32)
 
 #############################################
 # libgnutls checks
@@ -60,40 +69,12 @@ ELSE (LIBGNUTLS_INCLUDE_DIR)
 ENDIF (LIBGNUTLS_INCLUDE_DIR)
 
 #############################################
-# libgsl checks
-#############################################
-
-FIND_LIBRARY(LIBGSL gsl ${libdirs})
-
-IF (LIBGSL)
-  MESSAGE(STATUS "Found libgsl: ${LIBGSL}")
-ELSE (LIBGSL)
-  MESSAGE (FATAL_ERROR "libgsl not found.")
-ENDIF (LIBGSL)
-
-FIND_LIBRARY(LIBGSLCBLAS gslcblas ${libdirs})
-
-IF (LIBGSLCBLAS)
-  MESSAGE(STATUS "Found libgslcblas: ${LIBGSLCBLAS}")
-ELSE (LIBGSLCBLAS)
-  MESSAGE (FATAL_ERROR "libgslcblas not found.")
-ENDIF (LIBGSLCBLAS)
-
-FIND_PATH(LIBGSL_INCLUDE_DIR gsl/gsl_rng.h ${incdirs})
-
-IF (LIBGSL_INCLUDE_DIR)
-  MESSAGE(STATUS "Found gsl/gsl_rng.h in ${LIBGSL_INCLUDE_DIR}")
-ELSE (LIBGSL_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "gsl/gsl_rng.h not found.")
-ENDIF (LIBGSL_INCLUDE_DIR)
-
-#############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${incdirs} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${incdirs} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR})
 ADD_LIBRARY(tinypoker SHARED tinypoker.c)
 SET_TARGET_PROPERTIES(tinypoker PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2" VERSION "${VERSION}" SOVERSION "${SOVERSION}")
-LINK_LIBRARIES(tinypoker ${LIBPTHREAD} ${LIBGNUTLS} ${LIBGSL} ${LIBGSLCBLAS})
+LINK_LIBRARIES(tinypoker ${LIBPTHREAD} ${LIBGNUTLS})
 INSTALL(TARGETS tinypoker DESTINATION lib)
 INSTALL(FILES tinypoker.h DESTINATION include)

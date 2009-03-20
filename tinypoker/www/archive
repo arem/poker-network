@@ -8,10 +8,12 @@
 # copy of the license is included in the section entitled "GNU Free
 # Documentation License". 
 
-/bin/rm -f tinypoker.org.tar.gz
-/bin/rm -rf ./tinypoker.org/
-/bin/mkdir ./tinypoker.org
-/bin/cp *.{txt,conf,css} archive build clean ./tinypoker.org/
-/bin/tar -czf tinypoker.org.tar.gz ./tinypoker.org/
-/bin/rm -rf ./tinypoker.org/
+set -e
+
+rm -f tinypoker.org.tar.gz
+rm -rf ./tinypoker.org/
+mkdir ./tinypoker.org
+cp *.{txt,conf,css} archive build clean ./tinypoker.org/
+tar -czf tinypoker.org.tar.gz ./tinypoker.org/
+rm -rf ./tinypoker.org/
 
