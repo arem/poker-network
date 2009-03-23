@@ -24,6 +24,9 @@ echo "*** WARNING: The wine port is BROKEN. Script only works on Fedora 10. ***"
 echo "*************************************************************************"
 echo "*************************************************************************"
 
+export PKG_CONFIG_PATH=/usr/i686-pc-mingw32/sys-root/mingw/lib/pkgconfig/
+
 scripts/clean-all.sh
 cmake -DCMAKE_TOOLCHAIN_FILE=toolchains/i686-pc-mingw32.cmake .
-make && make test
+make
+# make test

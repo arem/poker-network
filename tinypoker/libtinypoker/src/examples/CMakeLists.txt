@@ -15,61 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
-IF (WIN32)
+INCLUDE(FindPkgConfig)
 
-  SET(LIBPTHREAD "")
-  SET(LIBPTHREAD_INCLUDE_DIR "")
+PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.18 REQUIRED)
+PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.18 REQUIRED)
+PKG_CHECK_MODULES(GNUTLS gnutls>=2.4 REQUIRED)
 
-ELSE (WIN32)
+INCLUDE_DIRECTORIES(${GNUTLS_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIR} ${GLIB2_INCLUDE_DIRS})
 
-#############################################
-# libpthread checks
-#############################################
-
-FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
-
-IF (LIBPTHREAD)
-  MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
-ELSE (LIBPTHREAD)
-  MESSAGE (FATAL_ERROR "libpthread not found. See: http://www.gnu.org/software/libc/")
-ENDIF (LIBPTHREAD)
-
-FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
-
-IF (LIBPTHREAD_INCLUDE_DIR)
-  MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
-ELSE (LIBPTHREAD_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
-ENDIF (LIBPTHREAD_INCLUDE_DIR)
-
-ENDIF (WIN32)
-
-#############################################
-# libgnutls checks
-#############################################
-
-FIND_LIBRARY(LIBGNUTLS gnutls ${libdirs})
-
-IF (LIBGNUTLS)
-  MESSAGE(STATUS "Found libgnutls: ${LIBGNUTLS}")
-ELSE (LIBGNUTLS)
-  MESSAGE (FATAL_ERROR "libgnutls not found. See: http://www.gnu.org/software/gnutls/")
-ENDIF (LIBGNUTLS)
-
-FIND_PATH(LIBGNUTLS_INCLUDE_DIR gnutls/gnutls.h ${incdirs})
-
-IF (LIBGNUTLS_INCLUDE_DIR)
-  MESSAGE(STATUS "Found gnutls/gnutls.h in ${LIBGNUTLS_INCLUDE_DIR}")
-ELSE (LIBGNUTLS_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "gnutls/gnutls.h not found. See: http://www.gnu.org/software/gnutls/")
-ENDIF (LIBGNUTLS_INCLUDE_DIR)
-
-#############################################
-# Put everything together
-#############################################
-
-INCLUDE_DIRECTORIES(${LIBGNUTLS_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR})
 ADD_EXECUTABLE(client client.c)
-SET_TARGET_PROPERTIES(client PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
-TARGET_LINK_LIBRARIES(client tinypoker ${LIBGNUTLS} ${LIBPTHREAD})
 
+IF (WIN32)
+  TARGET_LINK_LIBRARIES(client tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${GNUTLS_LIBRARIES} wsock32 gcrypt)
+ELSE (WIN32)
+  TARGET_LINK_LIBRARIES(client tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${GNUTLS_LIBRARIES})
+ENDIF (WIN32)

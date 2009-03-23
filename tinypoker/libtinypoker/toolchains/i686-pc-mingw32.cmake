@@ -19,7 +19,7 @@
 set (CMAKE_SYSTEM_NAME Windows)
 set (CMAKE_C_COMPILER i686-pc-mingw32-gcc)
 set (CMAKE_CXX_COMPILER i686-pc-mingw32-g++)
-set (CMAKE_FIND_ROOT_PATH /usr/i686-pc-mingw32/sys-root/mingw)
+set (CMAKE_FIND_ROOT_PATH /usr/i686-pc-mingw32/sys-root/mingw/)
 set (CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set (CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set (CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)

@@ -19,9 +19,12 @@
 
 #define _GNU_SOURCE
 
+#include <glib.h>
+
 #ifdef _WIN32
 
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <io.h>
 
 #define SHUT_RDWR SD_BOTH
@@ -29,7 +32,6 @@
 #else
 
 #include <netdb.h>
-#include <regex.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <sys/poll.h>
@@ -60,72 +62,55 @@
 
 #include <errno.h>
 
-#ifdef _WIN32
-#include <windows.h>
-
-static int gcry_mingw32_mutex_init(void **priv)
+static int gcry_glib2_mutex_init(void **lock)
 {
-	if (!priv) {
+	if (!lock) {
 		return -1;
 	}
 
-	*priv = CreateMutex(0, FALSE, 0);
-	if (*priv == NULL) {
+	*lock = g_mutex_new();
+	if (*lock == NULL) {
 		return -1;
 	}
 
 	return 0;
 }
 
-static int gcry_mingw32_mutex_destroy(void **lock)
+static int gcry_glib2_mutex_destroy(void **lock)
 {
-	int rc;
-
-	rc = CloseHandle(*lock);
-	if (rc == 0) {
-		return -1;
-	} else {
+	if (*lock) {
+		g_mutex_free(*lock);
 		*lock = NULL;
-		return 0;
 	}
+
+	return 0;
 }
 
-static int gcry_mingw32_mutex_lock(void **lock)
+static int gcry_glib2_mutex_lock(void **lock)
 {
-	int rc;
-
-	rc = WaitForSingleObject(*lock, INFINITE);
-	if (rc == WAIT_FAILED) {
-		return -1;
-	} else {
+	if (*lock) {
+		g_mutex_lock(*lock);
 		return 0;
+	} else {
+		return -1;
 	}
 }
 
-static int gcry_mingw32_mutex_unlock(void **lock)
+static int gcry_glib2_mutex_unlock(void **lock)
 {
-	int rc;
-
-	rc = ReleaseMutex(*lock);
-	if (rc == 0) {
-		return -1;
-	} else {
+	if (*lock) {
+		g_mutex_unlock(*lock);
 		return 0;
+	} else {
+		return -1;
 	}
 }
 
-static struct gcry_thread_cbs gcry_threads_mingw32 = { GCRY_THREAD_OPTION_USER, NULL,
-	gcry_mingw32_mutex_init, gcry_mingw32_mutex_destroy,
-	gcry_mingw32_mutex_lock, gcry_mingw32_mutex_unlock,
+static struct gcry_thread_cbs gcry_threads_glib2 = { GCRY_THREAD_OPTION_USER, NULL,
+	gcry_glib2_mutex_init, gcry_glib2_mutex_destroy,
+	gcry_glib2_mutex_lock, gcry_glib2_mutex_unlock,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
-
-#else
-
-#include <pthread.h>
-GCRY_THREAD_OPTION_PTHREAD_IMPL;
-
-#endif
 
 #include <limits.h>
 #if (LLONG_MAX < 9223372036854775807ll)
@@ -212,7 +197,12 @@ static const long long ipp_eval_primes[] = {
  * Flag used to determine if ipp_init() has been called.
  * If this is false, then we call ipp_init() for the user.
  */
-static int ipp_initialized = FALSE;
+static gboolean ipp_initialized = FALSE;
+
+/**
+ * Random Number Generator For Shuffling
+ */
+static GRand *rng = NULL;
 
 /**
  * Initializes underlying libraries. This function *must* be called first!
@@ -225,18 +215,20 @@ void ipp_init(void)
 		return;
 	}
 
+	/* glib - this line must be before we init gnutls */
+	g_thread_init(NULL);
+
 	/* GNU TLS */
-#ifdef _WIN32
-	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_mingw32);
-#else
-	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
-#endif
+	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_glib2);
 	gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
 	gnutls_global_init();
 
 	/* Random Number Generator */
-	srand((int) getpid());
-
+	rng = g_rand_new();
+	if (rng == NULL) {
+		gnutls_global_deinit();
+		return;
+	}
 #ifdef _WIN32
 	/* Winsock */
 	int rc;
@@ -248,11 +240,13 @@ void ipp_init(void)
 	rc = WSAStartup(wVersionRequested, &(wsaData));
 	if (rc == -1) {
 		gnutls_global_deinit();
+		g_rand_free(rng);
 		return;
 	}
 
 	if (wsaData.wVersion != wVersionRequested) {
 		gnutls_global_deinit();
+		g_rand_free(rng);
 		WSACleanup();
 		return;
 	}
@@ -273,6 +267,11 @@ void ipp_exit(void)
 	/* GNU TLS */
 	gnutls_global_deinit();
 
+	/* Random Number Generator */
+	if (rng != NULL) {
+		g_rand_free(rng);
+		rng = NULL;
+	}
 #ifdef _WIN32
 	/* Winsock */
 	WSACleanup();
@@ -338,8 +337,7 @@ void ipp_normalize_msg(char *msg)
  */
 int ipp_validate_msg(char *regex, char *msg)
 {
-	regex_t preg;
-	int ret;
+	gboolean ret;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -348,15 +346,10 @@ int ipp_validate_msg(char *regex, char *msg)
 	if (!regex || !msg) {
 		return FALSE;
 	}
-	ret = regcomp(&preg, regex, REG_EXTENDED);
-	if (ret) {		/* compile the pattern */
-		return FALSE;
-	}
-	/* See if the message matches */
-	ret = regexec(&preg, msg, 0, 0, 0);
-	regfree(&preg);		/* Clean up */
 
-	if (!ret) {
+
+	ret = g_regex_match_simple(regex, msg, 0, 0);
+	if (ret == TRUE) {
 		return TRUE;
 	} else {
 		return FALSE;
@@ -514,7 +507,7 @@ void ipp_parse_msg(ipp_message * msg)
 			memset(msg->parsed[i], '\0', ((t - s) + (sizeof(char) * 1)));
 			memcpy(msg->parsed[i], s, t - s);
 		} else {
-			msg->parsed[i] = (char *) strdup(s);
+			msg->parsed[i] = g_strdup(s);
 		}
 
 		t++;
@@ -689,6 +682,7 @@ ipp_card *ipp_deck_next_card(ipp_deck * deck)
 	if (!ipp_initialized) {
 		ipp_init();
 	}
+
 	if (deck == NULL || deck->cards == NULL || deck->deck_index < 0) {
 		return NULL;
 	}
@@ -825,11 +819,18 @@ ipp_table *ipp_new_table(void)
 		free(table);
 		return NULL;
 	}
-#ifdef _WIN32
-	table->lock = CreateMutex(NULL, FALSE, NULL);
-#else
-	pthread_mutex_init(&(table->lock), 0);
-#endif
+
+	table->lock = g_mutex_new();
+	if (table->lock == NULL) {
+		if (table->deck) {
+			ipp_free_deck(table->deck);
+			table->deck = NULL;
+		}
+
+		free(table);
+		table = NULL;
+		return NULL;
+	}
 
 	return table;
 }
@@ -899,11 +900,10 @@ void ipp_free_table(ipp_table * table)
 		table->amt_to_call = 0;
 		table->stage = PREFLOP;
 
-#ifdef _WIN32
-		CloseHandle(table->lock);
-#else
-		pthread_mutex_destroy(&(table->lock));
-#endif
+		if (table->lock) {
+			g_mutex_free(table->lock);
+			table->lock = NULL;
+		}
 
 		free(table);
 		table = NULL;
@@ -990,6 +990,21 @@ int __ipp_verify_cert(gnutls_session session, const char *hostname)
 
 	return TRUE;
 }
+
+#ifdef _WIN32
+
+/**
+ * Connect to a server.
+ * @param hostname the hostname of the server to connect to (example: host.domain.tld).
+ * @param ca_file Path to Certificate Authority file.
+ * @return a socket or NULL if an error happened.
+ */
+ipp_socket *ipp_connect(char *hostname, char *ca_file)
+{
+	return NULL;
+}
+
+#else
 
 /**
  * Connect to a server.
@@ -1089,6 +1104,8 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 	return sock;
 }
 
+#endif
+
 /**
  * Disconnect from the server.
  * @param sock a socket to disconnect.
@@ -1130,46 +1147,6 @@ void ipp_disconnect(ipp_socket * sock)
 }
 
 /**
- * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
- * @param void_params a __ipp_readln_thread_params structure.
- */
-void __ipp_readln_thread(void *void_params)
-{
-	int ret;
-	__ipp_readln_thread_params *params;
-
-	if (!ipp_initialized) {
-		ipp_init();
-	}
-
-	if (!void_params) {
-		pthread_exit(0);
-	}
-
-	params = (__ipp_readln_thread_params *) void_params;
-
-	if ((sizeof(char) * (MAX_MSG_SIZE + 1)) <= 0) {
-		pthread_exit(0);
-	}
-
-	*(params->buffer) = (char *) malloc(sizeof(char) * (MAX_MSG_SIZE + 1));
-	if (*(params->buffer)) {
-		memset(*(params->buffer), '\0', (sizeof(char) * (MAX_MSG_SIZE + 1)));
-
-		do {
-			ret = gnutls_record_recv(params->sock->session, *(params->buffer), MAX_MSG_SIZE);
-		} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
-
-		*(params->n) = ret;
-
-		if (!(*(params->n))) {
-			*(params->n) = -1;
-		}
-	}
-	pthread_exit(0);
-}
-
-/**
  * Read a message from the socket.
  * @param sock the socket to read from.
  * @param timeout number of seconds to wait for input.
@@ -1177,13 +1154,9 @@ void __ipp_readln_thread(void *void_params)
  */
 ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *))
 {
-	__ipp_readln_thread_params params;
 	char *buffer;
-	int is_valid, ret;
-	unsigned int n;
-	pthread_t reader;
-	pthread_attr_t reader_attr;
-	time_t clock;
+	int ret;
+	int is_valid;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -1194,37 +1167,19 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *
 	}
 
 	is_valid = FALSE;
-	buffer = NULL;
-	n = 0;
 
-	params.sock = sock;
-	params.buffer = &buffer;
-	params.n = &n;
-
-	pthread_attr_init(&reader_attr);
-	pthread_attr_setdetachstate(&reader_attr, PTHREAD_CREATE_DETACHED);
-	ret = pthread_create(&reader, &reader_attr, (void *(*)(void *)) __ipp_readln_thread, (void *) &params);
-	if (ret != 0) {
-		pthread_attr_destroy(&reader_attr);
+	buffer = (char *) malloc(sizeof(char) * (MAX_MSG_SIZE + 1));
+	if (buffer == NULL) {
 		return NULL;
 	}
-	clock = time(NULL);
+	memset(buffer, '\0', (sizeof(char) * (MAX_MSG_SIZE + 1)));
+
 	do {
-		if ((time(NULL) - clock) > timeout) {
-			break;
-		}
-		pthread_yield();
-	} while (!n);
+		ret = gnutls_record_recv(sock->session, buffer, MAX_MSG_SIZE);
+	} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
 
-	pthread_cancel(reader);
-	pthread_attr_destroy(&reader_attr);
-
-	buffer = *(params.buffer);
-
-	if (n < 0) {
+	if (ret < 0) {
 		free(buffer);
-		return NULL;
-	} else if (!n) {
 		return NULL;
 	}
 	ipp_normalize_msg(buffer);
@@ -1252,33 +1207,6 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *
 }
 
 /**
- * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
- * @param void_params a __ipp_writeln_thread_params structure.
- */
-void __ipp_writeln_thread(void *void_params)
-{
-	int ret;
-	__ipp_writeln_thread_params *params;
-
-	if (!ipp_initialized) {
-		ipp_init();
-	}
-
-	if (!void_params) {
-		pthread_exit(0);
-	}
-
-	params = (__ipp_writeln_thread_params *) void_params;
-
-	do {
-		ret = gnutls_record_send(params->sock->session, params->buffer, strlen(params->buffer));
-	} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
-
-	*(params->n) = ret;
-	pthread_exit(0);
-}
-
-/**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
  * @param sock the socket to read from.
  * @param msg the message to send.
@@ -1287,12 +1215,8 @@ void __ipp_writeln_thread(void *void_params)
  */
 int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logger) (char *))
 {
-	__ipp_writeln_thread_params params;
-	int is_valid, ret;
-	unsigned int n;
-	pthread_t writer;
-	pthread_attr_t writer_attr;
-	time_t clock;
+	int is_valid;
+	int ret;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -1303,7 +1227,6 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logge
 	}
 
 	is_valid = FALSE;
-	n = 0;
 
 	ipp_normalize_msg(msg->payload);
 	is_valid = ipp_validate_unknown_msg(msg->payload);
@@ -1329,30 +1252,11 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logge
 		strncpy(final_msg, msg->payload, len + 3);
 		final_msg[len] = '\n';
 
-		params.sock = sock;
-		params.buffer = final_msg;
-		params.n = &n;
-
-		pthread_attr_init(&writer_attr);
-		pthread_attr_setdetachstate(&writer_attr, PTHREAD_CREATE_DETACHED);
-
-		ret = pthread_create(&writer, &writer_attr, (void *(*)(void *)) __ipp_writeln_thread, (void *) &params);
-		if (ret != 0) {
-			pthread_attr_destroy(&writer_attr);
-			return FALSE;
-		}
-		clock = time(NULL);
 		do {
-			if ((time(NULL) - clock) > timeout) {
-				break;
-			}
-			pthread_yield();
-		} while (!n);
+			ret = gnutls_record_send(sock->session, final_msg, strlen(final_msg));
+		} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
 
-		pthread_cancel(writer);
-		pthread_attr_destroy(&writer_attr);
-
-		if (n == strlen(final_msg)) {
+		if (ret == strlen(final_msg)) {
 			free(final_msg);
 			final_msg = NULL;
 			return TRUE;
@@ -1374,19 +1278,35 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logge
 static int done;
 
 /**
- * Set done to 1 when SIGUSR2 is raised.
- * @param sig signal
+ * Causes the servloop to terminate gracefully.
  */
-void __ipp_handle_sigusr2(int sig)
+void ipp_servloop_shutdown(void)
 {
 	if (!ipp_initialized) {
 		ipp_init();
 	}
 
-	if (sig == SIGUSR2) {
-		done = 1;
-	}
+	done = 1;
 }
+
+#ifdef _WIN32
+
+/**
+ * Main server loop. This function sets up the networking and accepts
+ * incoming connections. For every incoming client, a 'callback' is
+ * called. The server blocks and waits for 'callback' to return, so
+ * make 'callback' short and sweet.
+ * @param callback function to call when a new client connects.
+ * @param ca_file Certificate Authority
+ * @param crl_file CRL
+ * @param cert_file SSL/TLS Certificate File
+ * @param key_file Private Key
+ */
+void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
+{
+}
+
+#else
 
 /**
  * Main server loop. This function sets up the networking and accepts
@@ -1402,7 +1322,13 @@ void __ipp_handle_sigusr2(int sig)
 void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
 {
 	SOCKET slave;
-	int rc, optval;
+	int rc;
+#ifdef _WIN32
+	char optval;
+#else
+	int optval;
+#endif
+
 	ipp_socket *ipp_slave;
 
 	struct addrinfo *ai;
@@ -1487,7 +1413,6 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 	}
 
 	done = 0;
-	signal(SIGUSR2, __ipp_handle_sigusr2);
 
 	while (!done) {
 		/* Poll master so that we don't block on accept */
@@ -1495,7 +1420,7 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 		 * this is done so that when we signal we re-evaluate if
 		 * !done == true
 		 */
-		rc = poll(sds, nsds, 30000);
+		rc = poll(sds, nsds, 10000);
 
 		if (done) {
 			break;
@@ -1569,6 +1494,8 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 	gnutls_certificate_free_credentials(x509_cred);
 	gnutls_dh_params_deinit(dh_params);
 }
+
+#endif
 
 /**
  * Maps a product of the prime representation of ranks of cards in the
@@ -1994,6 +1921,10 @@ int __ipp_combination_compar(const void *a, const void *b)
 	__ipp_combination *x = (__ipp_combination *) a;
 	__ipp_combination *y = (__ipp_combination *) b;
 
+	if (!ipp_initialized) {
+		ipp_init();
+	}
+
 	if (x == y) {
 		return 0;
 	}
@@ -2027,6 +1958,10 @@ int *ipp_rank_players(ipp_table * table)
 	__ipp_combination combinations[HOLDEM_PLAYERS_PER_TABLE];
 
 	/* TODO support for stud and draw */
+
+	if (!ipp_initialized) {
+		ipp_init();
+	}
 
 	result = NULL;
 	memset(combinations, '\0', sizeof(__ipp_combination) * HOLDEM_PLAYERS_PER_TABLE);
@@ -2235,7 +2170,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		return NULL;
 	}
 
-	user = (char *) strdup(msg->parsed[1]);
+	user = g_strdup(msg->parsed[1]);
 	if (!user) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
@@ -2245,7 +2180,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		return NULL;
 	}
 
-	buyin_amt = (char *) strdup(msg->parsed[2]);
+	buyin_amt = g_strdup(msg->parsed[2]);
 	if (!buyin_amt) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
@@ -2260,7 +2195,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	pass = strchr(user, ':');
 	if (pass == NULL) {
-		pass = (char *) strdup("NOPASS");
+		pass = g_strdup("NOPASS");
 		if (pass == NULL) {
 			ipp_disconnect(sock);
 			ipp_free_socket(sock);
@@ -2271,7 +2206,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 		}
 	} else {
 		*pass = '\0';
-		pass = (char *) strdup(pass + sizeof(char));
+		pass = g_strdup(pass + sizeof(char));
 		if (pass == NULL) {
 			ipp_disconnect(sock);
 			ipp_free_socket(sock);

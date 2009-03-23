@@ -24,6 +24,7 @@ extern "C" {
 #ifndef __TINYPOKER_H
 #define __TINYPOKER_H
 
+#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,13 +33,14 @@ extern "C" {
 #include <sys/types.h>
 
 #ifdef WIN32
-
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <io.h>
 	typedef int socklen_t;
 
 #else
 
 #include <netinet/in.h>
-#include <pthread.h>
 	typedef int SOCKET;
 
 #endif
@@ -204,11 +206,7 @@ extern "C" {
 		ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
 		ipp_card *board[HOLDEM_BOARD_CARDS];
 		ipp_deck *deck;
-#ifdef _WIN32
-		HANDLE lock;
-#else
-		pthread_mutex_t lock;
-#endif
+		GMutex *lock;
 	} ipp_table;
 
 /**
@@ -993,38 +991,6 @@ extern "C" {
 	int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logger) (char *));
 
 /**
- * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
- * Parameters passed to the reader thread.
- */
-	typedef struct __ipp_readln_thread_params {
-		ipp_socket *sock;
-		char **buffer;
-		unsigned int *n;
-	} __ipp_readln_thread_params;
-
-/**
- * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
- * @param void_params a __ipp_readln_thread_params structure.
- */
-	void __ipp_readln_thread(void *void_params);
-
-/**
- * INTERNAL STRUCT. DO NOT USE OUTSIDE LIBTINYPOKER!!!
- * Parameters passed to the writer thread.
- */
-	typedef struct __ipp_writeln_thread_params {
-		ipp_socket *sock;
-		char *buffer;
-		unsigned int *n;
-	} __ipp_writeln_thread_params;
-
-/**
- * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
- * @param void_params a __ipp_readln_thread_params structure.
- */
-	void __ipp_writeln_thread(void *void_params);
-
-/**
  * Main server loop. This function sets up the networking and accepts
  * incoming connections. For every incoming client, a 'callback' is
  * called. The server blocks and waits for 'callback' to return, so
@@ -1036,6 +1002,11 @@ extern "C" {
  * @param key_file Private Key
  */
 	void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
+
+/**
+ * Causes the servloop to terminate gracefully.
+ */
+	void ipp_servloop_shutdown(void);
 
 /**
  * Maps a product of the prime representation of ranks of cards in the

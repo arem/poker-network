@@ -15,66 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
-SET (libdirs /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/pkg/lib64 /usr/local/lib64 /usr/lib32 /usr/pkg/lib32 /usr/local/lib32)
-SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)
-SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/include/mysql /usr/local/include/mysql /usr/pkg/include/mysql /usr/include/poker-eval /usr/local/include/poker-eval /usr/pkg/include/poker-eval)
+INCLUDE(FindPkgConfig)
+
+PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.18 REQUIRED)
+PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.18 REQUIRED)
+PKG_CHECK_MODULES(GNUTLS gnutls>=2.4 REQUIRED)
+
+INCLUDE_DIRECTORIES(${GNUTLS_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
+
+ADD_LIBRARY(tinypoker SHARED tinypoker.c)
+
+LINK_LIBRARIES(tinypoker)
 
 IF (WIN32)
-
-  SET(LIBPTHREAD "")
-  SET(LIBPTHREAD_INCLUDE_DIR "")
-
+  TARGET_LINK_LIBRARIES(tinypoker ${GNUTLS_LIBRARIES} ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} wsock32 gcrypt)
 ELSE (WIN32)
-
-#############################################
-# libpthread checks
-#############################################
-
-  FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
-
-  IF (LIBPTHREAD)
-    MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
-  ELSE (LIBPTHREAD)
-    MESSAGE (FATAL_ERROR "libpthread not found. See: http://www.gnu.org/software/libc/")
-  ENDIF (LIBPTHREAD)
-
-  FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
-
-  IF (LIBPTHREAD_INCLUDE_DIR)
-    MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
-  ELSE (LIBPTHREAD_INCLUDE_DIR)
-    MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
-  ENDIF (LIBPTHREAD_INCLUDE_DIR)
-
+  TARGET_LINK_LIBRARIES(tinypoker ${GNUTLS_LIBRARIES} ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES})
 ENDIF (WIN32)
 
-#############################################
-# libgnutls checks
-#############################################
-
-FIND_LIBRARY(LIBGNUTLS gnutls ${libdirs})
-
-IF (LIBGNUTLS)
-  MESSAGE(STATUS "Found libgnutls: ${LIBGNUTLS}")
-ELSE (LIBGNUTLS)
-  MESSAGE (FATAL_ERROR "libgnutls not found. See: http://www.gnu.org/software/gnutls/")
-ENDIF (LIBGNUTLS)
-
-FIND_PATH(LIBGNUTLS_INCLUDE_DIR gnutls/gnutls.h ${incdirs})
-
-IF (LIBGNUTLS_INCLUDE_DIR)
-  MESSAGE(STATUS "Found gnutls/gnutls.h in ${LIBGNUTLS_INCLUDE_DIR}")
-ELSE (LIBGNUTLS_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "gnutls/gnutls.h not found. See: http://www.gnu.org/software/gnutls/")
-ENDIF (LIBGNUTLS_INCLUDE_DIR)
-
-#############################################
-# Put everything together
-#############################################
-
-INCLUDE_DIRECTORIES(${incdirs} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR})
-ADD_LIBRARY(tinypoker SHARED tinypoker.c)
-SET_TARGET_PROPERTIES(tinypoker PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2" VERSION "${VERSION}" SOVERSION "${SOVERSION}")
-LINK_LIBRARIES(tinypoker ${LIBPTHREAD} ${LIBGNUTLS})
 INSTALL(TARGETS tinypoker DESTINATION lib)
 INSTALL(FILES tinypoker.h DESTINATION include)
