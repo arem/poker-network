@@ -16,12 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
-set -e
-
 if [ -f Makefile ]
 then
 	make clean
 fi
+
+set -e
 
 rm -rf Testing CMakeCache.txt DartConfiguration.tcl install_manifest.txt DartTestfile.txt Makefile cmake_install.cmake CMakeFiles CTestTestfile.cmake	
 rm -rf src/CMakeFiles src/Makefile src/cmake_install.cmake src/DartTestfile.txt src/CTestTestfile.cmake

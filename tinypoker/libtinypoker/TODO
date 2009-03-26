@@ -2,8 +2,7 @@
   - port to wine
     + use select() to handle timeouts
     + implement win32 api version of connect/servloop
-    + update unit tests to execute under wine
-      ~ need to add a check in CMakeLists.txt for wine binary
+    + need to add a check in CMakeLists.txt for wine binary
   - test on one or more of OpenBSD, FreeBSD, NetBSD
   - use glib more within libtinypoker.
  * doxygen support for build system
@@ -12,3 +11,4 @@
  * man pages
  * programming guide
  * stud and draw
+ * unit tests for network code
