@@ -44,7 +44,7 @@ int exit_now;
 void handle_sigkill(int sig)
 {
 	if (sig == SIGKILL) {
-		raise(SIGUSR2);
+		ipp_servloop_shutdown();
 		exit_now = 1;
 		daemon_log(LOG_DEBUG, "[SIGN] SIGKILL Caught ; preparing to exit");
 	}
@@ -57,7 +57,7 @@ void handle_sigkill(int sig)
 void handle_sigquit(int sig)
 {
 	if (sig == SIGQUIT) {
-		raise(SIGUSR2);
+		ipp_servloop_shutdown();
 		exit_now = 1;
 		daemon_log(LOG_DEBUG, "[SIGN] SIGQUIT Caught ; preparing to exit");
 	}
@@ -70,7 +70,7 @@ void handle_sigquit(int sig)
 void handle_sigint(int sig)
 {
 	if (sig == SIGINT) {
-		raise(SIGUSR2);
+		ipp_servloop_shutdown();
 		exit_now = 1;
 		daemon_log(LOG_DEBUG, "[SIGN] SIGINT Caught ; preparing to exit");
 	}

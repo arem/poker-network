@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
 
-SET (libdirs /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/local/lib64 /usr/lib32 /usr/local/lib32)
+SET (libdirs /lib /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/local/lib64 /usr/lib32 /usr/local/lib32)
 SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)
 SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/i586-mingw32msvc/include /usr/i686-pc-mingw32/sys-root/mingw/include)
 
