@@ -20,3 +20,5 @@
  * Sound
 
 	- record/create sound effects (chip clicks, card shuffles, etc)
+
+ * Build system changes for glib-2.0

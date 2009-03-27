@@ -27,7 +27,7 @@ int main()
 	ipp_card *Ks, *Kd, *Kh, *Kc;
 	ipp_card *Qs, *Qh, *Qc;
 	ipp_card *Jh, *Jc, *Jd;
-	int *result;
+	guint8 *result;
 
 	ipp_player *player1, *player2, *player3, *player4;
 	ipp_table *table;

@@ -290,17 +290,23 @@ void ipp_exit(void)
  */
 void ipp_normalize_msg(char *msg)
 {
-	int len, start, end, i, j;
-	len = strlen(msg);
+	gsize len;
+	guint start;
+	guint end;
+	guint i;
+	guint j;
 	char *pos;
 
 	if (!ipp_initialized) {
 		ipp_init();
 	}
 
-	if (!msg || strlen(msg) < MIN_MSG_SIZE || strlen(msg) > MAX_MSG_SIZE) {
+	len = strlen(msg);
+
+	if (!msg || len < MIN_MSG_SIZE || len > MAX_MSG_SIZE) {
 		return;
 	}
+
 	while ((pos = strchr(msg, '\n'))) {
 		*pos = ' ';	/* replace new lines with white space */
 	}
@@ -333,9 +339,9 @@ void ipp_normalize_msg(char *msg)
  * Validates IPP Messages
  * @param regex one of the REGEX constants.
  * @param msg a message.
- * @return 1 if msg is valid, 0 if msg is not valid.
+ * @return TRUE if msg is valid, FALSE if msg is not valid.
  */
-int ipp_validate_msg(char *regex, char *msg)
+gboolean ipp_validate_msg(char *regex, char *msg)
 {
 	gboolean ret;
 
@@ -349,7 +355,7 @@ int ipp_validate_msg(char *regex, char *msg)
 
 
 	ret = g_regex_match_simple(regex, msg, 0, 0);
-	if (ret == TRUE) {
+	if (ret != 0) {
 		return TRUE;
 	} else {
 		return FALSE;
@@ -361,10 +367,10 @@ int ipp_validate_msg(char *regex, char *msg)
  * @param msg a message.
  * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
  */
-int ipp_validate_unknown_msg(char *msg)
+gint8 ipp_validate_unknown_msg(char *msg)
 {
-	unsigned int i;
-	int is_valid = -1;
+	guint i;
+	gint is_valid = -1;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -391,6 +397,7 @@ int ipp_validate_unknown_msg(char *msg)
 ipp_socket *ipp_new_socket(void)
 {
 	ipp_socket *sock;
+
 	if (!ipp_initialized) {
 		ipp_init();
 	}
@@ -404,6 +411,7 @@ ipp_socket *ipp_new_socket(void)
 		return NULL;
 	}
 	memset(sock, '\0', sizeof(ipp_socket));
+
 	return sock;
 }
 
@@ -429,6 +437,7 @@ void ipp_free_socket(ipp_socket * sock)
 ipp_message *ipp_new_message(void)
 {
 	ipp_message *msg;
+
 	if (!ipp_initialized) {
 		ipp_init();
 	}
@@ -442,6 +451,7 @@ ipp_message *ipp_new_message(void)
 		return NULL;
 	}
 	memset(msg, '\0', sizeof(ipp_message));
+
 	return msg;
 }
 
@@ -451,9 +461,12 @@ ipp_message *ipp_new_message(void)
  */
 void ipp_parse_msg(ipp_message * msg)
 {
-	int tokcnt, i, j;
-	char delim = ' ';
-	char *s, *t;
+	guint tokcnt;
+	guint i;
+	guint j;
+	gchar delim = ' ';
+	char *s;
+	char *t;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -462,6 +475,7 @@ void ipp_parse_msg(ipp_message * msg)
 	if ((msg == NULL || msg->payload == NULL || msg->parsed != NULL) && msg->type >= 0) {
 		return;
 	}
+
 	tokcnt = 1;
 	for (i = 0; msg->payload[i]; i++) {
 		if (msg->payload[i] == delim) {
@@ -520,7 +534,7 @@ void ipp_parse_msg(ipp_message * msg)
  */
 void ipp_free_message(ipp_message * msg)
 {
-	int i;
+	guint i;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -564,6 +578,7 @@ ipp_card *ipp_new_card(void)
 		return NULL;
 	}
 	memset(card, '\0', sizeof(ipp_card));
+
 	return card;
 }
 
@@ -593,15 +608,12 @@ ipp_player *ipp_new_player(void)
 		ipp_init();
 	}
 
-	if (sizeof(ipp_player) <= 0) {
-		return NULL;
-	}
-
 	player = (ipp_player *) malloc(sizeof(ipp_player));
 	if (player == NULL) {
 		return NULL;
 	}
 	memset(player, '\0', sizeof(ipp_player));
+
 	return player;
 }
 
@@ -698,7 +710,8 @@ ipp_card *ipp_deck_next_card(ipp_deck * deck)
 void ipp_shuffle_deck(ipp_deck * deck)
 {
 	ipp_card *tmp;
-	int x, y;
+	guint x;
+	guint y;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -732,7 +745,9 @@ static const char __ranks[13] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', '
  */
 ipp_deck *ipp_new_deck(void)
 {
-	int x, y, z;
+	guint x;
+	guint y;
+	guint z;
 	ipp_deck *deck;
 
 	if (!ipp_initialized) {
@@ -774,7 +789,7 @@ ipp_deck *ipp_new_deck(void)
  */
 void ipp_free_deck(ipp_deck * deck)
 {
-	int i;
+	guint i;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -841,27 +856,32 @@ ipp_table *ipp_new_table(void)
  * @param player the player to add.
  * @return the index in table->players[] or -1 if the table was full.
  */
-int ipp_add_player(ipp_table * table, ipp_player * player)
+gint8 ipp_add_player(ipp_table * table, ipp_player * player)
 {
-	int i, added;
+	guint8 i;
+	gboolean added;
 
 	/* TODO Support for Stud and Draw */
 	if (table->nplayers == HOLDEM_PLAYERS_PER_TABLE) {
 		return -1;
 	}
 
-	added = 0;
+	added = FALSE;
 	for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
 		if (table->players[i] == NULL) {
 			table->players[i] = player;
 			table->players[i]->still_in = 1;
 			table->nplayers++;
-			added = 1;
+			added = TRUE;
 			break;
 		}
 	}
 
-	return i;
+	if (added == TRUE) {
+		return i;
+	} else {
+		return -1;
+	}
 }
 
 /**
@@ -869,7 +889,7 @@ int ipp_add_player(ipp_table * table, ipp_player * player)
  */
 void ipp_free_table(ipp_table * table)
 {
-	int i;
+	guint i;
 
 	if (!ipp_initialized) {
 		ipp_init();
@@ -915,13 +935,16 @@ void ipp_free_table(ipp_table * table)
  * Checks a certificate to make sure it is valid.
  * @param session GNU TLS Session.
  * @param hostname the hostname of the server connected to.
+ * @return TRUE if valid.
  */
-int __ipp_verify_cert(gnutls_session session, const char *hostname)
+gboolean __ipp_verify_cert(gnutls_session session, const char *hostname)
 {
-	unsigned int status;
+	guint status;
+	guint cert_list_size;
 	const gnutls_datum *cert_list;
-	unsigned int cert_list_size;
-	int ret, i, valid;
+	gint ret;
+	guint i;
+	gboolean valid;
 	gnutls_x509_crt cert;
 
 	if (!ipp_initialized) {
@@ -959,7 +982,7 @@ int __ipp_verify_cert(gnutls_session session, const char *hostname)
 		return FALSE;
 	}
 	for (i = 0; i < cert_list_size; i++) {
-		valid = 1;
+		valid = TRUE;
 
 		if (gnutls_x509_crt_init(&cert) < 0) {
 			/* init error */
@@ -967,19 +990,19 @@ int __ipp_verify_cert(gnutls_session session, const char *hostname)
 		}
 		if (gnutls_x509_crt_import(cert, &cert_list[i], GNUTLS_X509_FMT_DER) < 0) {
 			/* error parsing certificate */
-			valid = 0;
+			valid = FALSE;
 		}
 		if (gnutls_x509_crt_get_expiration_time(cert) < time(0)) {
 			/* Certificate has expired */
-			valid = 0;
+			valid = FALSE;
 		}
 		if (gnutls_x509_crt_get_activation_time(cert) > time(0)) {
 			/* Certificate is not yet activated */
-			valid = 0;
+			valid = FALSE;
 		}
 		if (!gnutls_x509_crt_check_hostname(cert, hostname)) {
 			/* Certificate doesn't match hostname */
-			valid = 0;
+			valid = FALSE;
 		}
 		gnutls_x509_crt_deinit(cert);
 
@@ -1001,6 +1024,11 @@ int __ipp_verify_cert(gnutls_session session, const char *hostname)
  */
 ipp_socket *ipp_connect(char *hostname, char *ca_file)
 {
+	/* TODO - implement for win32 */
+	if (!ipp_initialized) {
+		ipp_init();
+	}
+
 	return NULL;
 }
 
@@ -1015,7 +1043,7 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 ipp_socket *ipp_connect(char *hostname, char *ca_file)
 {
 	ipp_socket *sock;
-	int ret;
+	gint ret;
 	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
 
 	struct addrinfo *ai;
@@ -1149,20 +1177,21 @@ void ipp_disconnect(ipp_socket * sock)
 /**
  * Read a message from the socket.
  * @param sock the socket to read from.
- * @param timeout number of seconds to wait for input.
+ * @param timeout_seconds number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with free().
  */
-ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *))
+ipp_message *ipp_read_msg(ipp_socket * sock, guint8 timeout_seconds, void (*logger) (char *))
 {
 	char *buffer;
-	int ret;
-	int is_valid;
+	gint ret;
+	gboolean is_valid;
+	struct timeval timeout;
 
 	if (!ipp_initialized) {
 		ipp_init();
 	}
 
-	if (!sock || timeout < 0) {
+	if (!sock || timeout_seconds < 0) {
 		return NULL;
 	}
 
@@ -1174,12 +1203,23 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *
 	}
 	memset(buffer, '\0', (sizeof(char) * (MAX_MSG_SIZE + 1)));
 
+	timeout.tv_sec = timeout_seconds;
+	timeout.tv_usec = 0;
+
+	ret = setsockopt(sock->sd, SOL_SOCKET, SO_RCVTIMEO, (void *) &timeout, sizeof(timeout));
+	if (ret == -1) {
+		free(buffer);
+		buffer = NULL;
+		return NULL;
+	}
+
 	do {
 		ret = gnutls_record_recv(sock->session, buffer, MAX_MSG_SIZE);
 	} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
 
 	if (ret < 0) {
 		free(buffer);
+		buffer = NULL;
 		return NULL;
 	}
 	ipp_normalize_msg(buffer);
@@ -1198,10 +1238,12 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *
 			return msg;
 		} else {
 			free(buffer);
+			buffer = NULL;
 			return NULL;
 		}
 	} else {
 		free(buffer);
+		buffer = NULL;
 		return NULL;
 	}
 }
@@ -1210,19 +1252,20 @@ ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *
  * Send a message to the socket. It will be normalized and validated by this function before sending.
  * @param sock the socket to read from.
  * @param msg the message to send.
- * @param timeout number of seconds to wait for output.
+ * @param timeout_seconds number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logger) (char *))
+gboolean ipp_send_msg(ipp_socket * sock, ipp_message * msg, guint8 timeout_seconds, void (*logger) (char *))
 {
-	int is_valid;
-	int ret;
+	gboolean is_valid;
+	struct timeval timeout;
+	gint ret;
 
 	if (!ipp_initialized) {
 		ipp_init();
 	}
 
-	if (!sock || !msg || timeout < 0) {
+	if (!sock || !msg || timeout_seconds < 0) {
 		return FALSE;
 	}
 
@@ -1252,6 +1295,16 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logge
 		strncpy(final_msg, msg->payload, len + 3);
 		final_msg[len] = '\n';
 
+		timeout.tv_sec = timeout_seconds;
+		timeout.tv_usec = 0;
+
+		ret = setsockopt(sock->sd, SOL_SOCKET, SO_SNDTIMEO, (void *) &timeout, sizeof(timeout));
+		if (ret == -1) {
+			free(final_msg);
+			final_msg = NULL;
+			return FALSE;
+		}
+
 		do {
 			ret = gnutls_record_send(sock->session, final_msg, strlen(final_msg));
 		} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
@@ -1273,9 +1326,8 @@ int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logge
 
 /**
  * servloop exit Indicator
- * 1 for exit now, 0 for continue.
  */
-static int done;
+static gboolean done;
 
 /**
  * Causes the servloop to terminate gracefully.
@@ -1286,7 +1338,7 @@ void ipp_servloop_shutdown(void)
 		ipp_init();
 	}
 
-	done = 1;
+	done = TRUE;
 }
 
 #ifdef _WIN32
@@ -1322,7 +1374,7 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
 {
 	SOCKET slave;
-	int rc;
+	gint rc;
 #ifdef _WIN32
 	char optval;
 #else
@@ -1337,7 +1389,8 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 	struct sockaddr_storage sockaddr;
 	socklen_t sockaddrlen;
 	struct pollfd sds[IPP_SERVER_MAX_SDS];
-	int nsds, i;
+	int nsds;
+	guint i;
 
 	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
 	gnutls_session_t session;
@@ -1412,7 +1465,7 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 		return;
 	}
 
-	done = 0;
+	done = FALSE;
 
 	while (!done) {
 		/* Poll master so that we don't block on accept */
@@ -1662,10 +1715,12 @@ long long ipp_eval_card2prime(ipp_card * card)
  */
 ipp_message *ipp_eval(ipp_card * cards[5])
 {
-	int i = 0, cnt = 0, len = 0;
+	guint i = 0;
+	guint cnt = 0;
+	gsize len = 0;
 	long long tmp, ranks, hand;
-	int cnts[IPP_EVAL_NPRIMES];
-	int flush = 0, straight = 0, quad = 0, triple = 0, paira = 0, pairb = 0, kicker = 0;
+	gint cnts[IPP_EVAL_NPRIMES];
+	gint flush = 0, straight = 0, quad = 0, triple = 0, paira = 0, pairb = 0, kicker = 0;
 	char tmp_str[] = { ' ', 'X', '\0' };
 	ipp_message *msg;
 
@@ -1830,10 +1885,10 @@ ipp_message *ipp_eval(ipp_card * cards[5])
 ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 {
 	/* TODO: support for draw and stud */
-	int N = HOLDEM_HOLE_CARDS + HOLDEM_BOARD_CARDS, R = HOLDEM_BOARD_CARDS;
-	int i;
-	int a, b, c, d, e;
-	int ncombinations = 21;
+	gint N = HOLDEM_HOLE_CARDS + HOLDEM_BOARD_CARDS, R = HOLDEM_BOARD_CARDS;
+	guint i;
+	guint a, b, c, d, e;
+	guint ncombinations = 21;
 	ipp_message *combinations[21];
 	ipp_card *cards[N], *toeval[R];
 
@@ -1901,7 +1956,7 @@ ipp_message *ipp_best_combination(ipp_table * table, int playerid)
 }
 
 typedef struct __ipp_combination {
-	int playerid;
+	guint8 playerid;
 	ipp_message *hand;
 } __ipp_combination;
 
@@ -1950,10 +2005,10 @@ int __ipp_combination_compar(const void *a, const void *b)
  * @param table a table in the SHOWDOWN stage.
  * @return a list of playerid's sorted by 1st place, 2nd place, etc. Don't forget to free the result.
  */
-int *ipp_rank_players(ipp_table * table)
+guint8 *ipp_rank_players(ipp_table * table)
 {
-	int i;
-	int *result;
+	guint i;
+	guint8 *result;
 
 	__ipp_combination combinations[HOLDEM_PLAYERS_PER_TABLE];
 
@@ -1971,7 +2026,7 @@ int *ipp_rank_players(ipp_table * table)
 	}
 
 
-	result = (int *) malloc(sizeof(int) * HOLDEM_PLAYERS_PER_TABLE);
+	result = (guint8 *) malloc(sizeof(guint8) * HOLDEM_PLAYERS_PER_TABLE);
 	if (result == NULL) {
 		return NULL;
 	}
@@ -2015,7 +2070,8 @@ int *ipp_rank_players(ipp_table * table)
  */
 int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b)
 {
-	int i, n;
+	guint i;
+	int n;
 
 	ipp_message *x = (ipp_message *) ipp_message_a;
 	ipp_message *y = (ipp_message *) ipp_message_b;
@@ -2407,9 +2463,10 @@ ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char 
  * @param timeout number of seconds to wait for output.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-void ipp_deal(ipp_table * table, int timeout, void (*logger) (char *))
+void ipp_deal(ipp_table * table, guint8 timeout, void (*logger) (char *))
 {
-	int i, j;
+	guint i;
+	guint j;
 	int rc;
 
 	if (!ipp_initialized) {

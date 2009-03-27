@@ -45,14 +45,6 @@ extern "C" {
 
 #endif
 
-#ifndef TRUE
-#define TRUE (1)
-#endif
-
-#ifndef FALSE
-#define FALSE (0)
-#endif
-
 #ifndef max
 #define max(x,y) (x > y ? x : y)
 #endif
@@ -171,7 +163,7 @@ extern "C" {
  * Structure used to hold a deck of 52 cards.
  */
 	typedef struct ipp_deck {
-		int deck_index;
+		guint8 deck_index;
 		ipp_card *cards[DECKSIZE];
 	} ipp_deck;
 
@@ -187,11 +179,11 @@ extern "C" {
 
 		/* TODO Support for Stud and Draw */
 		ipp_card *hole[HOLDEM_HOLE_CARDS];	/* two hole cards */
-		int bankroll;	/* amount of money this player has */
-		int amt_in;	/* amount into the pot from this player */
-		int still_in;	/* TRUE if still in the hand, FALSE
-				 * if folded, disconnected, etc. */
-		int kill;	/* TRUE if the player is scheduled for removal from the table. This is needed because ipp_remove_player() cannot be called while the table is locked. */
+		guint32 bankroll;	/* amount of money this player has */
+		guint32 amt_in;	/* amount into the pot from this player */
+		gboolean still_in;	/* TRUE if still in the hand, FALSE
+					 * if folded, disconnected, etc. */
+		gboolean kill;	/* TRUE if the player is scheduled for removal from the table. This is needed because ipp_remove_player() cannot be called while the table is locked. */
 	} ipp_player;
 
 /**
@@ -199,8 +191,8 @@ extern "C" {
  */
 	typedef struct ipp_table {
 		enum game_type type;
-		int nplayers;
-		int amt_to_call;
+		guint8 nplayers;
+		guint32 amt_to_call;
 		enum holdem_stage stage;
 		/* TODO Support for Stud and Draw */
 		ipp_player *players[HOLDEM_PLAYERS_PER_TABLE];
@@ -307,7 +299,7 @@ extern "C" {
  * @param player the player to add.
  * @return the index in table->players[] or -1 if the table was full.
  */
-	int ipp_add_player(ipp_table * table, ipp_player * player);
+	gint8 ipp_add_player(ipp_table * table, ipp_player * player);
 
 /**
  * Deallocates an ipp_table.
@@ -354,28 +346,28 @@ extern "C" {
  * This should be much higher than SERVER_READ_TIMEOUT.
  * @see SERVER_READ_TIMEOUT
  */
-#define CLIENT_READ_TIMEOUT (600)
+#define CLIENT_READ_TIMEOUT ((guint8) 600)
 
 /**
  * The number of seconds a server should wait for network input.
  * This should be much smaller than CLIENT_READ_TIMEOUT.
  * @see CLIENT_READ_TIMEOUT
  */
-#define SERVER_READ_TIMEOUT (10)
+#define SERVER_READ_TIMEOUT ((guint8) 10)
 
 /**
  * The number of seconds a client should wait for network output.
  * This should be much higher than SERVER_WRITE_TIMEOUT.
  * @see SERVER_WRITE_TIMEOUT
  */
-#define CLIENT_WRITE_TIMEOUT (600)
+#define CLIENT_WRITE_TIMEOUT ((guint8) 600)
 
 /**
  * The number of seconds a server should wait for network output.
  * This should be much smaller than CLIENT_WRITE_TIMEOUT.
  * @see CLIENT_WRITE_TIMEOUT
  */
-#define SERVER_WRITE_TIMEOUT (10)
+#define SERVER_WRITE_TIMEOUT ((guint8) 10)
 
 /* Regular expressions used to match message parts */
 
@@ -934,16 +926,16 @@ extern "C" {
  * Validates IPP Messages
  * @param regex one of the REGEX constants.
  * @param msg a message.
- * @return 1 if msg is valid, 0 if msg is not valid.
+ * @return TRUE if msg is valid, 0 if msg is not valid.
  */
-	int ipp_validate_msg(char *regex, char *msg);
+	gboolean ipp_validate_msg(char *regex, char *msg);
 
 /**
  * Validates an arbitrary IPP Messages.
  * @param msg a message.
  * @return constant for message type (example MSG_IPP), -1 if msg is not valid.
  */
-	int ipp_validate_unknown_msg(char *msg);
+	gint8 ipp_validate_unknown_msg(char *msg);
 
 /**
  * Convert the string to upper case and convert multiple spaces to 1 space.
@@ -956,8 +948,9 @@ extern "C" {
  * Checks a certificate to make sure it is valid.
  * @param session GNU TLS Session.
  * @param hostname the hostname of the server connected to.
+ * @return TRUE if valid.
  */
-	int __ipp_verify_cert(gnutls_session session, const char *hostname);
+	gboolean __ipp_verify_cert(gnutls_session session, const char *hostname);
 
 /**
  * Connect to a server.
@@ -976,19 +969,19 @@ extern "C" {
 /**
  * Read a message from the socket.
  * @param sock the socket to read from.
- * @param timeout number of seconds to wait for input.
+ * @param timeout_seconds number of seconds to wait for input.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with g_free().
  */
-	ipp_message *ipp_read_msg(ipp_socket * sock, int timeout, void (*logger) (char *));
+	ipp_message *ipp_read_msg(ipp_socket * sock, guint8 timeout_seconds, void (*logger) (char *));
 
 /**
  * Send a message to the socket. It will be normalized and validated by this function before sending.
  * @param sock the socket to read from.
  * @param msg the message to send.
- * @param timeout number of seconds to wait for output.
+ * @param timeout_seconds number of seconds to wait for output.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
-	int ipp_send_msg(ipp_socket * sock, ipp_message * msg, int timeout, void (*logger) (char *));
+	gboolean ipp_send_msg(ipp_socket * sock, ipp_message * msg, guint8 timeout_seconds, void (*logger) (char *));
 
 /**
  * Main server loop. This function sets up the networking and accepts
@@ -1057,7 +1050,7 @@ extern "C" {
  * @param table a table in the SHOWDOWN stage.
  * @return a list of playerid's sorted by 1st place, 2nd place, etc. Don't forget to free the result.
  */
-	int *ipp_rank_players(ipp_table * table);
+	guint8 *ipp_rank_players(ipp_table * table);
 
 /**
  * Comparitor for qsort and other similar sorting functions.
@@ -1092,7 +1085,7 @@ extern "C" {
  * @param timeout number of seconds to wait for output.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-	void ipp_deal(ipp_table * table, int timeout, void (*logger) (char *));
+	void ipp_deal(ipp_table * table, guint8 timeout, void (*logger) (char *));
 
 #endif
 
