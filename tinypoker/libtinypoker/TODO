@@ -1,9 +1,4 @@
- * portability improvements
-  - port to wine
-    + need to add a check in CMakeLists.txt for wine binary
-    + need to add checks for ws2_32.dll and winsock.dll
  * doxygen support for build system
- * need to check for gcrypt.h and libgcrypt in build system
  * man pages
  * programming guide
  * stud and draw
