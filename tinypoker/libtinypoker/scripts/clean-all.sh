@@ -28,4 +28,4 @@ rm -rf src/CMakeFiles src/Makefile src/cmake_install.cmake src/DartTestfile.txt 
 rm -rf src/main/CMakeFiles src/main/cmake_install.cmake src/main/DartTestfile.txt src/main/Makefile src/main/CTestTestfile.cmake	
 rm -rf src/examples/CMakeFiles src/examples/cmake_install.cmake src/examples/DartTestfile.txt src/examples/Makefile src/examples/CTestTestfile.cmake	
 rm -rf src/test/CMakeFiles src/test/cmake_install.cmake src/test/DartTestfile.txt src/test/Makefile src/test/CTestTestfile.cmake	
-
+rm -f src/test/libtinypoker.dll

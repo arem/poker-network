@@ -92,7 +92,7 @@ ENDIF (LIBWS2_32_INCDIR)
 ## wine
 #############################
 
-FIND_PRORGAM(WINE wine)
+FIND_PROGRAM(WINE wine)
 IF (WINE)
   MESSAGE(STATUS "Found wine at ${WINE}")
 ELSE (WINE)
