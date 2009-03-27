@@ -7,6 +7,6 @@
 @c Texts.  A copy of the license is included in the section entitled "GNU
 @c Free Documentation License".
 @c
-@set UPDATED 1 January 2009
-@set EDITION 0.1.0
-@set VERSION 0.1.0
+@set UPDATED 27 March 2009
+@set EDITION 1
+@set VERSION 0.2.0

@@ -18,7 +18,7 @@ Copyright @copyright{} 2008, 2009 Thomas Cort (@email{linuxgeek@@gmail.com})
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2
+under the terms of the GNU Free Documentation License, Version 1.3
 or any later version published by the Free Software Foundation;
 with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
 Texts.  A copy of the license is included in the section entitled "GNU
@@ -102,7 +102,7 @@ and print the documentation in any form. To protect these freedoms
 for everyone who obtains a copy of TinyPoker documentation,
 all TinyPoker documentation is released under the terms of the 
 @cindex GNU Free Documentation License
-@ref{GNU Free Documentation License version 1.2}, or (at your option)
+@ref{GNU Free Documentation License version 1.3}, or (at your option)
 any later version.
 
 @chapter libtinypoker
@@ -369,7 +369,7 @@ compile, link and install the software.
 @end group
 @end smallexample
 
-@node GNU Free Documentation License version 1.2
+@node GNU Free Documentation License version 1.3
 @appendix GNU Free Documentation License
 @include fdl.texi
 
