@@ -17,7 +17,13 @@
 
 SET (libdirs /usr/lib /usr/pkg/lib /usr/local/lib /usr/lib64 /usr/local/lib64 /usr/lib32 /usr/local/lib32)
 SET (bindirs /usr/bin /usr/pkg/bin /usr/local/bin)
-SET (incdirs /usr/include /usr/local/include /usr/pkg/include)
+SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/i586-mingw32msvc/include /usr/i686-pc-mingw32/sys-root/mingw/include)
+
+INCLUDE(FindPkgConfig)
+
+PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.18 REQUIRED)
+PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.18 REQUIRED)
+PKG_CHECK_MODULES(GNUTLS gnutls>=2.4 REQUIRED)
 
 #############################################
 # libpthread checks
@@ -100,54 +106,6 @@ ELSE (LIBTINYPOKER_INCLUDE_DIR)
 ENDIF (LIBTINYPOKER_INCLUDE_DIR)
 
 #############################################
-# libgnutls checks
-#############################################
-
-FIND_LIBRARY(LIBGNUTLS gnutls ${libdirs})
-
-IF (LIBGNUTLS)
-  MESSAGE(STATUS "Found libgnutls: ${LIBGNUTLS}")
-ELSE (LIBGNUTLS)
-  MESSAGE (FATAL_ERROR "libgnutls not found. See: http://www.gnu.org/software/gnutls/")
-ENDIF (LIBGNUTLS)
-
-FIND_PATH(LIBGNUTLS_INCLUDE_DIR gnutls/gnutls.h ${incdirs})
-
-IF (LIBGNUTLS_INCLUDE_DIR)
-  MESSAGE(STATUS "Found gnutls/gnutls.h in ${LIBGNUTLS_INCLUDE_DIR}")
-ELSE (LIBGNUTLS_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "gnutls/gnutls.h not found. See: http://www.gnu.org/software/gnutls/")
-ENDIF (LIBGNUTLS_INCLUDE_DIR)
-
-#############################################
-# libgsl checks
-#############################################
-
-FIND_LIBRARY(LIBGSL gsl ${libdirs})
-
-IF (LIBGSL)
-  MESSAGE(STATUS "Found libgsl: ${LIBGSL}")
-ELSE (LIBGSL)
-  MESSAGE (FATAL_ERROR "libgsl not found.")
-ENDIF (LIBGSL)
-
-FIND_LIBRARY(LIBGSLCBLAS gslcblas ${libdirs})
-
-IF (LIBGSLCBLAS)
-  MESSAGE(STATUS "Found libgslcblas: ${LIBGSLCBLAS}")
-ELSE (LIBGSLCBLAS)
-  MESSAGE (FATAL_ERROR "libgslcblas not found.")
-ENDIF (LIBGSLCBLAS)
-
-FIND_PATH(LIBGSL_INCLUDE_DIR gsl/gsl_rng.h ${incdirs})
-
-IF (LIBGSL_INCLUDE_DIR)
-  MESSAGE(STATUS "Found gsl/gsl_rng.h in ${LIBGSL_INCLUDE_DIR}")
-ELSE (LIBGSL_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "gsl/gsl_rng.h not found.")
-ENDIF (LIBGSL_INCLUDE_DIR)
-
-#############################################
 # libpam checks
 #############################################
 
@@ -179,14 +137,34 @@ ELSE (LIBXML2_FOUND)
   MESSAGE (FATAL_ERROR "libxml2 not found. See: http://xmlsoft.org/")
 ENDIF (LIBXML2_FOUND)
 
+#############################
+## libgcrypt
+#############################
+
+FIND_LIBRARY(LIBGCRYPT gcrypt)
+
+IF (LIBGCRYPT)
+  MESSAGE(STATUS "Found libgcrypt: ${LIBGCRYPT}")
+ELSE (LIBGCRYPT)
+  MESSAGE (FATAL_ERROR "libgcrypt not found. See: http://www.gnupg.org/")
+ENDIF (LIBGCRYPT)
+
+FIND_PATH(LIBGCRYPT_INCDIR gcrypt.h ${incdirs})
+
+IF (LIBGCRYPT_INCDIR)
+  MESSAGE(STATUS "Found gcrypt.h in ${LIBGCRYPT_INCDIR}")
+ELSE (LIBGCRYPT_INCDIR)
+  MESSAGE (FATAL_ERROR "gcrypt.h not found. See: http://www.gnupg.org/")
+ENDIF (LIBGCRYPT_INCDIR)
+
 #############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${incdirs} ${LIBXML2_INCLUDE_DIR} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${LIBGNUTLS_INCLUDE_DIR} ${LIBGSL_INCLUDE_DIR} ${LIBPAM_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${GNUTLS_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS} ${LIBGCRYPT_INCDIR} ${LIBPAM_INCLUDE_DIR})
 ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c pam.c poker.c pokerserv.c log.c)
 SET_TARGET_PROPERTIES(tinypokerd PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
-TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${LIBGNUTLS} ${LIBGSL} ${LIBGSLCBLAS} ${LIBPAM} ${LIBXML2_LIBRARIES})
+TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${GNUTLS_LIBRARIES} ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${LIBGCRYPT} ${LIBPAM} ${LIBXML2_LIBRARIES})
 
 #############################################
 # Installation

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
 
 PROJECT(tinypokerd C)
 
