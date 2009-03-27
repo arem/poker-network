@@ -19,10 +19,16 @@
 
 #define _GNU_SOURCE
 
+#ifdef _WIN32
+#ifndef WINVER
+#define WINVER WindowsXP
+#endif
+#include <w32api.h>
+#endif
+
 #include <glib.h>
 
 #ifdef _WIN32
-
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <io.h>
@@ -1014,26 +1020,6 @@ gboolean __ipp_verify_cert(gnutls_session session, const char *hostname)
 	return TRUE;
 }
 
-#ifdef _WIN32
-
-/**
- * Connect to a server.
- * @param hostname the hostname of the server to connect to (example: host.domain.tld).
- * @param ca_file Path to Certificate Authority file.
- * @return a socket or NULL if an error happened.
- */
-ipp_socket *ipp_connect(char *hostname, char *ca_file)
-{
-	/* TODO - implement for win32 */
-	if (!ipp_initialized) {
-		ipp_init();
-	}
-
-	return NULL;
-}
-
-#else
-
 /**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
@@ -1045,6 +1031,7 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 	ipp_socket *sock;
 	gint ret;
 	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
+	struct timeval timeout;
 
 	struct addrinfo *ai;
 	struct addrinfo hints;
@@ -1063,6 +1050,9 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 
 	/* TinyPoker -- create an empty socket structure */
 	sock = ipp_new_socket();
+	if (sock == NULL) {
+		return NULL;
+	}
 
 	/* GNU TLS -- initialize the structure */
 	gnutls_certificate_allocate_credentials(&(sock->x509_cred));
@@ -1077,9 +1067,14 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 	 * and connect
 	 */
 	memset(&hints, '\0', sizeof(hints));
+#ifdef _WIN32
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+#else
 	hints.ai_flags = AI_ADDRCONFIG;
 	hints.ai_socktype = SOCK_STREAM;
-
+#endif
 	ret = getaddrinfo(hostname, IPP_SERVICE_NAME, &hints, &ai);
 	if (ret != 0) {
 		ipp_free_socket(sock);
@@ -1092,9 +1087,19 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 			continue;
 		}
 
+		timeout.tv_sec = CLIENT_READ_TIMEOUT;
+		timeout.tv_usec = 0;
+
+		ret = setsockopt(sock->sd, SOL_SOCKET, SO_RCVTIMEO, (void *) &timeout, sizeof(timeout));
+		if (ret == -1) {
+			closesocket(sock->sd);
+			sock->sd = -1;
+			continue;
+		}
+
 		ret = connect(sock->sd, runp->ai_addr, runp->ai_addrlen);
 		if (ret != 0) {
-			close(sock->sd);
+			closesocket(sock->sd);
 			sock->sd = -1;
 			continue;
 		}
@@ -1131,8 +1136,6 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 	}
 	return sock;
 }
-
-#endif
 
 /**
  * Disconnect from the server.
@@ -1341,25 +1344,6 @@ void ipp_servloop_shutdown(void)
 	done = TRUE;
 }
 
-#ifdef _WIN32
-
-/**
- * Main server loop. This function sets up the networking and accepts
- * incoming connections. For every incoming client, a 'callback' is
- * called. The server blocks and waits for 'callback' to return, so
- * make 'callback' short and sweet.
- * @param callback function to call when a new client connects.
- * @param ca_file Certificate Authority
- * @param crl_file CRL
- * @param cert_file SSL/TLS Certificate File
- * @param key_file Private Key
- */
-void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
-{
-}
-
-#else
-
 /**
  * Main server loop. This function sets up the networking and accepts
  * incoming connections. For every incoming client, a 'callback' is
@@ -1388,9 +1372,12 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 	struct addrinfo *runp;
 	struct sockaddr_storage sockaddr;
 	socklen_t sockaddrlen;
-	struct pollfd sds[IPP_SERVER_MAX_SDS];
-	int nsds;
 	guint i;
+
+	fd_set readset;
+	SOCKET sds[IPP_SERVER_MAX_SDS];
+	int nsds, sdmax;
+	struct timeval timeout;
 
 	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
 	gnutls_session_t session;
@@ -1417,8 +1404,16 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
 	memset(&hints, '\0', sizeof(hints));
+#ifdef _WIN32
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_family = AF_INET;
+	hints.ai_protocol = IPPROTO_TCP;
+#else
 	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
 	hints.ai_socktype = SOCK_STREAM;
+#endif
+
 	rc = getaddrinfo(NULL, IPP_SERVICE_NAME, &hints, &ai);
 	if (rc != 0) {
 		gnutls_certificate_free_credentials(x509_cred);
@@ -1426,34 +1421,36 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 		return;
 	}
 
-	memset(sds, '\0', sizeof(struct pollfd) * IPP_SERVER_MAX_SDS);
+	memset(sds, '\0', sizeof(SOCKET) * IPP_SERVER_MAX_SDS);
+	FD_ZERO(&readset);
 
 	nsds = 0;
 	for (runp = ai; runp != NULL && nsds < IPP_SERVER_MAX_SDS; runp = runp->ai_next) {
-		sds[nsds].fd = socket(runp->ai_family, runp->ai_socktype, runp->ai_protocol);
-		if (sds[nsds].fd == -1) {
+		SOCKET sd;
+
+		sd = socket(runp->ai_family, runp->ai_socktype, runp->ai_protocol);
+		if (sd == -1) {
 			continue;
 		}
 
 		optval = 1;
-		setsockopt(sds[nsds].fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+		setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
-		rc = bind(sds[nsds].fd, runp->ai_addr, runp->ai_addrlen);
+		rc = bind(sd, runp->ai_addr, runp->ai_addrlen);
 		if (rc != 0) {
-			closesocket(sds[nsds].fd);
-			sds[nsds].fd = -1;
+			closesocket(sd);
+			sd = -1;
 			continue;
 		}
 
-		rc = listen(sds[nsds].fd, SOMAXCONN);
+		rc = listen(sd, SOMAXCONN);
 		if (rc != 0) {
-			closesocket(sds[nsds].fd);
-			sds[nsds].fd = -1;
+			closesocket(sd);
+			sd = -1;
 			continue;
 		}
 
-		sds[nsds].events = POLLIN;
-		sds[nsds].revents = 0;
+		sds[nsds] = sd;
 		nsds++;
 	}
 
@@ -1468,12 +1465,23 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 	done = FALSE;
 
 	while (!done) {
-		/* Poll master so that we don't block on accept */
+		/* select master so that we don't block on accept */
 		/*
 		 * this is done so that when we signal we re-evaluate if
 		 * !done == true
 		 */
-		rc = poll(sds, nsds, 10000);
+
+		FD_ZERO(&readset);
+		sdmax = 0;
+		for (i = 0; i < nsds; i++) {
+			FD_SET(sds[i], &readset);
+			sdmax = max(sdmax, sds[i]);
+		}
+
+		timeout.tv_sec = 10;
+		timeout.tv_usec = 0;
+
+		rc = select(sdmax + 1, &readset, NULL, NULL, &timeout);
 
 		if (done) {
 			break;
@@ -1481,17 +1489,17 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 
 		/* check if 1 or more sockets is ready for us */
 		if (rc > 0) {
-			for (i = 0; i < nsds; i++) {
-				if (sds[i].revents & POLLIN) {
+			for (i = 0; i < FD_SETSIZE; i++) {
+				if (FD_ISSET(i, &readset)) {
 					sockaddrlen = sizeof(struct sockaddr);	/* probably not needed */
-					slave = accept(sds[i].fd, (struct sockaddr *) &sockaddr, &sockaddrlen);
+					slave = accept((SOCKET) i, (struct sockaddr *) &sockaddr, &sockaddrlen);
 					if (slave < 0) {
 						if (errno == EINTR) {
 							continue;
 						} else {
 							for (i = 0; i < nsds; i++) {
-								shutdown(sds[i].fd, SHUT_RDWR);
-								closesocket(sds[i].fd);
+								shutdown((SOCKET) i, SHUT_RDWR);
+								closesocket((SOCKET) i);
 							}
 
 							gnutls_certificate_free_credentials(x509_cred);
@@ -1532,23 +1540,18 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 
 					callback(ipp_slave);
 				}
-
-				sds[i].revents = 0;
-				sds[i].events = POLLIN;
 			}
 		}
 	}
 
 	for (i = 0; i < nsds; i++) {
-		shutdown(sds[i].fd, SHUT_RDWR);
-		closesocket(sds[i].fd);
+		shutdown(sds[i], SHUT_RDWR);
+		closesocket(sds[i]);
 	}
 
 	gnutls_certificate_free_credentials(x509_cred);
 	gnutls_dh_params_deinit(dh_params);
 }
-
-#endif
 
 /**
  * Maps a product of the prime representation of ranks of cards in the

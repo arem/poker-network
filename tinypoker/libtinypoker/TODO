@@ -1,14 +1,13 @@
  * portability improvements
   - port to wine
-    + use select() to handle timeouts
-    + implement win32 api version of connect/servloop
     + need to add a check in CMakeLists.txt for wine binary
-  - test on one or more of OpenBSD, FreeBSD, NetBSD
+    + need to add checks for ws2_32.dll and winsock.dll
  * doxygen support for build system
  * need to check for gcrypt.h and libgcrypt in build system
  * man pages
  * programming guide
  * stud and draw
  * unit tests for network code
+ * actual testing for network code
  * error reporting system - currently there is no way to tell the program using libtinypoker 
 	about some syscall failures... dns lookup failures, malloc failures, etc

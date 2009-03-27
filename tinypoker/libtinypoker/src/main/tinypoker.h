@@ -24,6 +24,13 @@ extern "C" {
 #ifndef __TINYPOKER_H
 #define __TINYPOKER_H
 
+#ifdef _WIN32
+#ifndef WINVER
+#define WINVER WindowsXP
+#endif
+#include <w32api.h>
+#endif
+
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>

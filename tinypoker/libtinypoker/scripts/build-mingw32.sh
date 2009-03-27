@@ -19,9 +19,6 @@
 set -e
 
 echo "**************************************************************************"
-echo "**************************************************************************"
-echo "***  WARNING: The wine port is BROKEN. Script only works on Fedora 10  ***"
-echo "**************************************************************************"
 echo "*** Add ;Z:\\usr\\i686-pc-mingw32\\sys-root\\mingw\\bin to PATH in     ***"
 echo "*** ~/.wine/system.reg under the following heading...                  ***"
 echo "*** [System\\CurrentControlSet\\Control\\Session Manager\\Environment] ***"
