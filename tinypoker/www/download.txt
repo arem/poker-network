@@ -17,8 +17,7 @@ libtinypoker
 *libtinypoker* provides application programming interfaces (APIs) to applications
 implementing the Internet Poker Protocol (IPP) Version 2.0. The library
 provides a robust communications framework that allows clients and servers
-to communicate over secure transport layer sockets (TLS) using Internet
-Protocol version 4 (IPv4) and/or Internet Protocol version 6 (IPv6).
+to communicate over secure transport layer sockets (TLS).
 The underlying code is designed to gracefully handle network problems
 such as unexpected disconnections and bad input. IPP message validation,
 normalization and parsing functions are available to developers as are
@@ -26,7 +25,8 @@ several predefined types for representing poker games, players and cards.
 Functions for evaluating hands and determining the winner(s) are also provided.
 *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
 link:gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://www.gnu.org/software/gnutls/[GNU Transport Layer Security].
+It depends on http://www.gnu.org/software/gnutls/[GNU Transport Layer Security]
+and http://www.gtk.org/[glib2].
 
  * link:code/libtinypoker-0.1.0.tar.gz[libtinypoker-0.1.0.tar.gz] (March 15, 2009)
  * link:code/libtinypoker-0.0.0.tar.gz[libtinypoker-0.0.0.tar.gz] (April 1, 2008)
@@ -59,10 +59,8 @@ tinypokerbot
 a server, join a game, and fold every hand. It is intended
 to be a base for building a poker bot. It free software and is licensed under the
 terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://tinypoker.org/[libtinypoker],
-http://www.gnu.org/software/libc/[libdl] and
-http://www.gnu.org/software/binutils/[libbfd].
-
+It depends on http://tinypoker.org/[libtinypoker] and
+http://www.gnu.org/software/guile/guile.html[guile].
 
  * 'No releases yet'.
 

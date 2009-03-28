@@ -48,19 +48,21 @@ static void client_connect_callback(ipp_socket * sock)
 	if (!p) {
 		daemon_log(LOG_ERR, "[SERV] Handshake Failed");
 		return;
-	} else {
-		ipp_free_player(p);
-		p = NULL;
-		sock = NULL;
 	}
 
+	g_mutex_lock(tbl->lock);
 	rc = ipp_add_player(tbl, p);
+	g_mutex_unlock(tbl->lock);
 	if (rc == -1) {
 		/* TODO send table full error message */
+		daemon_log(LOG_INFO, "[SERV] Table Full");
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
+		return;
 	}
+
+	daemon_log(LOG_INFO, "[SERV] Added '%s' to table.", p->name);
 }
 
 int pokerserv(void)
@@ -89,7 +91,7 @@ int pokerserv(void)
 	daemon_log(LOG_DEBUG, "[SERV] Dealer Thread Started");
 
 	/* Start listening for connections */
-	ipp_servloop(client_connect_callback, x509_ca, x509_crl, x509_cert, x509_key);
+	ipp_servloop(TINYPOKER_PORT, client_connect_callback, x509_ca, x509_crl, x509_cert, x509_key);
 
 	daemon_log(LOG_DEBUG, "[SERV] Server Loop Exited");
 

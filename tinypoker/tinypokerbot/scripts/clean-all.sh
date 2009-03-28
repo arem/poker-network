@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 # Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
 #
 # This file is part of tinypokerbot.
@@ -15,7 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with tinypokerbot.  If not, see <http://www.gnu.org/licenses/>.
 
-find ./ -name \*.[ch] -exec indent -nbad -nbfda -bap -nbc -br -brs -c33 \
--cd33 -ncdb -ce -ci4 -cli0 -cp33 -d0 -di1 -nfc1 -nfca -i8 -ip0 -l240    \
--lp -npcs -npsl -nsc -nsob -nss -ts8 -cs -ut {} \;
-find ./ -name \*.[ch]~ -exec rm {} \;
+if [ -f Makefile ]
+then
+	make clean
+fi
+
+set -e
+
+rm -rf Testing CMakeCache.txt DartConfiguration.tcl install_manifest.txt DartTestfile.txt Makefile cmake_install.cmake CMakeFiles CTestTestfile.cmake	

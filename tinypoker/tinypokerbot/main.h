@@ -21,6 +21,6 @@
 #define __MAIN_H
 
 #define PROGRAM "tinypokerbot"
-#define VERSION "0.0.0"
+#define VERSION "0.1.0"
 
 #endif

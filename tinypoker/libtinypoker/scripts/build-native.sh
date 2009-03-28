@@ -18,8 +18,6 @@
 
 set -e
 
-export PKG_CONFIG_PATH=/usr/lib/pkgconfig
-
 scripts/clean-all.sh
 cmake .
 make && make test

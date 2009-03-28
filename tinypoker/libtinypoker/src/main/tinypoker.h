@@ -24,13 +24,6 @@ extern "C" {
 #ifndef __TINYPOKER_H
 #define __TINYPOKER_H
 
-#ifdef _WIN32
-#ifndef WINVER
-#define WINVER WindowsXP
-#endif
-#include <w32api.h>
-#endif
-
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,18 +32,7 @@ extern "C" {
 #include <gnutls/x509.h>
 #include <sys/types.h>
 
-#ifdef WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <io.h>
-	typedef int socklen_t;
-
-#else
-
 #include <netinet/in.h>
-	typedef int SOCKET;
-
-#endif
 
 #ifndef max
 #define max(x,y) (x > y ? x : y)
@@ -74,6 +56,8 @@ extern "C" {
  * Patch version number.
  */
 #define LIBTINYPOKER_PATCH_VERSION 0
+
+#define TINYPOKER_PORT ((short) 9898)
 
 /**
  * Version number as a string.
@@ -136,9 +120,8 @@ extern "C" {
  * Structure used to hold network communications information.
  */
 	typedef struct ipp_socket {
-		SOCKET sd;
-		struct sockaddr_storage sockaddr;
-		socklen_t sockaddrlen;
+		int sd;
+		struct sockaddr_in addr;
 
 		gnutls_session_t session;
 		gnutls_certificate_credentials_t x509_cred;
@@ -962,10 +945,11 @@ extern "C" {
 /**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
+ * @param port TCP/IP port for the connection.
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-	ipp_socket *ipp_connect(char *hostname, char *ca_file);
+	ipp_socket *ipp_connect(char *hostname, short port, char *ca_file);
 
 /**
  * Disconnect from the server.
@@ -995,13 +979,14 @@ extern "C" {
  * incoming connections. For every incoming client, a 'callback' is
  * called. The server blocks and waits for 'callback' to return, so
  * make 'callback' short and sweet.
+ * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
  * @param ca_file Certificate Authority
  * @param crl_file CRL
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
  */
-	void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
+	void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
 
 /**
  * Causes the servloop to terminate gracefully.
@@ -1078,13 +1063,14 @@ extern "C" {
 /**
  * Handshake Helper Function. This should be called by the client.
  * @param hostname the name of the server.
+ * @param port TCP/IP port. 
  * @param cacert the certificate of the certificate authority.
  * @param user the username (in upper case).
  * @param pass the password (in upper case).
  * @param buyin_amt the inital money amount for this player.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-	ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *));
+	ipp_socket *ipp_client_handshake(char *hostname, short port, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *));
 
 /**
  * Deal cards to the players at the table.

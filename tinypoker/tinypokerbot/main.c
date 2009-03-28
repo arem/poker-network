@@ -19,12 +19,12 @@
 
 #include <strings.h>
 #include <getopt.h>
-#include <libdaemon/dlog.h>
 #include <tinypoker.h>
 
-#include "conf.h"
+#include <libguile.h>
+#include <guile/gh.h>
+
 #include "main.h"
-#include "signal.h"
 
 /**
  * Displays some usage information, command line parameters and whatnot.
@@ -32,10 +32,10 @@
  */
 void display_help(char *program)
 {
-	daemon_log(LOG_INFO, "Usage: %s [options]", program);
-	daemon_log(LOG_INFO, "Options:");
-	daemon_log(LOG_INFO, "    -h --help        Show this help message");
-	daemon_log(LOG_INFO, "    -v --version     Show version information");
+	printf("Usage: %s [options]\n", program);
+	printf("Options:\n");
+	printf("    -h --help        Show this help message\n");
+	printf("    -v --version     Show version information\n");
 }
 
 /**
@@ -43,10 +43,10 @@ void display_help(char *program)
  */
 void display_version(void)
 {
-	daemon_log(LOG_INFO, "%s v%s", PROGRAM, VERSION);
-	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>");
-	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
-	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+	printf("%s v%s\n", PROGRAM, VERSION);
+	printf("Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>\n");
+	printf("This is free software; see the source for copying conditions.  There is NO\n");
+	printf("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
 
 
@@ -93,7 +93,7 @@ int parse_args(int argc, char **argv)
 void protocol_logger(char *msg)
 {
 	if (msg && msg[0]) {
-		daemon_log(LOG_INFO, "%s", msg);
+		printf("%s\n", msg);
 	}
 }
 
@@ -105,56 +105,46 @@ void protocol_logger(char *msg)
  */
 int main(int argc, char **argv)
 {
-	ipp_socket *sock;
 	int rc;
 
+
 	if (argc < 1 || !argv || !argv[0]) {
-		daemon_log(LOG_ERR, "(%u:%s) Cannot determine program name from argv[0]", __LINE__, __FILE__);
+		printf("Cannot determine program name from argv[0]\n");
 		return 1;
 	}
-
-	install_signal_handlers();
-
-	/* Set the default config file path */
-	configfile = (char *) malloc((strlen("tinypokerbot.conf") + 2) * sizeof(char));
-	if (!configfile) {
-		daemon_log(LOG_ERR, "malloc() failed!");
-		return 255;
-	}
-	bzero(configfile, (strlen("tinypokerbot.conf") + 2) * sizeof(char));
-	snprintf(configfile, strlen("tinypokerbot.conf") + 1, "tinypokerbot.conf");
-
-	configure();
 
 	rc = parse_args(argc, argv);
 	if (rc) {
 		return rc;
 	}
-	if (!host || !user) {
-		daemon_log(LOG_ERR, "[MAIN] Could not determine one or more configuration setting from '%s'", configfile);
-		free_config();
-		return 255;
-	} else {
-		daemon_log(LOG_INFO, "[MAIN] Connecting to %s as %s", host, user);
-	}
 
 	ipp_init();
+	scm_init_guile();
 
-	if ((sock = ipp_client_handshake(host, "ca.pem", user, pass, "500", protocol_logger))) {
-		daemon_log(LOG_INFO, "[MAIN] Handshake OK");
+	scm_c_primitive_load("scheme/agent.scm");
 
-/* TODO dlopen */
+	{
+		SCM hostname;
 
+		hostname = scm_c_lookup("hostname");
 
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		sock = NULL;
-	} else {
-		daemon_log(LOG_ERR, "[MAIN] Handshake Failed!");
+		if (scm_variable_bound_p(hostname)  == SCM_BOOL_T) {
+			SCM hostname_val;
+			size_t len = 0;
+			char *hostname_cstr;
+
+			hostname_val = scm_variable_ref(hostname);
+			hostname_cstr = gh_scm2newstr(hostname_val, &len);
+
+			printf("%s\n", hostname_cstr);
+
+		} else {
+			fprintf(stderr, "variable not bound\n");
+			ipp_exit();
+			return 0;
+		}
 	}
 
 	ipp_exit();
-
-	free_config();
 	return 0;
 }

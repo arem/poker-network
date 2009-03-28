@@ -19,37 +19,13 @@
 
 #define _GNU_SOURCE
 
-#ifdef _WIN32
-#ifndef WINVER
-#define WINVER WindowsXP
-#endif
-#include <w32api.h>
-#endif
-
 #include <glib.h>
-
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <io.h>
-
-#define SHUT_RDWR SD_BOTH
-
-#else
 
 #include <netdb.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
-
-#define closesocket(sd) close(sd)
-
-#endif
-
-#ifndef SOMAXCONN
-#define SOMAXCONN 5
-#endif
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -235,28 +211,6 @@ void ipp_init(void)
 		gnutls_global_deinit();
 		return;
 	}
-#ifdef _WIN32
-	/* Winsock */
-	int rc;
-	WORD wVersionRequested = MAKEWORD(1, 1);
-	WSADATA wsaData;
-
-	memset(&(wsaData), '\0', sizeof(WSADATA));
-
-	rc = WSAStartup(wVersionRequested, &(wsaData));
-	if (rc == -1) {
-		gnutls_global_deinit();
-		g_rand_free(rng);
-		return;
-	}
-
-	if (wsaData.wVersion != wVersionRequested) {
-		gnutls_global_deinit();
-		g_rand_free(rng);
-		WSACleanup();
-		return;
-	}
-#endif
 
 	ipp_initialized = TRUE;
 }
@@ -278,11 +232,6 @@ void ipp_exit(void)
 		g_rand_free(rng);
 		rng = NULL;
 	}
-#ifdef _WIN32
-	/* Winsock */
-	WSACleanup();
-#endif
-
 
 	ipp_initialized = FALSE;
 }
@@ -867,6 +816,14 @@ gint8 ipp_add_player(ipp_table * table, ipp_player * player)
 	guint8 i;
 	gboolean added;
 
+	if (!ipp_initialized) {
+		ipp_init();
+	}
+
+	if (table == NULL || player == NULL) {
+		return -1;
+	}
+
 	/* TODO Support for Stud and Draw */
 	if (table->nplayers == HOLDEM_PLAYERS_PER_TABLE) {
 		return -1;
@@ -1023,36 +980,23 @@ gboolean __ipp_verify_cert(gnutls_session session, const char *hostname)
 /**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
+ * @param port TCP/IP port for the connection.
  * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket *ipp_connect(char *hostname, char *ca_file)
+ipp_socket *ipp_connect(char *hostname, short port, char *ca_file)
 {
 	ipp_socket *sock;
-	gint ret;
+	int ret;
 	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
-	struct timeval timeout;
-
-	struct addrinfo *ai;
-	struct addrinfo hints;
-	struct addrinfo *runp;
-
+	const char *err;
+	struct sockaddr_in sin;
+	struct hostent *he;
 	gnutls_transport_ptr_t ptr;
 	long gnutls_sock;
 
-	if (!ipp_initialized) {
-		ipp_init();
-	}
-
-	if (!hostname || !ca_file) {
-		return NULL;
-	}
-
 	/* TinyPoker -- create an empty socket structure */
 	sock = ipp_new_socket();
-	if (sock == NULL) {
-		return NULL;
-	}
 
 	/* GNU TLS -- initialize the structure */
 	gnutls_certificate_allocate_credentials(&(sock->x509_cred));
@@ -1066,56 +1010,28 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 	 * TCP -- resolve the server's hostname, create a socket descriptor
 	 * and connect
 	 */
-	memset(&hints, '\0', sizeof(hints));
-#ifdef _WIN32
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-#else
-	hints.ai_flags = AI_ADDRCONFIG;
-	hints.ai_socktype = SOCK_STREAM;
-#endif
-	ret = getaddrinfo(hostname, IPP_SERVICE_NAME, &hints, &ai);
-	if (ret != 0) {
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_port = htons(port);
+	he = gethostbyname(hostname);
+	if (!ret) {
+		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		return NULL;
 	}
-
-	for (runp = ai; runp != NULL; runp = runp->ai_next) {
-		sock->sd = socket(runp->ai_family, runp->ai_socktype, runp->ai_protocol);
-		if (sock->sd == -1) {
-			continue;
-		}
-
-		timeout.tv_sec = CLIENT_READ_TIMEOUT;
-		timeout.tv_usec = 0;
-
-		ret = setsockopt(sock->sd, SOL_SOCKET, SO_RCVTIMEO, (void *) &timeout, sizeof(timeout));
-		if (ret == -1) {
-			closesocket(sock->sd);
-			sock->sd = -1;
-			continue;
-		}
-
-		ret = connect(sock->sd, runp->ai_addr, runp->ai_addrlen);
-		if (ret != 0) {
-			closesocket(sock->sd);
-			sock->sd = -1;
-			continue;
-		}
-
-		/* if we get here it means we are connected */
-		break;
-	}
-
-	freeaddrinfo(ai);
-
-	/* couldn't connect on any socket :( give up. */
-	if (sock->sd == -1) {
+	sin.sin_family = he->h_addrtype;
+	memcpy(&sin.sin_addr, he->h_addr, he->h_length);
+	sock->sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (!(sock->sd)) {
+		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		return NULL;
 	}
-
+	ret = connect(sock->sd, (struct sockaddr *) &sin, sizeof(sin));
+	if (ret) {
+		ipp_disconnect(sock);
+		ipp_free_socket(sock);
+		return NULL;
+	}
 	/* GNU TLS -- handshaking */
 	gnutls_sock = sock->sd;
 	ptr = (gnutls_transport_ptr_t) gnutls_sock;
@@ -1135,6 +1051,7 @@ ipp_socket *ipp_connect(char *hostname, char *ca_file)
 		return NULL;
 	}
 	return sock;
+
 }
 
 /**
@@ -1158,7 +1075,7 @@ void ipp_disconnect(ipp_socket * sock)
 	if (sock->sd) {
 		/* close the connection */
 		shutdown(sock->sd, SHUT_RDWR);
-		closesocket(sock->sd);
+		close(sock->sd);
 		sock->sd = 0;
 	}
 
@@ -1349,50 +1266,28 @@ void ipp_servloop_shutdown(void)
  * incoming connections. For every incoming client, a 'callback' is
  * called. The server blocks and waits for 'callback' to return, so
  * make 'callback' short and sweet.
+ * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
  * @param ca_file Certificate Authority
  * @param crl_file CRL
  * @param cert_file SSL/TLS Certificate File
  * @param key_file Private Key
  */
-void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
+void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
 {
-	SOCKET slave;
-	gint rc;
-#ifdef _WIN32
-	char optval;
-#else
-	int optval;
-#endif
-
+	int master, slave, rc, optval;
 	ipp_socket *ipp_slave;
 
-	struct addrinfo *ai;
-	struct addrinfo hints;
-	struct addrinfo *runp;
-	struct sockaddr_storage sockaddr;
-	socklen_t sockaddrlen;
-	guint i;
-
-	fd_set readset;
-	SOCKET sds[IPP_SERVER_MAX_SDS];
-	int nsds, sdmax;
-	struct timeval timeout;
-
+	struct pollfd p;
+	struct sockaddr_in sin;
+	struct sockaddr_in client_addr;
+	unsigned int client_addr_len;
 	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
 	gnutls_session_t session;
 	gnutls_dh_params_t dh_params;
 	gnutls_certificate_credentials_t x509_cred;
 	gnutls_transport_ptr_t ptr;
 	long gnutls_sock;
-
-	if (!ipp_initialized) {
-		ipp_init();
-	}
-
-	if (!callback || !ca_file || !crl_file || !cert_file || !key_file) {
-		return;
-	}
 
 	gnutls_certificate_allocate_credentials(&x509_cred);
 	gnutls_certificate_set_x509_trust_file(x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
@@ -1403,152 +1298,103 @@ void ipp_servloop(void (*callback) (ipp_socket *), char *ca_file, char *crl_file
 	gnutls_dh_params_generate2(dh_params, 1024);
 	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
-	memset(&hints, '\0', sizeof(hints));
-#ifdef _WIN32
-	hints.ai_flags = AI_PASSIVE;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_family = AF_INET;
-	hints.ai_protocol = IPPROTO_TCP;
-#else
-	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
-	hints.ai_socktype = SOCK_STREAM;
-#endif
+	client_addr_len = sizeof(client_addr);
+	memset(&sin, 0, sizeof(sin));
 
-	rc = getaddrinfo(NULL, IPP_SERVICE_NAME, &hints, &ai);
-	if (rc != 0) {
+	sin.sin_family = AF_INET;
+	sin.sin_addr.s_addr = INADDR_ANY;
+	sin.sin_port = (unsigned short) htons(port);
+
+	master = socket(PF_INET, SOCK_STREAM, 0);
+	if (master < 0) {
 		gnutls_certificate_free_credentials(x509_cred);
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
+	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
 
-	memset(sds, '\0', sizeof(SOCKET) * IPP_SERVER_MAX_SDS);
-	FD_ZERO(&readset);
-
-	nsds = 0;
-	for (runp = ai; runp != NULL && nsds < IPP_SERVER_MAX_SDS; runp = runp->ai_next) {
-		SOCKET sd;
-
-		sd = socket(runp->ai_family, runp->ai_socktype, runp->ai_protocol);
-		if (sd == -1) {
-			continue;
-		}
-
-		optval = 1;
-		setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-
-		rc = bind(sd, runp->ai_addr, runp->ai_addrlen);
-		if (rc != 0) {
-			closesocket(sd);
-			sd = -1;
-			continue;
-		}
-
-		rc = listen(sd, SOMAXCONN);
-		if (rc != 0) {
-			closesocket(sd);
-			sd = -1;
-			continue;
-		}
-
-		sds[nsds] = sd;
-		nsds++;
-	}
-
-	freeaddrinfo(ai);
-
-	if (nsds == 0) {
+	rc = bind(master, (struct sockaddr *) &sin, sizeof(sin));
+	if (rc < 0) {
 		gnutls_certificate_free_credentials(x509_cred);
 		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
+	rc = listen(master, 64);
+	if (rc < 0) {
+		gnutls_certificate_free_credentials(x509_cred);
+		gnutls_dh_params_deinit(dh_params);
+		return;
+	}
+	p.fd = master;
+	p.events = POLLIN;
+	p.revents = 0;
 
-	done = FALSE;
+	done = 0;
 
 	while (!done) {
-		/* select master so that we don't block on accept */
+		/* Poll master so that we don't block on accept */
 		/*
 		 * this is done so that when we signal we re-evaluate if
 		 * !done == true
 		 */
 
-		FD_ZERO(&readset);
-		sdmax = 0;
-		for (i = 0; i < nsds; i++) {
-			FD_SET(sds[i], &readset);
-			sdmax = max(sdmax, sds[i]);
+		poll(&p, 1, 30000);	/* 30 second timeout */
+		if (p.revents != POLLIN) {	/* no activity */
+			if (done) {
+				break;
+			} else {
+				continue;
+			}
 		}
-
-		timeout.tv_sec = 10;
-		timeout.tv_usec = 0;
-
-		rc = select(sdmax + 1, &readset, NULL, NULL, &timeout);
-
 		if (done) {
 			break;
 		}
-
-		/* check if 1 or more sockets is ready for us */
-		if (rc > 0) {
-			for (i = 0; i < FD_SETSIZE; i++) {
-				if (FD_ISSET(i, &readset)) {
-					sockaddrlen = sizeof(struct sockaddr);	/* probably not needed */
-					slave = accept((SOCKET) i, (struct sockaddr *) &sockaddr, &sockaddrlen);
-					if (slave < 0) {
-						if (errno == EINTR) {
-							continue;
-						} else {
-							for (i = 0; i < nsds; i++) {
-								shutdown((SOCKET) i, SHUT_RDWR);
-								closesocket((SOCKET) i);
-							}
-
-							gnutls_certificate_free_credentials(x509_cred);
-							gnutls_dh_params_deinit(dh_params);
-							return;
-						}
-					}
-
-					gnutls_init(&session, GNUTLS_SERVER);
-					gnutls_set_default_priority(session);
-					gnutls_kx_set_priority(session, kx_prio);
-					gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, x509_cred);
-					gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
-
-					gnutls_sock = slave;
-					ptr = (gnutls_transport_ptr_t) gnutls_sock;
-					gnutls_transport_set_ptr(session, ptr);
-					rc = gnutls_handshake(session);
-					if (rc < 0) {
-						shutdown(slave, SHUT_RDWR);
-						closesocket(slave);
-						gnutls_deinit(session);
-						continue;
-					}
-					ipp_slave = ipp_new_socket();
-					if (!ipp_slave) {
-						shutdown(slave, SHUT_RDWR);
-						closesocket(slave);
-						gnutls_deinit(session);
-						continue;
-					}
-
-					ipp_slave->sd = slave;
-					ipp_slave->session = session;
-					ipp_slave->x509_cred = NULL;
-					memcpy(&(ipp_slave->sockaddr), &(sockaddr), sockaddrlen);
-					ipp_slave->sockaddrlen = sockaddrlen;
-
-					callback(ipp_slave);
-				}
+		slave = accept(master, (struct sockaddr *) &client_addr, &client_addr_len);
+		if (slave < 0) {
+			if (errno == EINTR) {
+				continue;
+			} else {
+				shutdown(master, SHUT_RDWR);
+				close(master);
+				gnutls_certificate_free_credentials(x509_cred);
+				gnutls_dh_params_deinit(dh_params);
+				return;
 			}
 		}
+		gnutls_init(&session, GNUTLS_SERVER);
+		gnutls_set_default_priority(session);
+		gnutls_kx_set_priority(session, kx_prio);
+		gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, x509_cred);
+		gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
+
+		gnutls_sock = slave;
+		ptr = (gnutls_transport_ptr_t) gnutls_sock;
+		gnutls_transport_set_ptr(session, ptr);
+		rc = gnutls_handshake(session);
+		if (rc < 0) {
+			shutdown(slave, SHUT_RDWR);
+			close(slave);
+			gnutls_deinit(session);
+			continue;
+		}
+		ipp_slave = ipp_new_socket();
+		if (!ipp_slave) {
+			shutdown(slave, SHUT_RDWR);
+			close(slave);
+			gnutls_deinit(session);
+			continue;
+		}
+
+		ipp_slave->sd = slave;
+		ipp_slave->session = session;
+		ipp_slave->x509_cred = NULL;
+		memcpy(&(ipp_slave->addr), &(client_addr), sizeof(struct sockaddr_in));
+
+		callback(ipp_slave);
 	}
 
-	for (i = 0; i < nsds; i++) {
-		shutdown(sds[i], SHUT_RDWR);
-		closesocket(sds[i]);
-	}
-
+	shutdown(master, SHUT_RDWR);
+	close(master);
 	gnutls_certificate_free_credentials(x509_cred);
 	gnutls_dh_params_deinit(dh_params);
 }
@@ -2364,13 +2210,14 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 /**
  * Handshake Helper Function. This should be called by the client. The function will do the call to ipp_connect() and handle the other setup tasks.
  * @param hostname the name of the server.
+ * @param port TCP/IP port.
  * @param cacert the certificate of the certificate authority.
  * @param user the username (in upper case).
  * @param pass the password (in upper case).
  * @param buyin_amt the inital money amount for this player.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *))
+ipp_socket *ipp_client_handshake(char *hostname, short port, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *))
 {
 	ipp_socket *sock;
 	ipp_message *msg;
@@ -2381,11 +2228,11 @@ ipp_socket *ipp_client_handshake(char *hostname, char *cacert, char *user, char 
 		ipp_init();
 	}
 
-	if (!hostname || !cacert || !user || !pass || !buyin_amt) {
+	if (!hostname || !cacert || !user || !pass || !buyin_amt || port <= 0) {
 		return NULL;
 	}
 
-	sock = ipp_connect(hostname, cacert);
+	sock = ipp_connect(hostname, port, cacert);
 	if (!sock) {
 		return NULL;
 	}

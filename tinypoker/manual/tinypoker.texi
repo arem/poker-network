@@ -113,14 +113,12 @@ any later version.
 libtinypoker provides application programming interfaces
 (APIs) to applications implementing the Internet Poker Protocol (IPP)
 Version 2.0. The library provides a robust communications framework
-that allows clients and servers to communicate over secure
-@cindex transport layer sockets
-transport layer sockets (TLS) using Internet Protocol version 4 (IPv4) and/or
-Internet Protocol version 6 (IPv6). The underlying code is designed
-to gracefully handle network problems such as unexpected disconnections
-and bad input. IPP message validation, normalization and parsing
-functions are available to developers as are several predefined types
-for representing poker games, players and cards.
+that allows clients and servers to communicate over secure transport
+layer sockets (TLS). The underlying code is designed to gracefully
+handle network problems such as unexpected disconnections and bad
+input. IPP message validation, normalization and parsing functions
+are available to developers as are several predefined types for
+representing poker games, players and cards.
 
 @section Obtaining the Source Code
 

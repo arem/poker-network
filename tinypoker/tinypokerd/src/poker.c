@@ -35,18 +35,14 @@ void *play(void *arg)
 
 	do {
 		/* shuffle before every hand and when no players are around */
-		g_mutex_lock(tbl->lock);
 		ipp_shuffle_deck(tbl->deck);
-		g_mutex_unlock(tbl->lock);
 
 		/* must have 2 players */
-		g_mutex_lock(tbl->lock);
 		if (tbl->nplayers < 2) {
 			g_mutex_unlock(tbl->lock);
 			sleep(1);	/* sleep while we wait : constantly shuffling hogs the CPU */
 			continue;
 		}
-		g_mutex_unlock(tbl->lock);
 
 		g_mutex_lock(tbl->lock);
 		ipp_deal(tbl, SERVER_WRITE_TIMEOUT, protocol_logger);
