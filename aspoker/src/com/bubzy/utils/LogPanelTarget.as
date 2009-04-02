@@ -19,7 +19,6 @@
 
 package com.bubzy.utils
 {
-
     import mx.controls.TextArea;
     import mx.core.Application;
     import mx.core.mx_internal;

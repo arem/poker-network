@@ -19,16 +19,17 @@
 
 package aspoker.com.bubsy.poker.client.model
 {
+    import flash.net.SharedObject;
 
-import mx.messaging.channels.StreamingAMFChannel;
 
 public class Session
 {
+    private static var localeSession:SharedObject;
     private static var _sessionCount:int = 0;
     private static var _twistedSession:String="";
     private static var _cookie:Array/*of cookieItem*/=[];
 
-    private static var restUrl:String = "http://127.0.0.1:19382/REST";
+    private static var restUrl:String = "http://www.aspoker.info:19382/REST";
     public static var UserSerial:int;
 
     public static function set cookie(cookie:Array):void
@@ -36,17 +37,38 @@ public class Session
         if (_cookie.length<=0 && cookie.length>0)
         {
             _cookie = cookie;
+            /* store(); */
         }
     }
 
     public static function flush():void
     {
+          localeSession = SharedObject.getLocal("session");
+          localeSession.clear();
           _cookie = [];
     }
 
     public static function get cookie():Array
     {
+
+        /*if (_cookie.length<=0)
+        {
+            localeSession = SharedObject.getLocal("session");
+
+            if (localeSession.data.session!=null)
+            {
+                _cookie = localeSession.data.session;
+            }
+        }*/
+
         return _cookie;
+    }
+
+    public static function store():void
+    {
+        localeSession = SharedObject.getLocal("session");
+        localeSession.data.session = _cookie;
+        localeSession.flush();
     }
 
     public static function getUrl():String

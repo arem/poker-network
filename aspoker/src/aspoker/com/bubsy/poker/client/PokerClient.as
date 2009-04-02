@@ -19,25 +19,25 @@
 
 package aspoker.com.bubsy.poker.client
 {
-    import aspoker.com.bubsy.poker.client.model.User;
+import aspoker.com.bubsy.poker.client.model.User;
 
-    public class PokerClient
+public class PokerClient
+{
+    public static const VIEW_IS_BOARD:int=1;
+    public static const VIEW_IS_TABLE:int=1;
+    public static const VIEW_IS_CASHIER:int=1;
+
+    private static var _user:User = new User();
+    private static var _currentState:int = VIEW_IS_BOARD;
+
+    public function PokerClient()
     {
-        public static const VIEW_IS_BOARD:int=1;
-        public static const VIEW_IS_TABLE:int=1;
-        public static const VIEW_IS_CASHIER:int=1;
 
-        private static var _user:User = new User();
-        private static var _currentState:int = VIEW_IS_BOARD;
-
-        public function PokerClient()
-        {
-
-        }
-
-        public static function get user():User
-        {
-            return _user;
-        }
     }
+
+    public static function get user():User
+    {
+        return _user;
+    }
+}
 }

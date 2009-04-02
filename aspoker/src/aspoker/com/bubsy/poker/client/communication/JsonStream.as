@@ -31,6 +31,8 @@ import flash.events.HTTPStatusEvent;
 import flash.net.URLRequest;
 import flash.utils.setTimeout;
 
+import mx.effects.Pause;
+
 public class JsonStream extends EventDispatcher
 {
     private var _restURL:String = "";
@@ -38,6 +40,9 @@ public class JsonStream extends EventDispatcher
 
     public static const QUEUE_RUNNING:int=1;
     public static const QUEUE_WAIT:int=0;
+
+    public var timeout:Number = 6000 ;
+    private var lastRequestStartTime:Date;
 
     private var maxPoolSize:int=5;
     private var queue:Array = new Array();
@@ -56,9 +61,11 @@ public class JsonStream extends EventDispatcher
     {
         if (state == QUEUE_WAIT && queue.length>0)
         {
-            state = QUEUE_RUNNING;
             var packet:Object = queue.pop();
             var request:URLRequest = new URLRequest();
+
+            state = QUEUE_RUNNING;
+            lastRequestStartTime = new Date();
             _restURL = Session.getUrl();
             request.url = _restURL;
             request.data=JSON.encode(packet);
@@ -68,8 +75,28 @@ public class JsonStream extends EventDispatcher
         }
     }
 
+    private function checkTimeOut():Boolean
+    {
+         if (state == QUEUE_WAIT)
+         {
+             return false;
+         }
+
+        var currentTime:Date = new Date();
+        var delta:Number = currentTime.getTime() - lastRequestStartTime.getTime();
+
+        if ( delta > timeout && state == QUEUE_RUNNING)
+        {
+            trace ("timeout :" + delta);
+            return true;
+        }
+        return false;
+    }
+
     protected  function sendREST(packet:Object):void
     {
+        checkTimeOut();
+
         if (queue.length<=maxPoolSize)
         {
             queue.push(packet);
@@ -99,12 +126,17 @@ public class JsonStream extends EventDispatcher
         {
             if (results[i])
             {
-                trace(results[i].type);
+                //trace(results[i].type);
                 _dispatchEvent(results[i]);
             }
         }
         state = QUEUE_WAIT;
         setTimeout(sendNext,1);
+    }
+
+    private function my_delayedFunction():void
+    {
+
     }
 
     private function handleError():void
@@ -119,7 +151,7 @@ public class JsonStream extends EventDispatcher
 
     private function onHTTPStatus(event:HTTPStatusEvent):void
     {
-        trace("httpStatus " + event.status);
+        //trace("httpStatus " + event.status);
     }
 
     public function setRole():void

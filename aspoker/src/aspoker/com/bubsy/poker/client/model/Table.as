@@ -34,13 +34,14 @@ import flash.events.TimerEvent;
 public class Table extends PollTimer
 {
     private var _gameID:int = 0;
-    private var _seats:Array=[];/*[0,0,0,0,0,0,0,0,0,0]*/
-    private var _players:Array=[]/* of Player */;
+    private var _seats:Array /*[0,0,0,0,0,0,0,0,0,0]*/ = [];
+    private var _players:Array /* of Player */ = [];
     private var _user:User = PokerClient.user;
+    private var _playerSerialsInGame:Array /* of player serial */ = [];
 
     private var _actionJsonStream:TableJsonStream = new TableJsonStream();
 
-    /* table info*/
+    /* table properties*/
     private var _name:String;
     private var _variant:String;
     private var _percent_flop:int;
@@ -55,11 +56,38 @@ public class Table extends PollTimer
     private var _currency_serial:int;
     private var _skin:String
 
+    private var _currentPosition:int = -1;
+    private var _previousPosition:int = -1;
+
+    private var _currentPot:Number = 0;
+    private var _currentBlind:Number = 0;
+    private var _boardCards:Array = []; /*Array of Cards*/
+
+    /*dealer position*/
+    private var _dealer:int;
+    private var _previous_dealer:int;
+
     /*buying limits*/
-    private var _BuyInLimitMin:Number;
-    private var _BuyInLimitbest:Number;
+    private var _buyInLimitMin:Number;
+    private var _buyInLimitbest:Number;
     private var _rebuy_min:Number;
-    private var _BuyInLimitmax:Number;
+    private var _buyInLimitmax:Number;
+
+    /* table states */
+    private var _tableState:String = TABLE_STATE_BLIND;
+
+    //--------------------------------------------------------------------------
+    //
+    //  Class constants
+    //
+    //--------------------------------------------------------------------------
+
+    public const TABLE_STATE_BLIND:String = "blind";
+    public const TABLE_STATE_PRE_FLOP:String = "pre-flop";
+    public const TABLE_STATE_FLOP:String = "flop";
+    public const TABLE_STATE_TURN:String = "turn";
+    public const TABLE_STATE_RIVER:String = "river";
+    public const TABLE_STATE_END:String = "end";
 
     public function Table(gameId:int)
     {
@@ -107,21 +135,366 @@ public class Table extends PollTimer
             TableEvent.onPacketPokerSitOut,
             _onSitOut);
 
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerInGame,
+            _onPokerInGame);
+
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerPosition,
+            _onPokerPosition);
+
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerBlindRequest,
+            _onPacketPokerBlindRequest);
+
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerBlind,
+            _onPacketPokerBlind);
+
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerCall,
+            _onPacketPokerCall);
+
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerCheck,
+            _onPacketPokerCheck);
+
+       _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerFold,
+            _onPacketPokerFold);
+
+           _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerRaise,
+            _onPacketPokerRaise);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerPlayerCards,
+            _onPacketPokerPlayerCards);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.PacketPokerBoardCards,
+            _PacketPokerBoardCards);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerState,
+            _onPacketPokerState);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerStart,
+            _onPacketPokerStart);
+
+        _actionJsonStream.addEventListener(
+            TableEvent.onPacketPokerDealer,
+            _onPacketPokerDealer);
+    }
+
+    private function _PacketPokerBoardCards(evt:TableEvent):void
+    {
+        _boardCards = [];
+
+        for each( var cardNumber:Number in evt.packet.cards)
+        {
+            _boardCards.push(new Card(cardNumber));
+        }
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.PacketPokerBoardCards,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerDealer(evt:TableEvent):void
+    {
+        trace(JSON.encode(evt.packet));
+        _dealer = evt.packet.dealer;
+        _previous_dealer = evt.packet.previous_dealer;
+    }
+
+    private function _gameEnded():void
+    {
+
+    }
+
+    public function get boardCards():Array /* of Cards */
+    {
+        return _boardCards;
+    }
+
+    /* return state (constant) */
+    public function get state():String
+    {
+        return _tableState;
+    }
+
+    public function get currentBlind():Number
+    {
+        return _currentBlind;
+    }
+
+    private function _newGame():void
+    {
+        _currentPosition = -1;
+        _previousPosition = -1;
+        _currentBlind = 0;
+        _tableState = TABLE_STATE_BLIND;
+        _currentPot = 0;
+        resetPlayerBets(getPlayersInGame());
+        setPlayersState(getPlayersInGame(),PlayerState.SITIN);
+    }
+
+    public function getPlayersInGame():Array /*of players*/
+    {
+        var arrOfplayers:Array=[];
+
+        for each(var serial:String in _playerSerialsInGame)
+        {
+            arrOfplayers.push(_players[serial]);
+        }
+
+        return arrOfplayers;
+    }
+
+    /* get player in game and no fold */
+    public function getInvolvedPlayers():Array /*of serials*/
+    {
+        var arrOfplayers:Array=[];
+
+        for each(var serial:String in _playerSerialsInGame)
+        {
+            var player:Player = _players[serial];
+            if (player.action!=PlayerState.FOLD)
+            {
+                arrOfplayers.push(serial);
+            }
+        }
+        return arrOfplayers;
+    }
+
+    private function setPlayersState(arrOfplayers:Array/*of players*/,
+        playerState:PlayerState
+    ):void
+    {
+        for each(var player:Player in arrOfplayers)
+        {
+            player.action = playerState;
+        }
+    }
+
+    private function resetPlayerBets(arrOfplayers:Array/*of players*/):void
+    {
+        for each(var player:Player in arrOfplayers)
+        {
+            player.bet = 0;
+        }
+    }
+
+    private function _onPacketPokerStart(evt:TableEvent):void
+    {
+        /*{"level":0,"cookie":"","hands_count":21,"type":"PacketPokerStart",
+        "hand_serial":114,"time":85037.520292,"serial":0,"game_id":321}*/
+
+        _newGame();
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerStart,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerState(evt:TableEvent):void
+    {
+        trace(evt.packet.string);
+
+        _tableState = evt.packet.string;
+
+        if (state != TABLE_STATE_PRE_FLOP)
+        {
+            resetPlayerBets(getPlayersInGame());
+            _currentBlind = 0;
+        }
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerState,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerPlayerCards(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.cards = [];
+
+        for each(var cardNumber:Number in evt.packet.cards)
+        {
+            if (cardNumber!=255)
+            {
+                player.cards.push(new Card(cardNumber & 0x3F));
+            } else {
+                /*back card*/
+                player.cards.push(new Card(52));
+            }
+        }
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerPlayerCards,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerBlind(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+
+        if (_currentBlind == 0)
+        {
+            trace(player.name + "pays the small blind");
+            player.action = PlayerState.PAID_SMALL_BLIND;
+        } else if (_currentBlind <  evt.packet.amount ) {
+            trace(player.name + "pays the big blind");
+            player.action = PlayerState.PAID_BIG_BLIND;
+        } else {
+            trace(player.name + "pays the big blind");
+        }
+
+        player.action.amount = evt.packet.amount;
+        player.bet = evt.packet.amount;
+        _currentBlind = evt.packet.amount;
+        _currentPot +=  evt.packet.amount;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerBlind,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerCall(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.action = PlayerState.CALL;
+        player.action.amount = _currentBlind;
+
+        var blindToCall:Number = _currentBlind - player.bet;
+        player.bet+= blindToCall;
+        _currentPot +=  blindToCall;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerCall,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerCheck(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.action = PlayerState.CHECK;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerCheck,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerFold(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.action = PlayerState.FOLD;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerFold,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerRaise(evt:TableEvent):void
+    {
+        var player:Player = _players[evt.packet.serial] as Player
+        player.action = PlayerState.RAISE;
+        player.action.amount = evt.packet.amount;
+        _currentBlind = player.action.amount;
+        player.bet+= player.action.amount;
+        _currentPot +=  evt.packet.amount;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerRaise,
+                evt.packet
+            )
+        );
+    }
+
+    public function get currentPot():Number
+    {
+        return _currentPot;
+    }
+
+    private function _onPokerPosition(evt:TableEvent):void
+    {
+        _previousPosition = _currentPosition;
+        _currentPosition = evt.packet.position;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerPosition,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPacketPokerBlindRequest(evt:TableEvent):void
+    {
+        _currentBlind = evt.packet.amount;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerBlindRequest,
+                evt.packet
+            )
+        );
+    }
+
+    private function _onPokerInGame(evt:TableEvent):void
+    {
+        var pokerInGame:Object = evt.packet;
+        _playerSerialsInGame = pokerInGame.players;
+
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerInGame,
+                evt.packet
+            )
+        );
     }
 
     private function _onBuyInLimits(evt:TableEvent):void
     {
         var BuyInLimits:Object = evt.packet;
-        _BuyInLimitMin = BuyInLimits.min;
-        _BuyInLimitbest = BuyInLimits.best;
+
+        _buyInLimitMin = BuyInLimits.min;
+        _buyInLimitbest = BuyInLimits.best;
         _rebuy_min = BuyInLimits.rebuy_min;
-        _BuyInLimitmax = BuyInLimits.max;
+        _buyInLimitmax = BuyInLimits.max;
     }
 
     private function _onSitOut(evt:TableEvent):void
     {
         var player:Player = _players[evt.packet.serial] as Player
-        player.setStats(evt.packet);
+        player.action = PlayerState.SITOUT;
 
         dispatchEvent(
             new TableEvent(
@@ -134,7 +507,7 @@ public class Table extends PollTimer
     private function _onSit(evt:TableEvent):void
     {
         var player:Player = _players[evt.packet.serial] as Player
-        player.setStats(evt.packet);
+        player.action = PlayerState.SITIN;
 
         dispatchEvent(
             new TableEvent(
@@ -194,24 +567,39 @@ public class Table extends PollTimer
         _players = null;
     }
 
+    public function get playerSerialsInGame():Array
+    {
+        return _playerSerialsInGame;
+    }
+
     public function get numSeats():int
     {
         return _numSeats;
     }
 
+    public function get currentPosition():int
+    {
+        return _currentPosition;
+    }
+
+    public function get previousPosition():int
+    {
+        return _previousPosition;
+    }
+
     public function get BuyInLimitMin():int
     {
-        return _BuyInLimitMin;
+        return _buyInLimitMin;
     }
 
     public function get BuyInLimitbest():int
     {
-        return _BuyInLimitbest;
+        return _buyInLimitbest;
     }
 
     public function get BuyInLimitmax():int
     {
-        return _BuyInLimitmax;
+        return _buyInLimitmax;
     }
 
     public function get gameId():int
@@ -229,10 +617,18 @@ public class Table extends PollTimer
         return _players[serial];
     }
 
+    public function getSerialFromPosition(position:int):int
+    {
+        if (position==-1) return -1
+
+        return _playerSerialsInGame[position];
+    }
+
     private function _onPacketPokerPlayerArrive(evt:TableEvent):void
     {
         _seats[evt.packet.seat] = evt.packet.serial;
         _players[evt.packet.serial] = new Player(evt.packet);
+        _players[evt.packet.serial].action = PlayerState.SITOUT
 
         dispatchEvent(
             new TableEvent(
@@ -265,6 +661,7 @@ public class Table extends PollTimer
     private function _onPacketPokerSeats(evt:TableEvent):void
     {
         _seats = evt.packet.seats;
+
         dispatchEvent(
             new TableEvent(
             TableEvent.onPacketPokerSeats,
@@ -311,6 +708,7 @@ public class Table extends PollTimer
             _actionJsonStream.quit(_gameID);
         }
     }
+
     public function join(gameId:int):void
     {
         startPoll();
@@ -328,9 +726,40 @@ public class Table extends PollTimer
         _actionJsonStream.buyIn(_gameID,_user.userSerial,amount);
     }
 
-    public function sit():void
+    public function sitIn():void
     {
+        _actionJsonStream.autoBuildAnt(gameId,_user.userSerial);
         _actionJsonStream.sit(_gameID,_user.userSerial);
+    }
+
+    public function sitOut():void
+    {
+        _actionJsonStream.sitOut(_gameID,_user.userSerial);
+    }
+
+    public function call():void
+    {
+        _actionJsonStream.call(_gameID,_user.userSerial);
+    }
+
+    public function check():void
+    {
+        _actionJsonStream.check(_gameID,_user.userSerial);
+    }
+
+    public function blind():void
+    {
+        _actionJsonStream.blind(_gameID,_user.userSerial);
+    }
+
+    public function raise(amount:int):void
+    {
+        _actionJsonStream.raise(_gameID,_user.userSerial,amount);
+    }
+
+    public function fold():void
+    {
+        _actionJsonStream.fold(_gameID,_user.userSerial);
     }
 
     public function poll():void

@@ -27,7 +27,6 @@ import aspoker.com.bubsy.poker.client.util.PollTimer;
 import com.bubzy.utils.Logger;
 
 import flash.events.TimerEvent;
-import flash.utils.Timer;
 
 import mx.controls.DataGrid;
 

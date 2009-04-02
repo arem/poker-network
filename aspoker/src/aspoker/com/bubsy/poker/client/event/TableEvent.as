@@ -35,10 +35,22 @@ package aspoker.com.bubsy.poker.client.event
         public static const onPacketPokerSeat:String = "PacketPokerSeat";
         public static const onPacketPokerSitOut:String = "PacketPokerSitOut";
         public static const onPacketPokerError:String = "PacketPokerError";
-        public static const onPacketPokerUserInfo:String = "PacketPokerUserInfo"
-        public static const onPacketPokerPlayerLeave:String = "PacketPokerPlayerLeave"
-        public static const onPacketPokerSit:String = "PacketPokerSit"
-
+        public static const onPacketPokerUserInfo:String = "PacketPokerUserInfo";
+        public static const onPacketPokerPlayerLeave:String = "PacketPokerPlayerLeave";
+        public static const onPacketPokerSit:String = "PacketPokerSit";
+        public static const onPacketPokerInGame:String = "PacketPokerInGame";
+        public static const onPacketPokerBlindRequest:String = "PacketPokerBlindRequest";
+        public static const onPacketPokerPosition:String = "PacketPokerPosition";
+        public static const onPacketPokerCall:String = "PacketPokerCall";
+        public static const onPacketPokerCheck:String = "PacketPokerCheck";
+        public static const onPacketPokerFold:String = "PacketPokerFold";
+        public static const onPacketPokerRaise:String = "PacketPokerRaise";
+        public static const onPacketPokerPlayerCards:String = "PacketPokerPlayerCards";
+        public static const PacketPokerBoardCards:String = "PacketPokerBoardCards";
+        public static const onPacketPokerBlind:String = "PacketPokerBlind";
+        public static const onPacketPokerState:String = "PacketPokerState";
+        public static const onPacketPokerStart:String = "PacketPokerStart";
+        public static const onPacketPokerDealer:String = "PacketPokerDealer";
 
         public var packet:Object;
 

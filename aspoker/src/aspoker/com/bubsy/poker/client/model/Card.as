@@ -17,38 +17,41 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package aspoker.com.bubsy.poker.client.util
+package aspoker.com.bubsy.poker.client.model
 {
-import flash.events.EventDispatcher;
-import flash.events.TimerEvent;
-import flash.utils.Timer;
 
-    public class PollTimer extends EventDispatcher
+public class Card
+{
+    public static var card2string:Array = [
+    '2h', '3h', '4h', '5h', '6h', '7h','8h', '9h', 'Th', 'Jh', 'Qh', 'Kh', 'Ah',
+    '2d', '3d', '4d', '5d', '6d','7d', '8d', '9d', 'Td', 'Jd', 'Qd', 'Kd', 'Ax',
+    '2c', '3c', '4c', '5c', '6c', '7c', '8c', '9c', 'Tc', 'Jc', 'Qc', 'Kc', 'Ac',
+    '2s', '3s', '4s', '5s', '6s', '7s', '8s', '9s', 'Ts', 'Js', 'Qs', 'Ks', 'As',
+    'back'
+    ];
+
+    private var _value:Number;
+    private var _name:String;
+
+    public static function getCard(cardNumber:int):int
     {
-        private var _poll:Timer;
-        protected static var pollFrequency:int = 5000;
-
-
-        public function PollTimer()
-        {
-            _poll = new Timer(pollFrequency);
-            _poll.addEventListener(TimerEvent.TIMER, doStep);
-            _poll.start();
-        }
-
-        public function startPoll():void
-        {
-            _poll.start();
-        }
-
-        protected function doStep(evt:TimerEvent):void
-        {
-            return;
-        }
-
-        public function stopPoll():void
-        {
-            _poll.stop();
-        }
+        return card2string[cardNumber];
     }
+
+    public function Card(value:Number)
+    {
+        _value = value;
+        _name = card2string[value];
+    }
+
+    public function get value():Number
+    {
+        return _value;
+    }
+
+    public function get name():String
+    {
+        return _name;
+    }
+}
 }

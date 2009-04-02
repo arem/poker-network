@@ -28,7 +28,7 @@
         width="800">
         
     <mx:Script>
-        <![CDATA[
+        <![CDATA[      
             import mx.controls.Alert;
             import flash.utils.getQualifiedSuperclassName;
             import flash.utils.getQualifiedClassName;
@@ -43,15 +43,14 @@
             {
                 var currentView:DisplayObject = myViewStack.getChildAt(
                     evt.newIndex);
-        
+        	
                 try 
                 {
                     var oldView:DisplayObject = myViewStack.getChildAt(
                             evt.oldIndex)
                 } catch(err:RangeError){
                     trace("view not exist");    
-                } finally {
-                                                                    
+                } finally {                                            
                     if (getQualifiedClassName(oldView) 
                         == getQualifiedClassName(Ctable)
                     )

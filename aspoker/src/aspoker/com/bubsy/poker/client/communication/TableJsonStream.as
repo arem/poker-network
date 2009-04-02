@@ -34,6 +34,7 @@ public class TableJsonStream extends JsonStream
 
     override protected function _dispatchEvent(pokerPacket:Object):void
     {
+
         switch(pokerPacket.type)
         {
             case TableEvent.onPacketPokerSeat:
@@ -80,6 +81,16 @@ public class TableJsonStream extends JsonStream
                 );
                 break;
             }
+            case TableEvent.onPacketPokerPosition:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerPosition,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
 
             case LoginEvent.onPacketAuthRequest:
             {
@@ -115,7 +126,6 @@ public class TableJsonStream extends JsonStream
 
             case TableEvent.onPacketPokerBuyInLimits:
             {
-                trace(JSON.encode(pokerPacket))
                 dispatchEvent(
                     new TableEvent(
                     TableEvent.onPacketPokerBuyInLimits,
@@ -191,9 +201,19 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
+            case TableEvent.onPacketPokerInGame:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerInGame,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
             case TableEvent.onPacketPokerSit:
             {
-                trace(JSON.encode(pokerPacket));
                 dispatchEvent(
                     new TableEvent(
                     TableEvent.onPacketPokerSit,
@@ -203,9 +223,142 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
+            case TableEvent.onPacketPokerCheck:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerCheck,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerCall:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerCall,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerFold:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerFold,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerRaise:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerRaise,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerBlindRequest:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerBlindRequest,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerBlind:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerBlind,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerPlayerCards:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerPlayerCards,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerStart:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerStart,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+
+            case TableEvent.PacketPokerBoardCards:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.PacketPokerBoardCards,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerState:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerState,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerDealer:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerDealer,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
+            case TableEvent.onPacketPokerPlayerCards:
+            {
+                dispatchEvent(
+                    new TableEvent(
+                    TableEvent.onPacketPokerPlayerCards,
+                    pokerPacket
+                    )
+                );
+                break;
+            }
+
             default:
             {
-                trace("unknown packet:" + pokerPacket.type);
+               // trace("unknown packet:" + pokerPacket.type);
                 trace(JSON.encode(pokerPacket));
             }
         }
@@ -227,6 +380,52 @@ public class TableJsonStream extends JsonStream
         packetPokerSit.game_id = gameid;
         packetPokerSit.serial = userSerial;
         sendREST(packetPokerSit);
+    }
+
+    public function fold(gameid:int,userSerial:int):void
+    {
+        var packetPokerFold:Object = {};
+        packetPokerFold.type = "PacketPokerFold",
+        packetPokerFold.game_id = gameid;
+        packetPokerFold.serial = userSerial;
+        sendREST(packetPokerFold);
+    }
+
+    public function call(gameid:int,userSerial:int):void
+    {
+        var packetPokerCall:Object = {};
+        packetPokerCall.type = "PacketPokerCall",
+        packetPokerCall.game_id = gameid;
+        packetPokerCall.serial = userSerial;
+        sendREST(packetPokerCall);
+    }
+
+    public function raise(gameid:int,userSerial:int,amount:int):void
+    {
+        var packetPokerRaise:Object = {};
+        packetPokerRaise.type = "PacketPokerRaise",
+        packetPokerRaise.game_id = gameid;
+        packetPokerRaise.serial = userSerial;
+        packetPokerRaise.amount = amount;
+        sendREST(packetPokerRaise);
+    }
+
+    public function check(gameid:int,userSerial:int):void
+    {
+        var PacketPokerCheck:Object = {};
+        PacketPokerCheck.type = "PacketPokerCheck",
+        PacketPokerCheck.game_id = gameid;
+        PacketPokerCheck.serial = userSerial;
+        sendREST(PacketPokerCheck);
+    }
+
+    public function blind(gameid:int,userSerial:int):void
+    {
+        var PacketPokerBlind:Object = {};
+        PacketPokerBlind.type = "PacketPokerBlind",
+        PacketPokerBlind.game_id = gameid;
+        PacketPokerBlind.serial = userSerial;
+        sendREST(PacketPokerBlind);
     }
 
     public function sitOut(gameid:int,userSerial:int):void
@@ -273,6 +472,14 @@ public class TableJsonStream extends JsonStream
         packetPokerBuyIn.game_id = gameid;
         packetPokerBuyIn.serial = userSerial;
         sendREST(packetPokerBuyIn);
+    }
+        public function autoBuildAnt(gameid:int,userSerial:int):void
+    {
+        var PacketPokerAutoBlindAnte:Object = {};
+        PacketPokerAutoBlindAnte.type = "PacketPokerAutoBlindAnte";
+        PacketPokerAutoBlindAnte.serial = userSerial;
+        PacketPokerAutoBlindAnte.game_id = gameid;
+        sendREST(PacketPokerAutoBlindAnte);
     }
 }
 }

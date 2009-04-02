@@ -1,9 +1,33 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//     Copyright (C) 2008 Bruno Garnier <bruno.garnier@gmail.com>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package aspoker.com.bubsy.poker.client.model
 {
     public class Player
     {
 
-        private var _state:int;
+      //  public static const STATE_SIT_IN:int = 1;
+      //  public static const STATE_SIT_OUT:int = 2;
+      //  public static const STATE_WITH_SEAT:int = 3;
+      //  public static const STATE_OBSERVER:int = 4;
+
+     //   public var state:int=STATE_OBSERVER;
 
         private var _name:String;
         private var _url:String;
@@ -18,14 +42,18 @@ package aspoker.com.bubsy.poker.client.model
         private var _remove_next_turn:Boolean;
         private var _game_id:Boolean;
 
+        private var _cards:Array=[]; /*of Cards*/
+        public var  action:PlayerState;
+
         /*Player Stats*/
         private var _rank:int;
         private var _percentile:int;
 
         /*Player Chips*/
         private var _money:Number;
-        private var _bet:Number;
+        public var bet:Number;
 
+        private var _moneyInGame:Number;
 
         public function Player(PacketPokerPlayerArrive:Object)
         {
@@ -47,6 +75,16 @@ package aspoker.com.bubsy.poker.client.model
             return _money;
         }
 
+        public function set cards(cards:Array):void
+        {
+            _cards = cards ;
+        }
+
+        public function get cards():Array
+        {
+            return _cards;
+        }
+
         public function setPlayer(PacketPokerPlayerArrive:Object):void
         {
             _name = PacketPokerPlayerArrive.name;
@@ -66,7 +104,6 @@ package aspoker.com.bubsy.poker.client.model
         public function setChips(PacketPokerPlayerChips:Object):void
         {
              _money = PacketPokerPlayerChips.money;
-             _bet =  PacketPokerPlayerChips.bet;
         }
 
         public function setStats(PacketPokerPlayerStats:Object):void
