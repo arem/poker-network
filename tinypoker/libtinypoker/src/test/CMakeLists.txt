@@ -15,35 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
-SET(TESTS testValidateCmdIpp testValidateCmdBuyin testValidateCmdWelcome testValidateCmdNewgame testValidateCmdPlayer testValidateCmdButton testValidateCmdAnte testValidateCmdDeal testValidateCmdFrom testValidateCmdFlop testValidateCmdTurn testValidateCmdRiver testValidateCmdDraw testValidateCmdDrawn testValidateCmdDrawQ testValidateCmdFold testParseMessage testValidateCmdUp testValidateCmdDown testValidateCmdAction testValidateCmdBlind testValidateCmdTapout testValidateCmdStraddle testValidateCmdCall testValidateCmdRaise testValidateCmdOpen testValidateCmdCheck testValidateCmdQuit testValidateCmdBusted testValidateCmdGameOver testValidateCmdWinner testValidateCmdShowQ testValidateCmdShow testValidateCmdNo testValidateCmdYes testValidateCmdBeatQ testValidateCmdError testValidateCmdOk testValidateUnknownMsg testNormalizeMessage testEvalStraight2Char testEvalPrime2Char testEvalChar2Prime testEval testDeck testHandCompar testAddPlayer testBestCombination testEnumerateAllHands testVersion testRankPlayers)
+SET(TESTS testHandshake testValidateCmdIpp testValidateCmdBuyin testValidateCmdWelcome testValidateCmdNewgame testValidateCmdPlayer testValidateCmdButton testValidateCmdAnte testValidateCmdDeal testValidateCmdFrom testValidateCmdFlop testValidateCmdTurn testValidateCmdRiver testValidateCmdDraw testValidateCmdDrawn testValidateCmdDrawQ testValidateCmdFold testParseMessage testValidateCmdUp testValidateCmdDown testValidateCmdAction testValidateCmdBlind testValidateCmdTapout testValidateCmdStraddle testValidateCmdCall testValidateCmdRaise testValidateCmdOpen testValidateCmdCheck testValidateCmdQuit testValidateCmdBusted testValidateCmdGameOver testValidateCmdWinner testValidateCmdShowQ testValidateCmdShow testValidateCmdNo testValidateCmdYes testValidateCmdBeatQ testValidateCmdError testValidateCmdOk testValidateUnknownMsg testNormalizeMessage testEvalStraight2Char testEvalPrime2Char testEvalChar2Prime testEval testDeck testHandCompar testAddPlayer testBestCombination testEnumerateAllHands testVersion testRankPlayers)
 
 SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/i586-mingw32msvc/include /usr/i686-pc-mingw32/sys-root/mingw/include)
 
 INCLUDE(FindPkgConfig)
 
-PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.18 REQUIRED)
-PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.18 REQUIRED)
-PKG_CHECK_MODULES(GNUTLS gnutls>=2.4 REQUIRED)
-
-#############################
-## libgcrypt
-#############################
-
-FIND_LIBRARY(LIBGCRYPT gcrypt)
-
-IF (LIBGCRYPT)
-  MESSAGE(STATUS "Found libgcrypt: ${LIBGCRYPT}")
-ELSE (LIBGCRYPT)
-  MESSAGE (FATAL_ERROR "libgcrypt not found. See: http://www.gnupg.org/")
-ENDIF (LIBGCRYPT)
-
-FIND_PATH(LIBGCRYPT_INCDIR gcrypt.h ${incdirs})
-
-IF (LIBGCRYPT_INCDIR)
-  MESSAGE(STATUS "Found gcrypt.h in ${LIBGCRYPT_INCDIR}")
-ELSE (LIBGCRYPT_INCDIR)
-  MESSAGE (FATAL_ERROR "gcrypt.h not found. See: http://www.gnupg.org/")
-ENDIF (LIBGCRYPT_INCDIR)
+PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.16 REQUIRED)
+PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.16 REQUIRED)
 
 #############################################
 # Put everything together
@@ -52,11 +31,11 @@ ENDIF (LIBGCRYPT_INCDIR)
 INCLUDE(CTest)
 ENABLE_TESTING()
 
-INCLUDE_DIRECTORIES(${GNUTLS_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS} ${LIBGCRYPT_INCDIR})
+INCLUDE_DIRECTORIES(${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
 
 FOREACH(TEST ${TESTS})
   ADD_EXECUTABLE(${TEST} ${TEST}.c)
-  TARGET_LINK_LIBRARIES(${TEST} tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${GNUTLS_LIBRARIES} ${LIBGCRYPT})
+  TARGET_LINK_LIBRARIES(${TEST} tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES})
   ADD_TEST(${TEST} ${TEST})
 ENDFOREACH(TEST)
 

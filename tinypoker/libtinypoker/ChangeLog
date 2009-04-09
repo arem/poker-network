@@ -1,3 +1,11 @@
+		Thomas Cort	<linuxgeek@gmail.com>
+
+	* tinypoker.pc for pkg-config
+	* Doxygen documentation generation
+	* RPM and DEB Packages
+	* Drop a few dependencies
+	* Additional Unit Testing
+
 March 15, 2009	Thomas Cort	<linuxgeek@gmail.com>
 
 	* New Features

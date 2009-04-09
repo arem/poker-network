@@ -19,34 +19,13 @@ SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/i586-mingw32m
 
 INCLUDE(FindPkgConfig)
 
-PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.18 REQUIRED)
-PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.18 REQUIRED)
-PKG_CHECK_MODULES(GNUTLS gnutls>=2.4 REQUIRED)
-
-#############################
-## libgcrypt
-#############################
-
-FIND_LIBRARY(LIBGCRYPT gcrypt)
-
-IF (LIBGCRYPT)
-  MESSAGE(STATUS "Found libgcrypt: ${LIBGCRYPT}")
-ELSE (LIBGCRYPT)
-  MESSAGE (FATAL_ERROR "libgcrypt not found. See: http://www.gnupg.org/")
-ENDIF (LIBGCRYPT)
-
-FIND_PATH(LIBGCRYPT_INCDIR gcrypt.h ${incdirs})
-
-IF (LIBGCRYPT_INCDIR)
-  MESSAGE(STATUS "Found gcrypt.h in ${LIBGCRYPT_INCDIR}")
-ELSE (LIBGCRYPT_INCDIR)
-  MESSAGE (FATAL_ERROR "gcrypt.h not found. See: http://www.gnupg.org/")
-ENDIF (LIBGCRYPT_INCDIR)
+PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.16 REQUIRED)
+PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.16 REQUIRED)
 
 #############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${GNUTLS_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS} ${LIBGCRYPT_INCDIR})
+INCLUDE_DIRECTORIES(${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
 ADD_EXECUTABLE(client client.c)
-TARGET_LINK_LIBRARIES(client tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${GNUTLS_LIBRARIES} ${LIBGCRYPT})
+TARGET_LINK_LIBRARIES(client tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES})

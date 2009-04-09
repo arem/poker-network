@@ -23,8 +23,9 @@ fi
 
 set -e
 
-rm -rf Testing CMakeCache.txt DartConfiguration.tcl install_manifest.txt DartTestfile.txt Makefile cmake_install.cmake CMakeFiles CTestTestfile.cmake	
-rm -rf src/CMakeFiles src/Makefile src/cmake_install.cmake src/DartTestfile.txt src/CTestTestfile.cmake
+rm -rf Testing CMakeCache.txt DartConfiguration.tcl install_manifest.txt DartTestfile.txt Makefile cmake_install.cmake CMakeFiles 
+rm -rf CTestTestfile.cmake CPackConfig.cmake CPackSourceConfig.cmake _CPack_Packages libtinypoker-0.2.0.deb libtinypoker-0.2.0.rpm
+rm -rf src/CMakeFiles src/Makefile src/cmake_install.cmake src/DartTestfile.txt src/CTestTestfile.cmake doxygen tinypoker.pc
 rm -rf src/main/CMakeFiles src/main/cmake_install.cmake src/main/DartTestfile.txt src/main/Makefile src/main/CTestTestfile.cmake	
 rm -rf src/examples/CMakeFiles src/examples/cmake_install.cmake src/examples/DartTestfile.txt src/examples/Makefile src/examples/CTestTestfile.cmake	
 rm -rf src/test/CMakeFiles src/test/cmake_install.cmake src/test/DartTestfile.txt src/test/Makefile src/test/CTestTestfile.cmake	

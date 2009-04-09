@@ -38,61 +38,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <gnutls/gnutls.h>
-#include <gnutls/x509.h>
-#include <gcrypt.h>
-
 #include <errno.h>
-
-static int gcry_glib2_mutex_init(void **lock)
-{
-	if (!lock) {
-		return -1;
-	}
-
-	*lock = g_mutex_new();
-	if (*lock == NULL) {
-		return -1;
-	}
-
-	return 0;
-}
-
-static int gcry_glib2_mutex_destroy(void **lock)
-{
-	if (*lock) {
-		g_mutex_free(*lock);
-		*lock = NULL;
-	}
-
-	return 0;
-}
-
-static int gcry_glib2_mutex_lock(void **lock)
-{
-	if (*lock) {
-		g_mutex_lock(*lock);
-		return 0;
-	} else {
-		return -1;
-	}
-}
-
-static int gcry_glib2_mutex_unlock(void **lock)
-{
-	if (*lock) {
-		g_mutex_unlock(*lock);
-		return 0;
-	} else {
-		return -1;
-	}
-}
-
-static struct gcry_thread_cbs gcry_threads_glib2 = { GCRY_THREAD_OPTION_USER, NULL,
-	gcry_glib2_mutex_init, gcry_glib2_mutex_destroy,
-	gcry_glib2_mutex_lock, gcry_glib2_mutex_unlock,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-};
 
 #include <limits.h>
 #if (LLONG_MAX < 9223372036854775807ll)
@@ -193,22 +139,16 @@ void ipp_init(void)
 {
 	/* TODO mutex around this whole function */
 	if (ipp_initialized) {
-		/* we already setup GNU TLS */
+		/* we already setup glib */
 		return;
 	}
 
-	/* glib - this line must be before we init gnutls */
+	/* glib */
 	g_thread_init(NULL);
-
-	/* GNU TLS */
-	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_glib2);
-	gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
-	gnutls_global_init();
 
 	/* Random Number Generator */
 	rng = g_rand_new();
 	if (rng == NULL) {
-		gnutls_global_deinit();
 		return;
 	}
 
@@ -223,9 +163,6 @@ void ipp_exit(void)
 	if (!ipp_initialized) {
 		ipp_init();
 	}
-
-	/* GNU TLS */
-	gnutls_global_deinit();
 
 	/* Random Number Generator */
 	if (rng != NULL) {
@@ -894,117 +831,21 @@ void ipp_free_table(ipp_table * table)
 }
 
 /**
- * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
- * Checks a certificate to make sure it is valid.
- * @param session GNU TLS Session.
- * @param hostname the hostname of the server connected to.
- * @return TRUE if valid.
- */
-gboolean __ipp_verify_cert(gnutls_session session, const char *hostname)
-{
-	guint status;
-	guint cert_list_size;
-	const gnutls_datum *cert_list;
-	gint ret;
-	guint i;
-	gboolean valid;
-	gnutls_x509_crt cert;
-
-	if (!ipp_initialized) {
-		ipp_init();
-	}
-
-	if (!hostname) {
-		return FALSE;
-	}
-
-	ret = gnutls_certificate_verify_peers2(session, &status);
-	if (ret < 0) {
-		/* gnutls_certificate_verify_peers2 failed */
-		return FALSE;
-	}
-	if (status & GNUTLS_CERT_INVALID) {
-		/* The certificate is not trusted */
-		return FALSE;
-	}
-	if (status & GNUTLS_CERT_SIGNER_NOT_FOUND) {
-		/* The certificate hasn't got a known issuer */
-		return FALSE;
-	}
-	if (status & GNUTLS_CERT_REVOKED) {
-		/* The certificate has been revoked */
-		return FALSE;
-	}
-	if (gnutls_certificate_type_get(session) != GNUTLS_CRT_X509) {
-		/* The certificate is not an x509 certificate */
-		return FALSE;
-	}
-	cert_list = gnutls_certificate_get_peers(session, &cert_list_size);
-	if (cert_list == NULL || cert_list_size == 0) {
-		/* No certificate was found */
-		return FALSE;
-	}
-	for (i = 0; i < cert_list_size; i++) {
-		valid = TRUE;
-
-		if (gnutls_x509_crt_init(&cert) < 0) {
-			/* init error */
-			return FALSE;
-		}
-		if (gnutls_x509_crt_import(cert, &cert_list[i], GNUTLS_X509_FMT_DER) < 0) {
-			/* error parsing certificate */
-			valid = FALSE;
-		}
-		if (gnutls_x509_crt_get_expiration_time(cert) < time(0)) {
-			/* Certificate has expired */
-			valid = FALSE;
-		}
-		if (gnutls_x509_crt_get_activation_time(cert) > time(0)) {
-			/* Certificate is not yet activated */
-			valid = FALSE;
-		}
-		if (!gnutls_x509_crt_check_hostname(cert, hostname)) {
-			/* Certificate doesn't match hostname */
-			valid = FALSE;
-		}
-		gnutls_x509_crt_deinit(cert);
-
-		if (!valid) {
-			return FALSE;
-		}
-	}
-
-	return TRUE;
-}
-
-/**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
  * @param port TCP/IP port for the connection.
- * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-ipp_socket *ipp_connect(char *hostname, short port, char *ca_file)
+ipp_socket *ipp_connect(char *hostname, short port)
 {
 	ipp_socket *sock;
 	int ret;
-	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
 	const char *err;
 	struct sockaddr_in sin;
 	struct hostent *he;
-	gnutls_transport_ptr_t ptr;
-	long gnutls_sock;
 
 	/* TinyPoker -- create an empty socket structure */
 	sock = ipp_new_socket();
-
-	/* GNU TLS -- initialize the structure */
-	gnutls_certificate_allocate_credentials(&(sock->x509_cred));
-	gnutls_certificate_set_x509_trust_file(sock->x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
-	gnutls_init(&(sock->session), GNUTLS_CLIENT);
-	gnutls_set_default_priority(sock->session);
-	gnutls_kx_set_priority(sock->session, kx_prio);
-	gnutls_credentials_set(sock->session, GNUTLS_CRD_CERTIFICATE, sock->x509_cred);
 
 	/*
 	 * TCP -- resolve the server's hostname, create a socket descriptor
@@ -1032,26 +873,8 @@ ipp_socket *ipp_connect(char *hostname, short port, char *ca_file)
 		ipp_free_socket(sock);
 		return NULL;
 	}
-	/* GNU TLS -- handshaking */
-	gnutls_sock = sock->sd;
-	ptr = (gnutls_transport_ptr_t) gnutls_sock;
-	gnutls_transport_set_ptr(sock->session, ptr);
-	ret = gnutls_handshake(sock->session);
-	if (ret < 0) {
-		gnutls_perror(ret);
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		return NULL;
-	}
-	ret = __ipp_verify_cert(sock->session, hostname);
-	if (ret == 0) {
-		/* can't verify cert */
-		ipp_disconnect(sock);
-		ipp_free_socket(sock);
-		return NULL;
-	}
-	return sock;
 
+	return sock;
 }
 
 /**
@@ -1068,26 +891,11 @@ void ipp_disconnect(ipp_socket * sock)
 		return;
 	}
 
-	if (sock->session) {
-		gnutls_bye(sock->session, GNUTLS_SHUT_RDWR);
-	}
-
 	if (sock->sd) {
 		/* close the connection */
 		shutdown(sock->sd, SHUT_RDWR);
 		close(sock->sd);
 		sock->sd = 0;
-	}
-
-	if (sock->session) {
-		/* free session data */
-		gnutls_deinit(sock->session);
-		sock->session = NULL;
-	}
-
-	if (sock->x509_cred) {
-		gnutls_certificate_free_credentials(sock->x509_cred);
-		sock->x509_cred = NULL;
 	}
 
 	/* set to NULL to prevent double free() and other misuse */
@@ -1133,10 +941,7 @@ ipp_message *ipp_read_msg(ipp_socket * sock, guint8 timeout_seconds, void (*logg
 		return NULL;
 	}
 
-	do {
-		ret = gnutls_record_recv(sock->session, buffer, MAX_MSG_SIZE);
-	} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
-
+	ret = read(sock->sd, buffer, MAX_MSG_SIZE);
 	if (ret < 0) {
 		free(buffer);
 		buffer = NULL;
@@ -1225,10 +1030,7 @@ gboolean ipp_send_msg(ipp_socket * sock, ipp_message * msg, guint8 timeout_secon
 			return FALSE;
 		}
 
-		do {
-			ret = gnutls_record_send(sock->session, final_msg, strlen(final_msg));
-		} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
-
+		ret = write(sock->sd, final_msg, strlen(final_msg));
 		if (ret == strlen(final_msg)) {
 			free(final_msg);
 			final_msg = NULL;
@@ -1268,12 +1070,8 @@ void ipp_servloop_shutdown(void)
  * make 'callback' short and sweet.
  * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
- * @param ca_file Certificate Authority
- * @param crl_file CRL
- * @param cert_file SSL/TLS Certificate File
- * @param key_file Private Key
  */
-void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file)
+void ipp_servloop(int port, void (*callback) (ipp_socket *))
 {
 	int master, slave, rc, optval;
 	ipp_socket *ipp_slave;
@@ -1282,21 +1080,6 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 	struct sockaddr_in sin;
 	struct sockaddr_in client_addr;
 	unsigned int client_addr_len;
-	const int kx_prio[] = { GNUTLS_KX_RSA, 0 };
-	gnutls_session_t session;
-	gnutls_dh_params_t dh_params;
-	gnutls_certificate_credentials_t x509_cred;
-	gnutls_transport_ptr_t ptr;
-	long gnutls_sock;
-
-	gnutls_certificate_allocate_credentials(&x509_cred);
-	gnutls_certificate_set_x509_trust_file(x509_cred, ca_file, GNUTLS_X509_FMT_PEM);
-	gnutls_certificate_set_x509_crl_file(x509_cred, crl_file, GNUTLS_X509_FMT_PEM);
-	gnutls_certificate_set_x509_key_file(x509_cred, cert_file, key_file, GNUTLS_X509_FMT_PEM);
-
-	gnutls_dh_params_init(&dh_params);
-	gnutls_dh_params_generate2(dh_params, 1024);
-	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
 	client_addr_len = sizeof(client_addr);
 	memset(&sin, 0, sizeof(sin));
@@ -1307,22 +1090,16 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 
 	master = socket(PF_INET, SOCK_STREAM, 0);
 	if (master < 0) {
-		gnutls_certificate_free_credentials(x509_cred);
-		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
 
 	rc = bind(master, (struct sockaddr *) &sin, sizeof(sin));
 	if (rc < 0) {
-		gnutls_certificate_free_credentials(x509_cred);
-		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 	rc = listen(master, 64);
 	if (rc < 0) {
-		gnutls_certificate_free_credentials(x509_cred);
-		gnutls_dh_params_deinit(dh_params);
 		return;
 	}
 	p.fd = master;
@@ -1356,38 +1133,18 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 			} else {
 				shutdown(master, SHUT_RDWR);
 				close(master);
-				gnutls_certificate_free_credentials(x509_cred);
-				gnutls_dh_params_deinit(dh_params);
 				return;
 			}
 		}
-		gnutls_init(&session, GNUTLS_SERVER);
-		gnutls_set_default_priority(session);
-		gnutls_kx_set_priority(session, kx_prio);
-		gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, x509_cred);
-		gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
 
-		gnutls_sock = slave;
-		ptr = (gnutls_transport_ptr_t) gnutls_sock;
-		gnutls_transport_set_ptr(session, ptr);
-		rc = gnutls_handshake(session);
-		if (rc < 0) {
-			shutdown(slave, SHUT_RDWR);
-			close(slave);
-			gnutls_deinit(session);
-			continue;
-		}
 		ipp_slave = ipp_new_socket();
 		if (!ipp_slave) {
 			shutdown(slave, SHUT_RDWR);
 			close(slave);
-			gnutls_deinit(session);
 			continue;
 		}
 
 		ipp_slave->sd = slave;
-		ipp_slave->session = session;
-		ipp_slave->x509_cred = NULL;
 		memcpy(&(ipp_slave->addr), &(client_addr), sizeof(struct sockaddr_in));
 
 		callback(ipp_slave);
@@ -1395,8 +1152,6 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char
 
 	shutdown(master, SHUT_RDWR);
 	close(master);
-	gnutls_certificate_free_credentials(x509_cred);
-	gnutls_dh_params_deinit(dh_params);
 }
 
 /**
@@ -2014,13 +1769,14 @@ int ipp_hand_compar(const void *ipp_message_a, const void *ipp_message_b)
  * Handshake Helper Function. This should be called by the server from the client connect callback.
  * @param sock the connected socket.
  * @param server_tag server name and version (example "tinypokerd/0.0.0").
+ * @param auth a callback function to authenticate the user.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth) (char *, char *), void (*logger) (char *))
+ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth) (char *), void (*logger) (char *))
 {
 	ipp_player *p;
 	ipp_message *msg;
-	char *user, *pass, *buyin_amt;
+	char *user, *buyin_amt;
 	size_t len;
 	int rc;
 
@@ -2098,34 +1854,7 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 	ipp_free_message(msg);
 	msg = NULL;
 
-	pass = strchr(user, ':');
-	if (pass == NULL) {
-		pass = g_strdup("NOPASS");
-		if (pass == NULL) {
-			ipp_disconnect(sock);
-			ipp_free_socket(sock);
-			sock = NULL;
-			free(user);
-			user = NULL;
-			return NULL;
-		}
-	} else {
-		*pass = '\0';
-		pass = g_strdup(pass + sizeof(char));
-		if (pass == NULL) {
-			ipp_disconnect(sock);
-			ipp_free_socket(sock);
-			sock = NULL;
-			free(user);
-			user = NULL;
-			return NULL;
-		}
-	}
-
-	rc = auth(user, pass);
-	memset(pass, 'X', strlen(pass));
-	free(pass);
-	pass = NULL;
+	rc = auth(user);
 
 	if (!rc) {
 		ipp_disconnect(sock);
@@ -2211,13 +1940,11 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
  * Handshake Helper Function. This should be called by the client. The function will do the call to ipp_connect() and handle the other setup tasks.
  * @param hostname the name of the server.
  * @param port TCP/IP port.
- * @param cacert the certificate of the certificate authority.
  * @param user the username (in upper case).
- * @param pass the password (in upper case).
  * @param buyin_amt the inital money amount for this player.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-ipp_socket *ipp_client_handshake(char *hostname, short port, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *))
+ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *buyin_amt, void (*logger) (char *))
 {
 	ipp_socket *sock;
 	ipp_message *msg;
@@ -2228,11 +1955,11 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *cacert, char 
 		ipp_init();
 	}
 
-	if (!hostname || !cacert || !user || !pass || !buyin_amt || port <= 0) {
+	if (!hostname || !user || !buyin_amt || port <= 0) {
 		return NULL;
 	}
 
-	sock = ipp_connect(hostname, port, cacert);
+	sock = ipp_connect(hostname, port);
 	if (!sock) {
 		return NULL;
 	}
@@ -2258,7 +1985,7 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *cacert, char 
 	}
 
 	msg->type = MSG_BUYIN;
-	len = strlen(CMD_BUYIN) + strlen(" ") + strlen(user) + strlen(":") + strlen(pass) + strlen(" ") + strlen(buyin_amt) + 3;
+	len = strlen(CMD_BUYIN) + strlen(" ") + strlen(user) + strlen(" ") + strlen(buyin_amt) + 3;
 	if (sizeof(char) * len <= 0) {
 		ipp_disconnect(sock);
 		ipp_free_socket(sock);
@@ -2278,7 +2005,7 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *cacert, char 
 		return NULL;
 	}
 	memset(msg->payload, '\0', sizeof(char) * len);
-	snprintf(msg->payload, len - 1, "%s %s:%s %s", CMD_BUYIN, user, pass, buyin_amt);
+	snprintf(msg->payload, len - 1, "%s %s %s", CMD_BUYIN, user, buyin_amt);
 
 	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT, logger);
 	if (!rc) {

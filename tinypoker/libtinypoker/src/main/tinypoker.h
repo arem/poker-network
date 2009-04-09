@@ -28,8 +28,6 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gnutls/gnutls.h>
-#include <gnutls/x509.h>
 #include <sys/types.h>
 
 #include <netinet/in.h>
@@ -122,9 +120,6 @@ extern "C" {
 	typedef struct ipp_socket {
 		int sd;
 		struct sockaddr_in addr;
-
-		gnutls_session_t session;
-		gnutls_certificate_credentials_t x509_cred;
 	} ipp_socket;
 
 /**
@@ -935,21 +930,12 @@ extern "C" {
 	void ipp_normalize_msg(char *msg);
 
 /**
- * Checks a certificate to make sure it is valid.
- * @param session GNU TLS Session.
- * @param hostname the hostname of the server connected to.
- * @return TRUE if valid.
- */
-	gboolean __ipp_verify_cert(gnutls_session session, const char *hostname);
-
-/**
  * Connect to a server.
  * @param hostname the hostname of the server to connect to (example: host.domain.tld).
  * @param port TCP/IP port for the connection.
- * @param ca_file Path to Certificate Authority file.
  * @return a socket or NULL if an error happened.
  */
-	ipp_socket *ipp_connect(char *hostname, short port, char *ca_file);
+	ipp_socket *ipp_connect(char *hostname, short port);
 
 /**
  * Disconnect from the server.
@@ -981,12 +967,8 @@ extern "C" {
  * make 'callback' short and sweet.
  * @param port TCP/IP port to listen on.
  * @param callback function to call when a new client connects.
- * @param ca_file Certificate Authority
- * @param crl_file CRL
- * @param cert_file SSL/TLS Certificate File
- * @param key_file Private Key
  */
-	void ipp_servloop(int port, void (*callback) (ipp_socket *), char *ca_file, char *crl_file, char *cert_file, char *key_file);
+	void ipp_servloop(int port, void (*callback) (ipp_socket *));
 
 /**
  * Causes the servloop to terminate gracefully.
@@ -1056,21 +1038,20 @@ extern "C" {
  * Handshake Helper Function. This should be called by the server from the client connect callback.
  * @param sock the connected socket.
  * @param server_tag server name and version (example "tinypokerd/0.0.0").
+ * @param auth a callback function to authenticate the user.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-	ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth) (char *, char *), void (*logger) (char *));
+	ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth) (char *), void (*logger) (char *));
 
 /**
  * Handshake Helper Function. This should be called by the client.
  * @param hostname the name of the server.
  * @param port TCP/IP port. 
- * @param cacert the certificate of the certificate authority.
  * @param user the username (in upper case).
- * @param pass the password (in upper case).
  * @param buyin_amt the inital money amount for this player.
  * @param logger a callback function to log the protocol messages (optional). If no logger, use NULL.
  */
-	ipp_socket *ipp_client_handshake(char *hostname, short port, char *cacert, char *user, char *pass, char *buyin_amt, void (*logger) (char *));
+	ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *buyin_amt, void (*logger) (char *));
 
 /**
  * Deal cards to the players at the table.

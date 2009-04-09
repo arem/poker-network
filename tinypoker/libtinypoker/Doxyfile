@@ -20,9 +20,9 @@
 #---------------------------------------------------------------------------
 # Project related configuration options
 #---------------------------------------------------------------------------
-PROJECT_NAME           = "TinyPoker"
+PROJECT_NAME           = "libtinypoker"
 PROJECT_NUMBER         = 0.2.0
-OUTPUT_DIRECTORY       = /home/tcort/repos/output
+OUTPUT_DIRECTORY       = .
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
@@ -42,7 +42,7 @@ ABBREVIATE_BRIEF       = "The $name class" \
 ALWAYS_DETAILED_SEC    = NO
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = /home/tcort/repos/tinypoker/libtinypoker/src/main
+STRIP_FROM_PATH        = src/main
 STRIP_FROM_INC_PATH    = 
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
@@ -99,7 +99,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = /home/tcort/repos/tinypoker/libtinypoker/src/main
+INPUT                  = src/main
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
