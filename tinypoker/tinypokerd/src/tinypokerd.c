@@ -172,10 +172,6 @@ int main(int argc, char *argv[], char *envp[])
 	killed = 0;
 	setuid_name = NULL;
 	setgid_name = NULL;
-	x509_ca = NULL;
-	x509_crl = NULL;
-	x509_cert = NULL;
-	x509_key = NULL;
 	configfile = NULL;
 
 	/* Sanity Checks */
@@ -366,10 +362,6 @@ int main(int argc, char *argv[], char *envp[])
 	daemon_log(LOG_DEBUG, "[MAIN] configuration set");
 	daemon_log(LOG_DEBUG, "[MAIN] setuid => '%s'", setuid_name);
 	daemon_log(LOG_DEBUG, "[MAIN] setgid => '%s'", setgid_name);
-	daemon_log(LOG_DEBUG, "[MAIN] x509_ca => '%s'", x509_ca);
-	daemon_log(LOG_DEBUG, "[MAIN] x509_crl => '%s'", x509_crl);
-	daemon_log(LOG_DEBUG, "[MAIN] x509_cert => '%s'", x509_cert);
-	daemon_log(LOG_DEBUG, "[MAIN] x509_key => '%s'", x509_key);
 	daemon_log(LOG_DEBUG, "[MAIN] protocol_log_file => '%s'", protocol_log_file);
 
 	/* setup libtinypoker */

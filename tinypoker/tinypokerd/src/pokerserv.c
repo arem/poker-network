@@ -21,16 +21,13 @@
 
 #include <netdb.h>
 #include <sys/socket.h>
-#include <gnutls/gnutls.h>
 #include <libdaemon/dlog.h>
-#include <pthread.h>
 #include <signal.h>
 #include <tinypoker.h>
 
 #include "config.h"
 #include "monitor.h"
 #include "log.h"
-#include "pam.h"
 #include "poker.h"
 #include "signal.h"
 #include "tinypokerd.h"
@@ -91,7 +88,7 @@ int pokerserv(void)
 	daemon_log(LOG_DEBUG, "[SERV] Dealer Thread Started");
 
 	/* Start listening for connections */
-	ipp_servloop(TINYPOKER_PORT, client_connect_callback, x509_ca, x509_crl, x509_cert, x509_key);
+	ipp_servloop(TINYPOKER_PORT, client_connect_callback);
 
 	daemon_log(LOG_DEBUG, "[SERV] Server Loop Exited");
 

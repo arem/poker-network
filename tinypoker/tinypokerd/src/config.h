@@ -37,34 +37,6 @@ char *setgid_name;
  */
 #define DEFAULT_SETGID_NAME "tinypokerd"
 
-char *x509_ca;
-
-/**
- * The default CA file location.
- */
-#define DEFAULT_X509_CA "/etc/tinypokerd/ca.pem"
-
-char *x509_crl;
-
-/**
- * The default CRL file location.
- */
-#define DEFAULT_X509_CRL "/etc/tinypokerd/crl.pem"
-
-char *x509_cert;
-
-/**
- * The default certificate location.
- */
-#define DEFAULT_X509_CERT "/etc/tinypokerd/cert.pem"
-
-char *x509_key;
-
-/**
- * The default private key location.
- */
-#define DEFAULT_X509_KEY "/etc/tinypokerd/key.pem"
-
 /**
  * Protocol logging flag. When true, protocol messages are written to protocol_log_file.
  */

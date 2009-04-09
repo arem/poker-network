@@ -21,29 +21,9 @@ SET (incdirs /usr/include /usr/local/include /usr/pkg/include /usr/i586-mingw32m
 
 INCLUDE(FindPkgConfig)
 
-PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.18 REQUIRED)
-PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.18 REQUIRED)
-PKG_CHECK_MODULES(GNUTLS gnutls>=2.4 REQUIRED)
-
-#############################################
-# libpthread checks
-#############################################
-
-FIND_LIBRARY(LIBPTHREAD pthread ${libdirs})
-
-IF (LIBPTHREAD)
-  MESSAGE(STATUS "Found libpthread: ${LIBPTHREAD}")
-ELSE (LIBPTHREAD)
-  MESSAGE (FATAL_ERROR "libpthread not found. See: http://www.gnu.org/software/libc/")
-ENDIF (LIBPTHREAD)
-
-FIND_PATH(LIBPTHREAD_INCLUDE_DIR pthread.h ${incdirs})
-
-IF (LIBPTHREAD_INCLUDE_DIR)
-  MESSAGE(STATUS "Found pthread.h in ${LIBPTHREAD_INCLUDE_DIR}")
-ELSE (LIBPTHREAD_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "pthread.h not found. See: http://www.gnu.org/software/libc/")
-ENDIF (LIBPTHREAD_INCLUDE_DIR)
+PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.16 REQUIRED)
+PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.16 REQUIRED)
+PKG_CHECK_MODULES(LIBTINYPOKER tinypoker>=0.2.0 REQUIRED)
 
 #############################################
 # libdaemon checks
@@ -86,46 +66,6 @@ ELSE (LIBCONFUSE_INCLUDE_DIR)
 ENDIF (LIBCONFUSE_INCLUDE_DIR)
 
 #############################################
-# libtinypoker checks
-#############################################
-
-FIND_LIBRARY(LIBTINYPOKER tinypoker ${libdirs})
-
-IF (LIBTINYPOKER)
-  MESSAGE(STATUS "Found libtinypoker: ${LIBTINYPOKER}")
-ELSE (LIBTINYPOKER)
-  MESSAGE (FATAL_ERROR "libtinypoker not found. See: http://tinypoker.org/")
-ENDIF (LIBTINYPOKER)
-
-FIND_PATH(LIBTINYPOKER_INCLUDE_DIR tinypoker.h ${incdirs})
-
-IF (LIBTINYPOKER_INCLUDE_DIR)
-  MESSAGE(STATUS "Found tinypoker.h in ${LIBTINYPOKER_INCLUDE_DIR}")
-ELSE (LIBTINYPOKER_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "tinypoker.h not found. See: http://tinypoker.org/")
-ENDIF (LIBTINYPOKER_INCLUDE_DIR)
-
-#############################################
-# libpam checks
-#############################################
-
-FIND_LIBRARY(LIBPAM pam ${libdirs})
-
-IF (LIBPAM)
-  MESSAGE(STATUS "Found libpam: ${LIBPAM}")
-ELSE (LIBPAM)
-  MESSAGE (FATAL_ERROR "libpam not found. See: http://www.kernel.org/pub/linux/libs/pam/")
-ENDIF (LIBPAM)
-
-FIND_PATH(LIBPAM_INCLUDE_DIR security/pam_appl.h ${incdirs})
-
-IF (LIBPAM_INCLUDE_DIR)
-  MESSAGE(STATUS "Found security/pam_appl.h in ${LIBPAM_INCLUDE_DIR}")
-ELSE (LIBPAM_INCLUDE_DIR)
-  MESSAGE (FATAL_ERROR "security/pam_appl.h not found. See: http://www.kernel.org/pub/linux/libs/pam/")
-ENDIF (LIBPAM_INCLUDE_DIR)
-
-#############################################
 # libxml2 checks
 #############################################
 
@@ -137,34 +77,14 @@ ELSE (LIBXML2_FOUND)
   MESSAGE (FATAL_ERROR "libxml2 not found. See: http://xmlsoft.org/")
 ENDIF (LIBXML2_FOUND)
 
-#############################
-## libgcrypt
-#############################
-
-FIND_LIBRARY(LIBGCRYPT gcrypt)
-
-IF (LIBGCRYPT)
-  MESSAGE(STATUS "Found libgcrypt: ${LIBGCRYPT}")
-ELSE (LIBGCRYPT)
-  MESSAGE (FATAL_ERROR "libgcrypt not found. See: http://www.gnupg.org/")
-ENDIF (LIBGCRYPT)
-
-FIND_PATH(LIBGCRYPT_INCDIR gcrypt.h ${incdirs})
-
-IF (LIBGCRYPT_INCDIR)
-  MESSAGE(STATUS "Found gcrypt.h in ${LIBGCRYPT_INCDIR}")
-ELSE (LIBGCRYPT_INCDIR)
-  MESSAGE (FATAL_ERROR "gcrypt.h not found. See: http://www.gnupg.org/")
-ENDIF (LIBGCRYPT_INCDIR)
-
 #############################################
 # Put everything together
 #############################################
 
-INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${LIBPTHREAD_INCLUDE_DIR} ${GNUTLS_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS} ${LIBGCRYPT_INCDIR} ${LIBPAM_INCLUDE_DIR})
-ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c pam.c poker.c pokerserv.c log.c)
+INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${LIBDAEMON_INCLUDE_DIR} ${LIBCONFUSE_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
+ADD_EXECUTABLE(tinypokerd config.c monitor.c signal.c tinypokerd.c poker.c pokerserv.c log.c)
 SET_TARGET_PROPERTIES(tinypokerd PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
-TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER} ${LIBPTHREAD} ${GNUTLS_LIBRARIES} ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${LIBGCRYPT} ${LIBPAM} ${LIBXML2_LIBRARIES})
+TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBCONFUSE} ${LIBTINYPOKER_LIBRARIES} ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${LIBXML2_LIBRARIES})
 
 #############################################
 # Installation

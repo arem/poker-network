@@ -51,26 +51,6 @@ void config_free(void)
 		setgid_name = NULL;
 	}
 
-	if (x509_ca) {
-		free(x509_ca);
-		x509_ca = NULL;
-	}
-
-	if (x509_crl) {
-		free(x509_crl);
-		x509_crl = NULL;
-	}
-
-	if (x509_cert) {
-		free(x509_cert);
-		x509_cert = NULL;
-	}
-
-	if (x509_key) {
-		free(x509_key);
-		x509_key = NULL;
-	}
-
 	protocol_log_enabled = cfg_false;
 
 	if (protocol_log_file) {
@@ -103,22 +83,6 @@ static void config_with_defaults(void)
 		setgid_name = strdup(DEFAULT_SETGID_NAME);
 	}
 
-	if (x509_ca == NULL) {
-		x509_ca = strdup(DEFAULT_X509_CA);
-	}
-
-	if (x509_crl == NULL) {
-		x509_crl = strdup(DEFAULT_X509_CRL);
-	}
-
-	if (x509_cert == NULL) {
-		x509_cert = strdup(DEFAULT_X509_CERT);
-	}
-
-	if (x509_key == NULL) {
-		x509_key = strdup(DEFAULT_X509_KEY);
-	}
-
 	if (protocol_log_file == NULL) {
 		protocol_log_file = strdup(DEFAULT_PROTOCOL_LOG_FILE);
 	}
@@ -137,10 +101,6 @@ void config_parse(void)
 	cfg_opt_t opts[] = {
 		CFG_SIMPLE_STR("setuid", &setuid_name),
 		CFG_SIMPLE_STR("setgid", &setgid_name),
-		CFG_SIMPLE_STR("x509_ca", &x509_ca),
-		CFG_SIMPLE_STR("x509_crl", &x509_crl),
-		CFG_SIMPLE_STR("x509_cert", &x509_cert),
-		CFG_SIMPLE_STR("x509_key", &x509_key),
 		CFG_SIMPLE_BOOL("protocol_log_enabled", &protocol_log_enabled),
 		CFG_SIMPLE_STR("protocol_log_file", &protocol_log_file),
 		CFG_SIMPLE_INT("game_type", &game_type),
@@ -172,22 +132,6 @@ void config_parse(void)
 
 	if (setgid_name == NULL) {
 		daemon_log(LOG_ERR, "[CONF] setgid not present in config file, defaulting to '%s'", DEFAULT_SETGID_NAME);
-	}
-
-	if (x509_ca == NULL) {
-		daemon_log(LOG_ERR, "[CONF] x509_ca not present in config file, defaulting to '%s'", DEFAULT_X509_CA);
-	}
-
-	if (x509_crl == NULL) {
-		daemon_log(LOG_ERR, "[CONF] x509_crl not present in config file, defaulting to '%s'", DEFAULT_X509_CRL);
-	}
-
-	if (x509_cert == NULL) {
-		daemon_log(LOG_ERR, "[CONF] x509_cert not present in config file, defaulting to '%s'", DEFAULT_X509_CERT);
-	}
-
-	if (x509_key == NULL) {
-		daemon_log(LOG_ERR, "[CONF] x509_key not present in config file, defaulting to '%s'", DEFAULT_X509_KEY);
 	}
 
 	if (protocol_log_enabled != cfg_false && protocol_log_enabled != cfg_true) {
