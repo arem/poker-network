@@ -112,11 +112,7 @@ any later version.
 @cindex libtinypoker
 libtinypoker provides application programming interfaces
 (APIs) to applications implementing the Internet Poker Protocol (IPP)
-Version 2.0. The library provides a robust communications framework
-that allows clients and servers to communicate over secure transport
-layer sockets (TLS). The underlying code is designed to gracefully
-handle network problems such as unexpected disconnections and bad
-input. IPP message validation, normalization and parsing functions
+Version 2.0. IPP message validation, normalization and parsing functions
 are available to developers as are several predefined types for
 representing poker games, players and cards.
 
@@ -182,7 +178,7 @@ Please read and make sure you understand the
 
 @subsection Library Initialization and Destruction
 
-Several GNU TLS resources need to be allocated before network
+Several glib resources need to be allocated before network
 communications begin and deallocated after network connications
 end. Two functions are provided to accomplish this, ipp_init()
 and ipp_exit(). Additionally, the random number generator is

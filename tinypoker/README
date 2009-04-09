@@ -12,18 +12,14 @@ for the Computer Science Club at Bishop's University in Lennoxville,
 Quebec, Canada. It has evolved since then and is currently undergoing a 
 major re-write. 
 
-libtinypoker - libtinypoker provides application programming interfaces
+libtinypoker - provides application programming interfaces
 (APIs) to applications implementing the Internet Poker Protocol (IPP)
-Version 2.0. The library provides a robust communications framework
-that allows clients and servers to communicate over secure transport
-layer sockets (TLS). The underlying code is designed to gracefully
-handle network problems such as unexpected disconnections and bad
-input. IPP message validation, normalization and parsing functions
-are available to developers as are several predefined types for 
+Version 2.0. IPP message validation, normalization and parsing functions
+are available to developers as are several predefined types for
 representing poker games, players and cards.
  
-tinypokerd - tinypokerd is the TinyPoker server. It will use libtinypoker to
-implement the Internet Poker Protocol (IPP) 2.0 over TLS. The code will
+tinypokerd - the TinyPoker server. It will use libtinypoker to
+implement the Internet Poker Protocol (IPP) 2.0. The code will
 be based on the pokerd code base and experience implementing pokerd. An
 effort will be made to make the server footprint even smaller than 
 pokerd.

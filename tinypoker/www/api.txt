@@ -13,13 +13,9 @@ libtinypoker application programming interface
 
 *libtinypoker* provides application programming interfaces
 (APIs) to applications implementing the Internet Poker Protocol (IPP)
-Version 2.0. The library provides a robust communications framework
-that allows clients and servers to communicate over secure 
-Transport Layer Security (TLS). The underlying code is designed
-to gracefully handle network problems such as unexpected disconnections
-and bad input. IPP message validation, normalization and parsing
-functions are available to developers as are several predefined types
-for representing poker games, players and cards.
+Version 2.0. IPP message validation, normalization and parsing functions
+are available to developers as are several predefined types for
+representing poker games, players and cards.
 
 This document will descibe how to use *libtinypoker* in your applications.
 The document also covers installing the library itself. Please read and
@@ -51,54 +47,10 @@ Build and Install libtinypoker
  # make install
 --------------------------------------
 
-Generate X.509 Certificates
----------------------------
-
-*libtinypoker* uses TLS to secure client/server communications.
-This is not a standard part of the Internet Poker Protocol, but
-it adds a layer of security that preventing players from snooping
-on each other with packet sniffers. See link:server.html[server setup]
-for instructions on setting up a proxy server with stunnel that will allow
-unmodified legacy clients to connect.
-
-For *libtinypoker* to work, it needs a server side certificate. You can
-obtain a certificate from a trusted certificate authority or you can create your own
-certificate authority and sign your own certificates. The example below
-demonstrates how to create your own certificate authority and sign your
-own certificates using the *certtool* program that comes with
-http://www.gnu.org/software/gnutls/[GNU TLS].
-
-.ca.tmpl
---------------------------------
-cn = Dummy Certificate Authority
-ca
-cert_signing_key
---------------------------------
-
-.localhost.tmpl
----------------------------------
-organization = Dummy Organization
-cn = localhost
-tls_www_server
-encryption_key
-signing_key
-dns_name = localhost
----------------------------------
-
-------------------------------------------
- $ certtool --generate-privkey > ca-key.pem
- $ certtool --generate-privkey > key.pem
- $ certtool --generate-self-signed --load-privkey ca-key.pem \
-       --template ca.tmpl --outfile ca.pem
- $ certtool --generate-certificate --load-privkey key.pem \
-       --load-ca-certificate ca.pem --load-ca-privkey ca-key.pem \
-       --template localhost.tmpl --outfile cert.pem
-------------------------------------------
-
 Library Initialization and Destruction
 --------------------------------------
 
-Several GNU TLS resources need to be allocated before network
+Several glib resources need to be allocated before network
 communications begin and deallocated after network connications
 end. Two functions are provided to accomplish this, *ipp_init()*
 and *ipp_exit()*. Additionally, the random number generator is
@@ -125,10 +77,10 @@ Compilation
 
 Compiling a *libtinypoker* application is relatively simple.
 One simply needs to instruct the compiler to link against the
-library and GNU TLS.
+library and glib.
 
 ------------------------------------------
- $ gcc -lpthread -ltinypoker -lgnutls -lgsl -lgslcblas -o test test.c
+ $ gcc -ltinypoker -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -lglib-2.0 -o test test.c
 ------------------------------------------
 
 Shaking hands with the Server

@@ -22,8 +22,6 @@ additional game logic. The target release date for *tinypokerd*
 is May 1, 2009.
 
 .Features
-- Secure client/server communications with Transport Layer Security.
-- User authentication with Pluggable Authentication Modules (PAM).
 - Compatible with existing Internet Poker Protocol 2.0 Implementations.
 - Freedom to run, copy, distribute, study, change and improve the software. 
 

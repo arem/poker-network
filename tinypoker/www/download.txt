@@ -14,19 +14,14 @@ Download
 libtinypoker
 ------------
 
-*libtinypoker* provides application programming interfaces (APIs) to applications
-implementing the Internet Poker Protocol (IPP) Version 2.0. The library
-provides a robust communications framework that allows clients and servers
-to communicate over secure transport layer sockets (TLS).
-The underlying code is designed to gracefully handle network problems
-such as unexpected disconnections and bad input. IPP message validation,
-normalization and parsing functions are available to developers as are
-several predefined types for representing poker games, players and cards.
-Functions for evaluating hands and determining the winner(s) are also provided.
+*libtinypoker* provides application programming interfaces
+(APIs) to applications implementing the Internet Poker Protocol (IPP)
+Version 2.0. IPP message validation, normalization and parsing functions
+are available to developers as are several predefined types for
+representing poker games, players and cards.
 *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
 link:gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://www.gnu.org/software/gnutls/[GNU Transport Layer Security]
-and http://www.gtk.org/[glib2].
+It depends on http://www.gtk.org/[glib2].
 
  * link:code/libtinypoker-0.1.0.tar.gz[libtinypoker-0.1.0.tar.gz] (March 15, 2009)
  * link:code/libtinypoker-0.0.0.tar.gz[libtinypoker-0.0.0.tar.gz] (April 1, 2008)
@@ -36,8 +31,7 @@ tinypokerd
 
 *tinypokerd* is a small poker server. It is free software and is licensed under the 
 terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse],
-http://www.kernel.org/pub/linux/libs/pam/[libpam] and
+It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse], and
 http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
 
  * 'No releases yet'.
