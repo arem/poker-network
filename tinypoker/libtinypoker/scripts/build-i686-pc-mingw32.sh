@@ -18,7 +18,20 @@
 
 set -e
 
+echo "**************************************************************************"
+echo "*** Add ;Z:\\usr\\i686-pc-mingw32\\sys-root\\mingw\\bin to PATH in     ***"
+echo "*** ~/.wine/system.reg under the following heading...                  ***"
+echo "*** [System\\CurrentControlSet\\Control\\Session Manager\\Environment] ***"
+echo "**************************************************************************"
+
+export PKG_CONFIG_PATH=/usr/i686-pc-mingw32/sys-root/mingw/lib/pkgconfig/
+export DLLPATH=/home/tcort/repos/tinypoker/libtinypoker/src/main/
+
 scripts/clean-all.sh
-cmake .
+cmake -DCMAKE_TOOLCHAIN_FILE=toolchains/i686-pc-mingw32.cmake .
 make
-# make test && make package && make doc
+rm -f src/test/libtinypoker.dll
+cp src/main/libtinypoker.dll src/test/libtinypoker.dll
+make test
+rm -f src/test/libtinypoker.dll
+

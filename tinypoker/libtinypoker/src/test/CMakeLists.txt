@@ -24,6 +24,62 @@ INCLUDE(FindPkgConfig)
 PKG_CHECK_MODULES(GLIB2 glib-2.0>=2.16 REQUIRED)
 PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.16 REQUIRED)
 
+IF (WIN32)
+
+#############################
+## libwsock32
+#############################
+
+FIND_LIBRARY(LIBWSOCK32 wsock32)
+
+IF (LIBWSOCK32)
+  MESSAGE(STATUS "Found libwsock32: ${LIBWSOCK32}")
+ELSE (LIBWSOCK32)
+  MESSAGE (FATAL_ERROR "libwsock32 not found.")
+ENDIF (LIBWSOCK32)
+
+FIND_PATH(LIBWSOCK32_INCDIR winsock2.h ${incdirs})
+IF (LIBWSOCK32_INCDIR)
+  MESSAGE(STATUS "Found winsock2.h in ${LIBWSOCK32_INCDIR}")
+ELSE (LIBWSOCK32_INCDIR)
+  MESSAGE (FATAL_ERROR "winsock2.h not found.")
+ENDIF (LIBWSOCK32_INCDIR)
+
+#############################
+## libws2_32
+#############################
+
+FIND_LIBRARY(LIBWS2_32 ws2_32)
+
+IF (LIBWS2_32)
+  MESSAGE(STATUS "Found libws2_32: ${LIBWS2_32}")
+ELSE (LIBWS2_32)
+  MESSAGE (FATAL_ERROR "libws2_32 not found.")
+ENDIF (LIBWS2_32)
+
+FIND_PATH(LIBWS2_32_INCDIR ws2tcpip.h ${incdirs})
+
+IF (LIBWS2_32_INCDIR)
+  MESSAGE(STATUS "Found ws2tcpip.h in ${LIBWS2_32_INCDIR}")
+ELSE (LIBWS2_32_INCDIR)
+  MESSAGE (FATAL_ERROR "ws2tcpip.h not found.")
+ENDIF (LIBWS2_32_INCDIR)
+
+#############################
+## wine
+#############################
+
+IF (RUN_TESTS_WITH_WINE)
+  FIND_PROGRAM(WINE wine)
+  IF (WINE)
+    MESSAGE(STATUS "Found wine at ${WINE}")
+  ELSE (WINE)
+    MESSAGE(STATUS "wine not found. See http://www.winehq.org/")
+  ENDIF (WINE)
+ENDIF (RUN_TESTS_WITH_WINE)
+
+ENDIF (WIN32)
+
 #############################################
 # Put everything together
 #############################################
@@ -31,11 +87,22 @@ PKG_CHECK_MODULES(GTHREAD2 gthread-2.0>=2.16 REQUIRED)
 INCLUDE(CTest)
 ENABLE_TESTING()
 
-INCLUDE_DIRECTORIES(${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
-
 FOREACH(TEST ${TESTS})
   ADD_EXECUTABLE(${TEST} ${TEST}.c)
-  TARGET_LINK_LIBRARIES(${TEST} tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES})
-  ADD_TEST(${TEST} ${TEST})
+
+  IF (WIN32)
+    INCLUDE_DIRECTORIES(${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS} ${LIBWSOCK32_INCDIR} ${LIBWS2_32_INCDIR})
+    TARGET_LINK_LIBRARIES(${TEST} tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${LIBWSOCK32} ${LIBWS2_32})
+  ELSE (WIN32)
+    INCLUDE_DIRECTORIES(${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
+    TARGET_LINK_LIBRARIES(${TEST} tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES})
+  ENDIF (WIN32)
+
+  IF (RUN_TESTS_WITH_WINE)
+    ADD_TEST(${TEST} ${WINE} ${TEST})
+  ELSE (RUN_TESTS_WITH_WINE)
+    ADD_TEST(${TEST} ${TEST})
+  ENDIF (RUN_TESTS_WITH_WINE)
+
 ENDFOREACH(TEST)
 

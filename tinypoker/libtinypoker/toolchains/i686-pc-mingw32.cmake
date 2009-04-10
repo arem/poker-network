@@ -16,9 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
 
-set -e
+set (CMAKE_SYSTEM_NAME Windows)
+set (CMAKE_C_COMPILER i686-pc-mingw32-gcc)
+set (CMAKE_CXX_COMPILER i686-pc-mingw32-g++)
+set (CMAKE_FIND_ROOT_PATH /usr/i686-pc-mingw32/sys-root/mingw/)
+set (CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set (CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set (CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set (CMAKE_INSTALL_PREFIX /usr/i686-pc-mingw32/sys-root/mingw/)
+set (RUN_TESTS_WITH_WINE 1)
 
-scripts/clean-all.sh
-cmake .
-make
-# make test && make package && make doc

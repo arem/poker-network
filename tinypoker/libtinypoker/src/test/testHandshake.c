@@ -28,24 +28,25 @@
 void logger(char *msg)
 {
 	printf("logger()\n");
-        if (msg) {
-                printf("%s\n", msg);
-        }
+	if (msg) {
+		printf("%s\n", msg);
+	}
 }
 
-int auth(char *s) {
+int auth(char *s)
+{
 	printf("auth()\n");
 	return 1;
 }
 
-void client_connect_callback(ipp_socket * sock) {
+void client_connect_callback(ipp_socket * sock)
+{
 	ipp_player *player;
 
 	printf("client_connect_callback()\n");
 
 	player = ipp_server_handshake(sock, "testd/1.0", auth, logger);
 	if (player == NULL) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		assertNotNull("ipp_server_handshake() returned NULL", player);
@@ -55,42 +56,51 @@ void client_connect_callback(ipp_socket * sock) {
 
 	assertStringEqual("Player name fail", "JSMITH", player->name);
 	ipp_free_player(player);
+	player = NULL;
 	ipp_servloop_shutdown();
 	return;
 }
 
-gpointer serverside(gpointer data) {
+gpointer serverside(gpointer data)
+{
 	printf("serverside()\n");
 	ipp_servloop(TINYPOKER_PORT, client_connect_callback);
 	return NULL;
 }
 
-int clientside() {
+int clientside()
+{
 	ipp_socket *sock;
 
 	printf("clientside()\n");
 
-	sleep(3); // give the server some time to startup
+	/* give the server some time to startup */
+#ifdef _WIN32
+	Sleep(3000);
+#else
+	sleep(3);
+#endif
 
 	printf("about to attempt handshake\n");
 
 	sock = ipp_client_handshake("localhost", TINYPOKER_PORT, "JSMITH", "500", logger);
-        if (sock) {
-                printf("- HANDSHAKE OK\n");
-                ipp_disconnect(sock);
-                ipp_free_socket(sock);
-                sock = NULL;
+	if (sock) {
+		printf("- HANDSHAKE OK\n");
+		ipp_free_socket(sock);
+		sock = NULL;
 		return PASS;
-        } else {
-                printf("- HANDSHAKE FAILED\n");
+	} else {
+		printf("- HANDSHAKE FAILED\n");
+		ipp_free_socket(sock);
+		sock = NULL;
 		return FAIL;
-        }
+	}
 }
 
 int main()
 {
 	GThread *server_thread;
-	int client_rc, server_rc;
+	int client_rc;
 
 	ipp_init();
 
@@ -102,9 +112,5 @@ int main()
 
 	ipp_exit();
 
-	if (client_rc == FAIL || server_rc == FAIL) {
-		return FAIL;
-	} else {
-		return PASS;
-	}
+	return client_rc;
 }

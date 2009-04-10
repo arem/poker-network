@@ -30,7 +30,18 @@ extern "C" {
 #include <string.h>
 #include <sys/types.h>
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <io.h>
+	typedef int socklen_t;
+
+#else
+
 #include <netinet/in.h>
+	typedef int SOCKET;
+
+#endif
 
 #ifndef max
 #define max(x,y) (x > y ? x : y)
@@ -118,7 +129,7 @@ extern "C" {
  * Structure used to hold network communications information.
  */
 	typedef struct ipp_socket {
-		int sd;
+		SOCKET sd;
 		struct sockaddr_in addr;
 	} ipp_socket;
 

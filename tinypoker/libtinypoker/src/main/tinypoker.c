@@ -19,13 +19,37 @@
 
 #define _GNU_SOURCE
 
+#ifdef _WIN32
+#ifndef WINVER
+#define WINVER WindowsXP
+#endif
+#include <w32api.h>
+#endif
+
 #include <glib.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <io.h>
+
+#define SHUT_RDWR SD_BOTH
+
+#else
 
 #include <netdb.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
-#include <sys/poll.h>
+#include <sys/select.h>
 #include <sys/socket.h>
+
+#define closesocket(sd) close(sd)
+
+#endif
+
+#ifndef SOMAXCONN
+#define SOMAXCONN 5
+#endif
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -151,6 +175,26 @@ void ipp_init(void)
 	if (rng == NULL) {
 		return;
 	}
+#ifdef _WIN32
+	/* Winsock */
+	int rc;
+	WORD wVersionRequested = MAKEWORD(1, 1);
+	WSADATA wsaData;
+
+	memset(&(wsaData), '\0', sizeof(WSADATA));
+
+	rc = WSAStartup(wVersionRequested, &(wsaData));
+	if (rc == -1) {
+		g_rand_free(rng);
+		return;
+	}
+
+	if (wsaData.wVersion != wVersionRequested) {
+		g_rand_free(rng);
+		WSACleanup();
+		return;
+	}
+#endif
 
 	ipp_initialized = TRUE;
 }
@@ -169,6 +213,10 @@ void ipp_exit(void)
 		g_rand_free(rng);
 		rng = NULL;
 	}
+#ifdef _WIN32
+	/* Winsock */
+	WSACleanup();
+#endif
 
 	ipp_initialized = FALSE;
 }
@@ -524,7 +572,6 @@ void ipp_free_player(ipp_player * player)
 			player->name = NULL;
 		}
 		if (player->sock) {
-			ipp_disconnect(player->sock);
 			ipp_free_socket(player->sock);
 			player->sock = NULL;
 		}
@@ -854,8 +901,7 @@ ipp_socket *ipp_connect(char *hostname, short port)
 	memset(&sin, 0, sizeof(sin));
 	sin.sin_port = htons(port);
 	he = gethostbyname(hostname);
-	if (!ret) {
-		ipp_disconnect(sock);
+	if (he == NULL) {
 		ipp_free_socket(sock);
 		return NULL;
 	}
@@ -863,13 +909,11 @@ ipp_socket *ipp_connect(char *hostname, short port)
 	memcpy(&sin.sin_addr, he->h_addr, he->h_length);
 	sock->sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (!(sock->sd)) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		return NULL;
 	}
 	ret = connect(sock->sd, (struct sockaddr *) &sin, sizeof(sin));
 	if (ret) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		return NULL;
 	}
@@ -894,7 +938,7 @@ void ipp_disconnect(ipp_socket * sock)
 	if (sock->sd) {
 		/* close the connection */
 		shutdown(sock->sd, SHUT_RDWR);
-		close(sock->sd);
+		closesocket(sock->sd);
 		sock->sd = 0;
 	}
 
@@ -941,8 +985,9 @@ ipp_message *ipp_read_msg(ipp_socket * sock, guint8 timeout_seconds, void (*logg
 		return NULL;
 	}
 
-	ret = read(sock->sd, buffer, MAX_MSG_SIZE);
+	ret = recv(sock->sd, buffer, MAX_MSG_SIZE, 0);
 	if (ret < 0) {
+		perror("recv");
 		free(buffer);
 		buffer = NULL;
 		return NULL;
@@ -1030,12 +1075,13 @@ gboolean ipp_send_msg(ipp_socket * sock, ipp_message * msg, guint8 timeout_secon
 			return FALSE;
 		}
 
-		ret = write(sock->sd, final_msg, strlen(final_msg));
+		ret = send(sock->sd, final_msg, strlen(final_msg), 0);
 		if (ret == strlen(final_msg)) {
 			free(final_msg);
 			final_msg = NULL;
 			return TRUE;
 		} else {
+			perror("send");
 			free(final_msg);
 			final_msg = NULL;
 			return FALSE;
@@ -1073,10 +1119,18 @@ void ipp_servloop_shutdown(void)
  */
 void ipp_servloop(int port, void (*callback) (ipp_socket *))
 {
-	int master, slave, rc, optval;
+	SOCKET master;
+	SOCKET slave;
+	int rc;
+	int optval = 1;
+#ifdef _WIN32
+	FD_SET reader;
+#else
+	fd_set reader;
+#endif
 	ipp_socket *ipp_slave;
 
-	struct pollfd p;
+	struct timeval timeout;
 	struct sockaddr_in sin;
 	struct sockaddr_in client_addr;
 	unsigned int client_addr_len;
@@ -1090,49 +1144,64 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 
 	master = socket(PF_INET, SOCK_STREAM, 0);
 	if (master < 0) {
+		perror("socket");
 		return;
 	}
-	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
+
+	setsockopt(master, SOL_SOCKET, SO_REUSEADDR, (void *) &optval, sizeof(int));
 
 	rc = bind(master, (struct sockaddr *) &sin, sizeof(sin));
 	if (rc < 0) {
+		perror("bind");
 		return;
 	}
-	rc = listen(master, 64);
+
+	rc = listen(master, SOMAXCONN);
 	if (rc < 0) {
+		perror("listen");
 		return;
 	}
-	p.fd = master;
-	p.events = POLLIN;
-	p.revents = 0;
 
 	done = 0;
 
 	while (!done) {
-		/* Poll master so that we don't block on accept */
+		int src;
+
+		/* select master so that we don't block on accept */
 		/*
 		 * this is done so that when we signal we re-evaluate if
 		 * !done == true
 		 */
 
-		poll(&p, 1, 30000);	/* 30 second timeout */
-		if (p.revents != POLLIN) {	/* no activity */
+		FD_ZERO(&reader);
+		FD_SET(master, &reader);
+
+		timeout.tv_sec = 2;
+		timeout.tv_usec = 0;
+
+		src = select(master + 1, &reader, NULL, NULL, &timeout);
+		if (src == -1) {
 			if (done) {
 				break;
 			} else {
 				continue;
 			}
 		}
+
 		if (done) {
 			break;
+		} else if (!FD_ISSET(master, &reader)) {	/* no activity */
+			continue;
 		}
+
 		slave = accept(master, (struct sockaddr *) &client_addr, &client_addr_len);
 		if (slave < 0) {
 			if (errno == EINTR) {
 				continue;
 			} else {
+				perror("accept");
 				shutdown(master, SHUT_RDWR);
-				close(master);
+				closesocket(master);
 				return;
 			}
 		}
@@ -1140,7 +1209,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 		ipp_slave = ipp_new_socket();
 		if (!ipp_slave) {
 			shutdown(slave, SHUT_RDWR);
-			close(slave);
+			closesocket(slave);
 			continue;
 		}
 
@@ -1151,7 +1220,7 @@ void ipp_servloop(int port, void (*callback) (ipp_socket *))
 	}
 
 	shutdown(master, SHUT_RDWR);
-	close(master);
+	closesocket(master);
 }
 
 /**
@@ -1810,7 +1879,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, logger);
 	if (!rc) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1823,7 +1891,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	msg = ipp_read_msg(sock, SERVER_READ_TIMEOUT, logger);
 	if (msg == NULL || msg->type != MSG_BUYIN || msg->payload == NULL || msg->parsed == NULL || msg->parsed[0] == NULL || msg->parsed[1] == NULL || msg->parsed[2] == NULL) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1833,7 +1900,8 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	user = g_strdup(msg->parsed[1]);
 	if (!user) {
-		ipp_disconnect(sock);
+		free(user);
+		user = NULL;
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1843,7 +1911,8 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	buyin_amt = g_strdup(msg->parsed[2]);
 	if (!buyin_amt) {
-		ipp_disconnect(sock);
+		free(buyin_amt);
+		buyin_amt = NULL;
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1857,7 +1926,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 	rc = auth(user);
 
 	if (!rc) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		free(user);
@@ -1867,7 +1935,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	len = (sizeof(char) * (strlen("WELCOME ") + strlen(user) + 3));
 	if (len <= 0) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		free(user);
@@ -1877,7 +1944,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	msg = ipp_new_message();
 	if (!msg) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		free(user);
@@ -1888,7 +1954,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 	msg->type = MSG_WELCOME;
 	msg->payload = (char *) malloc(len);
 	if (!msg->payload) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1902,7 +1967,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 
 	rc = ipp_send_msg(sock, msg, SERVER_WRITE_TIMEOUT, logger);
 	if (!rc) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1918,7 +1982,6 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 	/* Handshake Complete :-) */
 	p = ipp_new_player();
 	if (!p) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		free(user);
@@ -1931,6 +1994,11 @@ ipp_player *ipp_server_handshake(ipp_socket * sock, char *server_tag, int (*auth
 	p->bankroll = atoi(buyin_amt);
 	if (p->bankroll < 0) {
 		p->bankroll = 0;
+	}
+
+	if (buyin_amt) {
+		free(buyin_amt);
+		buyin_amt = NULL;
 	}
 
 	return p;
@@ -1966,7 +2034,6 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *b
 
 	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, logger);
 	if (!msg || !(msg->payload) || msg->type != MSG_IPP) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1978,7 +2045,6 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *b
 
 	msg = ipp_new_message();
 	if (!msg) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		return NULL;
@@ -1987,7 +2053,6 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *b
 	msg->type = MSG_BUYIN;
 	len = strlen(CMD_BUYIN) + strlen(" ") + strlen(user) + strlen(" ") + strlen(buyin_amt) + 3;
 	if (sizeof(char) * len <= 0) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -1997,7 +2062,6 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *b
 
 	msg->payload = (char *) malloc(sizeof(char) * len);
 	if (!(msg->payload)) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -2009,7 +2073,6 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *b
 
 	rc = ipp_send_msg(sock, msg, CLIENT_WRITE_TIMEOUT, logger);
 	if (!rc) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
@@ -2021,7 +2084,6 @@ ipp_socket *ipp_client_handshake(char *hostname, short port, char *user, char *b
 
 	msg = ipp_read_msg(sock, CLIENT_READ_TIMEOUT, logger);
 	if (!msg || !(msg->payload) || msg->type != MSG_WELCOME || !(msg->parsed) || !(msg->parsed[0]) || !(msg->parsed[1]) || strcmp(msg->parsed[1], user)) {
-		ipp_disconnect(sock);
 		ipp_free_socket(sock);
 		sock = NULL;
 		ipp_free_message(msg);
