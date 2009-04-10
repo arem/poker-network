@@ -19,7 +19,7 @@ representing poker games, players and cards.
 
 This document will descibe how to use *libtinypoker* in your applications.
 The document also covers installing the library itself. Please read and
-make sure you understand the link:agpl-3.html[license]
+make sure you understand the link:agpl-3.0.html[license]
 before proceeding.
 
 Install the Dependencies
