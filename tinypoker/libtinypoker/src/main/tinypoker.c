@@ -950,6 +950,7 @@ void ipp_disconnect(ipp_socket * sock)
  * Read a message from the socket.
  * @param sock the socket to read from.
  * @param timeout_seconds number of seconds to wait for input.
+ * @param logger protocol logging callback function.
  * @return a valid normalized message or NULL if message is invalid. All messages need to be deallocate by the user with free().
  */
 ipp_message *ipp_read_msg(ipp_socket * sock, guint8 timeout_seconds, void (*logger) (char *))
@@ -1023,6 +1024,7 @@ ipp_message *ipp_read_msg(ipp_socket * sock, guint8 timeout_seconds, void (*logg
  * @param sock the socket to read from.
  * @param msg the message to send.
  * @param timeout_seconds number of seconds to wait for output.
+ * @param logger protocol logging callback function.
  * @return TRUE if msg was sent OK, else FALSE for error.
  */
 gboolean ipp_send_msg(ipp_socket * sock, ipp_message * msg, guint8 timeout_seconds, void (*logger) (char *))
@@ -1636,8 +1638,8 @@ typedef struct __ipp_combination {
 /**
  * INTERNAL FUNCTION. DO NOT USE OUTSIDE LIBTINYPOKER!!!
  * Comparator for qsort and other similar sorting functions.
- * @param ipp_combination_a an ipp_combination pointer.
- * @param ipp_combination_b an ipp_combination pointer.
+ * @param a an ipp_combination pointer.
+ * @param b an ipp_combination pointer.
  * @return integer less than, equal to, or greater than zero if
  *         the first argument is considered to be respectively
  *         less than, equal to, or greater than the second.
