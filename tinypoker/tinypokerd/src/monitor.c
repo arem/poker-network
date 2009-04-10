@@ -1,25 +1,25 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
- * 
- * This file is part of tinypokerd.
- * 
- * tinypokerd is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- * 
- * tinypokerd is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
+ *
+ * This file is part of TinyPoker.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define _XOPEN_SOURCE 500
 
-#include <pthread.h>
+#include <glib.h>
 #include <sched.h>
 #include <signal.h>
 #include <unistd.h>
@@ -34,14 +34,14 @@ int cnt;
 /**
  * A lock used to serialize access to cnt.
  */
-pthread_mutex_t mon_lock;
+GMutex *mon_lock;
 
 /**
  *  initialize monitor variables
  */
 void monitor_init(void)
 {
-	pthread_mutex_init(&mon_lock, 0);
+	mon_lock = g_mutex_new();
 	cnt = 0;
 }
 
@@ -50,9 +50,9 @@ void monitor_init(void)
  */
 void monitor_inc(void)
 {
-	pthread_mutex_lock(&mon_lock);
+	g_mutex_lock(mon_lock);
 	cnt++;
-	pthread_mutex_unlock(&mon_lock);
+	g_mutex_unlock(mon_lock);
 }
 
 /**
@@ -60,9 +60,9 @@ void monitor_inc(void)
  */
 void monitor_dec(void)
 {
-	pthread_mutex_lock(&mon_lock);
+	g_mutex_lock(mon_lock);
 	cnt--;
-	pthread_mutex_unlock(&mon_lock);
+	g_mutex_unlock(mon_lock);
 }
 
 /**
@@ -74,16 +74,21 @@ void monitor_wait(void)
 	raise(SIGQUIT);
 
 	while (1) {
-		pthread_mutex_lock(&mon_lock);
+		g_mutex_lock(mon_lock);
 
 		if (!cnt) {
-			pthread_mutex_unlock(&mon_lock);
-			pthread_mutex_destroy(&mon_lock);
+			g_mutex_unlock(mon_lock);
+			g_mutex_free(mon_lock);
+			mon_lock = NULL;
 			return;
 		} else {
-			pthread_mutex_unlock(&mon_lock);
+			g_mutex_unlock(mon_lock);
 			sched_yield();
+#ifdef _WIN32
+			Sleep(3000);
+#else
 			sleep(3);
+#endif
 		}
 	}
 }

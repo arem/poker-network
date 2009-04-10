@@ -1,12 +1,13 @@
-		Thomas Cort	<linuxgeek@gmail.com>
+		Thomas Cort	<tcort@tomcort.com>
 
 	* tinypoker.pc for pkg-config
 	* Doxygen documentation generation
 	* RPM and DEB Packages
 	* Drop a few dependencies
 	* Additional Unit Testing
+	* Change license to GNU Affero General Public License v3 or later.
 
-March 15, 2009	Thomas Cort	<linuxgeek@gmail.com>
+March 15, 2009	Thomas Cort	<tcort@tomcort.com>
 
 	* New Features
 
@@ -14,6 +15,6 @@ March 15, 2009	Thomas Cort	<linuxgeek@gmail.com>
 		* Player Ranking
 		* Deck Shuffling
 
-April 1, 2008	Thomas Cort	<linuxgeek@gmail.com>
+April 1, 2008	Thomas Cort	<tcort@tomcort.com>
 
 	* Initial Release

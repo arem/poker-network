@@ -127,7 +127,7 @@ List of Configuration Options
 setuid	              username        Name of the user to run as                          tinypokerd
 setgid	              groupname       Name of the group to run as                         tinypokerd	
 protocol_log_enabled  true/false      Switch protocol logging on or off                   false
-protocol_log_file     /path/to/file   XML log file containing protocol messages           /var/log/tinypokerd/protocol.log
+protocol_log_file     /path/to/file   Log file containing protocol messages           /var/log/tinypokerd/protocol.log
 game_type             1-3             Specify the type of game (holdem, draw or stud).    1
 -----------------------------------------------------------------------------------------------------------------------------
 

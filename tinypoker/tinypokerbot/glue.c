@@ -17,23 +17,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../main/tinypoker.h"
-#include "test.h"
+#include <tinypoker.h>
 
-int main()
+#include <stdlib.h>
+#include <strings.h>
+
+#include <libguile.h>
+#include <guile/gh.h>
+
+#include "main.h"
+#include "glue.h"
+
+SCM tpb_ipp_handshake(SCM s_hostname, SCM s_port, SCM s_name, SCM s_buyin)
 {
-	ipp_init();
+	char *hostname;
+	char *name;
 
-	assertTrue("Up String should be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 2D"));
-	assertTrue("Up String should be valid", ipp_validate_msg(REGEX_MSG_UP, "UP KS"));
+	SCM_ASSERT(gh_string_p(s_hostname), s_hostname, SCM_ARG1, "ipp-handshake");
 
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 7C 2"));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 7C2"));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 9H "));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP "));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP"));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, ""));
+	hostname = gh_scm2newstr(s_hostname, NULL);
+	name = gh_scm2newstr(s_name, NULL);
 
-	ipp_exit();
-	return PASS;
+	printf("Hostname => '%s'\n",hostname);
+	printf("Name => '%s'\n",name);
+
+//	ipp_client_handshake(hostname, port, name, buyin, NULL);
+
+	if (hostname) {
+		free(hostname);
+		hostname = NULL;
+	}
+
+	if (name) {
+		free(name);
+		name = NULL;
+	}
+        return SCM_BOOL_T;
+}
+
+void tpb_register_procs(void)
+{
+    gh_new_procedure("ipp-handshake", tpb_ipp_handshake, 4, 0, 0);
 }

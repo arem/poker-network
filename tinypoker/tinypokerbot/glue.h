@@ -17,23 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../main/tinypoker.h"
-#include "test.h"
+#ifndef __GLUE_H
+#define __GLUE_H
 
-int main()
-{
-	ipp_init();
+void tpb_register_procs(void);
 
-	assertTrue("Up String should be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 2D"));
-	assertTrue("Up String should be valid", ipp_validate_msg(REGEX_MSG_UP, "UP KS"));
-
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 7C 2"));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 7C2"));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP 9H "));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP "));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, "UP"));
-	assertFalse("Up String should not be valid", ipp_validate_msg(REGEX_MSG_UP, ""));
-
-	ipp_exit();
-	return PASS;
-}
+#endif

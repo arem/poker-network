@@ -1,5 +1,5 @@
 // TinyPoker.org                                       
-// Copyright (C) 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
+// Copyright (C) 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
 //
 // Permission is granted to copy, distribute and/or modify this document
 // under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -20,7 +20,7 @@ Version 2.0. IPP message validation, normalization and parsing functions
 are available to developers as are several predefined types for
 representing poker games, players and cards.
 *libtinypoker* is http://www.gnu.org/philosophy/free-sw.html[free software] and is licensed under the terms of the
-link:gpl-3.html[GNU General Public License version 3 or Later].
+link:agpl-3.html[GNU Affero General Public License version 3 or Later].
 It depends on http://www.gtk.org/[glib2].
 
  * link:code/libtinypoker-0.1.0.tar.gz[libtinypoker-0.1.0.tar.gz] (March 15, 2009)
@@ -30,19 +30,8 @@ tinypokerd
 ----------
 
 *tinypokerd* is a small poker server. It is free software and is licensed under the 
-terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://tinypoker.org/[libtinypoker], http://www.nongnu.org/confuse/[libConfuse], and
-http://0pointer.de/lennart/projects/libdaemon/[libdaemon].
-
- * 'No releases yet'.
-
-tinypokerclient
----------------
-
-*tinypokerclient* is a graphical *tinypokerd* client. It free software and is licensed under the
-terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
-It depends on http://tinypoker.org/[libtinypoker] and
-http://www.wxwidgets.org/[wxWidgets].
+terms of the link:agpl-3.html[GNU Affero General Public License version 3 or Later].
+It depends on http://tinypoker.org/[libtinypoker].
 
  * 'No releases yet'.
 
@@ -52,7 +41,7 @@ tinypokerbot
 *tinypokerbot* is a trivial client for *tinypokerd*. It will connect to 
 a server, join a game, and fold every hand. It is intended
 to be a base for building a poker bot. It free software and is licensed under the
-terms of the link:gpl-3.html[GNU General Public License version 3 or Later].
+terms of the link:agpl-3.html[GNU Affero General Public License version 3 or Later].
 It depends on http://tinypoker.org/[libtinypoker] and
 http://www.gnu.org/software/guile/guile.html[guile].
 

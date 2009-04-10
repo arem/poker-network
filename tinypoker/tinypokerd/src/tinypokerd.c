@@ -1,28 +1,26 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
- * 
- * This file is part of tinypokerd.
- * 
- * tinypokerd is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- * 
- * tinypokerd is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * tinypokerd.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
+ *
+ * This file is part of TinyPoker.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define _GNU_SOURCE
 
 #include <errno.h>
 #include <getopt.h>
-#include <libdaemon/dlog.h>
-#include <libdaemon/dpid.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,15 +35,14 @@
 #include <unistd.h>
 
 #include "log.h"
-#include "config.h"
 #include "monitor.h"
 #include "pokerserv.h"
 #include "signal.h"
 #include "tinypokerd.h"
 
 /**
- * Determines if gatewayavd should run in the background (daemonized) or
- * not. If daemonize is 1, then gatewayavd should run in the background.
+ * Determines if tinypokerd should run in the background (daemonized) or
+ * not. If daemonize is 1, then tinypokerd should run in the background.
  */
 int daemonize;
 
@@ -54,15 +51,22 @@ int daemonize;
  */
 int killed;
 
+#define DEFAULT_PID_LOCATION "tinypokerd.pid"
+
+/**
+ * Location of the PID file as specified on the command line.
+ */
+char *pid_filename;
+
 /**
  * Displays some version and copyright information upon request (-v or --version).
  */
 void display_version(void)
 {
-	daemon_log(LOG_INFO, "%s/%s", TINYPOKERD_NAME, TINYPOKERD_VERSION);
-	daemon_log(LOG_INFO, "Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>");
-	daemon_log(LOG_INFO, "This is free software; see the source for copying conditions.  There is NO");
-	daemon_log(LOG_INFO, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+	fprintf(stdout, "%s/%s\n", TINYPOKERD_NAME, TINYPOKERD_VERSION);
+	fprintf(stdout, "Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>\n");
+	fprintf(stdout, "This is free software; see the source for copying conditions.  There is NO\n");
+	fprintf(stdout, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
 
 
@@ -72,13 +76,98 @@ void display_version(void)
  */
 void display_help(char *program)
 {
-	daemon_log(LOG_INFO, "Usage: %s [options]", program);
-	daemon_log(LOG_INFO, "Options:");
-	daemon_log(LOG_INFO, "    -h --help          Show this help message");
-	daemon_log(LOG_INFO, "    -v --version       Show version information");
-	daemon_log(LOG_INFO, "    -k --kill          Kill the running instance");
-	daemon_log(LOG_INFO, "    -f --foreground    Run in the foreground");
-	daemon_log(LOG_INFO, "    -c --config=file   Use an alternate config");
+	fprintf(stdout, "Usage: %s [options]\n", program);
+	fprintf(stdout, "Options:\n");
+	fprintf(stdout, "    -h --help          Show this help message\n");
+	fprintf(stdout, "    -v --version       Show version information\n");
+	fprintf(stdout, "    -k --kill          Kill the running instance\n");
+	fprintf(stdout, "    -f --foreground    Run in the foreground\n");
+}
+
+const char *get_pid_filename(void)
+{
+	if (pid_filename) {
+		return pid_filename;
+	} else {
+		return DEFAULT_PID_LOCATION;
+	}
+}
+
+int pid_create(void)
+{
+	int fd, rc;
+	char pid[20];
+
+	memset(pid, '\0', sizeof(char) * 20);
+
+	fd = open(get_pid_filename(), O_CREAT | O_WRONLY | O_EXCL, 0644);
+	if (fd == -1) {
+		return -1;
+	}
+
+	snprintf(pid, 18, "%lu", (unsigned long) getpid());
+	rc = write(fd, pid, strlen(pid));
+	if (rc == -1) {
+		close(fd);
+		unlink(get_pid_filename());
+		return -1;
+	}
+
+	close(fd);
+	return 0;
+}
+
+int pid_kill(void)
+{
+	gsize length;
+	gchar *contents;
+	gboolean frc;
+	pid_t pid;
+	int rc;
+	int i;
+
+	contents = NULL;
+
+	frc = g_file_get_contents(get_pid_filename(), &contents, &length, NULL);
+	if (frc == FALSE) {
+		if (contents) {
+			free(contents);
+			contents = NULL;
+		}
+		return -1;
+	}
+
+	if (length > 20) {
+		if (contents) {
+			free(contents);
+			contents = NULL;
+		}
+		return -1;
+	}
+
+	pid = strtol(contents, NULL, 10);
+
+	rc = kill(pid, SIGINT);
+	for (i = 0; i < 30; i++) {
+		rc = kill(pid, 0);
+		if (rc < 0 && errno != ESRCH) {
+			return -1;
+		} else if (rc) {
+			return 0;
+		}
+#ifdef _WIN32
+		Sleep(1000);
+#else
+		sleep(1);
+#endif
+	}
+
+	return 1;
+}
+
+void pid_unlink(void)
+{
+	unlink(get_pid_filename());
 }
 
 /**
@@ -97,7 +186,7 @@ int parse_args(int argc, char **argv)
 		{"version", no_argument, NULL, 'v'},
 		{"kill", no_argument, NULL, 'k'},
 		{"foreground", no_argument, NULL, 'f'},
-		{"config", required_argument, NULL, 'c'},
+		{"pid-file", required_argument, NULL, 'p'},
 		{0, 0, 0, 0}
 	};
 
@@ -108,7 +197,7 @@ int parse_args(int argc, char **argv)
 		int c;
 		int ret;
 
-		c = getopt_long(argc, argv, "hvkfc:", long_options, &option_index);
+		c = getopt_long(argc, argv, "hvkfp:", long_options, &option_index);
 		if (c < 0) {
 			break;
 		}
@@ -122,9 +211,9 @@ int parse_args(int argc, char **argv)
 			done = 1;
 			break;
 		case 'k':
-			ret = daemon_pid_file_kill_wait(SIGQUIT, 30);
+			ret = pid_kill();
 			if (ret < 0) {
-				daemon_log(LOG_ERR, "[MAIN] Daemon not killed: (%s)", strerror(errno));
+				fprintf(stderr, "[MAIN] Daemon not killed: (%s)\n", strerror(errno));
 			} else {
 				killed = 1;
 			}
@@ -133,19 +222,11 @@ int parse_args(int argc, char **argv)
 		case 'f':
 			daemonize = 0;
 			break;
-		case 'c':
-			if (configfile) {
-				free(configfile);
-				configfile = NULL;
-			}
-			configfile = strdup(optarg);
-			if (!configfile) {
-				daemon_log(LOG_ERR, "[MAIN] strdup() failed");
-				done = 1;
-			}
+		case 'p':
+			pid_filename = g_strdup(optarg);
 			break;
 		default:
-			daemon_log(LOG_ERR, "[MAIN] Unsupported option");
+			fprintf(stderr, "[MAIN] Unsupported option\n");
 			done = 1;
 			break;
 		}
@@ -154,72 +235,30 @@ int parse_args(int argc, char **argv)
 	return done;
 }
 
-const char *get_pid_filename(void)
-{
-	return "/var/run/tinypokerd/tinypokerd.pid";
-}
-
 int main(int argc, char *argv[], char *envp[])
 {
-	int fd, ret, uid, gid;
-	struct passwd *pw;
-	struct group *gr;
+	int fd, ret;
 	struct rlimit rlim;
 	pid_t pid;
 
 	/* Default Values for Global Variables */
 	daemonize = 1;
+	pid_filename = NULL;
 	killed = 0;
-	setuid_name = NULL;
-	setgid_name = NULL;
-	configfile = NULL;
-
-	/* Sanity Checks */
-	if (geteuid() != 0) {
-		daemon_log(LOG_ERR, "[MAIN] You need root privileges to run this application.");
-		return 1;
-	}
 
 	if (argc < 1 || !argv || !argv[0]) {
-		daemon_log(LOG_ERR, "[MAIN] Cannot determine program name from argv[0]\n");
-		return 1;
-	}
-	daemon_pid_file_ident = daemon_log_ident = daemon_ident_from_argv0(argv[0]);
-	daemon_pid_file_proc = get_pid_filename;
-
-	if (configfile) {
-		free(configfile);
-		configfile = NULL;
-	}
-	configfile = strdup(DEFAULT_CONFIGFILE);
-	if (!configfile) {
-		daemon_log(LOG_ERR, "[MAIN] strdup() failed");
+		fprintf(stderr, "[MAIN] Cannot determine program name from argv[0]\n");
 		return 1;
 	}
 
 	/* Command Line Arguements */
 	ret = parse_args(argc, argv);
 	if (ret) {
-		if (configfile) {
-			free(configfile);
-			configfile = NULL;
-		}
 		return (killed ? 0 : ret);
-	}
-
-	/* Configure */
-	config_parse();
-
-	if (configfile) {
-		free(configfile);
-		configfile = NULL;
 	}
 
 	/* Daemonize */
 	if (daemonize) {
-		/* Configure Logging */
-		daemon_log_use = DAEMON_LOG_SYSLOG;
-
 		umask(0);
 
 		pid = fork();
@@ -238,14 +277,13 @@ int main(int argc, char *argv[], char *envp[])
 		}
 		ret = chdir("/");
 		if (ret < 0) {
-			daemon_log(LOG_ERR, "[MAIN] Could not chdir() to '/': %s", strerror(errno));
+			fprintf(stderr, "[MAIN] Could not chdir() to '/': %s\n", strerror(errno));
 			return 1;
 		}
 		/* close open file descriptors */
 		for (fd = 0; fd < getdtablesize(); fd++) {
 			ret = close(fd);
 			if (ret == -1 && errno != EBADF) {
-				daemon_log(LOG_ERR, "[MAIN] Could not close fd #%d: %s", fd, strerror(errno));
 				return 1;
 			}
 		}
@@ -261,7 +299,7 @@ int main(int argc, char *argv[], char *envp[])
 	rlim.rlim_max = 0;
 	ret = setrlimit(RLIMIT_CORE, &rlim);
 	if (ret < 0) {
-		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		fprintf(stderr, "[MAIN] setrlimit() failed\n");
 		return 1;
 	}
 
@@ -270,7 +308,7 @@ int main(int argc, char *argv[], char *envp[])
 	rlim.rlim_max = 8388608;
 	ret = setrlimit(RLIMIT_FSIZE, &rlim);
 	if (ret < 0) {
-		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		fprintf(stderr, "[MAIN] setrlimit() failed\n");
 		return 1;
 	}
 
@@ -279,7 +317,7 @@ int main(int argc, char *argv[], char *envp[])
 	rlim.rlim_max = 33554432;
 	ret = setrlimit(RLIMIT_AS, &rlim);
 	if (ret < 0) {
-		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		fprintf(stderr, "[MAIN] setrlimit() failed\n");
 		return 1;
 	}
 
@@ -288,7 +326,7 @@ int main(int argc, char *argv[], char *envp[])
 	rlim.rlim_max = 64;
 	ret = setrlimit(RLIMIT_NOFILE, &rlim);
 	if (ret < 0) {
-		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		fprintf(stderr, "[MAIN] setrlimit() failed\n");
 		return 1;
 	}
 
@@ -297,7 +335,7 @@ int main(int argc, char *argv[], char *envp[])
 	rlim.rlim_max = 64;
 	ret = setrlimit(RLIMIT_NPROC, &rlim);
 	if (ret < 0) {
-		daemon_log(LOG_ERR, "[MAIN] setrlimit() failed");
+		fprintf(stderr, "[MAIN] setrlimit() failed\n");
 		return 1;
 	}
 
@@ -305,101 +343,52 @@ int main(int argc, char *argv[], char *envp[])
 	if (getpriority(PRIO_PROCESS, getpid()) < 0) {
 		ret = setpriority(PRIO_PROCESS, getpid(), 0);
 		if (ret == -1) {
-			daemon_log(LOG_ERR, "[MAIN] setpriority() failed");
+			fprintf(stderr, "[MAIN] setpriority() failed\n");
 			return 1;
 		}
 	}
-
-	uid = getuid();
-	gid = getgid();
-
-	gr = getgrnam(setgid_name);
-	if (gr) {
-		gid = gr->gr_gid;
-	} else {
-		daemon_log(LOG_ERR, "[MAIN] Could not determine groupId for group %s", setgid_name);
-		return 1;
-	}
-
-	pw = getpwnam(setuid_name);
-	if (pw) {
-		uid = pw->pw_uid;
-	} else {
-		daemon_log(LOG_ERR, "[MAIN] Could not determine userId for user %s", setuid_name);
-		return 1;
-	}
-
-	if (uid == 0 || gid == 0) {
-		daemon_log(LOG_ERR, "[MAIN] Refusing to set userId and/or groupId to 0.");
-		return 1;
-	}
-
-	/* drop privileges */
-	ret = setgid(gid);
-	if (ret) {
-		daemon_log(LOG_ERR, "[MAIN] setgid(%d) failed", gid);
-		return 1;
-	}
-
-	ret = setuid(uid);
-	if (ret) {
-		daemon_log(LOG_ERR, "[MAIN] setuid(%d) failed", uid);
-		return 1;
-	}
-
+/*TODO: reimplement
 	pid = daemon_pid_file_is_running();
 	if (pid > 0) {
-		daemon_log(LOG_ERR, "[MAIN] %s is already running (PID => %u)", daemon_log_ident, pid);
-		daemon_log(LOG_INFO, "[MAIN] Use `%s -k` to kill the running instance", daemon_log_ident);
+		fprintf(stderr, "[MAIN] %s is already running (PID => %u)\n", argv[0], pid);
+		fprintf(stdout, "[MAIN] Use `%s -k` to kill the running instance\n", argv[0]);
 		return 1;
 	}
-	ret = daemon_pid_file_create();
+*/
+	ret = pid_create();
 	if (ret < 0) {
-		daemon_log(LOG_ERR, "[MAIN] Could not create PID file: %s", strerror(errno));
+		fprintf(stderr, "[MAIN] Could not create PID file: %s\n", strerror(errno));
 		return 1;
 	}
-
-	daemon_log(LOG_DEBUG, "[MAIN] configuration set");
-	daemon_log(LOG_DEBUG, "[MAIN] setuid => '%s'", setuid_name);
-	daemon_log(LOG_DEBUG, "[MAIN] setgid => '%s'", setgid_name);
-	daemon_log(LOG_DEBUG, "[MAIN] protocol_log_file => '%s'", protocol_log_file);
 
 	/* setup libtinypoker */
 	ipp_init();
 
-	daemon_log(LOG_DEBUG, "[MAIN] libtinypoker initialized");
-
 	/* Install Signal Handlers */
 	install_signal_handlers();
-	daemon_log(LOG_DEBUG, "[MAIN] signal handlers set");
 
 	/* this must run before any threads are created */
 	monitor_init();
-	daemon_log(LOG_DEBUG, "[MAIN] monitor set");
 
 	/* configure protocol logger - call this even when protocol logging is disabled */
 	protocol_logger_init();
-	daemon_log(LOG_DEBUG, "[MAIN] protocol logger opened");
 
 	/* Play some poker until we get a SIGINT, SIGQUIT, or SIGKILL */
 	pokerserv();
-	daemon_log(LOG_DEBUG, "[MAIN] shutting down");
 
 	monitor_wait();		/* thread cleanup */
-	daemon_log(LOG_DEBUG, "[MAIN] threads all cleaned up");
 
 	/* clean up protocol logger - call this even when protocol logging is disabled */
 	protocol_logger_exit();
-	daemon_log(LOG_DEBUG, "[MAIN] protocol logger closed");
 
 	ipp_exit();
-	daemon_log(LOG_DEBUG, "[MAIN] libtinypoker cleared");
 
-	config_free();
-	daemon_log(LOG_DEBUG, "[MAIN] config cleared");
+	pid_unlink();
 
-	daemon_pid_file_remove();
-	daemon_log(LOG_DEBUG, "[MAIN] Exiting...");
+	if (pid_filename) {
+		free(pid_filename);
+		pid_filename = NULL;
+	}
 
 	return 0;
 }

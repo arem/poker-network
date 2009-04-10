@@ -3,7 +3,7 @@ Compiling from source
 
 You need the following to build the binary...
 
-	libconfuse	http://www.nongnu.org/confuse/
+	libtinypoker	http://www.tinypoker.org/
 	cmake		http://cmake.org
 	make		http://www.gnu.org/software/make
 	gcc		http://gcc.gnu.org
@@ -14,8 +14,3 @@ Configure, compile, install...
 	$ make
 	# make install
 
-Setup the connection settings...
-
-	$ nano /etc/tinypokerbot.conf
-
-Note: command line options for all configurable values is coming soon.

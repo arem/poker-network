@@ -4,7 +4,7 @@
 	| |_| | | | | |_| | |_) | (_) |   <  __/ | | (_| |
 	 \__|_|_| |_|\__, | .__/ \___/|_|\_\___|_|  \__,_|
 	             |___/|_|
-Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
+Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
 
 tinypokerd is the TinyPoker server. It will use libtinypoker to 
 implement the Internet Poker Protocol (IPP) 2.0. The code will 

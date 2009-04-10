@@ -1,19 +1,19 @@
-# Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
+# Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
 #
-# This file is part of libtinypoker.
+# This file is part of TinyPoker.
 #
-# libtinypoker is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
-# libtinypoker is distributed in the hope that it will be useful,
+#
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
 
@@ -42,12 +42,18 @@ SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_NAME "libtinypoker")
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
-SET(CPACK_PACKAGE_CONTACT "linuxgeek@gmail.com")
+SET(CPACK_PACKAGE_CONTACT "tcort@tomcort.com")
 
 IF (WIN32)
 
-# TODO NSIS
-SET(CPACK_GENERATOR "")
+SET(CPACK_GENERATOR "NSIS")
+
+# NSIS Packaging
+SET(CPACK_NSIS_DISPLAY_NAME "libtinypoker")
+SET(CPACK_NSIS_URL_HELP_LINK "http:\\\\\\\\www.tinypoker.org/")
+SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.tinypoker.org/")
+SET(CPACK_NSIS_CONTACT "tcort@tomcort.com")
+SET(CPACK_NSIS_MODIFY_PATH ON)
 
 ELSE (WIN32)
 
@@ -62,7 +68,7 @@ SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
 
 # RPM Packaging
 SET(CPACK_RPM_PACKAGE_RELEASE "1")
-SET(CPACK_RPM_PACKAGE_LICENSE "GPLv3+")
+SET(CPACK_RPM_PACKAGE_LICENSE "AGPLv3+")
 SET(CPACK_RPM_PACKAGE_ARCHITECTURE "i386")
 
 ENDIF (WIN32)

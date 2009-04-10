@@ -1,3 +1,4 @@
- * use pam sessions
- * pthread -> gthread (glib-2.0)
+ * Update protocol logger
  * unit tests (?)
+ * wine support
+ * packaging (deb, rpm, nsis)

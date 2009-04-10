@@ -1,19 +1,19 @@
-# Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <linuxgeek@gmail.com>
+# Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
 #
-# This file is part of libtinypoker.
+# This file is part of TinyPoker.
 #
-# libtinypoker is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
-# libtinypoker is distributed in the hope that it will be useful,
+#
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with libtinypoker.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SET(TESTS testHandshake testValidateCmdIpp testValidateCmdBuyin testValidateCmdWelcome testValidateCmdNewgame testValidateCmdPlayer testValidateCmdButton testValidateCmdAnte testValidateCmdDeal testValidateCmdFrom testValidateCmdFlop testValidateCmdTurn testValidateCmdRiver testValidateCmdDraw testValidateCmdDrawn testValidateCmdDrawQ testValidateCmdFold testParseMessage testValidateCmdUp testValidateCmdDown testValidateCmdAction testValidateCmdBlind testValidateCmdTapout testValidateCmdStraddle testValidateCmdCall testValidateCmdRaise testValidateCmdOpen testValidateCmdCheck testValidateCmdQuit testValidateCmdBusted testValidateCmdGameOver testValidateCmdWinner testValidateCmdShowQ testValidateCmdShow testValidateCmdNo testValidateCmdYes testValidateCmdBeatQ testValidateCmdError testValidateCmdOk testValidateUnknownMsg testNormalizeMessage testEvalStraight2Char testEvalPrime2Char testEvalChar2Prime testEval testDeck testHandCompar testAddPlayer testBestCombination testEnumerateAllHands testVersion testRankPlayers)
 
