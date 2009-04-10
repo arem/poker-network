@@ -34,8 +34,14 @@ h3 {
 }
 
 #menu {
-  width: 140px;
+  border-style: none;
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -webkit-border-radius: 7px;
+  border-color: #000000;
   background: #ffffff;
+
+  width: 140px;
 }
 
 #menu ul {
@@ -58,20 +64,17 @@ div.title {
   font-weight: bold;
 }
 
-#title {
-  background: #ffffff;
-}
-
-#body {
-  background: #ffffff;
-}
-
-#footer {
+#title, #body, #footer {
+  border-style: none;
+  border-radius: 7px;
+  -moz-border-radius: 7px;
+  -webkit-border-radius: 7px;
+  border-color: #000000;
   background: #ffffff;
 }
 
 td {
-  padding: 10px 10px 10px 10px;
+  padding: 12px 12px 12px 12px;
 }
 
 pre {
