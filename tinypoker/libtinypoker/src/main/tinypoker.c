@@ -634,7 +634,7 @@ ipp_card *ipp_deck_next_card(ipp_deck * deck)
 		ipp_init();
 	}
 
-	if (deck == NULL || deck->cards == NULL || deck->deck_index < 0) {
+	if (deck == NULL || deck->cards == NULL) {
 		return NULL;
 	}
 
@@ -963,7 +963,7 @@ ipp_message *ipp_read_msg(ipp_socket * sock, guint8 timeout_seconds, void (*logg
 		ipp_init();
 	}
 
-	if (!sock || timeout_seconds < 0) {
+	if (!sock) {
 		return NULL;
 	}
 
@@ -1035,7 +1035,7 @@ gboolean ipp_send_msg(ipp_socket * sock, ipp_message * msg, guint8 timeout_secon
 		ipp_init();
 	}
 
-	if (!sock || !msg || timeout_seconds < 0) {
+	if (!sock || !msg) {
 		return FALSE;
 	}
 
