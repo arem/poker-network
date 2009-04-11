@@ -18,6 +18,7 @@
 ;;
 ;; CONFIGURATION
 ;;
+
 (define hostname "localhost")
 (define port 9898)
 (define player "BAGELBOT")
@@ -29,8 +30,15 @@
 
 (define main
 	(lambda ()
-		(display (ipp-handshake hostname port player buyin))
-		(newline)
+		(if (ipp-connect hostname port player buyin)
+			(begin
+				(ipp-disconnect)
+			)
+			(begin
+				(display "Connection Failed")
+				(newline)
+			)
+		)
 	)
 )
 

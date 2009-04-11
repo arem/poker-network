@@ -33,6 +33,7 @@
 
 int ipp_auth(char *name)
 {
+	g_debug("[PSRV] Authenticating '%s'", name);
 	return TRUE;
 }
 
@@ -45,39 +46,56 @@ static void client_connect_callback(ipp_socket * sock)
 	ipp_player *p;
 	int rc;
 
+	g_debug("[PSRV] client connected");
+
 	p = ipp_server_handshake(sock, TINYPOKERD_NAME "/" TINYPOKERD_VERSION, ipp_auth, protocol_logger);
 	if (!p) {
+		g_debug("[PSRV] handshake fail");
 		return;
 	}
+
+	g_debug("[PSRV] handshake OK");
 
 	g_mutex_lock(tbl->lock);
 	rc = ipp_add_player(tbl, p);
 	g_mutex_unlock(tbl->lock);
 	if (rc == -1) {
+		g_debug("[PSRV] add player failed -- table full");
+
 		/* TODO send table full error message */
 		ipp_free_socket(sock);
 		sock = NULL;
 		return;
 	}
+
+	g_debug("[PSRV] player added to table");
 }
 
 int pokerserv(void)
 {
+	GError *error;
 	GThread *dealer_thread;
 
 	tbl = ipp_new_table();
 	if (tbl == NULL) {
 		exit_now = 1;
-		raise(SIGQUIT);
+		raise(SIGINT);
 		return 0;
 	}
 
 	/* create a thread to play the game */
 	monitor_inc();
-	dealer_thread = g_thread_create(play, NULL, TRUE, NULL);
+
+	error = NULL;
+	dealer_thread = NULL;
+	dealer_thread = g_thread_create(play, NULL, TRUE, &error);
 	if (dealer_thread == NULL) {
+		if (error) {
+			fprintf(stderr, "Error creating thread: %s\n", error->message);
+			g_error_free(error);
+		}
 		monitor_dec();
-		raise(SIGQUIT);
+		raise(SIGINT);
 		return -1;
 	}
 
@@ -87,7 +105,7 @@ int pokerserv(void)
 	g_thread_join(dealer_thread);
 
 	if (!exit_now) {
-		raise(SIGQUIT);
+		raise(SIGINT);
 	}
 	return 0;
 }

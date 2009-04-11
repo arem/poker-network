@@ -87,14 +87,14 @@ void handle_sigsegv(int sig)
 	fprintf(stderr, "entire error (everything between the 'Segmentation fault' lines) to the\n");
 	fprintf(stderr, "following developer: Thomas Cort <tcort@tomcort.com>\n");
 	fprintf(stderr, " \n");
-	fprintf(stderr, "%s version %s was compiled at %s on %s", TINYPOKERD_NAME, TINYPOKERD_VERSION, __TIME__, __DATE__);
+	fprintf(stderr, "%s version %s was compiled at %s on %s\n", TINYPOKERD_NAME, TINYPOKERD_VERSION, __TIME__, __DATE__);
 
 	rc = uname(&sys_uname);
 	if (rc != -1) {
 		fprintf(stderr, "%s version %s %s %s", sys_uname.sysname, sys_uname.version, sys_uname.release, sys_uname.machine);
 	}
 
-	fprintf(stderr, " \n");
+	fprintf(stderr, "\n\n");
 	fprintf(stderr, "=-=-=-=-=-=-=-=-=-=-=-=-=-= Segmentation fault =-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
 	exit(1);
 }

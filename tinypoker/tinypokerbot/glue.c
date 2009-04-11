@@ -28,20 +28,30 @@
 #include "main.h"
 #include "glue.h"
 
-SCM tpb_ipp_handshake(SCM s_hostname, SCM s_port, SCM s_name, SCM s_buyin)
+ipp_socket *sock;
+
+SCM tpb_ipp_connect(SCM s_hostname, SCM s_port, SCM s_name, SCM s_buyin)
 {
 	char *hostname;
 	char *name;
+	short port = 9898;
+	char *buyin = "500";
 
-	SCM_ASSERT(gh_string_p(s_hostname), s_hostname, SCM_ARG1, "ipp-handshake");
+	if (sock) {
+		ipp_free_socket(sock);
+		sock = NULL;
+	}
+
+	SCM_ASSERT(gh_string_p(s_hostname), s_hostname, SCM_ARG1, "ipp-connect");
+	SCM_ASSERT(gh_string_p(s_name), s_name, SCM_ARG3, "ipp-connect");
 
 	hostname = gh_scm2newstr(s_hostname, NULL);
 	name = gh_scm2newstr(s_name, NULL);
 
-	printf("Hostname => '%s'\n",hostname);
-	printf("Name => '%s'\n",name);
+	printf("Hostname => '%s'\n", hostname);
+	printf("Name => '%s'\n", name);
 
-//	ipp_client_handshake(hostname, port, name, buyin, NULL);
+	sock = ipp_client_handshake(hostname, port, name, buyin, NULL);
 
 	if (hostname) {
 		free(hostname);
@@ -52,10 +62,24 @@ SCM tpb_ipp_handshake(SCM s_hostname, SCM s_port, SCM s_name, SCM s_buyin)
 		free(name);
 		name = NULL;
 	}
-        return SCM_BOOL_T;
+
+	return (sock != NULL) ? SCM_BOOL_T : SCM_BOOL_F;
+}
+
+SCM tpb_ipp_disconnect(void)
+{
+	if (sock) {
+		ipp_free_socket(sock);
+		sock = NULL;
+	}
+
+	return SCM_BOOL_T;
 }
 
 void tpb_register_procs(void)
 {
-    gh_new_procedure("ipp-handshake", tpb_ipp_handshake, 4, 0, 0);
+	sock = NULL;
+
+	gh_new_procedure("ipp-connect", tpb_ipp_connect, 4, 0, 0);
+	gh_new_procedure("ipp-disconnect", tpb_ipp_disconnect, 0, 0, 0);
 }

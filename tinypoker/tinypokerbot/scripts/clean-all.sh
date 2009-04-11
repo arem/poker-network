@@ -25,3 +25,4 @@ fi
 set -e
 
 rm -rf Testing CMakeCache.txt DartConfiguration.tcl install_manifest.txt DartTestfile.txt Makefile cmake_install.cmake CMakeFiles CTestTestfile.cmake	
+rm -rf  CPackConfig.cmake CPackSourceConfig.cmake _CPack_Packages tinypokerbot-0.1.0.deb tinypokerbot-0.1.0.rpm

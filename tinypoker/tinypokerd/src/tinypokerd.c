@@ -246,20 +246,27 @@ int main(int argc, char *argv[], char *envp[])
 	pid_filename = NULL;
 	killed = 0;
 
+	g_debug("[MAIN] Starting up tinypokerd...");
+
 	if (argc < 1 || !argv || !argv[0]) {
 		fprintf(stderr, "[MAIN] Cannot determine program name from argv[0]\n");
 		return 1;
 	}
 
+	g_debug("[MAIN] program name is '%s'", argv[0]);
+
 	/* Command Line Arguements */
 	ret = parse_args(argc, argv);
 	if (ret) {
+		g_debug("[MAIN] parse_args() returned a non-zero value %d", ret);
 		return (killed ? 0 : ret);
 	}
 
 	/* Daemonize */
 	if (daemonize) {
 		umask(0);
+
+		g_debug("[MAIN] daemonize");
 
 		pid = fork();
 		if (pid < 0) {
@@ -269,17 +276,25 @@ int main(int argc, char *argv[], char *envp[])
 		}
 		setsid();
 
+		g_debug("[MAIN] fork() once");
+
 		pid = fork();
 		if (pid < 0) {
 			return 1;
 		} else if (pid > 0) {
 			return 0;
 		}
+
+		g_debug("[MAIN] fork() twice");
+
 		ret = chdir("/");
 		if (ret < 0) {
 			fprintf(stderr, "[MAIN] Could not chdir() to '/': %s\n", strerror(errno));
 			return 1;
 		}
+
+		g_debug("[MAIN] fork() chdir");
+
 		/* close open file descriptors */
 		for (fd = 0; fd < getdtablesize(); fd++) {
 			ret = close(fd);
@@ -303,6 +318,8 @@ int main(int argc, char *argv[], char *envp[])
 		return 1;
 	}
 
+	g_debug("[MAIN] disabled core dumps");
+
 	/* set max file size to 8MB (8388608 bytes) */
 	rlim.rlim_cur = 8388608;
 	rlim.rlim_max = 8388608;
@@ -311,6 +328,8 @@ int main(int argc, char *argv[], char *envp[])
 		fprintf(stderr, "[MAIN] setrlimit() failed\n");
 		return 1;
 	}
+
+	g_debug("[MAIN] set max file size to 8MB");
 
 	/* set max address space to 32MB (33554432 bytes) */
 	rlim.rlim_cur = 33554432;
@@ -321,6 +340,8 @@ int main(int argc, char *argv[], char *envp[])
 		return 1;
 	}
 
+	g_debug("[MAIN] set max address space to 32 MB");
+
 	/* set max file descriptor number */
 	rlim.rlim_cur = 64;
 	rlim.rlim_max = 64;
@@ -330,7 +351,10 @@ int main(int argc, char *argv[], char *envp[])
 		return 1;
 	}
 
+	g_debug("[MAIN] set max FDs to 64");
+
 	/* set max threads to 64 */
+/*
 	rlim.rlim_cur = 64;
 	rlim.rlim_max = 64;
 	ret = setrlimit(RLIMIT_NPROC, &rlim);
@@ -338,7 +362,7 @@ int main(int argc, char *argv[], char *envp[])
 		fprintf(stderr, "[MAIN] setrlimit() failed\n");
 		return 1;
 	}
-
+*/
 	/* don't be a CPU hog */
 	if (getpriority(PRIO_PROCESS, getpid()) < 0) {
 		ret = setpriority(PRIO_PROCESS, getpid(), 0);
@@ -347,6 +371,9 @@ int main(int argc, char *argv[], char *envp[])
 			return 1;
 		}
 	}
+
+	g_debug("[MAIN] set priority");
+
 /*TODO: reimplement
 	pid = daemon_pid_file_is_running();
 	if (pid > 0) {
@@ -355,40 +382,63 @@ int main(int argc, char *argv[], char *envp[])
 		return 1;
 	}
 */
+
 	ret = pid_create();
 	if (ret < 0) {
 		fprintf(stderr, "[MAIN] Could not create PID file: %s\n", strerror(errno));
 		return 1;
 	}
 
+	g_debug("[MAIN] PID file created");
+
 	/* setup libtinypoker */
 	ipp_init();
+
+	g_debug("[MAIN] IPP Initialized");
 
 	/* Install Signal Handlers */
 	install_signal_handlers();
 
+	g_debug("[MAIN] signal handlers installed");
+
 	/* this must run before any threads are created */
 	monitor_init();
+
+	g_debug("[MAIN] monitor intialized");
 
 	/* configure protocol logger - call this even when protocol logging is disabled */
 	protocol_logger_init();
 
+	g_debug("[MAIN] logger initialized");
+
 	/* Play some poker until we get a SIGINT, SIGQUIT, or SIGKILL */
 	pokerserv();
 
+	g_debug("[MAIN] pokerserv() returned");
+
 	monitor_wait();		/* thread cleanup */
+
+	g_debug("[MAIN] all threads gone");
 
 	/* clean up protocol logger - call this even when protocol logging is disabled */
 	protocol_logger_exit();
 
+	g_debug("[MAIN] protocol log closed");
+
 	ipp_exit();
 
+	g_debug("[MAIN] ipp de-initialized");
+
 	pid_unlink();
+
+	g_debug("[MAIN] PID file removed");
 
 	if (pid_filename) {
 		free(pid_filename);
 		pid_filename = NULL;
 	}
+
+	g_debug("[MAIN] Bye bye");
 
 	return 0;
 }

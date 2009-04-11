@@ -37,6 +37,7 @@ gpointer play(gpointer arg)
 		/* shuffle before every hand and when no players are around */
 		ipp_shuffle_deck(tbl->deck);
 
+		g_mutex_lock(tbl->lock);
 		/* must have 2 players */
 		if (tbl->nplayers < 2) {
 			g_mutex_unlock(tbl->lock);
@@ -44,7 +45,6 @@ gpointer play(gpointer arg)
 			continue;
 		}
 
-		g_mutex_lock(tbl->lock);
 		ipp_deal(tbl, SERVER_WRITE_TIMEOUT, protocol_logger);
 		g_mutex_unlock(tbl->lock);
 

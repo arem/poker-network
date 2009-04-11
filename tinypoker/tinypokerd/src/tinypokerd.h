@@ -25,8 +25,8 @@
 
 #include <tinypoker.h>
 
-#if (LIBTINYPOKER_MAJOR_VERSION == 0 && LIBTINYPOKER_MINOR_VERSION < 1)
-#error "libtinypoker version too old. Minimum version is 0.1.0"
+#if (LIBTINYPOKER_MAJOR_VERSION == 0 && LIBTINYPOKER_MINOR_VERSION < 2)
+#error "libtinypoker version too old. Minimum version is 0.2.0"
 #endif
 
 #endif

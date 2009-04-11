@@ -887,7 +887,6 @@ ipp_socket *ipp_connect(char *hostname, short port)
 {
 	ipp_socket *sock;
 	int ret;
-	const char *err;
 	struct sockaddr_in sin;
 	struct hostent *he;
 
@@ -1077,13 +1076,17 @@ gboolean ipp_send_msg(ipp_socket * sock, ipp_message * msg, guint8 timeout_secon
 			return FALSE;
 		}
 
+		g_debug("sending '%s'", final_msg);
+
 		ret = send(sock->sd, final_msg, strlen(final_msg), 0);
 		if (ret == strlen(final_msg)) {
+			g_debug("sent '%s'", final_msg);
 			free(final_msg);
 			final_msg = NULL;
 			return TRUE;
 		} else {
 			perror("send");
+			g_debug("failed to send '%s'", final_msg);
 			free(final_msg);
 			final_msg = NULL;
 			return FALSE;
@@ -2123,17 +2126,27 @@ void ipp_deal(ipp_table * table, guint8 timeout, void (*logger) (char *))
 		for (j = 0; j < HOLDEM_PLAYERS_PER_TABLE; j++) {
 			if (table->players[j]) {
 				table->players[j]->hole[i] = ipp_deck_next_card(table->deck);
+				g_debug("player slot %d (%s) dealt a %c%c", j, table->players[j]->name, table->players[j]->hole[i]->rank, table->players[j]->hole[i]->suit);
+			} else {
+				g_debug("player slot %d is empty.", j);
 			}
 		}
 	}
 
-	for (i = 0; HOLDEM_PLAYERS_PER_TABLE; i++) {
+	for (i = 0; i < HOLDEM_PLAYERS_PER_TABLE; i++) {
 		ipp_message *msg;
 		int len;
 
+		if (!table->players[i]) {
+			g_debug("player slot %d is empty.", i);
+			continue;
+		} else {
+			g_debug("sending DEAL to player slot %d (%s)", j, table->players[i]->name);
+		}
+
 		msg = ipp_new_message();
 		if (!msg) {
-			/* malloc failed */
+			perror("malloc");
 			return;
 		}
 
@@ -2156,6 +2169,5 @@ void ipp_deal(ipp_table * table, guint8 timeout, void (*logger) (char *))
 		}
 
 		ipp_free_message(msg);
-
 	}
 }

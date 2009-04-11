@@ -51,7 +51,7 @@ ENDIF (LIBDAEMON_INCLUDE_DIR)
 
 INCLUDE_DIRECTORIES(${LIBDAEMON_INCLUDE_DIR} ${LIBTINYPOKER_INCLUDE_DIR} ${GTHREAD2_INCLUDE_DIRS} ${GLIB2_INCLUDE_DIRS})
 ADD_EXECUTABLE(tinypokerd monitor.c signal.c tinypokerd.c poker.c pokerserv.c log.c)
-SET_TARGET_PROPERTIES(tinypokerd PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g -O2")
+SET_TARGET_PROPERTIES(tinypokerd PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g3")
 TARGET_LINK_LIBRARIES(tinypokerd ${LIBDAEMON} ${LIBTINYPOKER_LIBRARIES} ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES})
 
 #############################################

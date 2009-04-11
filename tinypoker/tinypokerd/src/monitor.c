@@ -53,6 +53,7 @@ void monitor_inc(void)
 	g_mutex_lock(mon_lock);
 	cnt++;
 	g_mutex_unlock(mon_lock);
+	g_debug("[MNTR] thread count incremented");
 }
 
 /**
@@ -63,6 +64,7 @@ void monitor_dec(void)
 	g_mutex_lock(mon_lock);
 	cnt--;
 	g_mutex_unlock(mon_lock);
+	g_debug("[MNTR] thread count decremented");
 }
 
 /**
@@ -71,17 +73,21 @@ void monitor_dec(void)
  */
 void monitor_wait(void)
 {
-	raise(SIGQUIT);
+	g_debug("[MNTR] monitor_wait() called");
 
 	while (1) {
 		g_mutex_lock(mon_lock);
 
+		g_debug("[MNTR] locked mon_lock");
+
 		if (!cnt) {
+			g_debug("[MNTR] cnt == 0 -- all threads stopped");
 			g_mutex_unlock(mon_lock);
 			g_mutex_free(mon_lock);
 			mon_lock = NULL;
 			return;
 		} else {
+			g_debug("[MNTR] cnt != 0");
 			g_mutex_unlock(mon_lock);
 			sched_yield();
 #ifdef _WIN32

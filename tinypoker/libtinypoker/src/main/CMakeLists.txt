@@ -81,6 +81,8 @@ ENDIF (WIN32)
 ADD_LIBRARY(tinypoker SHARED tinypoker.c)
 LINK_LIBRARIES(tinypoker)
 
+SET_TARGET_PROPERTIES(tinypoker PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -std=c99 -pedantic -Wpointer-arith -Wstrict-prototypes -Wall -Werror -g3")
+
 IF (WIN32)
   TARGET_LINK_LIBRARIES(tinypoker ${GLIB2_LIBRARIES} ${GTHREAD2_LIBRARIES} ${LIBWSOCK32} ${LIBWS2_32})
 ELSE (WIN32)
