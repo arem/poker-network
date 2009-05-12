@@ -651,7 +651,7 @@ TertiaryMid: #999
 TertiaryDark: #444
 Error: #f88</pre>
 </div>
-<div title="Copyright" modifier="loic" modified="200812091759" created="200804051814">
+<div title="Copyright" modifier="loic" modified="200902131957" created="200804051814">
 <pre>{{{
 PokerSource is a large system comprised of a number of components:
    jpoker, poker-network, poker-engine, pypoker-eval, poker-eval
@@ -660,10 +660,9 @@ Below the copyright and license information for all components.
 
                       jpoker Copyright Info
 
-Copyright 2008 Loic Dachary &lt;mailto:loic@dachary.org&gt;
-Copyright 2007,2008 Johan Euphrosine &lt;mailto:proppy@aminche.com&gt;
+Copyright 2008,2009 Loic Dachary &lt;mailto:loic@dachary.org&gt;
+Copyright 2007,2008,2009 Johan Euphrosine &lt;mailto:proppy@aminche.com&gt;
 Copyright 2008 Saq Imtiaz &lt;mailto:lewcid@gmail.com&gt;
-Copyright 2008 Frank Denis &lt;mailto:fdenis@skyrock.com&gt;
  
 jpoker home is at http://jpoker.aminche.com/
 
@@ -686,6 +685,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
 
 jpoker includes a number of smaller components from others:
+
+  Copyright for:
+        js/jquery.dynDateTime.js
+
+   (c) 2008 thetoolman@gmail.com
+       Licensed under LGPLv3+
 
   Copyright for:
         mo2json.py jpoker/jquery.gettext.js jpoker/jquery.printf.js 
@@ -755,7 +760,7 @@ jpoker includes a number of smaller components from others:
 #########################################################################
                      poker-network Copyright Info
 
-  Copyright (C) 2002, 2005, 2006, 2007, 2008 Loic Dachary &lt;loic@dachary.org&gt;
+  Copyright (C) 2002, 2005, 2006, 2007, 2008, 2009 Loic Dachary &lt;loic@dachary.org&gt;
   Copyright (C) 2008 Johan Euphrosine &lt;proppy@aminche.com&gt;
   Copyright (C) 2008 Bradley M. Kuhn &lt;bkuhn@ebb.org&gt;
   Copyright (C) 2004, 2005, 2006 Mekensleep &lt;licensing@mekensleep.com&gt;
@@ -798,7 +803,7 @@ jpoker includes a number of smaller components from others:
 #########################################################################
                      poker-engine Copyright Info
 
- Copyright (C) 2006, 2007, 2008 Loic Dachary &lt;loic@dachary.org&gt;
+ Copyright (C) 2006, 2007, 2008, 2009 Loic Dachary &lt;loic@dachary.org&gt;
  Copyright (C)             2008 Bradley M. Kuhn &lt;bkuhn@ebb.org&gt;
  Copyright (C) 2004, 2005, 2006 Mekensleep &lt;licensing@mekensleep.com&gt;
 
@@ -819,7 +824,7 @@ jpoker includes a number of smaller components from others:
 #########################################################################
                      pypoker-eval Copyright Info
 
-  Copyright (C) 2007, 2008 Loic Dachary &lt;loic@dachary.org&gt;
+  Copyright (C) 2007, 2008, 2009 Loic Dachary &lt;loic@dachary.org&gt;
   Copyright (C) 2004, 2005, 2006 Mekensleep &lt;licensing@mekensleep.com&gt;
 
   This program is free software; you can redistribute it and/or modify
@@ -842,9 +847,8 @@ jpoker includes a number of smaller components from others:
 Copyright (C) 1993-2006 Brian Goetz &lt;brian@quiotix.com&gt;
 Copyright (C) 1993-1999 Clifford T. Matthews
 Copyright (C) 1993-1999 Keith Miyake
-Copyright (C) 1999-2006 Igor Kravtchenko &lt;igor@obraz.net&gt;
 Copyright (C) 1999-2006 Michael Maurer &lt;mjmaurer@yahoo.com&gt;
-Copyright (C) 2002-2006 Loic Dachary &lt;loic@dachary.org&gt;
+Copyright (C) 2005-2009 Loic Dachary &lt;loic@dachary.org&gt;
 Copyright (C) 2004-2006 Mekensleep &lt;licensing@mekensleep.com&gt;
 Copyright (C) 2006      Tim Showalter &lt;tjs@psaux.com&gt;
 
@@ -1474,7 +1478,7 @@ Proin euismod rutrum lectus. Integer vulputate posuere dui. Donec posuere posuer
 *lists
 *primary pale</pre>
 </div>
-<div title="JpokerPlugin" modifier="loic" modified="200812021830" created="200804051018" tags="systemConfig">
+<div title="JpokerPlugin" modifier="loic" modified="200905121220" created="200804051018" tags="systemConfig">
 <pre>/***
 |''Name:''|jpokerPlugin|
 |''Description:''||
@@ -1518,7 +1522,9 @@ $.jpoker.server.defaults.placeTourneyRowClick = function(server, id) {
 
 $.jpoker.verbose = 6;
 
-$.jpoker.copyright();
+$(document).ready(function() {
+  $.jpoker.copyright();
+});
 
 config.macros.jpokerTable = {
     handler: function(place, macroName, params, wikifier, paramString, tiddler) {

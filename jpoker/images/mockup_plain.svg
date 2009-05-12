@@ -19,8 +19,8 @@
        y="-0.73710114"
        width="800"
        height="782"
-       style="fill:#dddddd;fill-opacity:1"
-       id="game_background" />
+       id="game_background"
+       style="fill:#dddddd;fill-opacity:1" />
     <image
        xlink:href="../css/images/jpoker_table/table.png"
        x="106"
