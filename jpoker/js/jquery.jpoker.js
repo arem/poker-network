@@ -81,6 +81,7 @@
         verbose: 0,
 
         doReconnect: true,
+        doReconnectAlways: false,
 	doRejoin: true,
 
         msie_compatibility: function() {
@@ -994,7 +995,7 @@
                 this.userInfo = {};
 		this.preferences = new jpoker.preferences(jpoker.url2hash(this.url));
                 this.registerHandler(0, this.handler);
-                if(jpoker.doReconnect && (this.sessionExists() || this.protocol() == 'file:')) {
+                if(jpoker.doReconnect && (jpoker.doReconnectAlways || this.sessionExists() || this.protocol() == 'file:')) {
                     this.reconnect();
                 }
             },
@@ -1763,6 +1764,7 @@
                     break;
 
                 case 'PacketPokerPlayerArrive':
+                    packet.avatar_url = packet.url;
                     if(server.loggedIn() && packet.serial == server.serial) {
                         table.serial2player[serial] = new jpoker.playerSelf(server, packet);
                     } else {
@@ -3474,9 +3476,9 @@
             $('#player_seat' + seat  + '_money' + id).addClass('jpoker_money');
             $('#player_seat' + seat  + '_action' + id).addClass('jpoker_action');
             var avatar_element = $('#player_seat' + seat  + '_avatar' + id);
-	    if ((packet.url !== undefined) && (packet.url != 'random')) {
+	    if ((packet.avatar_url !== undefined) && (packet.avatar_url != 'random')) {
                 avatar_element.removeClass().addClass('jpoker_avatar jpoker_ptable_player_seat' + seat + '_avatar ');
-                this.avatar.update(player.name, packet.url, avatar_element);
+                this.avatar.update(player.name, packet.avatar_url, avatar_element);
 	    } else {
                 var avatar = (seat + 1) + (10 * game_id % 2);
                 avatar_element.removeClass().addClass('jpoker_avatar jpoker_ptable_player_seat' + seat + '_avatar jpoker_avatar_default_' + avatar);
@@ -3885,6 +3887,7 @@
             if(serial == table.serial_in_position) {
                 jpoker.plugins.playerSelf.inPosition(player, id);
             }
+            $('#game_window' + id).removeClass().addClass('jpoker_self');
         },
 
         leave: function(player, packet, id) {
@@ -4105,11 +4108,13 @@
                 }
                 $('#raise' + id).unbind('click').click(click).show();
                 $('#jpokerSound').html('<' + jpoker.sound + ' src=\'player_hand.swf\' />');
+               $('#game_window' + id).addClass('jpoker_self_in_position');
             }
         },
 
         lostPosition: function(player, packet, id) {
             jpoker.plugins.playerSelf.hide(id);
+           $('#game_window' + id).removeClass('jpoker_self_in_position');
         },
 
         names: [ 'fold', 'call', 'check', 'raise', 'raise_range', 'raise_input', 'rebuy' ],
