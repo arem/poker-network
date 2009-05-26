@@ -203,7 +203,7 @@
                 str += '\n\n' + printStackTrace({guess:true}).slice(2).join('\n');
                 str += '\n\n' + navigator.userAgent;
             } catch(e) {
-                str += 'attempt to stringify failed with exception';
+                str += 'attempt to stringify failed with exception: ' + e.toString();
             }
             this.uninit();
             this.errorHandler(reason, str);
@@ -3928,19 +3928,25 @@
                 label = _("Rebuy");
             }
             rebuy.html(this.templates.rebuy.supplant({
-                        'min': limits[0],
-                        'current': limits[1],
-                        'max': limits[2],
+                        'min': jpoker.chips.SHORT(limits[0]),
+                        'current': jpoker.chips.SHORT(limits[1]),
+			'title' : Math.floor(limits[1]*100),
+                        'max': jpoker.chips.SHORT(limits[2]),
                         'label': label
                     }));
             $('.jpoker_rebuy_action', rebuy).click(function() {
                     var server = jpoker.getServer(url);
                     if(server) {
-                        server.sendPacket({ 'type': packet_type,
-                                    'serial': server.serial,
-                                    'game_id': table.id,
-                                    'amount': parseInt($('.jpoker_rebuy_current', rebuy).html(), 10) * 100
-                                    });
+			var amount = parseInt($('.jpoker_rebuy_current', rebuy).attr('title'), 10);
+			if (!isNaN(amount)) {
+			    server.sendPacket({ 'type': packet_type,
+					'serial': server.serial,
+					'game_id': table.id,
+					'amount': parseInt($('.jpoker_rebuy_current', rebuy).attr('title'), 10)
+					});
+			} else {
+			    jpoker.error('rebuy with NaN amount: ' + $('.jpoker_rebuy_current', rebuy).attr('title'));
+			}
                     }
                     rebuy.dialog('close');
                 });
@@ -3950,7 +3956,8 @@
                         max: limits[2]*100,
                         stepping: 1,
                         change: function(event, ui) {
-                        $('.jpoker_rebuy_current').html(ui.value/100.0);
+                        var current = $('.jpoker_rebuy_current').html(ui.value/100.0);
+			current.attr('title', ui.value);
                     }
                 });
             return rebuy;
@@ -4087,11 +4094,16 @@
                     click = function() {
                         var server = jpoker.getServer(url);
                         if(server) {
-                            server.sendPacket({ 'type': 'PacketPokerRaise',
-                                        'serial': serial,
-                                        'game_id': game_id,
-                                        'amount': parseInt($('.jpoker_raise_current', raise).attr('title'), 10)
-                                        });
+			    var amount = parseInt($('.jpoker_raise_current', raise).attr('title'), 10);
+			    if (!isNaN(amount)) {
+				server.sendPacket({ 'type': 'PacketPokerRaise',
+					    'serial': serial,
+					    'game_id': game_id,
+					    'amount': parseInt($('.jpoker_raise_current', raise).attr('title'), 10)
+					    });
+			    } else {
+				jpoker.error('raise with NaN amount: ' + $('.jpoker_raise_current', raise).attr('title'));
+			    }
                         }
                     };
                 } else {
@@ -4130,7 +4142,7 @@
         },
 
         templates: {
-            rebuy: '<div class=\'jpoker_rebuy_bound jpoker_rebuy_min\'>{min}</div><div class=\'ui-slider-1\'><div class=\'ui-slider-handle\'></div></div><div class=\'jpoker_rebuy_current\'>{current}</div><div class=\'jpoker_rebuy_bound jpoker_rebuy_max\'>{max}</div><div class=\'ui-dialog-buttonpane\'><button class=\'jpoker_rebuy_action\'>{label}</button></div></div>'
+            rebuy: '<div class=\'jpoker_rebuy_bound jpoker_rebuy_min\'>{min}</div><div class=\'ui-slider-1\'><div class=\'ui-slider-handle\'></div></div><div class=\'jpoker_rebuy_current\' title=\'{title}\'>{current}</div><div class=\'jpoker_rebuy_bound jpoker_rebuy_max\'>{max}</div><div class=\'ui-dialog-buttonpane\'><button class=\'jpoker_rebuy_action\'>{label}</button></div></div>'
         }
     };
 
@@ -4223,7 +4235,7 @@
 	    var t = this.template;
 	    return t.supplant({raise_label: _("raise"),
 						raise_min: jpoker.chips.SHORT(betLimit.min),
-						raise_current_title: betLimit.min,
+						raise_current_title: Math.floor(betLimit.min*100),
 						raise_current: jpoker.chips.SHORT(betLimit.min),
 						raise_max: jpoker.chips.SHORT(betLimit.max)});
 	}
