@@ -5418,7 +5418,7 @@ test("jpoker.plugins.table: PacketPokerDealer", function(){
     });
 
 test("jpoker.plugins.table: PacketPokerChat", function(){
-        expect(19);
+        expect(20);
 
         var server = jpoker.serverCreate({ url: 'url' });
         var place = $("#main");
@@ -5467,6 +5467,15 @@ test("jpoker.plugins.table: PacketPokerChat", function(){
 	    table.handler(server, game_id, { type: 'PacketPokerChat', message: dealer_message, game_id: game_id, serial: 0 });	
 	    table.handler(server, game_id, { type: 'PacketPokerChat', message: message, game_id: game_id, serial: player_serial });	
 	}
+        //
+        // chat modification callback
+        //
+        var chat_changed = jpoker.plugins.table.callback.chat_changed;
+        jpoker.plugins.table.callback.chat_changed = function(element) {
+            ok($(element).html().indexOf('chat changed'));
+        }
+        table.handler(server, game_id, { type: 'PacketPokerChat', message: 'chat changed', game_id: game_id, serial: player_serial });	
+        jpoker.plugins.table.callback.chat_changed = chat_changed;
 	ok($(".jpoker_chat_history_player").attr('scrollTop') > 0, 'scrollTop');
 	ok($(".jpoker_chat_history_dealer").attr('scrollTop') > 0, 'scrollTop');
 
@@ -7622,7 +7631,7 @@ test("jpoker.plugins.playerSelf: create in position", function(){
     });
 
 test("jpoker.plugins.muck", function(){
-        expect(27);
+        expect(29);
 
 	var place = $("#main");
 
@@ -7679,6 +7688,8 @@ test("jpoker.plugins.muck", function(){
 	equals(auto_muck_lose.attr('type'), 'checkbox', '#auto_muck_win checkbox');
 	equals(auto_muck_win.is(':checked'), false, '#auto_muck_win checked preferences');
 	equals(auto_muck_lose.is(':checked'), false, '#auto_muck_lose checked preferences');
+	equals($('.jpoker_auto_muck_win label', auto_muck_element).attr('title'), 'Muck winning hands on showdown');
+	equals($('.jpoker_auto_muck_lose label', auto_muck_element).attr('title'), 'Muck losing hands on showdown');
 	
 	server.sendPacket = function() {};
 	auto_muck_win.click();
