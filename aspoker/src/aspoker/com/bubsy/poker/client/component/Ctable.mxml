@@ -26,6 +26,8 @@
 	
 	  <mx:Script>
  	<![CDATA[
+ 		import flash.utils.setTimeout;
+ 		import flash.utils.setInterval;
  		import mx.controls.Image;
  		import aspoker.com.bubsy.poker.client.model.Card;
  		import aspoker.com.bubsy.poker.client.model.Player;
@@ -264,7 +266,87 @@
 				TableEvent.onPacketPokerPlayerLeave,
 				_onPlayerLeave
 			);
+				
+			table.removeEventListener(
+				LoginEvent.onPacketAuthRequest,
+				_onAuthRequest
+			);
 			
+			table.removeEventListener(
+				TableEvent.onPacketPokerPlayerChips,
+				_onPlayerChips
+			);
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerSit,
+				_onSit
+			);
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerSeats,
+				_onSeats
+			);
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerSitOut,
+				_onSitOut
+			);		
+				
+			table.removeEventListener(
+				TableEvent.onPacketPokerBlindRequest,
+				_onPacketPokerBlindRequest
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerPosition,
+				_onPacketPokerPosition
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerCall,
+				_onPacketPokerAction
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerCheck,
+				_onPacketPokerAction
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerFold,
+				_onPacketPokerAction
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerRaise,
+				_onPacketPokerAction
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerBlind,
+				_onPacketPokerAction
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerStart,
+				_onPacketPokerStart
+			);	
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerState,
+				_onPacketPokerState
+			);	
+			
+			table.removeEventListener(
+				TableEvent.PacketPokerBoardCards,
+				_onPacketPokerBoardCards
+			);
+			
+			table.removeEventListener(
+				TableEvent.onPacketPokerPlayerCards,
+				_onPacketPokerPlayerCards
+			);
+						
 			table.destroy();
 			table = null;
 		}
@@ -627,9 +709,6 @@
 					<mx:AddChild relativeTo="{tableActions}" >
 						<mx:Button label="raise" click="table.raise(0)"/>
 					</mx:AddChild>
-				</mx:State>	
-				
-					
+				</mx:State>		
 		</mx:states>
-		
 </mx:Canvas>

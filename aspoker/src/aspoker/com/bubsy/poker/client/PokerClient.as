@@ -26,10 +26,18 @@ public class PokerClient
     public static const VIEW_IS_BOARD:int=1;
     public static const VIEW_IS_TABLE:int=1;
     public static const VIEW_IS_CASHIER:int=1;
-
+    
     private static var _user:User = new User();
     private static var _currentState:int = VIEW_IS_BOARD;
-
+    
+    public static const SERVER_HOST:String = "www.aspoker.info";
+    public static const SERVER_PORT:int = 19382;
+    public static const ASPOKER_PATH:String = "/beta/";
+    public static const CARDS_PATH:String = ASPOKER_PATH + "assets/cards/";
+    public static const CARDS_PREFIX:String = "small-";
+    public static const IMAGE_PATH:String = "http://"+ SERVER_HOST + CARDS_PATH 
+        + CARDS_PREFIX;
+    
     public function PokerClient()
     {
 

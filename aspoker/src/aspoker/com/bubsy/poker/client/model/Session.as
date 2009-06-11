@@ -19,8 +19,8 @@
 
 package aspoker.com.bubsy.poker.client.model
 {
+    import aspoker.com.bubsy.poker.client.PokerClient;
     import flash.net.SharedObject;
-
 
 public class Session
 {
@@ -29,7 +29,9 @@ public class Session
     private static var _twistedSession:String="";
     private static var _cookie:Array/*of cookieItem*/=[];
 
-    private static var restUrl:String = "http://www.aspoker.info:19382/REST";
+    private static var restUrl:String = "http://" + PokerClient.SERVER_HOST 
+        + ":" + PokerClient.SERVER_PORT 
+        + "/REST";
     public static var UserSerial:int;
 
     public static function set cookie(cookie:Array):void
@@ -73,6 +75,7 @@ public class Session
 
     public static function getUrl():String
     {
+        trace(restUrl);
         if (getTwistedSessionFromCookie() == "") {
             return restUrl + "?session=yes&count=" + incrementSessionCount();
         } else {

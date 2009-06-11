@@ -24,9 +24,10 @@
 	<mx:Script>
 		<![CDATA[
 			import aspoker.com.bubsy.poker.client.model.Card;
+            import aspoker.com.bubsy.poker.client.PokerClient;
 			
-			public static const IMAGE_PATH:String = "http://www.aspoker.info/beta/assets/cards/small-";
-    		public static const IMAGE_BACK:String = "http://www.aspoker.info/beta/assets/cards/small-back.png";
+    		public static const IMAGE_BACK:String =  PokerClient.IMAGE_PATH 
+                + Card.card2string[52] + ".png";
     		
     		public function setCards(boardCards:Array):void
     		{
@@ -34,8 +35,8 @@
 				{
 					var cardName:String = "card"+(i) ;
 					var imageCard:Image = board.getChildByName(cardName) as Image;
-
-					imageCard.source = IMAGE_PATH + boardCards[i].name + ".png";
+					imageCard.source = PokerClient.IMAGE_PATH 
+                       + boardCards[i].name + ".png";
 				}
     		}
     		
@@ -52,11 +53,11 @@
 		]]>
 	</mx:Script>
 	<mx:HBox name="board" id="board">
-		<mx:Image id="card1" name="card0" autoLoad="true" source="http://www.aspoker.info/beta/assets/cards/small-back.png"/> 
-		<mx:Image id="card2" name="card1" autoLoad="true" source="http://www.aspoker.info/beta/assets/cards/small-back.png"/> 
-		<mx:Image id="card3" name="card2" autoLoad="true" source="http://www.aspoker.info/beta/assets/cards/small-back.png"/> 
-		<mx:Image id="card4" name="card3" autoLoad="true" source="http://www.aspoker.info/beta/assets/cards/small-back.png"/> 
-		<mx:Image id="card5" name="card4" autoLoad="true" source="http://www.aspoker.info/beta/assets/cards/small-back.png"/> 	
+		<mx:Image id="card1" name="card0" autoLoad="true" source="{IMAGE_BACK}"/> 
+		<mx:Image id="card2" name="card1" autoLoad="true" source="{IMAGE_BACK}"/> 
+		<mx:Image id="card3" name="card2" autoLoad="true" source="{IMAGE_BACK}"/> 
+		<mx:Image id="card4" name="card3" autoLoad="true" source="{IMAGE_BACK}"/> 
+		<mx:Image id="card5" name="card4" autoLoad="true" source="{IMAGE_BACK}"/> 	
 	</mx:HBox>
 
 </mx:Canvas>
