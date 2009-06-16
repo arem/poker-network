@@ -3471,7 +3471,7 @@ test("jpoker.plugins.tourneyList link pattern", function(){
         //
         var PokerServer = function() {};
 
-	var TOURNEY_LIST_PACKET = {"players": 0, "packets": [{"players_quota": 2, "breaks_first": 7200, "name": "sitngo2", "description_short" : "Sit and Go 2 players, Holdem", "start_time": 0, "breaks_interval": 3600, "variant": "holdem", "currency_serial" : 1, "state": "registering", "buy_in": 300000, "type": "PacketPokerTourney", "breaks_duration": 300, "serial": 1, "sit_n_go": "y", "registered": 0}], "tourneys": 1, "type": "PacketPokerTourneyList"};
+	var TOURNEY_LIST_PACKET = {"players": 0, "packets": [{"players_quota": 2, "breaks_first": 7200, "name": "sitngo2", "description_short" : "Sit and Go 2 players, Holdem", "start_time": 0, "breaks_interval": 3600, "variant": "holdem", "currency_serial" : 1, "state": "registering", "buy_in": 300000, "type": "PacketPokerTourney", "breaks_duration": 300, "schedule_serial": 121, "serial": 1, "sit_n_go": "y", "registered": 0}], "tourneys": 1, "type": "PacketPokerTourneyList"};
 
         PokerServer.prototype = {
             outgoing: "[ " + JSON.stringify(TOURNEY_LIST_PACKET) + " ]",
@@ -3489,7 +3489,7 @@ test("jpoker.plugins.tourneyList link pattern", function(){
         var id = 'jpoker' + jpoker.serial;
         var row_id = TOURNEY_LIST_PACKET.packets[0].serial + id;
         var place = $("#main");
-	var link_pattern = 'http://foo.com/tourney?tourney_serial={tourney_serial}';
+	var link_pattern = 'http://foo.com/tourney?tourney_serial={tourney_serial}+schedule_serial={schedule_serial}';
         place.jpoker('tourneyList', 'url', { delay: 30, link_pattern: link_pattern });
         server.registerUpdate(function(server, what, data) {
                 var element = $("#" + id);
@@ -3499,7 +3499,9 @@ test("jpoker.plugins.tourneyList link pattern", function(){
 			ok(false, 'tourneyRowClick disabled');
 		    };
 		    row.click();
-		    var link = link_pattern.supplant({tourney_serial: TOURNEY_LIST_PACKET.packets[0].serial});
+		    var link = link_pattern.supplant({tourney_serial: TOURNEY_LIST_PACKET.packets[0].serial,
+                                                      schedule_serial: TOURNEY_LIST_PACKET.packets[0].schedule_serial
+                        });
 		    ok($('td:nth-child(1)', row).html().indexOf(link)>=0, link);
                     $("#" + id).remove();
                     return true;
@@ -4049,16 +4051,18 @@ test("jpoker.plugins.tourneyDetails templates tables", function(){
 	equals(table2.children().eq(4).find("input").attr("value"), "Go to table");
 
 	
-	var link_pattern = "http://foo.com/tourneytable?game_id={game_id}";
+	var link_pattern = "http://foo.com/tourneytable?game_id={game_id}+tourney_serial={serial}";
 	$(element).html(tourneyDetails.getHTML(id, packet, logged, registered, link_pattern));
 
 	var table1_link = $(".jpoker_tourney_details_tables tr", element).eq(2);
-	var link1 = link_pattern.supplant({game_id: 606});
-	ok(table1_link.children().eq(4).html().indexOf(link1) >= 0, link1);
+	var link1 = link_pattern.supplant({game_id: 606, serial: 1});
+        var link1_actual = table1_link.children().eq(4).html();
+	ok(link1_actual.indexOf(link1) >= 0, "look for " + link1 + " in " + link1_actual);
 	
 	var table2_link = $(".jpoker_tourney_details_tables tr", element).eq(3);
-	var link2 = link_pattern.supplant({game_id: 607});
-	ok(table2_link.children().eq(4).html().indexOf(link2) >= 0, link2);
+	var link2 = link_pattern.supplant({game_id: 607, serial: 1});
+        var link2_actual = table2_link.children().eq(4).html();
+	ok(link2_actual.indexOf(link2) >= 0, "look for " + link2 + " in " + link2_actual);
 
 	cleanup();
     });

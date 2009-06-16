@@ -2520,7 +2520,8 @@
 	    }
 	    subpacket.start_time = new Date(subpacket.start_time*1000).toLocaleString();
 	    if (link_pattern && subpacket.state != 'announced' && subpacket.state != 'canceled') {
-		var link = t.link.supplant({link: link_pattern.supplant({tourney_serial: subpacket.serial}), name: subpacket.description_short});
+                subpacket.tourney_serial = subpacket.serial; // for backward compatibility only
+		var link = t.link.supplant({link: link_pattern.supplant(subpacket), name: subpacket.description_short});
 		subpacket.description_short = link;
 	    }
             html.push(t.rows.supplant(subpacket));
@@ -2681,7 +2682,7 @@
 		    'players_quota_label' : _("players max."),
 		    'start_time_label' : _("Start time:"),
 		    'buy_in_label' : _("Buy in:")
-                       }).supplant(packet.tourney);
+                       });
 	
 	html_map.register = '';
 	if (packet.tourney.state == 'registering') {	    
@@ -2755,7 +2756,7 @@
 	}
 
 	html_map.table_details = t.table_details;
-        return t.layout.supplant(html_map);
+        return t.layout.supplant(html_map).supplant(packet.tourney);
     };
 
     jpoker.plugins.tourneyDetails.getHTMLTableDetails = function(id, packet, table) {
