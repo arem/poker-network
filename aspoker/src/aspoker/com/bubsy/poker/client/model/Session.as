@@ -75,7 +75,6 @@ public class Session
 
     public static function getUrl():String
     {
-        trace(restUrl);
         if (getTwistedSessionFromCookie() == "") {
             return restUrl + "?session=yes&count=" + incrementSessionCount();
         } else {

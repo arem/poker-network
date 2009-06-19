@@ -21,12 +21,25 @@ package aspoker.com.bubsy.poker.client.communication
 {
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
+import aspoker.com.bubsy.poker.client.model.Table;
 
 import com.adobe.serialization.json.JSON;
 
 public class TableJsonStream extends JsonStream
 {
-
+    
+    public static var tablelist:Array = [] /* of Table*/;
+    
+    public static function register(table:Table):void
+    {
+        tablelist[table.gameId] = table;
+    }
+    
+    public static function unregister(table:Table):void
+    {
+        tablelist[table.gameId] = null;
+    }
+    
     public function TableJsonStream()
     {
         super();
@@ -34,7 +47,12 @@ public class TableJsonStream extends JsonStream
 
     override protected function _dispatchEvent(pokerPacket:Object):void
     {
-
+        var gameid:int = pokerPacket.game_id;
+        
+        if (gameid == 0){ 
+             gameid = pokerPacket.id;
+        }
+        
         switch(pokerPacket.type)
         {
             case TableEvent.onPacketPokerSeat:
@@ -50,23 +68,13 @@ public class TableJsonStream extends JsonStream
 
             case TableEvent.onPacketPokerTable:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerTable,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerTable(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerPlayerArrive:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerPlayerArrive,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerPlayerArrive(pokerPacket);
                 break;
             }
 
@@ -83,12 +91,7 @@ public class TableJsonStream extends JsonStream
             }
             case TableEvent.onPacketPokerPosition:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerPosition,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPokerPosition(pokerPacket);
                 break;
             }
 
@@ -115,23 +118,13 @@ public class TableJsonStream extends JsonStream
 
             case TableEvent.onPacketPokerPlayerChips:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerPlayerChips,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPlayerChips(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerBuyInLimits:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerBuyInLimits,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onBuyInLimits(pokerPacket);
                 break;
             }
 
@@ -159,12 +152,7 @@ public class TableJsonStream extends JsonStream
 
             case TableEvent.onPacketPokerSeats:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerSeats,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerSeats(pokerPacket);
                 break;
             }
 
@@ -181,178 +169,97 @@ public class TableJsonStream extends JsonStream
 
             case TableEvent.onPacketPokerSitOut:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerSitOut,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onSitOut(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerPlayerLeave:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerPlayerLeave,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerPlayerLeave(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerInGame:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerInGame,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPokerInGame(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerSit:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerSit,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onSit(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerCheck:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerCheck,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerCheck(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerCall:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerCall,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerCall(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerFold:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerFold,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerFold(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerRaise:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerRaise,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerRaise(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerBlindRequest:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerBlindRequest,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerBlindRequest(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerBlind:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerBlind,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerBlind(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerPlayerCards:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerPlayerCards,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerPlayerCards(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerStart:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerStart,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerStart(pokerPacket);
                 break;
             }
 
-
             case TableEvent.PacketPokerBoardCards:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.PacketPokerBoardCards,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._PacketPokerBoardCards(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerState:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerState,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerState(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerDealer:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerDealer,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerDealer(pokerPacket);
                 break;
             }
 
             case TableEvent.onPacketPokerPlayerCards:
             {
-                dispatchEvent(
-                    new TableEvent(
-                    TableEvent.onPacketPokerPlayerCards,
-                    pokerPacket
-                    )
-                );
+                tablelist[gameid]._onPacketPokerPlayerCards(pokerPacket);
                 break;
             }
 

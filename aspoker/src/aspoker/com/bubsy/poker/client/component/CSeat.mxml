@@ -21,10 +21,17 @@
 -->
 
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
-	width="115" height="160" 
 	creationComplete="_init();"
 	horizontalCenter="true"
 	>
+
+    <mx:Rotate
+        id="rotate"
+        angleFrom="0"
+        angleTo="10"
+        originX="0"
+        originY="0"
+    />
 
 	<mx:Script>
 	  <![CDATA[
@@ -36,12 +43,13 @@
  		import aspoker.com.bubsy.poker.client.model.User;
  		import aspoker.com.bubsy.poker.client.event.TableEvent;
  		import mx.core.Application;
- 	
+
  		public static const IMAGE_PATH:String = "http://www.aspoker.info/beta/assets/cards/small-";
-    		
+
  		private var _gameId:int=0;
  		private var _seatId:int=0;
 		private var _table:Table;
+        private var _cardsStyle:String="";
 		
 		public function set table(table:Table):void
  		{
@@ -67,205 +75,128 @@
  		private function _init():void
  		{
  			this.currentState = "free";
- 			seatname.text = "seat: " + _seatId;
+            cards.styleName = "card" + seatId;
+ 			//seatname.text = "seat: " + _seatId;
  		}
-		
-		private function setPlayerName():String
+
+		public function setPlayerName():String
  		{
+            playerName.text = _table.getPlayerFromSeat(_seatId).name;
  			return _table.getPlayerFromSeat(_seatId).name;
  		}
- 		
+
  	    public function setCards(boardCards:Array/*of cards*/):void
 		{
-			card0.source = IMAGE_PATH + boardCards[0].name + ".png";
+			card0.source = PokerClient.IMAGE_PATH + boardCards[0].name + ".png";
 			card0.visible = true;
-			card1.source = IMAGE_PATH + boardCards[1].name + ".png";
+			card1.source = PokerClient.IMAGE_PATH + boardCards[1].name + ".png";
 			card1.visible = true;
 		}
-    		
+
  		public function setPlayerChips():void
  		{
- 			var chips:TextArea =  seats.getChildByName("chips") as TextArea;
+ 			var chips:Label =  seats.getChildByName("chips") as Label;
  			chips.text = "" + _table.getPlayerFromSeat(_seatId).money as String;
  		}
  	 ]]>
  	</mx:Script>
  	
- 	<mx:VBox id="seats" name="seats" 
-		horizontalAlign="center"
- 		verticalAlign="bottom"
- 		width="100%" height="100%" 
- 		>
+
  	
- 		<mx:HBox name="cards" id="cards">
+    <mx:Canvas 
+        name="cards" 
+        id="cards"
+        creationCompleteEffect="{rotate}" >
 			<mx:Image id="card0" 
-				name="card3" 
-				autoLoad="true" 
-				source="http://www.aspoker.info/beta/assets/cards/small-back.png"
+				name="card0" 
 				visible="false"
 			/> 
 
 		<mx:Image id="card1" 
-				name="card4" 
-				autoLoad="true" 
-				source="http://www.aspoker.info/beta/assets/cards/small-back.png"
+				name="card1" 
 				visible="false"
-			/> 		 	
-		</mx:HBox>
- 	</mx:VBox>
-	 		
- 	<mx:states>
- 		 <mx:State name="free">
- 		 	<mx:AddChild relativeTo="{seats}">
-		 			<mx:Label id="seatname" 
-		 				text="" />
-		 	</mx:AddChild>
-		 	
-		 	<mx:AddChild relativeTo="{seats}">	
-	  			<mx:TextArea id="seatbutton" 
-	  				textAlign="center"
-	  				borderStyle="solide"
-	  				backgroundAlpha="0.8"
-	  				dropShadowEnabled="true"
-	  				selectable="false"
-	  				editable="false"
-	  				width="100"
-	  				text="Click here to get a seat"
-					cornerRadius="5"
-	  				fontWeight="bold" 
-	  				click="_table.seat(_seatId);" /> 		
- 			</mx:AddChild>
-	 	</mx:State>
-	 	
-	 	<mx:State name="sitin" basedOn="arrive">
-	 		<mx:SetProperty target="{playerName}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{playerState}" name="text" value="Sit-in"/>
-	 		<mx:SetProperty target="{playerState}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{chips}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{amount}" name="enabled" value="true"/>
-	 			 		
-	 		<mx:SetProperty target="{card0}" name="visible" value="false"/>
-	 		<mx:SetProperty target="{card1}" name="visible" value="false"/>
-	 		
-	 	</mx:State>
-	 	
-	 	
-	 	<mx:State name="inposition" basedOn="arrive">
-		 	<mx:SetProperty target="{playerName}" name="enabled" value="true"/>
-		 	<mx:SetProperty target="{playerState}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{chips}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{amount}" name="enabled" value="true"/>
-	 		
-			<mx:SetStyle target="{seats}" name="borderStyle" value="solide"/>
-			<mx:SetStyle target="{seats}" name="borderThickness" value="7"/>
+                x="25"
+			/>
+	</mx:Canvas>
 
-	 		<mx:SetStyle target="{seats}" name="borderColor" value="green"/>
-	 		<mx:SetProperty target="{playerState}" name="text" value=""/>
-	 	</mx:State>
-	 	
-	 	<mx:State name="wait" basedOn="arrive">
-		 	<mx:SetProperty target="{playerName}" name="enabled" value="true"/>
-		 	<mx:SetProperty target="{playerState}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{chips}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{amount}" name="enabled" value="true"/>	 		
-	 		<mx:SetStyle target="{seats}" name="borderColor" value="red"/> 		
-	 	</mx:State>
-		
-		<mx:State name="clear" basedOn="arrive">
-		 	<mx:SetProperty target="{playerName}" name="enabled" value="true"/>
-		 	<mx:SetProperty target="{playerState}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{chips}" name="enabled" value="true"/>
-	 		<mx:SetProperty target="{amount}" name="enabled" value="true"/>
-	 			 		
-			<mx:SetProperty target="{playerState}" name="text" value=""/>	 			 		
-			<mx:SetProperty target="{amount}" name="text" value=""/>
-	 		<mx:SetStyle target="{seats}" name="borderColor" value="red"/>
-	 	</mx:State>
-	 		 		 		
-	 	<mx:State name="sitout" basedOn="arrive">
-	 		<mx:SetProperty target="{playerName}" name="enabled" value="false"/>
-	 		<mx:SetProperty target="{playerState}" name="text" value="Sit-out"/>
-	 		<mx:SetProperty target="{playerState}" name="enabled" value="false"/>
-	 		<mx:SetProperty target="{chips}" name="enabled" value="false"/>
-	 		<mx:SetProperty target="{amount}" name="enabled" value="false"/>
-	 		
-	 		<mx:SetProperty target="{card0}" name="visible" value="false"/>
-	 		<mx:SetProperty target="{card1}" name="visible" value="false"/>
-	 		
-	 	</mx:State>
-	 	
-		<mx:State name="arrive" id="arrive">
-		 	<mx:AddChild relativeTo="{seats}" >
-		 		<mx:TextArea name="playerName" 
-		 			id="playerName" 
-		 			text="{setPlayerName()}" 
-	  				selectable="false"
-	  				editable="false"
-	  				enabled="false"
-		 			width="100"
-		 			height="20"
-		 			cornerRadius="5"
-		 			color="green"
-  					dropShadowEnabled="true"
-	  				fontWeight="bold" 
-		 			textAlign="center"
-  					backgroundAlpha="0.8"/>			
- 		  	</mx:AddChild>			
- 		  	
- 		  	<mx:AddChild relativeTo="{seats}" >
-		 		<mx:TextArea name="chips" 
-		 			id="chips"
-		 			text="0" 
-					selectable="false"
-					enabled="false"
-	  				editable="false"
-		 			width="100"
-		 			height="20"
-		 			color="green"
-		 			cornerRadius="5"
-  					dropShadowEnabled="true"
-	  				fontWeight="bold" 
-		 			textAlign="center"
-  					backgroundAlpha="0.8"/>
-			</mx:AddChild>
-			
-			<mx:AddChild relativeTo="{seats}" >
-		 		<mx:TextArea name="playerState" 
-		 			id="playerState" 
-		 			enabled="false"
-		 			selectable="false"
-		 			editable="false"
-	  				width="100"
-		 			height="20"
-		 			color="green"
-		 			cornerRadius="5"
-  					dropShadowEnabled="true"
-	  				fontWeight="bold" 
-		 			textAlign="center"
-  					backgroundAlpha="0.8"/>
-			</mx:AddChild>
-			
-			<mx:AddChild relativeTo="{seats}" >
-		 		<mx:TextArea name="amount" 
-		 			id="amount" 
-		 			enabled="false"
-		 			selectable="false"
-		 			editable="false"
-	  				width="100"
-		 			height="20"
-		 			color="green"
-		 			cornerRadius="5"
-  					dropShadowEnabled="true"
-	  				fontWeight="bold" 
-		 			textAlign="center"
-  					backgroundAlpha="0.8"/>
-			</mx:AddChild>
-			
-			
-	 	</mx:State>
-	 	
-		<mx:State name="disabled" basedOn="">
+    <mx:states>
+         <mx:State name="free">
+            <mx:SetProperty target="{playerName}" name="visible" value="false"/>
+            <mx:SetProperty target="{level}" name="visible" value="false"/>
+            <mx:SetProperty target="{amount}" name="visible" value="false"/>
+            <mx:SetProperty target="{playerState}" name="visible" value="false"/>
+            <mx:SetProperty target="{chips}" name="visible" value="false"/>
+            <mx:SetProperty target="{chair}" name="visible" value="true"/>
+            <mx:SetProperty target="{avatar}" name="visible" value="false"/>
+            <mx:SetProperty target="{seats}" name="styleName" value="free"/>
+         </mx:State>
 
-	 	</mx:State>
-	</mx:states>   	
+         <mx:State name="arrive">
+            <mx:SetProperty target="{playerName}" name="visible" value="true"/>
+            <mx:SetProperty target="{level}" name="visible" value="true"/>
+            <mx:SetProperty target="{playerState}" name="visible" value="true"/>
+            <mx:SetProperty target="{amount}" name="visible" value="true"/>
+            <mx:SetProperty target="{chips}" name="visible" value="true"/>
+            <mx:SetProperty target="{chair}" name="visible" value="false"/>
+            <mx:SetProperty target="{avatar}" name="visible" value="true"/>
+            <mx:SetProperty target="{seats}" name="styleName" value="ingame"/>
+         </mx:State>
+
+        <mx:State name="clear" basedOn="arrive" >
+            <mx:SetProperty target="{seats}" name="styleName" value="ingame"/>
+            <mx:SetProperty target="{playerState}" name="text" value=""/>
+            <mx:SetProperty target="{amount}" name="text" value=""/>
+        </mx:State>
+
+        <mx:State name="sitin" basedOn="arrive" >
+            <mx:SetProperty target="{seats}" name="styleName" value="ingame"/>
+        </mx:State>
+
+         <mx:State name="wait" basedOn="arrive" >
+            <mx:SetProperty target="{seats}" name="styleName" value="ingame"/>
+            <mx:SetProperty target="{seats}" name="enabled" value="false"/>
+         </mx:State>
+
+         <mx:State name="sitout" basedOn="arrive" >
+            <mx:SetProperty target="{seats}" name="styleName" value="sitout"/>
+            <mx:SetProperty target="{seats}" name="enabled" value="false"/>
+         </mx:State>
+
+         <mx:State name="inposition" basedOn="arrive" >
+            <mx:SetProperty target="{seats}" name="styleName" value="inposition"/>
+            <mx:SetProperty target="{playerState}" name="text" value=""/>
+            <mx:SetProperty target="{amount}" name="text" value=""/>
+         </mx:State>
+
+        <mx:State name="disabled">
+            <mx:SetProperty target="{seats}" name="visible" value="false"/>
+        </mx:State>
+
+    </mx:states>
+
+     <mx:Canvas  
+        id="seats"
+        styleName="inposition">
+ 
+            <mx:Image 
+                styleName="avatar"
+                id="avatar"
+                width="25" height="25" 
+                source="{avatar.getStyle('noavatar')}"
+            /> 
+
+            <mx:Label id="playerName" styleName="playerName" text="text"/>
+            <mx:Label id="level" styleName="level" text="Level: 5"/>
+            <mx:Label id="chips" styleName="chips" text="" />
+            <mx:Label id="amount" styleName="amount" text="" />
+            <mx:Label id="playerState" styleName="playerState" text="" />
+
+            <mx:Image 
+                styleName="chair"
+                id="chair" 
+                source="{chair.getStyle('chair')}"
+                click="_table.seat(_seatId);" 
+            /> 
+        </mx:Canvas>
+
 </mx:Canvas>

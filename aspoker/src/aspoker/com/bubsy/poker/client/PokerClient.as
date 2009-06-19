@@ -19,6 +19,7 @@
 
 package aspoker.com.bubsy.poker.client
 {
+import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
 import aspoker.com.bubsy.poker.client.model.User;
 
 public class PokerClient
@@ -26,10 +27,10 @@ public class PokerClient
     public static const VIEW_IS_BOARD:int=1;
     public static const VIEW_IS_TABLE:int=1;
     public static const VIEW_IS_CASHIER:int=1;
-    
+
     private static var _user:User = new User();
     private static var _currentState:int = VIEW_IS_BOARD;
-    
+
     public static const SERVER_HOST:String = "www.aspoker.info";
     public static const SERVER_PORT:int = 19382;
     public static const ASPOKER_PATH:String = "/beta/";
@@ -37,10 +38,17 @@ public class PokerClient
     public static const CARDS_PREFIX:String = "small-";
     public static const IMAGE_PATH:String = "http://"+ SERVER_HOST + CARDS_PATH 
         + CARDS_PREFIX;
-    
+
+    private static var _actionJsonStream:TableJsonStream = new TableJsonStream();
+
     public function PokerClient()
     {
 
+    }
+
+    static public function get stream():TableJsonStream
+    {
+        return _actionJsonStream;
     }
 
     public static function get user():User

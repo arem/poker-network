@@ -111,6 +111,5 @@ package aspoker.com.bubsy.poker.client.model
             _rank = PacketPokerPlayerStats.rank;
             _percentile =  PacketPokerPlayerStats.percentile;
         }
-
     }
 }

@@ -39,7 +39,7 @@ public class Table extends PollTimer
     private var _user:User = PokerClient.user;
     private var _playerSerialsInGame:Array /* of player serial */ = [];
 
-    private var _actionJsonStream:TableJsonStream = new TableJsonStream();
+    private var _actionJsonStream:TableJsonStream;// = new TableJsonStream();
 
     /* table properties*/
     private var _name:String;
@@ -92,107 +92,17 @@ public class Table extends PollTimer
     public function Table(gameId:int)
     {
         stopPoll();
+        _actionJsonStream = PokerClient.stream;
         _gameID = gameId;
+        TableJsonStream.register(this);
 
-        //add Listeners for user action stream
-        _actionJsonStream.addEventListener(
-          TableEvent.onPacketPokerTable,
-          _onPacketPokerTable);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerSeats,
-            _onPacketPokerSeats);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerPlayerArrive,
-            _onPacketPokerPlayerArrive);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerPlayerLeave,
-            _onPacketPokerPlayerLeave);
-
-        _actionJsonStream.addEventListener(
-            LoginEvent.onPacketAuthRequest,
-            _onPacketAuthRequest);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerPlayerStats,
-            _onPlayerStats);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerPlayerChips,
-            _onPlayerChips);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerBuyInLimits,
-            _onBuyInLimits);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerSit,
-            _onSit);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerSitOut,
-            _onSitOut);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerInGame,
-            _onPokerInGame);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerPosition,
-            _onPokerPosition);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerBlindRequest,
-            _onPacketPokerBlindRequest);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerBlind,
-            _onPacketPokerBlind);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerCall,
-            _onPacketPokerCall);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerCheck,
-            _onPacketPokerCheck);
-
-       _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerFold,
-            _onPacketPokerFold);
-
-           _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerRaise,
-            _onPacketPokerRaise);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerPlayerCards,
-            _onPacketPokerPlayerCards);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.PacketPokerBoardCards,
-            _PacketPokerBoardCards);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerState,
-            _onPacketPokerState);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerStart,
-            _onPacketPokerStart);
-
-        _actionJsonStream.addEventListener(
-            TableEvent.onPacketPokerDealer,
-            _onPacketPokerDealer);
     }
 
-    private function _PacketPokerBoardCards(evt:TableEvent):void
+    public function _PacketPokerBoardCards(packet:Object):void
     {
         _boardCards = [];
 
-        for each( var cardNumber:Number in evt.packet.cards)
+        for each( var cardNumber:Number in packet.cards)
         {
             _boardCards.push(new Card(cardNumber));
         }
@@ -200,16 +110,16 @@ public class Table extends PollTimer
         dispatchEvent(
             new TableEvent(
                 TableEvent.PacketPokerBoardCards,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerDealer(evt:TableEvent):void
+    public function _onPacketPokerDealer(packet:Object):void
     {
-        trace(JSON.encode(evt.packet));
-        _dealer = evt.packet.dealer;
-        _previous_dealer = evt.packet.previous_dealer;
+        trace(JSON.encode(packet));
+        _dealer = packet.dealer;
+        _previous_dealer = packet.previous_dealer;
     }
 
     private function _gameEnded():void
@@ -290,7 +200,7 @@ public class Table extends PollTimer
         }
     }
 
-    private function _onPacketPokerStart(evt:TableEvent):void
+    public function _onPacketPokerStart(packet:Object):void
     {
         /*{"level":0,"cookie":"","hands_count":21,"type":"PacketPokerStart",
         "hand_serial":114,"time":85037.520292,"serial":0,"game_id":321}*/
@@ -300,16 +210,16 @@ public class Table extends PollTimer
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerStart,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerState(evt:TableEvent):void
+    public function _onPacketPokerState(packet:Object):void
     {
-        trace(evt.packet.string);
+     //   trace(evt.packet.string);
 
-        _tableState = evt.packet.string;
+        _tableState = packet.string;
 
         if (state != TABLE_STATE_PRE_FLOP)
         {
@@ -320,17 +230,17 @@ public class Table extends PollTimer
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerState,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerPlayerCards(evt:TableEvent):void
+    public function _onPacketPokerPlayerCards(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
         player.cards = [];
 
-        for each(var cardNumber:Number in evt.packet.cards)
+        for each(var cardNumber:Number in packet.cards)
         {
             if (cardNumber!=255)
             {
@@ -344,42 +254,42 @@ public class Table extends PollTimer
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerPlayerCards,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerBlind(evt:TableEvent):void
+    public function _onPacketPokerBlind(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
 
         if (_currentBlind == 0)
         {
             trace(player.name + "pays the small blind");
             player.action = PlayerState.PAID_SMALL_BLIND;
-        } else if (_currentBlind <  evt.packet.amount ) {
+        } else if (_currentBlind <  packet.amount ) {
             trace(player.name + "pays the big blind");
             player.action = PlayerState.PAID_BIG_BLIND;
         } else {
             trace(player.name + "pays the big blind");
         }
 
-        player.action.amount = evt.packet.amount;
-        player.bet = evt.packet.amount;
-        _currentBlind = evt.packet.amount;
-        _currentPot +=  evt.packet.amount;
+        player.action.amount = packet.amount;
+        player.bet = packet.amount;
+        _currentBlind = packet.amount;
+        _currentPot +=  packet.amount;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerBlind,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerCall(evt:TableEvent):void
+    public function _onPacketPokerCall(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
         player.action = PlayerState.CALL;
         player.action.amount = _currentBlind;
 
@@ -390,50 +300,50 @@ public class Table extends PollTimer
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerCall,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerCheck(evt:TableEvent):void
+    public function _onPacketPokerCheck(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
         player.action = PlayerState.CHECK;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerCheck,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerFold(evt:TableEvent):void
+    public function _onPacketPokerFold(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
         player.action = PlayerState.FOLD;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerFold,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerRaise(evt:TableEvent):void
+    public function _onPacketPokerRaise(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
         player.action = PlayerState.RAISE;
-        player.action.amount = evt.packet.amount;
-        _currentBlind = player.action.amount;
-        player.bet+= player.action.amount;
-        _currentPot +=  evt.packet.amount;
+        player.action.amount = packet.amount;
+        _currentBlind += player.action.amount;
+        player.bet += player.action.amount;
+        _currentPot += packet.amount;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerRaise,
-                evt.packet
+                packet
             )
         );
     }
@@ -443,47 +353,46 @@ public class Table extends PollTimer
         return _currentPot;
     }
 
-    private function _onPokerPosition(evt:TableEvent):void
+    public function _onPokerPosition(packet:Object):void
     {
         _previousPosition = _currentPosition;
-        _currentPosition = evt.packet.position;
+        _currentPosition =  packet.position;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerPosition,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPacketPokerBlindRequest(evt:TableEvent):void
+    public function _onPacketPokerBlindRequest(packet:Object):void
     {
-        _currentBlind = evt.packet.amount;
+        _currentBlind = packet.amount;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerBlindRequest,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPokerInGame(evt:TableEvent):void
+    public function _onPokerInGame(packet:Object):void
     {
-        var pokerInGame:Object = evt.packet;
-        _playerSerialsInGame = pokerInGame.players;
+        _playerSerialsInGame = packet.players;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerInGame,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onBuyInLimits(evt:TableEvent):void
+    public function _onBuyInLimits(packet:Object):void
     {
-        var BuyInLimits:Object = evt.packet;
+        var BuyInLimits:Object = packet;
 
         _buyInLimitMin = BuyInLimits.min;
         _buyInLimitbest = BuyInLimits.best;
@@ -491,33 +400,33 @@ public class Table extends PollTimer
         _buyInLimitmax = BuyInLimits.max;
     }
 
-    private function _onSitOut(evt:TableEvent):void
+    public function _onSitOut(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
         player.action = PlayerState.SITOUT;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerSitOut,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onSit(evt:TableEvent):void
+    public function _onSit(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
+        var player:Player = _players[packet.serial] as Player
         player.action = PlayerState.SITIN;
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerSit,
-                evt.packet
+                packet
             )
         );
     }
 
-    private function _onPlayerStats(evt:TableEvent):void
+    public function _onPlayerStats(evt:TableEvent):void
     {
         var player:Player = _players[evt.packet.serial] as Player
         player.setStats(evt.packet);
@@ -530,15 +439,15 @@ public class Table extends PollTimer
         );
     }
 
-    private function _onPlayerChips(evt:TableEvent):void
+    public function _onPlayerChips(packet:Object):void
     {
-        var player:Player = _players[evt.packet.serial] as Player
-        player.setChips(evt.packet);
+        var player:Player = _players[packet.serial] as Player
+        player.setChips(packet);
 
         dispatchEvent(
             new TableEvent(
                 TableEvent.onPacketPokerPlayerChips,
-                evt.packet
+                packet
             )
         );
     }
@@ -546,23 +455,6 @@ public class Table extends PollTimer
     public function destroy():void
     {
         stopPoll();
-
-        //remove Listeners for user action stream
-        _actionJsonStream.removeEventListener(
-          TableEvent.onPacketPokerTable,
-          _onPacketPokerTable);
-
-        _actionJsonStream.removeEventListener(
-            TableEvent.onPacketPokerSeats,
-            _onPacketPokerSeats);
-
-        _actionJsonStream.removeEventListener(
-            TableEvent.onPacketPokerPlayerArrive,
-            _onPacketPokerPlayerArrive);
-
-        _actionJsonStream.removeEventListener(
-            TableEvent.onPacketPokerPlayerLeave,
-            _onPacketPokerPlayerLeave);
 
         _players = null;
     }
@@ -624,32 +516,32 @@ public class Table extends PollTimer
         return _playerSerialsInGame[position];
     }
 
-    private function _onPacketPokerPlayerArrive(evt:TableEvent):void
+    public function _onPacketPokerPlayerArrive(packet:Object):void
     {
-        _seats[evt.packet.seat] = evt.packet.serial;
-        _players[evt.packet.serial] = new Player(evt.packet);
-        _players[evt.packet.serial].action = PlayerState.SITOUT
+        _seats[packet.seat] = packet.serial;
+        _players[packet.serial] = new Player(packet);
+        _players[packet.serial].action = PlayerState.SITOUT
 
         dispatchEvent(
             new TableEvent(
             TableEvent.onPacketPokerPlayerArrive,
-            evt.packet
+            packet
             )
         );
     }
 
-    private function _onPacketPokerPlayerLeave(evt:TableEvent):void
+    public function _onPacketPokerPlayerLeave(packet:Object):void
     {
-      _players[evt.packet.seat] = null;
+      _players[packet.seat] = null;
        dispatchEvent(
             new TableEvent(
             TableEvent.onPacketPokerPlayerLeave,
-            evt.packet
+            packet
             )
         );
     }
 
-    private function _onPacketAuthRequest(evt:LoginEvent):void
+    public function _onPacketAuthRequest(evt:LoginEvent):void
     {
         dispatchEvent(
             new LoginEvent(
@@ -658,14 +550,14 @@ public class Table extends PollTimer
         );
     }
 
-    private function _onPacketPokerSeats(evt:TableEvent):void
+    public function _onPacketPokerSeats(packet:Object):void
     {
-        _seats = evt.packet.seats;
+        _seats = packet.seats;
 
         dispatchEvent(
             new TableEvent(
             TableEvent.onPacketPokerSeats,
-            evt.packet
+            packet
             )
         );
     }
@@ -675,22 +567,21 @@ public class Table extends PollTimer
         return _seats;
     }
 
-    private function _onPacketPokerTable(evt:TableEvent):void
+    public function _onPacketPokerTable(packet:Object):void
     {
-        var tableInfo:Object = evt.packet;
-        _name = tableInfo.name;
-        _variant = tableInfo.variant;
-        _percent_flop = tableInfo.percent_flop;
-        _betting_structure = tableInfo.betting_structure;
-        _average_pot = tableInfo.average_pot;
-        _muck_timeout = tableInfo.muck_timeout;
-        _hands_per_hour = tableInfo.hands_per_hour;
-        _tourney_serial = tableInfo.tourney_serial;
-        _numSeats = tableInfo.seats;
-        _numObservers = tableInfo.observers;
-        _player_timeout = tableInfo.player_timeout;
-        _currency_serial = tableInfo.currency_serial;
-        _skin = tableInfo.skin;
+        _name = packet.name;
+        _variant = packet.variant;
+        _percent_flop = packet.percent_flop;
+        _betting_structure = packet.betting_structure;
+        _average_pot = packet.average_pot;
+        _muck_timeout = packet.muck_timeout;
+        _hands_per_hour = packet.hands_per_hour;
+        _tourney_serial = packet.tourney_serial;
+        _numSeats = packet.seats;
+        _numObservers = packet.observers;
+        _player_timeout = packet.player_timeout;
+        _currency_serial = packet.currency_serial;
+        _skin = packet.skin;
     }
 
     public function quit():void

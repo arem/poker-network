@@ -26,7 +26,8 @@
         xmlns:local="aspoker.com.bubsy.poker.client.component.*" 
         height="700"
         width="800">
-        
+             <mx:Style source="css/aspoker.css" />
+
     <mx:Script>
         <![CDATA[      
             import mx.controls.Alert;
