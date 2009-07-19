@@ -550,7 +550,10 @@ public class Table extends PollTimer
         );
     }
 
-    public function _onPacketPokerSeats(packet:Object):void
+/* PacketPokerSeats was deprecated when the seat number was added to the
+ PlayerArrive and PlayerLeave packets
+
+ public function _onPacketPokerSeats(packet:Object):void
     {
         _seats = packet.seats;
 
@@ -560,7 +563,9 @@ public class Table extends PollTimer
             packet
             )
         );
+*
     }
+*/
 
     public function get seats():Array
     {
@@ -582,6 +587,25 @@ public class Table extends PollTimer
         _player_timeout = packet.player_timeout;
         _currency_serial = packet.currency_serial;
         _skin = packet.skin;
+
+        _resetSeats(_numSeats);
+    
+        dispatchEvent(
+             new TableEvent(
+                    TableEvent.onPacketPokerTable,
+                    null
+             )
+        );
+    }
+    
+    private function _resetSeats(maxSeats:int=0):void
+    {
+        _seats = [] ;
+       
+        for (var i:int=0;i<maxSeats;i++) 
+        {
+            _seats[i] = 0 ; 
+        }
     }
 
     public function quit():void

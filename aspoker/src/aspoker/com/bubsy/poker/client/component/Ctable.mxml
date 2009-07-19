@@ -73,7 +73,7 @@
 			);
 
 			table.addEventListener(
-				TableEvent.onPacketPokerSeats,
+				TableEvent.onPacketPokerTable,
 				_onSeats
 			);
 
@@ -141,25 +141,24 @@
 
 		private function _onPacketPokerBoardCards(evt:TableEvent):void
 		{
-            setPlayersSeatState(table.playerSerialsInGame,"clear");
-			boardCards.setCards(table.boardCards);
+        setPlayersSeatState(table.playerSerialsInGame,"clear");
+        boardCards.setCards(table.boardCards);
 		}
 		
-		private function _onPacketPokerPlayerCards(evt:TableEvent):void
-		{
-			var serial:Number = evt.packet.serial;
-			
-			var seat:CSeat = seats.getChildByName(
-					"seat"+ table.getPlayer(serial).seat
-					) as CSeat ;
+    private function _onPacketPokerPlayerCards(evt:TableEvent):void
+    {
+        var serial:Number = evt.packet.serial;
+        var seat:CSeat = seats.getChildByName(
+            "seat"+ table.getPlayer(serial).seat
+        ) as CSeat ;
 
-           var cards:CCards = seats.getChildByName(
-                    "cards"+ table.getPlayer(serial).seat
-                    ) as CCards ;
+        var cards:CCards = seats.getChildByName(
+            "cards"+ table.getPlayer(serial).seat
+        ) as CCards ;
 
-            cards.setCards(table.getPlayer(serial).cards);
-			//seat.setCards(table.getPlayer(serial).cards);
-		}
+        cards.setCards(table.getPlayer(serial).cards);
+        //seat.setCards(table.getPlayer(serial).cards);
+    }
 
 		private function _onPacketPokerState(evt:TableEvent):void
 		{
@@ -232,7 +231,7 @@
             pot.text = ""+table.currentPot;
 
 			/* unselect the previous player seat*/
-			var previousSeat:CSeat= seats.getChildByName(
+			var previousSeat:CSeat = seats.getChildByName(
 					"seat"+ table.getPlayer(evt.packet.serial).seat
 				) as CSeat ;
 
@@ -248,9 +247,9 @@
 			var player:Player = table.getPlayer(currentSerial);
 
 			/* select the current player seat*/
-			if (table.currentPosition>=0)
+			if (table.currentPosition >= 0)
 			{
-				var currentSeat:CSeat= seats.getChildByName(
+				var currentSeat:CSeat = seats.getChildByName(
 				"seat"+ player.seat
 				) as CSeat ;
 
@@ -259,7 +258,7 @@
 			}
 
 			/* the user to play ?*/
-			if (PokerClient.user.userSerial==currentSerial) 
+			if (PokerClient.user.userSerial == currentSerial) 
 			{	/* user play : show action panel */
 				if (player.bet == table.currentBlind)
 				{
@@ -321,7 +320,7 @@
 			);
 
 			table.removeEventListener(
-				TableEvent.onPacketPokerSeats,
+				TableEvent.onPacketPokerTable,
 				_onSeats
 			);
 
@@ -400,7 +399,7 @@
  		{
  			for (var i:int=0; i<=9; i++)
  			{
- 				var cSeat:CSeat =  seats.getChildByName("seat"+i) as CSeat;
+ 				var cSeat:CSeat = seats.getChildByName("seat"+i) as CSeat;
 				cSeat.table = table;
 				cSeat.gameId = table.gameId;
 			}
@@ -408,7 +407,7 @@
 
  		private function _onPlayerChips(evt:TableEvent):void
  		{
- 			var cseat:CSeat= seats.getChildByName(
+ 			var cseat:CSeat = seats.getChildByName(
 				"seat"+ table.getPlayer(evt.packet.serial).seat
 			) as CSeat;
 
@@ -442,7 +441,7 @@
  			} 
 
  			/* if a player leaves the table */
-			var cseat:CSeat= seats.getChildByName(
+			var cseat:CSeat = seats.getChildByName(
 				"seat"+evt.packet.seat
 			) as CSeat ;
 				
@@ -463,7 +462,7 @@
  			var i:int=0;
 			for each (var seat:int in table.seats)
 			{
-				if(seat==0) {
+				if(seat == 0) {
 					var cseat:CSeat= seats.getChildByName("seat"+i) as CSeat ;
 					cseat.currentState = state;
 					cseat = null;
@@ -477,8 +476,8 @@
             var i:int=0;
             for each (var cards:int in table.seats)
             {
-                if(cards==0) {
-                    var cCards:CCards= seats.getChildByName("cards"+i) as CCards ;
+                if(cards == 0) {
+                    var cCards:CCards = seats.getChildByName("cards"+i) as CCards ;
                     cCards.currentState = state;
                     cCards = null;
                 }
@@ -491,12 +490,12 @@
  			var i:int=0;
 			for each (var seat:int in table.seats)
 			{
-				if (i==table.numSeats) 
+				if (i == table.numSeats) 
 				{
 					//no more seat are available at this table
 					break;
 				} else {
-					var cseat:CSeat= seats.getChildByName("seat"+i) as CSeat ;
+					var cseat:CSeat = seats.getChildByName("seat"+i) as CSeat ;
 					cseat.visible = visible;
 					cseat = null;
 					i++;
@@ -523,7 +522,7 @@
 
 		private function _onSit(evt:TableEvent):void
  		{
-			var cseat:CSeat= seats.getChildByName(
+			var cseat:CSeat = seats.getChildByName(
 				"seat"+ table.getPlayer(evt.packet.serial).seat
 				) as CSeat ;
 
@@ -539,7 +538,7 @@
 
  		private function _onSitOut(evt:TableEvent):void
  		{
-			var cseat:CSeat= seats.getChildByName(
+			var cseat:CSeat = seats.getChildByName(
 				"seat"+ table.getPlayer(evt.packet.serial).seat
 				) as CSeat ;
 
@@ -554,7 +553,7 @@
 
 		private function _onPlayerArrive(evt:TableEvent):void
  		{		
-			var cseat:CSeat= seats.getChildByName(
+			var cseat:CSeat = seats.getChildByName(
 				"seat"+evt.packet.seat
 				) as CSeat ;
             cseat.setPlayerName();
@@ -569,6 +568,8 @@
  			{
  				this.currentState = "notEnoughMoney";
  			}
+        
+        _onSeats(null);
  		}
 
  		public function Buyin():void

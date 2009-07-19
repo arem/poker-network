@@ -150,12 +150,16 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
-            case TableEvent.onPacketPokerSeats:
+            /* PacketPokerSeats was deprecated when the seat number was added to
+              the PlayerArrive and PlayerLeave packets */
+
+            /* case TableEvent.onPacketPokerSeats:
             {
                 tablelist[gameid]._onPacketPokerSeats(pokerPacket);
                 break;
             }
-
+            */
+            
             case TableEvent.onPacketPokerStreamMode:
             {
                 dispatchEvent(
