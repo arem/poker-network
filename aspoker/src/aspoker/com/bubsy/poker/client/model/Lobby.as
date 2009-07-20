@@ -20,7 +20,7 @@
 package aspoker.com.bubsy.poker.client.model
 {
 
-import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
+import aspoker.com.bubsy.poker.client.communication.JsonStreamProxy;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
 import aspoker.com.bubsy.poker.client.util.PollTimer;
 import aspoker.com.bubsy.poker.client.PokerClient;
@@ -31,7 +31,7 @@ import mx.controls.DataGrid;
 
 public class Lobby extends PollTimer
 {
-    private var _pokerConnection:TableJsonStream;
+    private var _pokerConnection:JsonStreamProxy;
     private var _data:Array = [];
     private var _tableGrid:DataGrid;
     private var _playersCount:int=0;
@@ -40,7 +40,7 @@ public class Lobby extends PollTimer
     public function Lobby(tableGrid:DataGrid)
     {
         _pokerConnection = PokerClient.stream;
-        TableJsonStream.setLobby(this);
+        JsonStreamProxy.setLobby(this);
         _tableGrid = tableGrid ;
         
          refreshTablelist();

@@ -21,7 +21,7 @@ package aspoker.com.bubsy.poker.client.model
 {
 
 import aspoker.com.bubsy.poker.client.PokerClient;
-import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
+import aspoker.com.bubsy.poker.client.communication.JsonStreamProxy;
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
 import aspoker.com.bubsy.poker.client.util.PollTimer;
@@ -39,7 +39,7 @@ public class Table extends PollTimer
     private var _user:User = PokerClient.user;
     private var _playerSerialsInGame:Array /* of player serial */ = [];
 
-    private var _actionJsonStream:TableJsonStream;// = new TableJsonStream();
+    private var _actionJsonStream:JsonStreamProxy;
 
     /* table properties*/
     private var _name:String;
@@ -94,7 +94,7 @@ public class Table extends PollTimer
         stopPoll();
         _actionJsonStream = PokerClient.stream;
         _gameID = gameId;
-        TableJsonStream.register(this);
+        JsonStreamProxy.register(this);
 
     }
 

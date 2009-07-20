@@ -21,7 +21,7 @@ package aspoker.com.bubsy.poker.client.model
 {
 
 import aspoker.com.bubsy.poker.client.PokerClient;
-import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
+import aspoker.com.bubsy.poker.client.communication.JsonStreamProxy;
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 
 import flash.events.EventDispatcher;
@@ -31,13 +31,13 @@ public class User extends EventDispatcher
     private var _userPassword:String= "";
     private var _userName:String = "";
     private var _userSerial:int= -1;
-    private var _stream:TableJsonStream;
+    private var _stream:JsonStreamProxy;
     private var _tablesList:Array/* of poker tables */=[];
 
     public function User()
     {
         _stream = PokerClient.stream;
-       TableJsonStream.setUser(this);
+        JsonStreamProxy.setUser(this);
     }
 
     public function onPacketSerial(evt:LoginEvent):void

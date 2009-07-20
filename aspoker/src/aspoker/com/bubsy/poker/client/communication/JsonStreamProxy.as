@@ -29,7 +29,7 @@ import aspoker.com.bubsy.poker.client.model.User;
 
 import com.adobe.serialization.json.JSON;
 
-public class TableJsonStream extends JsonStream
+public class JsonStreamProxy extends JsonStream
 {
 
     public static var tablelist:Array = [] /* of Table*/;
@@ -38,12 +38,12 @@ public class TableJsonStream extends JsonStream
 
     public static function setLobby(lobby:Lobby):void
     {
-        TableJsonStream.lobby = lobby;
+        JsonStreamProxy.lobby = lobby;
     }
     
     public static function setUser(user:User):void
     {
-        TableJsonStream.user = user ;
+        JsonStreamProxy.user = user ;
     }
 
     public static function register(table:Table):void
@@ -56,7 +56,7 @@ public class TableJsonStream extends JsonStream
         tablelist[table.gameId] = null;
     }
 
-    public function TableJsonStream()
+    public function JsonStreamProxy()
     {
         super();
     }

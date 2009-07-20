@@ -19,7 +19,7 @@
 
 package aspoker.com.bubsy.poker.client
 {
-import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
+import aspoker.com.bubsy.poker.client.communication.JsonStreamProxy;
 import aspoker.com.bubsy.poker.client.model.User;
 
 public class PokerClient
@@ -39,14 +39,14 @@ public class PokerClient
     public static const IMAGE_PATH:String = "http://"+ SERVER_HOST + CARDS_PATH 
         + CARDS_PREFIX;
 
-    private static var _actionJsonStream:TableJsonStream = new TableJsonStream();
+    private static var _actionJsonStream:JsonStreamProxy = new JsonStreamProxy();
 
     public function PokerClient()
     {
 
     }
 
-    static public function get stream():TableJsonStream
+    static public function get stream():JsonStreamProxy
     {
         return _actionJsonStream;
     }
