@@ -173,7 +173,7 @@
 		{
 			trace("new game");
 			setPlayersSeatState(table.playerSerialsInGame,"clear");
-            setPlayersCardsState(table.getInvolvedPlayers(),"inposition");
+      setPlayersCardsState(table.getInvolvedPlayers(),"inposition");
 			boardCards.initializeCards();
 		}
 
@@ -264,13 +264,14 @@
 				{
 					this.currentState = "InPostionCheckRaise";
 				} else if(player.bet < table.currentBlind) {
-					this.currentState = "InPostionCallRaise";
-				} else {
-					this.currentState = "InPostion";
+					    this.currentState = "InPostionCallRaise";
+				} else if(this.currentState != "sitOut") {
+					    this.currentState = "InPostion";
 				}
 			} else {
 				/* user wait to play, don't show action panel */
-				this.currentState = "sitIn"
+		    if (this.currentState != "sitOut")
+            this.currentState = "sitIn"
 			}
 		}
 
