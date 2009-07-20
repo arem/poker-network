@@ -24,7 +24,7 @@ import aspoker.com.bubsy.poker.client.event.TableEvent;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
 
 import aspoker.com.bubsy.poker.client.model.Table;
-import aspoker.com.bubsy.poker.client.model.TableList;
+import aspoker.com.bubsy.poker.client.model.Lobby;
 import aspoker.com.bubsy.poker.client.model.User;
 
 import com.adobe.serialization.json.JSON;
@@ -33,10 +33,10 @@ public class TableJsonStream extends JsonStream
 {
 
     public static var tablelist:Array = [] /* of Table*/;
-    public static var lobby:TableList;
+    public static var lobby:Lobby;
     public static var user:User;
 
-    public static function setLobby(lobby:TableList):void
+    public static function setLobby(lobby:Lobby):void
     {
         TableJsonStream.lobby = lobby;
     }

@@ -29,7 +29,7 @@ import com.bubzy.utils.Logger;
 import flash.events.TimerEvent;
 import mx.controls.DataGrid;
 
-public class TableList extends PollTimer
+public class Lobby extends PollTimer
 {
     private var _pokerConnection:TableJsonStream;
     private var _data:Array = [];
@@ -37,7 +37,7 @@ public class TableList extends PollTimer
     private var _playersCount:int=0;
     private var _tablesCount:int=0;
 
-    public function TableList(tableGrid:DataGrid)
+    public function Lobby(tableGrid:DataGrid)
     {
         _pokerConnection = PokerClient.stream;
         TableJsonStream.setLobby(this);

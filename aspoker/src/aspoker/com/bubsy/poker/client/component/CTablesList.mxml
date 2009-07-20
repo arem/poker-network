@@ -30,26 +30,26 @@
   		
 	<mx:Script>
 		<![CDATA[
-			import mx.core.Application;
-			import aspoker.com.bubsy.poker.client.PokerClient;
-		    import mx.events.DataGridEvent;
-		    import mx.events.ListEvent;
-		    import aspoker.com.bubsy.poker.client.model.TableList;
-		    import aspoker.com.bubsy.poker.client.model.User;
-  		   
-		    public var tableList:TableList ;
+        import mx.core.Application;
+        import aspoker.com.bubsy.poker.client.PokerClient;
+        import mx.events.DataGridEvent;
+        import mx.events.ListEvent;
+        import aspoker.com.bubsy.poker.client.model.Lobby;
+        import aspoker.com.bubsy.poker.client.model.User;
+
+		    public var tableList:Lobby ;
 		    private var _user:User = PokerClient.user;
-		    
+
 		    private function initTableGrid():void
 		    {
-    	        tableList = new TableList(tableinfo);	    
+            tableList = new Lobby(tableinfo);	    
 		    }
 		    
 		    private function selectTable(evt:MouseEvent):void
 		    {
-		    	dispatchEvent(new Event('tableSelected'))
+            dispatchEvent(new Event('tableSelected'))
 		    }
-		    
+
 		]]>
  	</mx:Script>
  	
