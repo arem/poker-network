@@ -28,7 +28,7 @@ public class PokerClient
     public static const VIEW_IS_TABLE:int=1;
     public static const VIEW_IS_CASHIER:int=1;
 
-    private static var _user:User = new User();
+    private static var _user:User = null ;;
     private static var _currentState:int = VIEW_IS_BOARD;
 
     public static const SERVER_HOST:String = "www.aspoker.info";
@@ -53,6 +53,10 @@ public class PokerClient
 
     public static function get user():User
     {
+       if (_user == null) {
+            _user = new User(); 
+        }
+         
         return _user;
     }
 }

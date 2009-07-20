@@ -97,7 +97,7 @@ public class JsonStream extends EventDispatcher
     {
         checkTimeOut();
 
-        if (queue.length<=maxPoolSize)
+        if (queue.length <= maxPoolSize)
         {
             queue.push(packet);
         } else {

@@ -20,7 +20,8 @@
 package aspoker.com.bubsy.poker.client.model
 {
 
-import aspoker.com.bubsy.poker.client.communication.UserJsonStream;
+import aspoker.com.bubsy.poker.client.PokerClient;
+import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 
 import flash.events.EventDispatcher;
@@ -30,52 +31,28 @@ public class User extends EventDispatcher
     private var _userPassword:String= "";
     private var _userName:String = "";
     private var _userSerial:int= -1;
-    private var _stream:UserJsonStream = new UserJsonStream();
+    private var _stream:TableJsonStream;
     private var _tablesList:Array/* of poker tables */=[];
 
     public function User()
     {
-        _stream.addEventListener(
-            LoginEvent.onPacketAuthOk,
-            _loginSuccessfull
-        );
-
-        _stream.addEventListener(
-            LoginEvent.onPacketAuthRefused,
-            _loginRefused
-        );
-
-        _stream.addEventListener(
-            LoginEvent.onPacketSerial,
-            onPacketSerial
-        );
+        _stream = PokerClient.stream;
+       TableJsonStream.setUser(this);
     }
 
-    private function onPacketSerial(evt:LoginEvent):void
+    public function onPacketSerial(evt:LoginEvent):void
     {
         _userSerial = evt.userSerial;
-        trace("new user: "+_userSerial);
     }
 
-    private function _loginSuccessfull(evt:LoginEvent):void
+    public function onPacketAuthOK(evt:LoginEvent):void
     {
-        dispatchEvent(
-            new LoginEvent(
-            LoginEvent.onPacketAuthOk,
-            _userSerial
-            )
-        );
+        dispatchEvent(evt);
     }
 
-    private function _loginRefused(evt:LoginEvent):void
+    public function onPacketAuthRefused(evt:LoginEvent):void
     {
-        dispatchEvent(
-            new LoginEvent(
-            LoginEvent.onPacketAuthRefused,
-            -1,
-            evt.message
-            )
-        );
+        dispatchEvent(evt);
     }
 
     public function tableJoin(gameId:int):void

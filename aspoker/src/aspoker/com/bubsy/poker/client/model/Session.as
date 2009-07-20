@@ -29,7 +29,7 @@ public class Session
     private static var _twistedSession:String="";
     private static var _cookie:Array/*of cookieItem*/=[];
 
-    private static var restUrl:String = "http://" + PokerClient.SERVER_HOST 
+    private static var restUrl:String = "http://127.0.0.1" 
         + ":" + PokerClient.SERVER_PORT 
         + "/REST";
     public static var UserSerial:int;

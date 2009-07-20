@@ -21,25 +21,41 @@ package aspoker.com.bubsy.poker.client.communication
 {
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
+import aspoker.com.bubsy.poker.client.event.TableListEvent;
+
 import aspoker.com.bubsy.poker.client.model.Table;
+import aspoker.com.bubsy.poker.client.model.TableList;
+import aspoker.com.bubsy.poker.client.model.User;
 
 import com.adobe.serialization.json.JSON;
 
 public class TableJsonStream extends JsonStream
 {
-    
+
     public static var tablelist:Array = [] /* of Table*/;
+    public static var lobby:TableList;
+    public static var user:User;
+
+    public static function setLobby(lobby:TableList):void
+    {
+        TableJsonStream.lobby = lobby;
+    }
     
+    public static function setUser(user:User):void
+    {
+        TableJsonStream.user = user ;
+    }
+
     public static function register(table:Table):void
     {
         tablelist[table.gameId] = table;
     }
-    
+
     public static function unregister(table:Table):void
     {
         tablelist[table.gameId] = null;
     }
-    
+
     public function TableJsonStream()
     {
         super();
@@ -48,11 +64,11 @@ public class TableJsonStream extends JsonStream
     override protected function _dispatchEvent(pokerPacket:Object):void
     {
         var gameid:int = pokerPacket.game_id;
-        
-        if (gameid == 0){ 
+
+        if (gameid == 0) { 
              gameid = pokerPacket.id;
         }
-        
+
         switch(pokerPacket.type)
         {
             case TableEvent.onPacketPokerSeat:
@@ -267,6 +283,57 @@ public class TableJsonStream extends JsonStream
                 break;
             }
 
+            case "PacketPokerTableList":
+            {
+                lobby.onPacketPokerTableList(pokerPacket);
+                break;
+            }
+            
+            case "PacketAuthRefused":
+            {
+                user.onPacketAuthRefused (
+                    new LoginEvent(
+                        LoginEvent.onPacketAuthRefused,
+                        -1,
+                        pokerPacket.message
+                        )
+                );
+                break;
+            }
+
+            case "PacketAuthOk":
+            {
+                user.onPacketAuthOK(
+                    new LoginEvent(
+                        LoginEvent.onPacketAuthOk,
+                        pokerPacket.serial
+                        )
+                );
+                break;
+            }
+
+            case "PacketSerial":
+            {
+                user.onPacketSerial(
+                    new LoginEvent(
+                        LoginEvent.onPacketSerial,
+                        pokerPacket.serial
+                    )
+                );
+                break;
+            }
+
+            case "PacketAuthRefused":
+            {
+               user.onPacketAuthRefused(
+                    new LoginEvent
+                    (
+                        LoginEvent.onPacketAuthRefused
+                    )
+                );
+                break;
+            }
+
             default:
             {
                // trace("unknown packet:" + pokerPacket.type);
@@ -384,7 +451,8 @@ public class TableJsonStream extends JsonStream
         packetPokerBuyIn.serial = userSerial;
         sendREST(packetPokerBuyIn);
     }
-        public function autoBuildAnt(gameid:int,userSerial:int):void
+    
+    public function autoBuildAnt(gameid:int,userSerial:int):void
     {
         var PacketPokerAutoBlindAnte:Object = {};
         PacketPokerAutoBlindAnte.type = "PacketPokerAutoBlindAnte";
@@ -392,5 +460,38 @@ public class TableJsonStream extends JsonStream
         PacketPokerAutoBlindAnte.game_id = gameid;
         sendREST(PacketPokerAutoBlindAnte);
     }
+
+    public function getTables():void
+    {
+        var packetPokerTableSelect:Object = {};
+        packetPokerTableSelect.type = "PacketPokerTableSelect";
+        packetPokerTableSelect.string = "";
+        sendREST(packetPokerTableSelect);
+    }
+
+    public function loggin(userName:String,userPassword:String):void
+    {
+        var packetLogin:Object = {};
+        packetLogin.password = userPassword;
+        packetLogin.name = userName;
+        packetLogin.type = "PacketLogin";
+        sendREST(packetLogin);
+    }
+
+    public function logout():void
+    {
+        var packetPokerGetPersonalInfo:Object = {};
+        packetPokerGetPersonalInfo.type = "PacketLogout";
+        sendREST(packetPokerGetPersonalInfo);
+    }
+
+    public function personalInfo(userSerial:int):void
+    {
+        var packetPokerGetPersonalInfo:Object = {};
+        packetPokerGetPersonalInfo.type = "PacketPokerGetPersonalInfo";
+        packetPokerGetPersonalInfo.serial = userSerial;
+        sendREST(packetPokerGetPersonalInfo);
+    }
+
 }
 }

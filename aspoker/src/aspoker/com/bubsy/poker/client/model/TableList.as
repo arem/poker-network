@@ -20,20 +20,18 @@
 package aspoker.com.bubsy.poker.client.model
 {
 
-import aspoker.com.bubsy.poker.client.communication.TableListJsonStream;
+import aspoker.com.bubsy.poker.client.communication.TableJsonStream;
 import aspoker.com.bubsy.poker.client.event.TableListEvent;
 import aspoker.com.bubsy.poker.client.util.PollTimer;
+import aspoker.com.bubsy.poker.client.PokerClient;
 
 import com.bubzy.utils.Logger;
-
 import flash.events.TimerEvent;
-
 import mx.controls.DataGrid;
 
 public class TableList extends PollTimer
 {
-    private var _pokerConnection:TableListJsonStream
-                = new TableListJsonStream();
+    private var _pokerConnection:TableJsonStream;
     private var _data:Array = [];
     private var _tableGrid:DataGrid;
     private var _playersCount:int=0;
@@ -41,11 +39,10 @@ public class TableList extends PollTimer
 
     public function TableList(tableGrid:DataGrid)
     {
+        _pokerConnection = PokerClient.stream;
+        TableJsonStream.setLobby(this);
         _tableGrid = tableGrid ;
-        _pokerConnection.addEventListener(
-            TableListEvent.onPacketPokerTableList,
-            _onPacketTableList);
-
+        
          refreshTablelist();
     }
 
@@ -69,12 +66,12 @@ public class TableList extends PollTimer
         refreshTablelist();
     }
 
-    private function _onPacketTableList(evt:TableListEvent):void
+    public function onPacketPokerTableList(packet:Object):void
     {
-        _data = evt.packet.packets;
-           _playersCount = evt.packet.players;
-         _tablesCount = evt.packet.tables;
-         Logger.log("playersCount:" + _playersCount
+        _data = packet.packets;
+        _playersCount = packet.players;
+        _tablesCount = packet.tables;
+        Logger.log("playersCount:" + _playersCount
                      + " tablesCount:" + _tablesCount);
         _tableGrid.dataProvider = _data;
     }

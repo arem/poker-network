@@ -532,8 +532,9 @@ public class Table extends PollTimer
 
     public function _onPacketPokerPlayerLeave(packet:Object):void
     {
-      _players[packet.seat] = null;
-       dispatchEvent(
+        _players[packet.seat] = null;
+       
+        dispatchEvent(
             new TableEvent(
             TableEvent.onPacketPokerPlayerLeave,
             packet
