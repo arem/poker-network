@@ -111,7 +111,6 @@ public class HTTPClient extends EventDispatcher
         Security.allowDomain("*");
         Security.loadPolicyFile("xmlsocket://"
             + _httpRequestServer + ":843");
-
         _httpSocket.connect(_httpRequestServer, _httpPort);
         return true;
     }
@@ -155,7 +154,9 @@ public class HTTPClient extends EventDispatcher
 
     private function _onSecurityErrorEvent(event:SecurityErrorEvent):void
     {
-        trace("SecurityErrorEvent");
+        trace("SecurityErrorEvent:" + event.text + " : " + event);
+        trace(_httpResponseContent);
+
         dispatchEvent(event.clone());
     }
 

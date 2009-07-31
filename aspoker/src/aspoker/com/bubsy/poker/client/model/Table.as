@@ -611,18 +611,21 @@ public class Table extends PollTimer
 
     public function quit():void
     {
-        if (_user.userSerial==-1 || !_players[_user.userSerial] )
+
+      if (_user.userSerial == -1 || !_players[_user.userSerial] )
         {/* user not logged or without seat */
-            dispatchEvent(
+       } else {
+        /* user logged */
+             JsonStreamProxy.unregister(this);
+             _actionJsonStream.quit(_gameID);
+        }
+
+        dispatchEvent(
                 new TableEvent(
                     TableEvent.onPacketPokerPlayerLeave,
                     null
                 )
             );
-        } else {
-        /* user logged */
-            _actionJsonStream.quit(_gameID);
-        }
     }
 
     public function join(gameId:int):void

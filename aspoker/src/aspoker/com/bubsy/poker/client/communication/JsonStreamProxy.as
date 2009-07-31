@@ -68,6 +68,12 @@ public class JsonStreamProxy extends JsonStream
         if (gameid == 0) { 
              gameid = pokerPacket.id;
         }
+        
+        if (gameid !=0 && tablelist[gameid] == null)
+        {
+             trace("Table unregistered for:" + pokerPacket.type);
+             return;
+        }
 
         switch(pokerPacket.type)
         {
@@ -336,7 +342,7 @@ public class JsonStreamProxy extends JsonStream
 
             default:
             {
-               // trace("unknown packet:" + pokerPacket.type);
+                trace("unknown packet:" + pokerPacket.type);
                 trace(JSON.encode(pokerPacket));
             }
         }
@@ -419,7 +425,7 @@ public class JsonStreamProxy extends JsonStream
     {
         var packetPokerSeat:Object = {};
         packetPokerSeat.type = "PacketPokerPoll",
-        packetPokerSeat.game_id =gameid;
+        packetPokerSeat.game_id = gameid;
         sendREST(packetPokerSeat);
     }
 

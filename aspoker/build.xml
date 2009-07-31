@@ -2,32 +2,61 @@
 <project name="aspoker" default="test" >
     <property name="FLEX_HOME" value="/root/Adobe_Flex_Builder_Linux/sdks/3.0.0" />
     <property name="APP_ROOT" value="." />
+    <property name="DEPLOY_DIR" value="./build/"/>
 
     <taskdef
         resource="flexTasks.tasks"
         classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 
     <target name="build">
-        <mxmlc file="${APP_ROOT}/src/aspoker.mxml">
+        <mxmlc 
+            file="${APP_ROOT}/src/aspoker.mxml"
+            output="${DEPLOY_DIR}/aspoker.swf"
+            actionscript-file-encoding="UTF-8"
+            incremental="true"
+        >
             <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
             <source-path path-element="${FLEX_HOME}/frameworks"/>
 
-     <library-path dir="${APP_ROOT}/libs" append="true">
-        <include name="as3corelib.swc"/>
-     </library-path>
+            <library-path dir="${APP_ROOT}/libs" append="true">
+                <include name="as3corelib.swc"/>
+            </library-path>
+        </mxmlc>
+    </target>
+
+    <target name="debug">
+        <mxmlc 
+            file="${APP_ROOT}/src/aspoker.mxml"
+            output="${DEPLOY_DIR}/aspoker.swf"
+            actionscript-file-encoding="UTF-8"
+            keep-generated-actionscript="true"
+            debug="true"
+            optimize="true"
+        >
+            <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
+            <source-path path-element="${FLEX_HOME}/frameworks"/>
+
+            <library-path dir="${APP_ROOT}/libs" append="true">
+                <include name="as3corelib.swc"/>
+            </library-path>
         </mxmlc>
     </target>
 
     <target name="test">
         <mxmlc file="${APP_ROOT}/src/aspokerTestRunner.mxml">
-            <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
-            <source-path path-element="${FLEX_HOME}/frameworks"/>
-
-     <library-path dir="${APP_ROOT}/libs" append="true">
-        <include name="as3corelib.swc"/>
-        <include name="FlexUnit.swc"/>
-     </library-path>
+                <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
+                <source-path path-element="${FLEX_HOME}/frameworks"/>
+            <library-path dir="${APP_ROOT}/libs" append="true">
+                <include name="as3corelib.swc"/>
+                <include name="FlexUnit.swc"/>
+            </library-path>
         </mxmlc>
+    </target>
+    
+     <target name="clean">
+        <delete>
+            <fileset dir="${DEPLOY_DIR}" includes="*"/>
+        </delete>
     </target>
 
 </project>

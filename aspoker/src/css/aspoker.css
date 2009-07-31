@@ -19,7 +19,7 @@ DataGrid
 
 Ctable
 {
-    backgroundImage: "http://www.aspoker.info/beta/assets/table.png";
+    backgroundImage: "assets/table.png";
 }
 
 CBoardCards
@@ -191,7 +191,7 @@ CBoardCards
 {
     left:5;
     top:5;
-    noavatar:"http://www.ludus-lan.com/images/avatar/no_avatar.jpg"
+    noavatar:"assets/no_avatar.jpg"
 }
 
 .playerName
@@ -227,7 +227,7 @@ CBoardCards
 
 .card
 {
-    backCard:"http://www.aspoker.info/beta/assets/cards/small-back.png";
+    backCard:"assets/cards/small-back.png";
 }
 
 .playerState

@@ -141,7 +141,6 @@
 
 		private function _onPacketPokerBoardCards(evt:TableEvent):void
 		{
-        setPlayersSeatState(table.playerSerialsInGame,"clear");
         boardCards.setCards(table.boardCards);
 		}
 		
@@ -201,84 +200,89 @@
             }
         }
 
-		private function _onPacketPokerAction(evt:TableEvent):void
-		{
-			var player:Player = table.getPlayer(evt.packet.serial);
-			
-			var seat:CSeat = seats.getChildByName(
-					"seat"+ player.seat
-					) as CSeat ;
+    private function _onPacketPokerAction(evt:TableEvent):void
+    {
+        var player:Player = table.getPlayer(evt.packet.serial);
+        var seat:CSeat = seats.getChildByName(
+            "seat"+ player.seat
+            ) as CSeat ;
+        var cards:CCards = seats.getChildByName(
+            "cards"+ player.seat
+            ) as CCards ;
 
-            var cards:CCards = seats.getChildByName(
-                    "cards"+ player.seat
-                    ) as CCards ;
-            
-            if (player.action.name == "Fold")
+        if (player.action.name == "Fold")
+        {
+            cards.currentState = "fold";
+        }
+
+        trace(
+            player.seat
+            + " : "
+            + player.name 
+            + " " 
+            + player.action.name 
+            + player.action.amount
+        );
+
+        pot.text = "" + table.currentPot;
+        
+        /* unselect the previous player seat*/
+        var previousSeat:CSeat = seats.getChildByName(
+            "seat"+ table.getPlayer(evt.packet.serial).seat
+            ) as CSeat ;
+
+        previousSeat.currentState = "wait";
+
+        seat.playerState.text = player.action.name + player.action.amount;
+        seat.amount.text = "amount:" + player.bet;
+    }
+
+    private function _onPacketPokerPosition(evt:TableEvent):void
+    {
+        /*If not player in position */
+        if (table.currentPosition == -1)
+        {
+            setPlayersSeatState(table.getInvolvedPlayers(),"clear");
+            return;
+        }
+
+        var currentSerial:int = table.getSerialFromPosition(
+                                table.currentPosition);
+        var player:Player = table.getPlayer(currentSerial);
+
+        /* select the current player seat*/
+        if (table.currentPosition >= 0)
+        {
+            var currentSeat:CSeat = seats.getChildByName(
+                                    "seat"+ player.seat
+                                    ) as CSeat ;
+
+        currentSeat.currentState = "inposition";
+        currentSeat.amount.text = "";
+        }
+
+        /* the user to play ?*/
+        if (PokerClient.user.userSerial == currentSerial) 
+        {	/* user play : show action panel */
+            if (player.bet == table.currentBlind)
             {
-                trace("cache cards");
-                cards.currentState = "fold";
+                this.currentState = "InPositionCheckRaise";
+            } else if(player.bet < table.currentBlind) {
+                this.currentState = "InPositionCallRaise";
+            } else if(this.currentState != "sitOut") {
+                this.currentState = "InPosition";
             }
-
-            trace(
-                 player.seat
-                + " : "
-                + player.name 
-                + " " 
-                + player.action.name 
-                + player.action.amount
-            );
-
-            pot.text = ""+table.currentPot;
-
-			/* unselect the previous player seat*/
-			var previousSeat:CSeat = seats.getChildByName(
-					"seat"+ table.getPlayer(evt.packet.serial).seat
-				) as CSeat ;
-
-			previousSeat.currentState = "wait";
-			
-			seat.playerState.text = player.action.name + player.action.amount;
-			seat.amount.text = "amount:" + player.bet;
-		}
-
-		private function _onPacketPokerPosition(evt:TableEvent):void
-		{
-			var currentSerial:int = table.getSerialFromPosition(table.currentPosition);
-			var player:Player = table.getPlayer(currentSerial);
-
-			/* select the current player seat*/
-			if (table.currentPosition >= 0)
-			{
-				var currentSeat:CSeat = seats.getChildByName(
-				"seat"+ player.seat
-				) as CSeat ;
-
-				currentSeat.currentState = "inposition";
-				currentSeat.amount.text = "";
-			}
-
-			/* the user to play ?*/
-			if (PokerClient.user.userSerial == currentSerial) 
-			{	/* user play : show action panel */
-				if (player.bet == table.currentBlind)
-				{
-					this.currentState = "InPostionCheckRaise";
-				} else if(player.bet < table.currentBlind) {
-					    this.currentState = "InPostionCallRaise";
-				} else if(this.currentState != "sitOut") {
-					    this.currentState = "InPostion";
-				}
-			} else {
-				/* user wait to play, don't show action panel */
-		    if (this.currentState != "sitOut")
+        } else {
+        /* user wait to play, don't show action panel */
+        if (this.currentState != "sitOut")
             this.currentState = "sitIn"
-			}
-		}
+        }
+    }
 
 		private function _onPacketPokerBlindRequest(evt:TableEvent):void
 		{
 			//trace("i try to change current state");
-			//this.currentState = "InPostion";
+			//this.currentState = "InPosition";
 		}
 
 		private function _init():void
@@ -590,142 +594,152 @@
 				<mx:Text id="pot" name="pot"
 					styleName="pot" />
 
-                <component:CCards 
-                    id="cards0" 
-                    name="cards0"
-                    styleName="cards0"
-                />
+        <component:CCards 
+            id="cards0" 
+            name="cards0"
+            styleName="cards0"
+        />
 
-				<component:CSeat
-					id="seat0"
-					name="seat0"
-                    styleName="seat0"
-					seatId="0"
-					visible="false"/>
+        <component:CSeat
+            id="seat0"
+            name="seat0"
+            styleName="seat0"
+            seatId="0"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards1"
-                    name="cards1"
-                    styleName="cards1"
-                />
+        <component:CCards
+            id="cards1"
+            name="cards1"
+            styleName="cards1"
+        />
 
-                <component:CSeat 
-                    id="seat1"
-                    seatId="1"
-                    name="seat1"
-                    styleName="seat1"
-                    visible="false"/>
+        <component:CSeat 
+            id="seat1"
+            seatId="1"
+            name="seat1"
+            styleName="seat1"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards2"
-                    name="cards2"
-                    styleName="cards2"
-                />
+        <component:CCards
+            id="cards2"
+            name="cards2"
+            styleName="cards2"
+        />
 
-				<component:CSeat
-					id="seat2"
-					name="seat2"
-					seatId="2"
-                    styleName="seat2"
-					visible="false"/>
+        <component:CSeat
+            id="seat2"
+            name="seat2"
+            seatId="2"
+            styleName="seat2"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards3"
-                    name="cards3"
-                    styleName="cards3"
-                />
+        <component:CCards
+            id="cards3"
+            name="cards3"
+            styleName="cards3"
+        />
 
-				<component:CSeat
-					id="seat3"
-					seatId="3"
-					name="seat3"
-                    styleName="seat3"
-					visible="false"/>
+        <component:CSeat
+            id="seat3"
+            seatId="3"
+            name="seat3"
+            styleName="seat3"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards4"
-                    name="cards4"
-                    styleName="cards4"
-                />
+        <component:CCards
+            id="cards4"
+            name="cards4"
+            styleName="cards4"
+        />
 
-				<component:CSeat
-					id="seat4"
-					seatId="4"
-					name="seat4"
-                    styleName="seat4"
-					visible="false"/>
+        <component:CSeat
+            id="seat4"
+            seatId="4"
+            name="seat4"
+            styleName="seat4"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards5"
-                    name="cards5"
-                    styleName="cards5"
-                />
+        <component:CCards
+            id="cards5"
+            name="cards5"
+            styleName="cards5"
+        />
 
-				<component:CSeat
-					id="seat5"
-					seatId="5"
-					name="seat5"
-                    styleName="seat5"
-					visible="false"/>
+        <component:CSeat
+            id="seat5"
+            seatId="5"
+            name="seat5"
+            styleName="seat5"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards6"
-                    name="cards6"
-                    styleName="cards6"
-                />
+        <component:CCards
+            id="cards6"
+            name="cards6"
+            styleName="cards6"
+        />
 
-				<component:CSeat
-					id="seat6"
-					seatId="6"
-					name="seat6"
-                     styleName="seat6"
-					visible="false"/>
+        <component:CSeat
+            id="seat6"
+            seatId="6"
+            name="seat6"
+            styleName="seat6"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards7"
-                    name="cards7"
-                    styleName="cards7"
-                />
+        <component:CCards
+            id="cards7"
+            name="cards7"
+            styleName="cards7"
+        />
 
-				<component:CSeat
-					id="seat7"
-					seatId="7"
-					name="seat7"
-                     styleName="seat7"
-					visible="false"/>
+        <component:CSeat
+            id="seat7"
+            seatId="7"
+            name="seat7"
+            styleName="seat7"
+            visible="false"
+        />
 
-                <component:CCards
-                    id="cards8"
-                    name="cards8"
-                    styleName="cards8"
-                />
+        <component:CCards
+            id="cards8"
+            name="cards8"
+            styleName="cards8"
+        />
 
-				<component:CSeat
-					id="seat8"
-					seatId="8"
-					name="seat8"
-                    styleName="seat8"
-					visible="false"/>
+        <component:CSeat
+            id="seat8"
+            seatId="8"
+            name="seat8"
+            styleName="seat8"
+            visible="false"
+        />
 
-                <component:CCards 
-                    id="cards9" 
-                    name="cards9"
-                    styleName="cards9"
-                />
+        <component:CCards 
+            id="cards9" 
+            name="cards9"
+            styleName="cards9"
+        />
 
-				<component:CSeat 
-					id="seat9" 
-					seatId="9" 
-					name="seat9"
-                    styleName="seat9"
-					visible="false"/>
+        <component:CSeat 
+            id="seat9" 
+            seatId="9" 
+            name="seat9"
+            styleName="seat9"
+            visible="false"
+        />
 
 			</mx:Canvas>
 
 			<mx:Canvas width="100%">
 				<mx:HBox id="tableOptions" left="5">
-                    <mx:Button label="Quitter la table" click="table.quit()"/>
-                </mx:HBox>
+            <mx:Button label="Quitter la table" click="table.quit()"/>
+        </mx:HBox>
 				<mx:HBox id="tableActions" right="5"/>
 			</mx:Canvas>
 
@@ -772,7 +786,7 @@
 					</mx:AddChild>
 				</mx:State>
 
-				<mx:State name="InPostion" basedOn="sitIn">
+				<mx:State name="InPosition" basedOn="sitIn">
 					<mx:AddChild relativeTo="{tableActions}" >
 						<mx:Button label="fold" click="table.fold()"/>
 					</mx:AddChild>
@@ -787,7 +801,7 @@
 					</mx:AddChild>
 				</mx:State>
 
-				<mx:State name="InPostionCheckRaise" basedOn="sitIn">
+				<mx:State name="InPositionCheckRaise" basedOn="sitIn">
 					<mx:AddChild relativeTo="{tableActions}" >
 						<mx:Button label="fold" click="table.fold()"/>
 					</mx:AddChild>
@@ -799,7 +813,7 @@
 					</mx:AddChild>
 				</mx:State>
 
-				<mx:State name="InPostionCallRaise" basedOn="sitIn">
+				<mx:State name="InPositionCallRaise" basedOn="sitIn">
 					<mx:AddChild relativeTo="{tableActions}" >
 						<mx:Button label="fold" click="table.fold()"/>
 					</mx:AddChild>

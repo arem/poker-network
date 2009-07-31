@@ -31,13 +31,11 @@ public class PokerClient
     private static var _user:User = null ;;
     private static var _currentState:int = VIEW_IS_BOARD;
 
-    public static const SERVER_HOST:String = "www.aspoker.info";
+    public static const SERVER_HOST:String = "127.0.0.1";
     public static const SERVER_PORT:int = 19382;
-    public static const ASPOKER_PATH:String = "/beta/";
-    public static const CARDS_PATH:String = ASPOKER_PATH + "assets/cards/";
+    public static const CARDS_PATH:String = "assets/cards/";
     public static const CARDS_PREFIX:String = "small-";
-    public static const IMAGE_PATH:String = "http://"+ SERVER_HOST + CARDS_PATH 
-        + CARDS_PREFIX;
+    public static const IMAGE_PATH:String = CARDS_PATH + CARDS_PREFIX;
 
     private static var _actionJsonStream:JsonStreamProxy = new JsonStreamProxy();
 

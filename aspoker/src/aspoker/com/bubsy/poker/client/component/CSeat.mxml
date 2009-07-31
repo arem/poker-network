@@ -44,8 +44,6 @@
  		import aspoker.com.bubsy.poker.client.event.TableEvent;
  		import mx.core.Application;
 
- 		public static const IMAGE_PATH:String = "http://www.aspoker.info/beta/assets/cards/small-";
-
  		private var _gameId:int=0;
  		private var _seatId:int=0;
 		private var _table:Table;
@@ -84,14 +82,6 @@
             playerName.text = _table.getPlayerFromSeat(_seatId).name;
  			return _table.getPlayerFromSeat(_seatId).name;
  		}
-
- 	    public function setCards(boardCards:Array/*of cards*/):void
-		{
-			card0.source = PokerClient.IMAGE_PATH + boardCards[0].name + ".png";
-			card0.visible = true;
-			card1.source = PokerClient.IMAGE_PATH + boardCards[1].name + ".png";
-			card1.visible = true;
-		}
 
  		public function setPlayerChips():void
  		{
@@ -154,6 +144,7 @@
 
          <mx:State name="wait" basedOn="arrive" >
             <mx:SetProperty target="{seats}" name="styleName" value="ingame"/>
+            <mx:SetProperty target="{playerState}" name="text" value="WAITTT"/>
             <mx:SetProperty target="{seats}" name="enabled" value="false"/>
          </mx:State>
 
