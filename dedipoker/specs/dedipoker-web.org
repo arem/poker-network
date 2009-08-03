@@ -1,0 +1,144 @@
+* DONE Abstract
+   The main goal of Dedipoker is to build a website that will allow
+   users to run their own poker networks.
+
+   Poker networks will be hosted on [[http://code.google.com/p/ganeti/][Ganeti]] virtual machines and
+   managed by [[http://www.pokersource.info/][PokerSource]].
+
+   The website will use the Ganeti [[http://ganeti-doc.googlecode.com/svn/ganeti-2.0/rapi.html][REST API]] to manage the VMs.
+
+* DONE Technical choices
+   Coding language: PHP 5.2 or higher
+
+   Database: MySQL 5.1 or higher with MyISAM engine (TODO InnoDB ?)
+
+   Target server: 64 bits machine running Debian/lenny
+
+   Unit tests will have to be written in order to cover 100% of the
+   code using [[http://www.phpunit.de/][PHPUnit]]. No exception will be made about that
+   percentage.
+
+   The [[http://framework.zend.com/][Zend Framework]] must be used as much as possible.
+
+   Particular efforts must be made to render the web site scalable on
+   multiple concurrent web servers: no temporary local files must be
+   used, sessions must be in the database, etc.
+
+   The primary language will be English but the web site and emails
+   must be translatable into several languages using [[http://php.net/gettext][Gettext]].
+
+   The [[http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller][Model View Controller architecture]] must be used.
+
+* DONE Prerequisites
+   A working Ganeti setup will be available for development purposes,
+   including:
+   - a cluster of two physical fail-over nodes configured with [[http://www.linux-kvm.org/][KVM]] and
+     LVM
+   - access to the REST API
+   - a collection of scripts needed to build a Ganeti instance with
+     Pokersource embedded (man ganeti-os-interface)
+
+   8 public IP addresses to allocate for VMs.
+
+   A Debian/lenny machine with full SSH access for installation and
+   package testing.
+
+* DONE Deliverable
+   The following items must be delivered:
+
+    - the source code, SQL dump, unit tests and gettext dictionaries,
+      published into the [[http://pokersource.info/developers/][PokerSource SVN repository]] and released under
+      the [[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]]
+
+    - a Debian package installable with APT on a Debian/lenny 64 bits
+      machine. The package must not contain any [[http://lintian.debian.org/][Lintian]] error, must
+      depend on every needed packages in order to be installable on a
+      vanilla system, must run out of the box after installation
+      through APT if the SQL database and Ganeti are running locally
+      and are correctly configured
+
+* STARTED Basket
+   User are able to add things into their basket before creating an
+   account. Account creation will be forced when ordering and before
+   payment.
+
+   Items available : poker network
+
+   Parameters:
+   - fqdn
+   - duration
+
+* DONE Sign up
+   Users will be able to register, log in and log out from the site.
+
+   Here's the list of information we need to store about users in the
+   database:
+   - email address
+   - encrypted password
+   - first name
+   - last name
+   - company (optional)
+   - phone number with international prefix (optional)
+   - street
+   - city
+   - country
+   - state (optional if outside the US)
+   - zip code
+   - language
+
+   The email address will be used to log into the site, no login nor
+   username are needed.
+
+   Passwords will be encrypted in the database using the MySQL
+   function MD5().
+
+   Only one account is allowed per email address, this must be
+   enforced by a SQL primary key.
+
+   Each user will be able to have several VMs with the same account.
+
+   [[http://framework.zend.com/manual/en/zend.auth.html][Zend Auth]] must be used.
+
+   TODO: OpenID? Zend_OpenId?
+
+   TODO: Zend_Sessions
+
+* TODO Email validation
+   All new email addresses must be validated. When the user
+* TODO Paypal
+* TODO Panel
+* TODO Info change
+   email, etc.
+
+* TODO VM change
+   fqdn
+
+* TODO Billing
+   Zend_PDF
+
+* TODO Renew
+
+* TODO Email reminder (cron)
+* TODO newsletter
+  subscribe, unsubscribe, browse
+
+* DONE User history
+   Any action related to the user must be logged into a dedicated SQL
+   table.
+
+   Information logged :
+   - IP address (if available)
+   - timestamp
+   - user ID
+   - action
+
+   Actions logged:
+   - sign up
+   - log in
+   - log out
+   - info change     
+   - order
+   - automatic email reminder
+   - automatic expiration
+   - action on the VMs: start, stop, reboot
+
