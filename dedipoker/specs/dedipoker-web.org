@@ -1,4 +1,4 @@
-* DONE Abstract
+* Abstract
    The main goal of Dedipoker is to build a website that will allow
    users to run their own poker networks.
 
@@ -7,7 +7,7 @@
 
    The website will use the Ganeti [[http://ganeti-doc.googlecode.com/svn/ganeti-2.0/rapi.html][REST API]] to manage the VMs.
 
-* DONE Technical choices
+* Technical choices
    Coding language: PHP 5.2 or higher
 
    Database: MySQL 5.1 or higher with MyISAM engine (TODO InnoDB ?)
@@ -29,7 +29,7 @@
 
    The [[http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller][Model View Controller architecture]] must be used.
 
-* DONE Prerequisites
+* Prerequisites
    A working Ganeti setup will be available for development purposes,
    including:
    - a cluster of two physical fail-over nodes configured with [[http://www.linux-kvm.org/][KVM]] and
@@ -43,7 +43,7 @@
    A Debian/lenny machine with full SSH access for installation and
    package testing.
 
-* DONE Deliverable
+* Deliverable
    The following items must be delivered:
 
     - the source code, SQL dump, unit tests and gettext dictionaries,
@@ -57,7 +57,7 @@
       through APT if the SQL database and Ganeti are running locally
       and are correctly configured
 
-* DONE Basket
+* Basket
   Users can add items into their basket in order for later ordering.
 
   Item available :
@@ -78,7 +78,7 @@
   The basket allows to proceed directly through payment if the user is
   already logged in, otherwise the user is asked to log in or sign up.
 
-* DONE Sign up
+* Sign up
    Users will be able to register, log in and log out from the site.
 
    Here's the list of information we need to store about users in the
@@ -120,7 +120,7 @@
 
    TODO: [[http://framework.zend.com/manual/en/zend.session.html][Zend_Session]]
 
-* DONE Payment
+* Payment
   Once the user is logged in and has added one or more item to his/her
   basket, he/she can proceed through payment.
 
@@ -130,7 +130,7 @@
   corresponding services are created, VMs are created through Ganeti
   API.
 
-* DONE Panel
+* Panel
   Once the user is logged in, he/she is redirected to a page with
   links and information:
 
@@ -141,12 +141,12 @@
    - renew VM
    - reboot VM
 
-* DONE Update user information
+* Update user information
   Logged users are allowed to update all their user information.
   Please read the 'Sign up' chapter for a list of items they can
   change.
 
-* DONE Email validation
+* Email validation
   Each time a new email address is known to the system, it has to be
   validated with a hyperlink sent by email.
 
@@ -154,7 +154,7 @@
    - sign up
    - update user information
 
-* DONE Actions on VMs
+* Actions on VMs
   Users are allowed to make actions on their own VMs (if any):
   - change the FQDN
   - stop the VM
@@ -163,7 +163,7 @@
 
   Each action will send the corresponding command through Ganeti API.
 
-* DONE Invoices
+* Invoices
   Each time a basket is paid, the corresponding invoice has to be
   available to users.
 
@@ -175,7 +175,7 @@
 
   [[http://framework.zend.com/manual/en/zend.pdf.html][Zend_PDF]] must be used.
 
-* DONE Renew
+* Renew
   Users are able to renew their services before the expiration date.
 
   Items are sent to the basket, payment is required and expiration
@@ -183,7 +183,7 @@
 
   After expiration date, users have to contact the support to renew
   their VMs.
-* DONE Email reminder (cron)
+* Email reminder (cron)
   Users are reminded by email about their service expiration 1 day, 2
   days, 1 week, 2 weeks and 1 month before the expiration date.
 
@@ -192,7 +192,7 @@
 
   The email reminder script will be automatically added into
   /etc/cron.daily/ by the Debian package.
-* DONE Newsletter
+* Newsletter
   A newsletter is available to any users, logged in or not.
 
   Actions are:
@@ -200,7 +200,7 @@
    - unsubscription
    - browse previous newsletter
 
-* DONE User history
+* User history
   Any action related to the user must be logged into a dedicated SQL
   table.
 
