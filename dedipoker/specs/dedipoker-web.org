@@ -57,16 +57,26 @@
       through APT if the SQL database and Ganeti are running locally
       and are correctly configured
 
-* STARTED Basket
-   User are able to add things into their basket before creating an
-   account. Account creation will be forced when ordering and before
-   payment.
+* DONE Basket
+  Users can add items into their basket in order for later ordering.
 
-   Items available : poker network
+  Item available :
+   - "poker network" creation
+   - "poker network" renewal
 
-   Parameters:
-   - fqdn
-   - duration
+  Parameters:
+  - [[http://en.wikipedia.org/wiki/Fqdn][Fully qualified domain name]] (FQDN)
+  - duration, integer in months
+
+  Others items and options might be added in the future.
+
+  Users can remove items from their basket and change options.
+
+  Users are able to add items into their basket before creating an
+  account. Logged users can use basket too.
+
+  The basket allows to proceed directly through payment if the user is
+  already logged in, otherwise the user is asked to log in or sign up.
 
 * DONE Sign up
    Users will be able to register, log in and log out from the site.
@@ -97,48 +107,120 @@
 
    Each user will be able to have several VMs with the same account.
 
+   If the user has one or more items in his/her bask when logging in,
+   he/she is redirected to the payment page.
+
+   Otherwise, he/she is redirected to his/her panel.
+
    [[http://framework.zend.com/manual/en/zend.auth.html][Zend Auth]] must be used.
 
-   TODO: OpenID? Zend_OpenId?
+   TODO: OpenID? [[http://framework.zend.com/manual/en/zend.openid.html][Zend_OpenId]]?
 
-   TODO: Zend_Sessions
+   TODO: opensocial / elgg.org / drupal?
 
-* TODO Email validation
-   All new email addresses must be validated. When the user
-* TODO Paypal
-* TODO Panel
-* TODO Info change
-   email, etc.
+   TODO: [[http://framework.zend.com/manual/en/zend.session.html][Zend_Session]]
 
-* TODO VM change
-   fqdn
+* DONE Payment
+  Once the user is logged in and has added one or more item to his/her
+  basket, he/she can proceed through payment.
 
-* TODO Billing
-   Zend_PDF
+  Interface with Paypal is required.
 
-* TODO Renew
+  When payment is successfully acknowledged from Paypal, the
+  corresponding services are created, VMs are created through Ganeti
+  API.
 
-* TODO Email reminder (cron)
-* TODO newsletter
-  subscribe, unsubscribe, browse
+* DONE Panel
+  Once the user is logged in, he/she is redirected to a page with
+  links and information:
+
+  Links to:
+   - invoices
+   - update user information
+   - change VM name
+   - renew VM
+   - reboot VM
+
+* DONE Update user information
+  Logged users are allowed to update all their user information.
+  Please read the 'Sign up' chapter for a list of items they can
+  change.
+
+* DONE Email validation
+  Each time a new email address is known to the system, it has to be
+  validated with a hyperlink sent by email.
+
+  Cases:
+   - sign up
+   - update user information
+
+* DONE Actions on VMs
+  Users are allowed to make actions on their own VMs (if any):
+  - change the FQDN
+  - stop the VM
+  - start the VM
+  - reboot the VM
+
+  Each action will send the corresponding command through Ganeti API.
+
+* DONE Invoices
+  Each time a basket is paid, the corresponding invoice has to be
+  available to users.
+
+  Users have to receive and email, in their own language, about the
+  fact the invoice is ready, with a link to the invoice on the web
+  site.
+
+  Every invoiced is available to user from the beginning.
+
+  [[http://framework.zend.com/manual/en/zend.pdf.html][Zend_PDF]] must be used.
+
+* DONE Renew
+  Users are able to renew their services before the expiration date.
+
+  Items are sent to the basket, payment is required and expiration
+  date is updated.
+
+  After expiration date, users have to contact the support to renew
+  their VMs.
+* DONE Email reminder (cron)
+  Users are reminded by email about their service expiration 1 day, 2
+  days, 1 week, 2 weeks and 1 month before the expiration date.
+
+  A link in the email allows them to create a basket with the service
+  renewal in it in order to ease the procedure.
+
+  The email reminder script will be automatically added into
+  /etc/cron.daily/ by the Debian package.
+* DONE Newsletter
+  A newsletter is available to any users, logged in or not.
+
+  Actions are:
+   - subscription
+   - unsubscription
+   - browse previous newsletter
 
 * DONE User history
-   Any action related to the user must be logged into a dedicated SQL
-   table.
+  Any action related to the user must be logged into a dedicated SQL
+  table.
 
-   Information logged :
-   - IP address (if available)
-   - timestamp
-   - user ID
-   - action
+  Information logged :
+  - IP address (if available)
+  - timestamp
+  - user ID
+  - action
 
-   Actions logged:
-   - sign up
-   - log in
-   - log out
-   - info change     
-   - order
-   - automatic email reminder
-   - automatic expiration
-   - action on the VMs: start, stop, reboot
+  Actions logged:
+  - sign up
+  - log in
+  - log out
+  - info change     
+  - order
+  - automatic email reminder
+  - automatic expiration
+  - action on the VMs: start, stop, reboot
+* TODO Configuration
+  Where to store the configuration (Paypal account, ganeti api url,
+  SQL server)?
 
+  DB? Conffile?

@@ -15,7 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-ALL=dedipoker-web.html
+EMACS=emacs
+
+ALL = \
+	dedipoker-web.html \
+	dedipoker-backoffice.html
 
 all: $(ALL);
 
@@ -23,4 +27,4 @@ clean:
 	$(RM) $(ALL)
 
 %.html: %.org
-	emacs --batch $< -f org-export-as-html
+	$(EMACS) -Q --batch $< -f org-export-as-html
