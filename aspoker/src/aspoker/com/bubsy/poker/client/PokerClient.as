@@ -32,7 +32,7 @@ public class PokerClient
     private static var _currentState:int = VIEW_IS_BOARD;
 
     public static const SERVER_HOST:String = "127.0.0.1";
-    public static const SERVER_PORT:int = 19382;
+    public static const SERVER_PORT:int = 19384;
     public static const CARDS_PATH:String = "assets/cards/";
     public static const CARDS_PREFIX:String = "small-";
     public static const IMAGE_PATH:String = CARDS_PATH + CARDS_PREFIX;

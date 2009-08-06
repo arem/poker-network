@@ -32,7 +32,7 @@ public class Session
     private static var restUrl:String = "http://"
         + PokerClient.SERVER_HOST 
         + ":" + PokerClient.SERVER_PORT 
-        + "/REST";
+        + "/POKER_REST";
     public static var UserSerial:int;
 
     public static function set cookie(cookie:Array):void

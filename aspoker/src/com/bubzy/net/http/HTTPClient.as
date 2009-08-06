@@ -277,7 +277,7 @@ public class HTTPClient extends EventDispatcher
 
         if(_httpResponseHeaders["Content-Length"])
         {
-            _bytesTotal = int(_httpResponseBuffer["Content-Length"])
+            _bytesTotal = int(_httpResponseHeaders["Content-Length"])
                 + _httpResponseBuffer.length;
         }
     }
