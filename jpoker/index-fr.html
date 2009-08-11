@@ -1886,7 +1886,7 @@ Proin euismod rutrum lectus. Integer vulputate posuere dui. Donec posuere posuer
 *lists
 *primary pale</pre>
 </div>
-<div title="JpokerPlugin" modifier="loic" modified="200905121220" created="200804051018" tags="systemConfig">
+<div title="JpokerPlugin" modifier="loic" modified="200907301012" created="200804051018" tags="systemConfig">
 <pre>/***
 |''Name:''|jpokerPlugin|
 |''Description:''||
@@ -1919,6 +1919,12 @@ $.jpoker.server.defaults.spawnTable = function(server, packet) {
 $.jpoker.server.defaults.tourneyRowClick = function(server, packet) {
     var title = &quot; TourneyDetails &quot; + packet.name;
     config.shadowTiddlers[title] = &quot;&lt;&lt;jpokerTourneyDetails '&quot; + server.url + &quot;' &quot; + packet.game_id + &quot; '&quot; + packet.name + &quot;'&gt;&gt;&quot;;
+    story.displayTiddler(null, title, 1);
+};
+
+$.jpoker.server.defaults.rankClick = function(server, tourney_serial) {
+    var title = &quot; TourneyDetails &quot;;
+    config.shadowTiddlers[title] = &quot;&lt;&lt;jpokerTourneyDetails '&quot; + server.url + &quot;' &quot; + game_id + &quot; 'unknown name'&gt;&gt;&quot;;
     story.displayTiddler(null, title, 1);
 };
 
@@ -2006,6 +2012,12 @@ config.macros.jpokerCashier = {
     }
 };
 
+config.macros.jpokerTablePicker = {
+    handler: function(place, macroName, params, wikifier, paramString, tiddler) {
+        $(place).jpoker('tablepicker', config.jpoker.restURL);
+    }
+};
+
 config.macros.jpokerTourneyPlaceholder = {
     handler: function(place, macroName, params, wikifier, paramString, tiddler) {
         $(place).jpoker('tourneyPlaceholder', params[0], params[1]);
@@ -2066,7 +2078,7 @@ config.formatters.push(
 &lt;&lt;dropMenu&gt;&gt;&lt;html&gt;&lt;div style=&quot;clear:both;&quot;&gt;&lt;/div&gt;&lt;/html&gt;
 </pre>
 </div>
-<div title="MarkupPostBody" modifier="loic" modified="200811131434" created="200803312321" changecount="1">
+<div title="MarkupPostBody" modifier="loic" modified="200907041159" created="200803312321" changecount="1">
 <pre>&lt;!--{{{--&gt;
 &lt;script language=&quot;JavaScript&quot; type=&quot;text/javascript&quot; src=&quot;jquery/jquery-1.2.6.js&quot;&gt;&lt;/script&gt;
 &lt;script language=&quot;JavaScript&quot; type=&quot;text/javascript&quot; src=&quot;jquery/ui/ui.core.js&quot;&gt;&lt;/script&gt;
@@ -2077,6 +2089,7 @@ config.formatters.push(
 &lt;script src=&quot;js/json2.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/printstacktrace.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/jquery.gettext.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;js/jquery.strftime.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/jquery.ajaxQueue.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/jquery.tablesorter.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;js/jquery.tablesorter.pager.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
@@ -2110,11 +2123,12 @@ config.formatters.push(
 &lt;link href=&quot;css/jpoker.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot; /&gt;
 &lt;!--}}}--&gt;</pre>
 </div>
-<div title="PageTemplate" modifier="YourName" modified="200809212334" created="200709031403" tags="SuperCookerTheme" changecount="5">
+<div title="PageTemplate" modifier="YourName" modified="200906231718" created="200709031403" tags="SuperCookerTheme" changecount="5">
 <pre>&lt;!--{{{--&gt;
 &lt;div id=&quot;stickybod&quot;&gt;
 	&lt;div id=&quot;header&quot;&gt;
 		&lt;div id=&quot;pokLogin&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;Login&quot;&gt;&lt;/div&gt;
+		&lt;div id=&quot;pokTablePicker&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;TablePicker&quot;&gt;&lt;/div&gt;
 		&lt;div id=&quot;headerTitle&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;SiteTitle&quot;&gt;&lt;/div&gt;
                 &lt;div id=&quot;lang&quot; refresh=&quot;content&quot; force=&quot;true&quot; tiddler=&quot;lang&quot;&gt;&lt;/div&gt;
 &lt;!--
@@ -2939,6 +2953,9 @@ Jpoker overrides below here
 &lt;/a&gt;
 &lt;br /&gt;This work is licensed under a 
 &lt;a rel=&quot;license&quot; href=&quot;http://creativecommons.org/licenses/by-sa/3.0/&quot;&gt;Creative Commons Attribution-Share Alike 3.0 License&lt;/a&gt;.&lt;/html&gt;</pre>
+</div>
+<div title="TablePicker" modifier="proppy" modified="200906231718" created="200906221928" tags="SuperCookerTheme" changecount="1">
+<pre>&lt;&lt;jpokerTablePicker&gt;&gt;</pre>
 </div>
 <div title="Tables" modifier="loic" modified="200805131700" created="200709032320" tags="toRSS" changecount="2">
 <pre>&lt;&lt;jpokerTableList&gt;&gt;</pre>
@@ -11595,6 +11612,7 @@ if(useJavaSaver)
 <script src="js/json2.js" type="text/javascript"></script>
 <script src="js/printstacktrace.js" type="text/javascript"></script>
 <script src="js/jquery.gettext.js" type="text/javascript"></script>
+<script src="js/jquery.strftime.js" type="text/javascript"></script>
 <script src="js/jquery.ajaxQueue.js" type="text/javascript"></script>
 <script src="js/jquery.tablesorter.js" type="text/javascript"></script>
 <script src="js/jquery.tablesorter.pager.js" type="text/javascript"></script>
