@@ -21,14 +21,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
-        layout="vertical" 
-        xmlns:local="aspoker.com.bubsy.poker.client.component.*" 
-        height="700"
-        width="800">
-             <mx:Style source="css/aspoker.css" />
+<s:Application xmlns="http://ns.adobe.com/mxml/2009" 
+    xmlns:local="aspoker.com.bubsy.poker.client.component.*" 
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/halo" 
+    height="700" width="760"
+>
+    
+    <fx:Style source="css/aspoker.css" />
+    <s:VGroup height="700" width="760">
 
-    <mx:Script>
+    <fx:Script>
         <![CDATA[      
             import mx.controls.Alert;
             import flash.utils.getQualifiedSuperclassName;
@@ -107,19 +111,25 @@
           }
           
         ]]>
-    </mx:Script>
+    </fx:Script>
+    
 
-    <local:CLoginBox/>
+    <local:CLoginBox />
         
-    <mx:LinkBar color="#0000FF" fontWeight="bold" dataProvider="{myViewStack}"/>
+    <mx:LinkBar 
+        color="#0000FF" 
+        fontWeight="bold" 
+        dataProvider="{myViewStack}"/>
 
     <mx:ViewStack id="myViewStack" 
         borderStyle="solid" 
         width="100%" 
-        height="80%"
+        height="438"
         change="changeView(event)"
         >
-        <mx:Canvas id="tableListView" 
+
+        <mx:Canvas 
+            id="tableListView" 
             label="Tables list" 
             width="100%" 
             height="100%">
@@ -130,9 +140,17 @@
             
     </mx:ViewStack>
     
-    <mx:TextArea id="log" 
-    name="log" 
-    width="90%" 
-    height="20%"/> 
-    
-</mx:Application>
+    <s:HGroup width="100%" height="100%">  
+       <mx:TextArea 
+            id="log" 
+            name="log" 
+            height="150" 
+        /> 
+        
+        <local:CChatBox 
+            name="chatbox"
+            id="chatbox"/>
+        </s:HGroup>
+ </s:VGroup>
+
+</s:Application>

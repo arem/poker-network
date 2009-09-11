@@ -21,9 +21,22 @@ package aspoker.com.bubsy.poker.client.model
 {
     import aspoker.com.bubsy.poker.client.PokerClient;
     import flash.net.SharedObject;
+    import com.adobe.utils.IntUtil;
+    import com.adobe.crypto.SHA1;
+    import mx.events.BrowserChangeEvent;
+    import mx.managers.IBrowserManager;
+    import mx.managers.BrowserManager;
+    import mx.utils.URLUtil;
+
 
 public class Session
 {
+    private static var _auth_hash:String = "";
+    private static var _session_uid:String = "";
+    private static var _auth_cookie:String = "";
+    
+    private static var browserManager:IBrowserManager;
+
     private static var localeSession:SharedObject;
     private static var _sessionCount:int = 0;
     private static var _twistedSession:String="";
@@ -74,24 +87,25 @@ public class Session
         localeSession.flush();
     }
 
+    public static function generateAuthHash():String
+    {
+        return SHA1.hash(restUrl);
+    }
+    
+    public static function generateUidHash():String
+    {
+        return SHA1.hash(SHA1.hash(restUrl) + Math.random());
+    }
+    
     public static function getUrl():String
     {
-        if (getTwistedSessionFromCookie() == "") {
-            return restUrl + "?session=yes&count=" + incrementSessionCount();
-        } else {
-            return restUrl + "?session=yes" + "&count=" + incrementSessionCount();
-            //return restUrl + "?name=" + getTwistedSessionFromCookie() + "&count=" + incrementSessionCount();
-        }
-    }
-
-    public static function getTwistedSession():String
-    {
-        return _twistedSession;
-    }
-
-    public static function getSessionCountFromCookie():int
-    {
-        return _sessionCount;
+        if (_auth_hash == "") {
+            _auth_hash = generateAuthHash();
+            _session_uid = generateUidHash();
+        }   
+ 
+        trace(restUrl + "?auth=" + _auth_hash + "&uid=" + _session_uid);
+        return restUrl + "?auth=" + _auth_hash + "&uid=" + _session_uid;
     }
 
     private static function getTwistedSessionFromCookie():String
@@ -105,12 +119,6 @@ public class Session
                 return c[1];
         }
         return "";
-    }
-
-    private static function incrementSessionCount():int
-    {
-        _sessionCount++;
-        return _sessionCount;
     }
 }
 

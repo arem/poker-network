@@ -234,6 +234,16 @@ public class Table extends PollTimer
             )
         );
     }
+    
+    public function onPacketPokerChat(packet:Object):void
+    {
+        dispatchEvent(
+            new TableEvent(
+                TableEvent.onPacketPokerChat,
+                packet
+            )
+        );
+    }
 
     public function _onPacketPokerPlayerCards(packet:Object):void
     {
@@ -637,7 +647,8 @@ public class Table extends PollTimer
 
     public function seat(seat:int):void
     {
-        _actionJsonStream.seat(_gameID,_user.userSerial,seat);
+         trace("je clique testtttttttt");
+         _actionJsonStream.seat(_gameID,_user.userSerial,seat);
     }
 
     public function buyIn(amount:Number):void

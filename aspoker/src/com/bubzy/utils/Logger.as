@@ -20,7 +20,7 @@
 package com.bubzy.utils
 {
     import mx.controls.TextArea;
-    import mx.core.Application;
+    import mx.core.FlexGlobals;
     import mx.logging.ILogger;
     import mx.logging.ILoggingTarget;
     import mx.logging.Log;
@@ -38,9 +38,9 @@ package com.bubzy.utils
             {
                 _instance = new Logger();
 
-                if (Application.application.hasOwnProperty("log"))
+                if (FlexGlobals.topLevelApplication.hasOwnProperty("log"))
                 {
-                    addTarget(Application.application.log);
+                    addTarget(FlexGlobals.topLevelApplication.log);
                 } else {
                     addTarget(new TextArea());
                 }

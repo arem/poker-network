@@ -208,7 +208,7 @@ public class HTTPClient extends EventDispatcher
     {
         var pattern1:RegExp = new RegExp("^([a-zA-Z0-9._%+-]+): (.*)");
         var results:Array = str.match(pattern1);
-
+        
         if (results)
         {
             if ( results[1] == "Set-Cookie" )
@@ -268,7 +268,7 @@ public class HTTPClient extends EventDispatcher
         var headerArr:Array = response[0].split(HTTP_END_LINE);
 
         _httpResponseContent += response[1];
-
+        
         for each(var p:String in headerArr)
         {
             _parseResponseHeaderStatus(p);

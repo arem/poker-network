@@ -36,7 +36,7 @@
 	<initialWindow>
 		<!-- The main SWF or HTML file of the application. Required. -->
 		<!-- Note: In Flex Builder, the SWF reference is set automatically. -->
-		<content>build/aspoker.swf</content>
+		<content>aspoker.html</content>
 		
 		<!-- The title of the main window. Optional. -->
 		<!-- <title></title> -->

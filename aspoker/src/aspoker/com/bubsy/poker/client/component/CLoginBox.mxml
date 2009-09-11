@@ -23,8 +23,6 @@
  <mx:Canvas 
  xmlns:mx="http://www.adobe.com/2006/mxml"
  initialize="init()"
- borderColor="red"
- borderStyle="solid"
  >
 
   <mx:Script>
@@ -78,9 +76,10 @@
  <mx:states>
   <mx:State name="cashierState">
        <mx:RemoveChild target="{loginCanvas}"/>
-       <mx:SetProperty target="{this}" name="width" value="250"/>
+       <mx:SetProperty target="{this}" name="width" value="600"/>
        <mx:SetProperty target="{this}" name="height" value="60"/>
-       <mx:AddChild relativeTo="{this}" position="lastChild">
+
+        <mx:AddChild relativeTo="{this}" position="firstChild">
             <mx:VBox id="registerCanvas">
                  <mx:Label text="Welcome!{username.text}" 
                       fontWeight="bold" fontStyle="italic" />
@@ -100,7 +99,8 @@
        <mx:RemoveChild target="{loginCanvas}"/>
        <mx:SetProperty target="{this}" name="width" value="600"/>
        <mx:SetProperty target="{this}" name="height" value="60"/>
-       <mx:AddChild relativeTo="{this}" position="lastChild">
+
+        <mx:AddChild relativeTo="{this}" position="firstChild">
            <mx:Canvas id="loginCanvas">
            <mx:Label id="errorMessage" color="red"/>
            <mx:Form id="loginForm" >

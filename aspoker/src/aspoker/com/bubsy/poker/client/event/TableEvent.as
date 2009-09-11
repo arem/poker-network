@@ -51,7 +51,7 @@ package aspoker.com.bubsy.poker.client.event
         public static const onPacketPokerState:String = "PacketPokerState";
         public static const onPacketPokerStart:String = "PacketPokerStart";
         public static const onPacketPokerDealer:String = "PacketPokerDealer";
-
+        public static const onPacketPokerChat:String = "PacketPokerChat";
         public var packet:Object;
 
         public function TableEvent(type:String,packet:Object)

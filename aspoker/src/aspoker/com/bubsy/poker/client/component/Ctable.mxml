@@ -19,7 +19,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" 
+<mx:Canvas 
+    xmlns:mx="http://www.adobe.com/2006/mxml" 
 	xmlns:component="aspoker.com.bubsy.poker.client.component.*" 
 	creationComplete="_init()" remove="_destroy();">
 
@@ -37,8 +38,9 @@
  		import aspoker.com.bubsy.poker.client.event.LoginEvent;
  		import mx.core.Container;
  		import aspoker.com.bubsy.poker.client.PokerClient;
- 		import mx.core.Application;
- 		import aspoker.com.bubsy.poker.client.model.Table;
+        import mx.core.FlexGlobals;
+        import aspoker.com.bubsy.poker.client.model.Table;
+        import aspoker.com.bubsy.poker.client.component.CChatBox;
 		import aspoker.com.bubsy.poker.client.event.TableEvent;
 
 		public var table:Table;
@@ -136,28 +138,40 @@
 				TableEvent.onPacketPokerPlayerCards,
 				_onPacketPokerPlayerCards
 			);
-			
+            
+            table.addEventListener(
+				TableEvent.onPacketPokerChat,
+				_onPacketPokerChat
+			);			
 		}
 
-		private function _onPacketPokerBoardCards(evt:TableEvent):void
+		private function _onPacketPokerChat(evt:TableEvent):void
+        {
+            //FIXME don't use global for this
+            var message:String = evt.packet.message;
+            var container:CChatBox = FlexGlobals.topLevelApplication.chatbox;
+            container.sendChat(message);
+        }
+
+        private function _onPacketPokerBoardCards(evt:TableEvent):void
 		{
-        boardCards.setCards(table.boardCards);
+            boardCards.setCards(table.boardCards);
 		}
-		
-    private function _onPacketPokerPlayerCards(evt:TableEvent):void
-    {
-        var serial:Number = evt.packet.serial;
-        var seat:CSeat = seats.getChildByName(
-            "seat"+ table.getPlayer(serial).seat
-        ) as CSeat ;
 
-        var cards:CCards = seats.getChildByName(
-            "cards"+ table.getPlayer(serial).seat
-        ) as CCards ;
+        private function _onPacketPokerPlayerCards(evt:TableEvent):void
+        {
+            var serial:Number = evt.packet.serial;
+            var seat:CSeat = seats.getChildByName(
+                "seat"+ table.getPlayer(serial).seat
+            ) as CSeat ;
 
-        cards.setCards(table.getPlayer(serial).cards);
-        //seat.setCards(table.getPlayer(serial).cards);
-    }
+            var cards:CCards = seats.getChildByName(
+                "cards"+ table.getPlayer(serial).seat
+            ) as CCards ;
+
+            cards.setCards(table.getPlayer(serial).cards);
+            //seat.setCards(table.getPlayer(serial).cards);
+        }
 
 		private function _onPacketPokerState(evt:TableEvent):void
 		{
@@ -395,7 +409,7 @@
 
 		private function quit():void
 		{
-			var container:Container = Application.application.myViewStack;
+			var container:Container = FlexGlobals.topLevelApplication.myViewStack;
 			this.removeAllChildren();
 			parent.removeChild(this);
 		}
@@ -440,7 +454,6 @@
  				(evt.packet.serial == PokerClient.user.userSerial)
  				)
  			{
-
  				 quit();
  				 return;
  			} 

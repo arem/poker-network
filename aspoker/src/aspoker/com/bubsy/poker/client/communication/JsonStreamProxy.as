@@ -74,7 +74,6 @@ public class JsonStreamProxy extends JsonStream
              trace("Table unregistered for:" + pokerPacket.type);
              return;
         }
-
         switch(pokerPacket.type)
         {
             case TableEvent.onPacketPokerSeat:
@@ -85,6 +84,12 @@ public class JsonStreamProxy extends JsonStream
                     pokerPacket
                     )
                 );
+                break;
+            }
+
+            case TableEvent.onPacketPokerChat:
+            {
+                tablelist[gameid].onPacketPokerChat(pokerPacket);
                 break;
             }
 
@@ -435,7 +440,7 @@ public class JsonStreamProxy extends JsonStream
 
         packetPokerSeat.type = "PacketPokerSeat",
         packetPokerSeat.serial = userSerial;
-        packetPokerSeat.game_id =gameid;
+        packetPokerSeat.game_id = gameid;
         packetPokerSeat.seat = seat;
         sendREST(packetPokerSeat);
     }

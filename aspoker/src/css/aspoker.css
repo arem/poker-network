@@ -1,5 +1,7 @@
 /* CSS file */
-
+@namespace fx "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/halo";
+@namespace local "aspoker.com.bubsy.poker.client.component.*";
 .pot 
 {
    background-color: #cc0000;
@@ -8,7 +10,7 @@
    left:350px;
 }
 
-DataGrid 
+mx|DataGrid 
 {
    header-colors: #00ff66, #ffffff;
    selection-color: #0000ff;
@@ -17,12 +19,12 @@ DataGrid
    text-roll-over-color: #00cccc;
 }
 
-Ctable
+local|Ctable
 {
     backgroundImage: "assets/table.png";
 }
 
-CBoardCards
+local|CBoardCards
 {
     top:170px;
     left:250px;

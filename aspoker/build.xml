@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <project name="aspoker" default="test" >
-    <property name="FLEX_HOME" value="/root/Adobe_Flex_Builder_Linux/sdks/flex_sdk_3.4" />
+    <property name="FLEX_HOME" value="/home/bruno/flex_sdk_4_beta1" />
     <property name="APP_ROOT" value="." />
     <property name="DEPLOY_DIR" value="./build/"/>
 
@@ -118,7 +118,7 @@
         <arg value="${key.password}" />  
         <arg value="${AIR_NAME}"/> 
         <arg value="${APP_DESCRIPTOR}"/>
-        <arg value="${DEPLOY_DIR}/aspoker.swf"/> 
+        <arg value="aspoker.html"/> 
  
     </java> 
 </target>
