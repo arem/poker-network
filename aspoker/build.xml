@@ -36,6 +36,8 @@
 
             <library-path dir="${APP_ROOT}/libs" append="true">
                 <include name="as3corelib.swc"/>
+                <include name="as3httpclientlib-1_0_6.swc"/>
+                <include name="as3crypto.swc"/>
             </library-path>
         </mxmlc>
     </target>
@@ -54,17 +56,23 @@
 
             <library-path dir="${APP_ROOT}/libs" append="true">
                 <include name="as3corelib.swc"/>
+                <include name="as3httpclientlib-1_0_6.swc"/>
+                 <include name="as3crypto.swc"/>
             </library-path>
         </mxmlc>
     </target>
 
     <target name="test">
-        <mxmlc file="${APP_ROOT}/src/aspokerTestRunner.mxml">
+        <mxmlc file="${APP_ROOT}/src/aspokerTestRunner.mxml"
+               output="${DEPLOY_DIR}/aspokerTestRunner.swf"
+        >
                 <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
                 <source-path path-element="${FLEX_HOME}/frameworks"/>
             <library-path dir="${APP_ROOT}/libs" append="true">
                 <include name="as3corelib.swc"/>
                 <include name="FlexUnit.swc"/>
+                <include name="as3httpclientlib-1_0_6.swc"/>
+                 <include name="as3crypto.swc"/>
             </library-path>
         </mxmlc>
     </target>
@@ -102,6 +110,8 @@
 
             <library-path dir="${APP_ROOT}/libs" append="true">
                 <include name="as3corelib.swc"/>
+                <include name="as3crypto.swc"/>
+                <include name="as3httpclientlib-1_0_6.swc"/> 
             </library-path>
         </mxmlc>
     </target>

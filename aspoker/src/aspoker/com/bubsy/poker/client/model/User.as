@@ -72,17 +72,6 @@ public class User extends EventDispatcher
          _stream.personalInfo(_userSerial);
     }
 
-    public function setRole():void
-    {
-         _stream.setRole();
-    }
-
-    public function plocale():void
-    {
-         _stream.plocale();
-    }
-
-
     public function logout():void
     {
         _userPassword= "";
@@ -90,6 +79,12 @@ public class User extends EventDispatcher
         _userSerial= -1;
         _stream.logout();
         Session.flush();
+
+        dispatchEvent(
+            new LoginEvent(
+                LoginEvent.onUserLogout
+            )
+       );
     }
 
     public function get userName():String

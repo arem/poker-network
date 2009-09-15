@@ -23,7 +23,7 @@ package aspoker.com.bubsy.poker.client.test
 import aspoker.com.bubsy.poker.client.PokerClient;
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.model.User;
-
+import aspoker.com.bubsy.poker.client.communication.JsonStream;
 import flash.events.Event;
 
 import flexunit.framework.TestCase;
@@ -40,30 +40,37 @@ public class TestAspoker extends TestCase {
     {
         var ts:TestSuite = new TestSuite();
 
-        ts.addTest(new TestAspoker("auth"));
-        ts.addTest(new TestAspoker("test2"));
+        ts.addTest(new TestAspoker("test_auth"));
+        ts.addTest(new TestAspoker("test_queue"));
         return ts;
     }
 
-    public function auth():void
+    public function test_auth():void
     {
-       var user:User = PokerClient.user;
-
-        user.addEventListener(
+        PokerClient.user.addEventListener(
             LoginEvent.onPacketAuthOk,
-            addAsync(authSucessfull,100)
-               );
+            addAsync(authSucessfull,1000)
+        );
 
-        user.loggin("bruno","onurb");
+        PokerClient.user.loggin("bruno","onurb");
     }
 
     public function authSucessfull(e:Event):void
     {
-        assertTrue(" Should work ", true);
+        assertTrue("Authentification sucessfull", true);
     }
 
-    public function test2():void {
-        assertTrue("error", false);
+    public function test_queue():void {
+        var o:JsonStream = new JsonStream();
+        try{
+                o.ping();
+                o.ping();
+                o.ping();
+                assertTrue("no error", false);
+            } catch (e:Error) {
+                trace("something bad happened");
+                assertTrue("flood detected",true,"flooood" );
+         }        
     }
 
 }

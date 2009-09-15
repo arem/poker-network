@@ -7,7 +7,7 @@
 //     the Free Software Foundation, either version 3 of the License, or
 //     (at your option) any later version.
 //
-//     This program is distributed in the hope that it will be useful,
+//     This program is distaEvent
 //     but WITHOUT ANY WARRANTY; without even the implied warranty of
 //     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //     GNU General Public License for more details.
@@ -22,8 +22,12 @@ package aspoker.com.bubsy.poker.client.communication
 import aspoker.com.bubsy.poker.client.model.Session;
 
 import com.adobe.serialization.json.JSON;
-import com.bubzy.net.http.HTTPClient;
-import com.bubzy.utils.Logger;
+import org.httpclient.HttpClient;
+import org.httpclient.HttpRequest;
+import org.httpclient.HttpResponse;
+import org.httpclient.events.*;
+import com.adobe.net.URI;
+import flash.utils.ByteArray;
 
 import flash.events.Event;
 import flash.events.EventDispatcher;
@@ -31,61 +35,62 @@ import flash.events.HTTPStatusEvent;
 import flash.net.URLRequest;
 import flash.utils.setTimeout;
 
-import mx.effects.Pause;
-
 public class JsonStream extends EventDispatcher
 {
-    private var _restURL:String = "";
-    private var _httpClient:HTTPClient = new HTTPClient;
-
-    public static const QUEUE_RUNNING:int=1;
-    public static const QUEUE_WAIT:int=0;
-
+    public static const QUEUE_RUNNING:int = 1;
+    public static const QUEUE_WAIT:int = 0;
     public var timeout:Number = 6000 ;
-    private var lastRequestStartTime:Date;
-
-    private var maxPoolSize:int=5;
-    private var queue:Array = new Array();
-    private var state:int = QUEUE_WAIT;
-
+    
+    private var _lastRequestStartTime:Date;
+    private var _restURL:String = "";
+    private var _httpClient:HttpClient = new HttpClient;
+    private var _maxPoolSize:int = 5;
+    private var _queue:Array = new Array();
+    private var _state:int = QUEUE_WAIT;
+    private var _response:String;
 
     public function JsonStream():void
     {
-        _httpClient = new HTTPClient();
-        _httpClient.addEventListener("complete", onComplete);
-        _httpClient.addEventListener("httpStatus", onHTTPStatus);
-        _httpClient.addEventListener("close", handleError);
+        _httpClient.addEventListener(HttpResponseEvent.COMPLETE, _onComplete);
+        _httpClient.addEventListener(HttpDataEvent.DATA, _onData);
     }
 
-    private function sendNext():void
+    private function _sendNext():void
     {
-        if (state == QUEUE_WAIT && queue.length>0)
+        if (_state == QUEUE_WAIT && _queue.length>0)
         {
-            var packet:Object = queue.pop();
+            var packet:String = _queue.pop();
             var request:URLRequest = new URLRequest();
 
-            state = QUEUE_RUNNING;
-            lastRequestStartTime = new Date();
-            _restURL = Session.getUrl();
-            request.url = _restURL;
-            request.data=JSON.encode(packet);
-            _httpClient.cookie = Session.cookie;
-            _httpClient.useCookie = true;
-            _httpClient.httpPOST(request);
+            _state = QUEUE_RUNNING;
+            _lastRequestStartTime = new Date();
+            _post(packet);
         }
     }
 
-    private function checkTimeOut():Boolean
+    private function _post(packet:String):void
     {
-         if (state == QUEUE_WAIT)
+        _response = "";
+        var uri:URI = new URI(Session.getUrl());
+        var jsonData:ByteArray = new ByteArray();
+        var contentType:String = "application/json";
+
+        jsonData.writeUTFBytes(packet);
+        jsonData.position = 0;
+        _httpClient.post(uri, jsonData, contentType);
+    }
+
+    private function _checkTimeOut():Boolean
+    {
+         if (_state == QUEUE_WAIT)
          {
              return false;
          }
 
         var currentTime:Date = new Date();
-        var delta:Number = currentTime.getTime() - lastRequestStartTime.getTime();
+        var delta:Number = currentTime.getTime() - _lastRequestStartTime.getTime();
 
-        if ( delta > timeout && state == QUEUE_RUNNING)
+        if (delta > timeout && _state == QUEUE_RUNNING)
         {
             trace ("timeout :" + delta);
             return true;
@@ -95,82 +100,60 @@ public class JsonStream extends EventDispatcher
 
     protected  function sendREST(packet:Object):void
     {
-        checkTimeOut();
-
-        if (queue.length <= maxPoolSize)
+        _checkTimeOut();
+        
+        var str:String = JSON.encode(packet);
+        var searchIndex:int = _queue.indexOf(str);
+        
+        if (searchIndex > -1) 
         {
-            queue.push(packet);
-        } else {
-            throw new Error("Pool size is too big");
+            throw new Error("flood");
+            return false;
         }
 
-        if (state == QUEUE_WAIT)
+        if (_queue.length <= _maxPoolSize)
         {
-            sendNext();
+            _queue.push(str);
+        } else {
+            throw new Error("Pool size is too big");
+            return false;
+        }
+
+        if (_state == QUEUE_WAIT)
+        {
+            _sendNext();
         }
     }
 
     protected function _dispatchEvent(pokerPacket:Object):void
     {
-           Logger.log(pokerPacket.type);
     }
 
-    private function onComplete(event:Event):void
+    private function _onComplete(event:HttpResponseEvent):void
     {
-        var responseContent:String = HTTPClient(event.target).responseContent ;
-        var results:Array = JSON.decode(responseContent);
-
-        Session.cookie = HTTPClient(event.target).cookie;
+        var results:Array = JSON.decode(_response);
 
         for (var i:int=0; i < results.length; i++)
         {
             if (results[i])
             {
-                //trace(results[i].type);
                 _dispatchEvent(results[i]);
             }
         }
-        state = QUEUE_WAIT;
-        setTimeout(sendNext,1);
+        _state = QUEUE_WAIT;
+        setTimeout(_sendNext,1);
     }
 
-    private function my_delayedFunction():void
+    private function _onData(event:HttpDataEvent):void
     {
-
+        _response += event.readUTFBytes();
     }
 
-    private function handleError():void
+    public function ping():void
     {
-         trace("soket closed");
-    }
-
-    private function httpStatusHandler(event:Event):void
-    {
-        Logger.log(event.target.data);
-    }
-
-    private function onHTTPStatus(event:HTTPStatusEvent):void
-    {
-        //trace("httpStatus " + event.status);
-    }
-
-    public function setRole():void
-    {
-        var packetPokerSeat:Object = {};
-        packetPokerSeat.type = "PacketPokerSetRole",
-        packetPokerSeat.roles = "PLAY";
-        packetPokerSeat.serial = 4;
-        sendREST(packetPokerSeat);
-    }
-
-    public function plocale():void
-    {
-        var plocale:Object = {};
-        plocale.type = "PacketPokerSetLocale";
-        plocale.serial = 4;
-        plocale.locale = "en";
-        plocale.game_id = 1;
-        sendREST(plocale);
-    }
+       var packetPokerPing:Object = {};
+       packetPokerPing.type = "PacketPing";
+       sendREST(packetPokerPing); 
+    }    
 }
 }

@@ -22,7 +22,7 @@
 <mx:Canvas 
     xmlns:mx="http://www.adobe.com/2006/mxml" 
 	xmlns:component="aspoker.com.bubsy.poker.client.component.*" 
-	creationComplete="_init()" remove="_destroy();">
+    creationComplete="_init()" remove="_destroy();">
 
 	  <mx:Script>
  	<![CDATA[
@@ -34,7 +34,6 @@
  		import aspoker.com.bubsy.poker.client.model.User;
  		import aspoker.com.bubsy.poker.client.model.BuyInPopup;
  		import mx.controls.Alert;
- 		import mx.logging.Log;
  		import aspoker.com.bubsy.poker.client.event.LoginEvent;
  		import mx.core.Container;
  		import aspoker.com.bubsy.poker.client.PokerClient;
@@ -49,7 +48,17 @@
 		{
 			table = new Table(gameId);
 
-			table.addEventListener(
+		    PokerClient.user.addEventListener(
+                LoginEvent.onPacketAuthOk,
+                _onUserAuthOk
+            );
+	            
+            PokerClient.user.addEventListener(
+                LoginEvent.onUserLogout,
+                _onUserLogout
+            );
+            
+            table.addEventListener(
 				TableEvent.onPacketPokerPlayerArrive,
 				_onPlayerArrive
 			);
@@ -144,12 +153,24 @@
 				_onPacketPokerChat
 			);			
 		}
+        
+        private function _onUserAuthOk(evt:LoginEvent):void
+        {
+            _init();
+            setSeatsState("free");
+        }
+
+        private function _onUserLogout(evt:LoginEvent):void
+        {
+             this.currentState = "notLogin"; 
+             setSeatsState("disabled");
+        } 
 
 		private function _onPacketPokerChat(evt:TableEvent):void
         {
             //FIXME don't use global for this
             var message:String = evt.packet.message;
-            var container:CChatBox = FlexGlobals.topLevelApplication.chatbox;
+            var container:CChatBox = chatbox;
             container.sendChat(message);
         }
 
@@ -314,7 +335,18 @@
 
 		private function _destroy():void
 		{
-			table.removeEventListener(
+			
+            PokerClient.user.removeEventListener(
+                LoginEvent.onPacketAuthOk,
+                _onUserAuthOk
+            );
+                
+            PokerClient.user.removeEventListener(
+                LoginEvent.onUserLogout,
+                _onUserLogout
+            );
+
+            table.removeEventListener(
 				TableEvent.onPacketPokerPlayerArrive,
 				_onPlayerArrive);
 				
@@ -454,8 +486,8 @@
  				(evt.packet.serial == PokerClient.user.userSerial)
  				)
  			{
- 				 quit();
- 				 return;
+                quit();
+  			 return;
  			} 
 
  			/* if a player leaves the table */
@@ -463,7 +495,8 @@
 				"seat"+evt.packet.seat
 			) as CSeat ;
 				
- 			if (table.seats.indexOf(PokerClient.user.userSerial) < 0 )
+ 			if (PokerClient.user.userSerial > 0 && 
+                table.seats.indexOf(PokerClient.user.userSerial) < 0 )
  			/* is user has a seat?
  			FIXME: To use "user.isSit()" instead indexof 
  			*/
@@ -481,7 +514,7 @@
 			for each (var seat:int in table.seats)
 			{
 				if(seat == 0) {
-					var cseat:CSeat= seats.getChildByName("seat"+i) as CSeat ;
+                    var cseat:CSeat= seats.getChildByName("seat"+i) as CSeat ;
 					cseat.currentState = state;
 					cseat = null;
 				}
@@ -505,19 +538,13 @@
 
  		private function showSeats(visible:Boolean=true):void
  		{
- 			var i:int=0;
-			for each (var seat:int in table.seats)
+			var i:int=0;
+            for each (var seat:int in table.seats)
 			{
-				if (i == table.numSeats) 
-				{
-					//no more seat are available at this table
-					break;
-				} else {
-					var cseat:CSeat = seats.getChildByName("seat"+i) as CSeat ;
-					cseat.visible = visible;
-					cseat = null;
-					i++;
-				}
+                var cseat:CSeat = seats.getChildByName("seat"+i) as CSeat ;
+                cseat.visible = visible;
+                cseat = null;
+                i++;
 			}
  		}
 
@@ -597,15 +624,22 @@
  	 ]]>
  	</mx:Script>
 
-	<mx:VBox id="gameboard" name="gameboard">
-			<mx:Canvas id="seats" name="seats" >
+	<mx:VBox 
+        id="gameboard" 
+        name="gameboard"
+       >
+		<mx:Canvas 
+            id="seats" 
+            name="seats"
+            styleName="seats"
+            height="438" width="738">
 
-				<component:CBoardCards
-				id="boardCards"
-				name="boardCards"/>
+		<component:CBoardCards
+		    id="boardCards"
+			name="boardCards"/>
 
-				<mx:Text id="pot" name="pot"
-					styleName="pot" />
+		<mx:Text id="pot" name="pot"
+			styleName="pot" />
 
         <component:CCards 
             id="cards0" 
@@ -746,17 +780,18 @@
             styleName="seat9"
             visible="false"
         />
+		</mx:Canvas>
 
-			</mx:Canvas>
+		
+		    <mx:HBox id="tableOptions" left="5">
+                <mx:Button label="Quitter la table" click="table.quit()"/>
+             </mx:HBox>
+			<mx:HBox id="tableActions" right="5"/>
 
-			<mx:Canvas width="100%">
-				<mx:HBox id="tableOptions" left="5">
-            <mx:Button label="Quitter la table" click="table.quit()"/>
-        </mx:HBox>
-				<mx:HBox id="tableActions" right="5"/>
-			</mx:Canvas>
-
-		</mx:VBox>
+        <component:CChatBox 
+            name="chatbox"
+            id="chatbox"/>
+        </mx:VBox>
 
 		<mx:states>
 				<mx:State name="notLogin">

@@ -89,7 +89,7 @@ public class Session
 
     public static function generateAuthHash():String
     {
-        return SHA1.hash(restUrl);
+        return SHA1.hash(restUrl + Math.random());
     }
     
     public static function generateUidHash():String
@@ -104,7 +104,6 @@ public class Session
             _session_uid = generateUidHash();
         }   
  
-        trace(restUrl + "?auth=" + _auth_hash + "&uid=" + _session_uid);
         return restUrl + "?auth=" + _auth_hash + "&uid=" + _session_uid;
     }
 

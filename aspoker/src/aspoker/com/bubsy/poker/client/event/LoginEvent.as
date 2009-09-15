@@ -28,6 +28,8 @@ public class LoginEvent extends Event
     public static const onPacketSerial:String = "PacketSerial";
     public static const onPacketAuthRequest:String = "PacketAuthRequest";
     public static const onPacketAuthRefused:String = "PacketAuthRefused";
+    public static const onUserLogout:String = "OnUserLogout";
+
     public var userSerial:int = 0 ;
     public var message:String="";
 

@@ -25,7 +25,6 @@ import aspoker.com.bubsy.poker.client.event.TableListEvent;
 import aspoker.com.bubsy.poker.client.util.PollTimer;
 import aspoker.com.bubsy.poker.client.PokerClient;
 
-import com.bubzy.utils.Logger;
 import flash.events.TimerEvent;
 import mx.controls.DataGrid;
 
@@ -71,8 +70,6 @@ public class Lobby extends PollTimer
         _data = packet.packets;
         _playersCount = packet.players;
         _tablesCount = packet.tables;
-        Logger.log("playersCount:" + _playersCount
-                     + " tablesCount:" + _tablesCount);
         _tableGrid.dataProvider = _data;
     }
 }

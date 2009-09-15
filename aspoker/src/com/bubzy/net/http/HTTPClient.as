@@ -108,7 +108,6 @@ public class HTTPClient extends EventDispatcher
 
     private function _connect():Boolean
     {
-        Security.allowDomain("*");
         Security.loadPolicyFile("xmlsocket://"
             + _httpRequestServer + ":843");
         _httpSocket.connect(_httpRequestServer, _httpPort);

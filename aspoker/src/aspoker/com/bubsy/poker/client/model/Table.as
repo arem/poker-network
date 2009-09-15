@@ -25,10 +25,7 @@ import aspoker.com.bubsy.poker.client.communication.JsonStreamProxy;
 import aspoker.com.bubsy.poker.client.event.LoginEvent;
 import aspoker.com.bubsy.poker.client.event.TableEvent;
 import aspoker.com.bubsy.poker.client.util.PollTimer;
-
 import com.adobe.serialization.json.JSON;
-import com.bubzy.utils.Logger;
-
 import flash.events.TimerEvent;
 
 public class Table extends PollTimer
@@ -117,7 +114,6 @@ public class Table extends PollTimer
 
     public function _onPacketPokerDealer(packet:Object):void
     {
-        trace(JSON.encode(packet));
         _dealer = packet.dealer;
         _previous_dealer = packet.previous_dealer;
     }
@@ -217,8 +213,6 @@ public class Table extends PollTimer
 
     public function _onPacketPokerState(packet:Object):void
     {
-     //   trace(evt.packet.string);
-
         _tableState = packet.string;
 
         if (state != TABLE_STATE_PRE_FLOP)
@@ -647,7 +641,6 @@ public class Table extends PollTimer
 
     public function seat(seat:int):void
     {
-         trace("je clique testtttttttt");
          _actionJsonStream.seat(_gameID,_user.userSerial,seat);
     }
 
@@ -694,7 +687,7 @@ public class Table extends PollTimer
 
     public function poll():void
     {
-        Logger.log("poll gameID:" + _gameID);
+        trace("poll gameID:" + _gameID);
         _actionJsonStream.Poll(_gameID);
     }
 

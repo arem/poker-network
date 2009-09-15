@@ -307,7 +307,7 @@ public class JsonStreamProxy extends JsonStream
                         LoginEvent.onPacketAuthRefused,
                         -1,
                         pokerPacket.message
-                        )
+                    )
                 );
                 break;
             }
@@ -318,7 +318,7 @@ public class JsonStreamProxy extends JsonStream
                     new LoginEvent(
                         LoginEvent.onPacketAuthOk,
                         pokerPacket.serial
-                        )
+                   )
                 );
                 break;
             }
