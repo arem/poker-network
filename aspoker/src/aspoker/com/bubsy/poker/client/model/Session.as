@@ -24,8 +24,6 @@ package aspoker.com.bubsy.poker.client.model
     import com.adobe.utils.IntUtil;
     import com.adobe.crypto.SHA1;
     import mx.events.BrowserChangeEvent;
-    import mx.managers.IBrowserManager;
-    import mx.managers.BrowserManager;
     import mx.utils.URLUtil;
 
 
@@ -34,18 +32,15 @@ public class Session
     private static var _auth_hash:String = "";
     private static var _session_uid:String = "";
     private static var _auth_cookie:String = "";
-    
-    private static var browserManager:IBrowserManager;
-
-    private static var localeSession:SharedObject;
+    private static var _localeSession:SharedObject;
     private static var _sessionCount:int = 0;
     private static var _twistedSession:String="";
     private static var _cookie:Array/*of cookieItem*/=[];
-
-    private static var restUrl:String = "http://"
+    private static var _restUrl:String = "http://"
         + PokerClient.SERVER_HOST 
         + ":" + PokerClient.SERVER_PORT 
         + "/POKER_REST";
+
     public static var UserSerial:int;
 
     public static function set cookie(cookie:Array):void
@@ -59,8 +54,8 @@ public class Session
 
     public static function flush():void
     {
-          localeSession = SharedObject.getLocal("session");
-          localeSession.clear();
+          _localeSession = SharedObject.getLocal("session");
+          _localeSession.clear();
           _cookie = [];
     }
 
@@ -80,21 +75,21 @@ public class Session
         return _cookie;
     }
 
-    public static function store():void
+    private static function store():void
     {
-        localeSession = SharedObject.getLocal("session");
-        localeSession.data.session = _cookie;
-        localeSession.flush();
+        _localeSession = SharedObject.getLocal("session");
+        _localeSession.data.session = _cookie;
+        _localeSession.flush();
     }
 
-    public static function generateAuthHash():String
+    private static function generateAuthHash():String
     {
-        return SHA1.hash(restUrl + Math.random());
+        return SHA1.hash(_restUrl + Math.random());
     }
     
-    public static function generateUidHash():String
+    private  static function generateUidHash():String
     {
-        return SHA1.hash(SHA1.hash(restUrl) + Math.random());
+        return SHA1.hash(SHA1.hash(_restUrl) + Math.random());
     }
     
     public static function getUrl():String
@@ -104,7 +99,7 @@ public class Session
             _session_uid = generateUidHash();
         }   
  
-        return restUrl + "?auth=" + _auth_hash + "&uid=" + _session_uid;
+        return _restUrl + "?auth=" + _auth_hash + "&uid=" + _session_uid;
     }
 
     private static function getTwistedSessionFromCookie():String

@@ -51,18 +51,16 @@ package aspoker.com.bubsy.poker.client.model
 
         private function setBuyInLimit(e:FlexEvent):void
         {
-            popup.amoutSlide.minimum = _table.BuyInLimitMin;
-            popup.amoutSlide.maximum = _table.BuyInLimitmax;
-            popup.amoutSlide.snapInterval = _table.BuyInLimitmax / _table.BuyInLimitMin ;
-            popup.amoutSlide.tickInterval = _table.BuyInLimitmax / _table.BuyInLimitMin ;
-          //  popup.amoutSlide.value = 5000000;
-
-            popup.amoutSlide.labels = [_table.BuyInLimitMin,_table.BuyInLimitmax]
+            popup.amoutSlide.minimum = _table.BuyInLimitMin/100;
+            popup.amoutSlide.maximum = _table.BuyInLimitmax/100;
+            popup.amoutSlide.snapInterval = (_table.BuyInLimitmax/100) / (_table.BuyInLimitMin/100) ;
+            popup.amoutSlide.tickInterval = (_table.BuyInLimitmax/100) / (_table.BuyInLimitMin/100) ;
+            popup.amoutSlide.labels = [_table.BuyInLimitMin/100,_table.BuyInLimitmax/100]
         }
 
         private function buyin(e:MouseEvent):void
         {
-            _table.buyIn(popup.amoutSlide.value);
+            _table.buyIn(popup.amoutSlide.value*100);
             PopUpManager.removePopUp(popup);
         }
     }

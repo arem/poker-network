@@ -27,6 +27,7 @@
     xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns:mx="library://ns.adobe.com/flex/halo" 
     height="750" width="740"
+    preinitialize="_init()"
 >
     
     <fx:Style source="css/aspoker.css" />
@@ -44,6 +45,29 @@
             import aspoker.com.bubsy.poker.client.model.Table;
             import aspoker.com.bubsy.poker.client.PokerClient;  
             
+            private function _init():void
+            {
+               PokerClient.loadConfig(); 
+               var splash:Alert = Alert.show(
+               " --- Aspoker V0.1 Copyright Info --- \n" 
+               + "\nThis program is free software: you can redistribute it "
+               + "and/or modify it under the terms of the GNU General Public License "
+               + "and GNU AfferoGeneral Public License as published by the Free Software " 
+               + "Foundation, either version 3 of the License, or (at your option)"
+               + "any later version. \n"
+               + "\nCopyright (C) 2008, 2009, Bruno Garnier <bruno.garnier@gmail.com>\n"
+               + "\nMore information on http://www.aspoker.info/\n"
+               + "\n  --- poker-network Copyright Info --- \n"
+               + "\nCopyright (C) 2002, 2005, 2006, 2007, 2008, 2009 Loic Dachary <loic@dachary.org>"
+               + "\nCopyright (C) 2008 Johan Euphrosine <proppy@aminche.com>"
+               + "\nCopyright (C) 2008 Bradley M. Kuhn <bkuhn@ebb.org>"
+               + "\nCopyright (C) 2004, 2005, 2006 Mekensleep <licensing@mekensleep.com>"
+               ,"Aspoker Copyright Info"
+               , Alert.OK);
+               splash.height = 500;
+               splash.width = 500;
+            }
+
             private function changeView(evt:IndexChangedEvent):void
             {
                 var currentView:DisplayObject = myViewStack.getChildAt(
@@ -140,5 +164,4 @@
             
     </mx:ViewStack>
  </s:VGroup>
-
 </s:Application>

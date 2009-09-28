@@ -30,25 +30,21 @@
   		
 	<mx:Script>
 		<![CDATA[
-        import mx.core.Application;
-        import aspoker.com.bubsy.poker.client.PokerClient;
         import mx.events.DataGridEvent;
         import mx.events.ListEvent;
         import aspoker.com.bubsy.poker.client.model.Lobby;
-        import aspoker.com.bubsy.poker.client.model.User;
 
-		    public var tableList:Lobby ;
-		    private var _user:User = PokerClient.user;
+	    public var tableList:Lobby ;
 
-		    private function initTableGrid():void
-		    {
-            tableList = new Lobby(tableinfo);	    
-		    }
+        private function initTableGrid():void
+	    {
+           tableList = new Lobby(tableinfo);	    
+		}
 		    
-		    private function selectTable(evt:MouseEvent):void
-		    {
+		private function selectTable(evt:MouseEvent):void
+		{
             dispatchEvent(new Event('tableSelected'))
-		    }
+		}
 
 		]]>
  	</mx:Script>
@@ -59,9 +55,6 @@
 		doubleClickEnabled="true" doubleClick="selectTable(event)">
 		<mx:columns>
       		<mx:Array>
-	      		<mx:DataGridColumn headerText="id" 
-	      			dataField="id" 
-	      			visible="true" />
         		<mx:DataGridColumn headerText="Tables" 
         			dataField="name" 
         			visible="true" />

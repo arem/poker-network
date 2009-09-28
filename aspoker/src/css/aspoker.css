@@ -40,10 +40,22 @@ local|CBoardCards
     top:60px;
 }
 
+.chips0
+{
+    xTo:100;
+    yTo:100;
+}
+
 .seat1
 {
     left:160px;
     top:5px;
+}
+
+.chips1
+{
+    xTo:160;
+    yTo:100;
 }
 
 .seat2
@@ -52,16 +64,40 @@ local|CBoardCards
     top:5px;
 }
 
+.chips2
+{
+    xTo:330;
+    yTo:100;
+}
+
 .seat3
 {
     left:500px;
     top:5px;
 }
 
+.chips3
+{
+    xTo:500;
+    yTo:100;
+}
+
+.chips4
+{
+    xTo:600;
+    yTo:120;
+}
+
 .seat4
 {
     left:640px;
-    top:60px
+    top:60px;
+}
+
+.chips9
+{
+    xTo:100;
+    yTo:240;
 }
 
 .seat9
@@ -70,11 +106,25 @@ local|CBoardCards
     top:290px;
 }
 
+.chips8
+{
+    xTo:150;
+    yTo:300;
+}
+
+
 .seat8
 {
     left:150px;
     top:340px;
 }
+
+.chips7
+{
+    xTo:330;
+    yTo:300;
+}
+
 
 .seat7
 {
@@ -82,10 +132,22 @@ local|CBoardCards
     top:340px;
 }
 
+.chips6
+{
+    xTo:500;
+    yTo:300;
+}
+
 .seat6
 {
     left:500px;
     top:340px;
+}
+
+.chips5
+{
+    xTo:600;
+    yTo:200;
 }
 
 .seat5

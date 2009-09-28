@@ -41,8 +41,6 @@ public class Lobby extends PollTimer
         _pokerConnection = PokerClient.stream;
         JsonStreamProxy.setLobby(this);
         _tableGrid = tableGrid ;
-        
-         refreshTablelist();
     }
 
     public function get playersCount():int
@@ -62,7 +60,8 @@ public class Lobby extends PollTimer
 
     protected override function doStep(evt:TimerEvent):void
     {
-        refreshTablelist();
+        if (PokerClient.confiIsLoaded)
+            refreshTablelist();
     }
 
     public function onPacketPokerTableList(packet:Object):void

@@ -32,7 +32,8 @@
  		import aspoker.com.bubsy.poker.client.model.Card;
  		import aspoker.com.bubsy.poker.client.model.Player;
  		import aspoker.com.bubsy.poker.client.model.User;
- 		import aspoker.com.bubsy.poker.client.model.BuyInPopup;
+ 		import aspoker.com.bubsy.poker.client.component.CPokerChips;
+        import aspoker.com.bubsy.poker.client.model.BuyInPopup;
  		import mx.controls.Alert;
  		import aspoker.com.bubsy.poker.client.event.LoginEvent;
  		import mx.core.Container;
@@ -200,6 +201,7 @@
 			if (table.state != table.TABLE_STATE_PRE_FLOP)
 			{
 				setPlayersSeatState(table.getInvolvedPlayers(),"clear");
+                setVisiblePlayerChips(table.playerSerialsInGame,false);
 			}
 		}
 
@@ -207,7 +209,8 @@
 		{
 			trace("new game");
 			setPlayersSeatState(table.playerSerialsInGame,"clear");
-      setPlayersCardsState(table.getInvolvedPlayers(),"inposition");
+            setPlayersCardsState(table.getInvolvedPlayers(),"inposition");
+            setVisiblePlayerChips(table.playerSerialsInGame,false);
 			boardCards.initializeCards();
 		}
 
@@ -220,6 +223,18 @@
 					"seat"+ table.getPlayer(serial).seat
 					) as CSeat ;
         		seat.currentState = state;
+        	}
+		}
+        
+		private function setVisiblePlayerChips(arrOfSerials:Array/*of serials*/,
+	    value:Boolean=false):void
+		{
+			for each(var serial:int in arrOfSerials)
+        	{
+        		var chips:CPokerChips = seats.getChildByName(
+					"chips"+ table.getPlayer(serial).seat
+					) as CPokerChips;
+        		chips.visible = value;
         	}
 		}
 
@@ -244,22 +259,28 @@
         var cards:CCards = seats.getChildByName(
             "cards"+ player.seat
             ) as CCards ;
-
+         var chips:CPokerChips = seats.getChildByName(
+            "chips"+ player.seat
+            ) as CPokerChips ;
+        
         if (player.action.name == "Fold")
         {
             cards.currentState = "fold";
+            chips.visible = false;
+            
+        } else if (player.action.name == "Check") {
+        } else {
+            chips.chips = "" + (player.action.amount/100) ;
+
+            chips.goto(
+                seat.getStyle("left"),
+                seat.getStyle("top"),
+                chips.getStyle("xTo"),
+                chips.getStyle("yTo")
+            )   
         }
-
-        trace(
-            player.seat
-            + " : "
-            + player.name 
-            + " " 
-            + player.action.name 
-            + player.action.amount
-        );
-
-        pot.text = "" + table.currentPot;
+ 
+        pot.text = "" + (table.currentPot/100);
         
         /* unselect the previous player seat*/
         var previousSeat:CSeat = seats.getChildByName(
@@ -268,8 +289,7 @@
 
         previousSeat.currentState = "wait";
 
-        seat.playerState.text = player.action.name + player.action.amount;
-        seat.amount.text = "amount:" + player.bet;
+        seat.playerState.text = player.action.name;
     }
 
     private function _onPacketPokerPosition(evt:TableEvent):void
@@ -293,7 +313,6 @@
                                     ) as CSeat ;
 
         currentSeat.currentState = "inposition";
-        currentSeat.amount.text = "";
         }
 
         /* the user to play ?*/
@@ -619,7 +638,7 @@
 
  		public function Buyin():void
  		{
-			var toto:BuyInPopup = new BuyInPopup(this,table);
+			new BuyInPopup(this,table);
  		}
  	 ]]>
  	</mx:Script>
@@ -646,13 +665,20 @@
             name="cards0"
             styleName="cards0"
         />
-
+        
         <component:CSeat
             id="seat0"
             name="seat0"
             styleName="seat0"
             seatId="0"
             visible="false"
+        />
+
+        <component:CPokerChips
+           id="chips0" 
+           name="chips0"
+           styleName="chips0"
+           visible="false" 
         />
 
         <component:CCards
@@ -669,6 +695,12 @@
             visible="false"
         />
 
+        <component:CPokerChips
+           id="chips1" 
+           name="chips1"
+           styleName="chips1"
+           visible="false" 
+        />
         <component:CCards
             id="cards2"
             name="cards2"
@@ -681,6 +713,13 @@
             seatId="2"
             styleName="seat2"
             visible="false"
+        />
+
+        <component:CPokerChips
+           id="chips2" 
+           name="chips2"
+           styleName="chips2"
+           visible="false" 
         />
 
         <component:CCards
@@ -697,6 +736,13 @@
             visible="false"
         />
 
+        <component:CPokerChips
+           id="chips3" 
+           name="chips3"
+           styleName="chips3"
+           visible="false" 
+        />
+
         <component:CCards
             id="cards4"
             name="cards4"
@@ -711,7 +757,14 @@
             visible="false"
         />
 
-        <component:CCards
+         <component:CPokerChips
+           id="chips4" 
+           name="chips4"
+           styleName="chips4"
+           visible="false" 
+        />
+
+       <component:CCards
             id="cards5"
             name="cards5"
             styleName="cards5"
@@ -725,6 +778,13 @@
             visible="false"
         />
 
+        <component:CPokerChips
+           id="chips5" 
+           name="chips5"
+           styleName="chips5"
+           visible="false" 
+        />
+        
         <component:CCards
             id="cards6"
             name="cards6"
@@ -737,6 +797,13 @@
             name="seat6"
             styleName="seat6"
             visible="false"
+        />
+
+        <component:CPokerChips
+           id="chips6" 
+           name="chips6"
+           styleName="chips6"
+           visible="false" 
         />
 
         <component:CCards
@@ -753,6 +820,13 @@
             visible="false"
         />
 
+        <component:CPokerChips
+           id="chips7" 
+           name="chips7"
+           styleName="chips7"
+           visible="false" 
+        />
+        
         <component:CCards
             id="cards8"
             name="cards8"
@@ -767,12 +841,13 @@
             visible="false"
         />
 
-        <component:CCards 
-            id="cards9" 
-            name="cards9"
-            styleName="cards9"
+         <component:CPokerChips
+           id="chips8" 
+           name="chips8"
+           styleName="chips8"
+           visible="false" 
         />
-
+        
         <component:CSeat 
             id="seat9" 
             seatId="9" 
@@ -780,13 +855,28 @@
             styleName="seat9"
             visible="false"
         />
+
+        <component:CCards 
+            id="cards9" 
+            name="cards9"
+            styleName="cards9"
+        />
+
+         <component:CPokerChips
+           id="chips9" 
+           name="chips9"
+           styleName="chips9"
+           visible="false" 
+        />
+
 		</mx:Canvas>
 
 		
-		    <mx:HBox id="tableOptions" left="5">
-                <mx:Button label="Quitter la table" click="table.quit()"/>
-             </mx:HBox>
-			<mx:HBox id="tableActions" right="5"/>
+        <mx:HBox id="tableOptions" left="5">
+           <mx:Button label="Quitter la table" click="table.quit()"/>
+        </mx:HBox>
+	    
+        <mx:HBox id="tableActions" right="5"/>
 
         <component:CChatBox 
             name="chatbox"

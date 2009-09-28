@@ -28,6 +28,8 @@ import org.httpclient.HttpResponse;
 import org.httpclient.events.*;
 import com.adobe.net.URI;
 import flash.utils.ByteArray;
+import flash.events.TimerEvent;
+import flash.utils.Timer;
 
 import flash.events.Event;
 import flash.events.EventDispatcher;
@@ -46,21 +48,28 @@ public class JsonStream extends EventDispatcher
     private var _httpClient:HttpClient = new HttpClient;
     private var _maxPoolSize:int = 5;
     private var _queue:Array = new Array();
+
     private var _state:int = QUEUE_WAIT;
     private var _response:String;
-
+    
+    private var _receivedPackets:Array = new Array();
+    private var pollFrequency:int = 100;    
+    private var _poll:Timer;
+    
     public function JsonStream():void
     {
         _httpClient.addEventListener(HttpResponseEvent.COMPLETE, _onComplete);
         _httpClient.addEventListener(HttpDataEvent.DATA, _onData);
+        _poll = new Timer(pollFrequency);
+        _poll.addEventListener(TimerEvent.TIMER, process);
+        _poll.start();
     }
 
     private function _sendNext():void
     {
         if (_state == QUEUE_WAIT && _queue.length>0)
         {
-            var packet:String = _queue.pop();
-            var request:URLRequest = new URLRequest();
+            var packet:String = _queue.shift();
 
             _state = QUEUE_RUNNING;
             _lastRequestStartTime = new Date();
@@ -128,6 +137,15 @@ public class JsonStream extends EventDispatcher
     protected function _dispatchEvent(pokerPacket:Object):void
     {
     }
+    
+    private function process(evt:TimerEvent):void
+    {
+         if (_receivedPackets.length>0)
+         { 
+             var packet:Object = _receivedPackets.shift();
+             _dispatchEvent(packet);
+        }
+    }
 
     private function _onComplete(event:HttpResponseEvent):void
     {
@@ -137,13 +155,13 @@ public class JsonStream extends EventDispatcher
         {
             if (results[i])
             {
-                _dispatchEvent(results[i]);
+                _receivedPackets.push(results[i]);
             }
         }
         _state = QUEUE_WAIT;
         setTimeout(_sendNext,1);
     }
-
+    
     private function _onData(event:HttpDataEvent):void
     {
         _response += event.readUTFBytes();

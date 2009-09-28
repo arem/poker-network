@@ -23,7 +23,7 @@
 <mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" 
 	layout="vertical" 
 	showCloseButton="true"
-	title="Boite de dialogue">
+	title="Rebuy popup">
 	<mx:Script>
  	<![CDATA[
 

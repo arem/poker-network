@@ -68,7 +68,6 @@
  		{
  			return _seatId;
  		}
- 		
  			
  		private function _init():void
  		{
@@ -86,7 +85,7 @@
  		public function setPlayerChips():void
  		{
  			var chips:Label =  seats.getChildByName("chips") as Label;
- 			chips.text = "" + _table.getPlayerFromSeat(_seatId).money as String;
+ 			chips.text = "" + (_table.getPlayerFromSeat(_seatId).money/100) as String;
  		}
  	 ]]>
  	</mx:Script>
@@ -111,7 +110,6 @@
          <mx:State name="free">
             <mx:SetProperty target="{playerName}" name="visible" value="false"/>
             <mx:SetProperty target="{level}" name="visible" value="false"/>
-            <mx:SetProperty target="{amount}" name="visible" value="false"/>
             <mx:SetProperty target="{playerState}" name="visible" value="false"/>
             <mx:SetProperty target="{chips}" name="visible" value="false"/>
             <mx:SetProperty target="{chair}" name="visible" value="true"/>
@@ -123,7 +121,6 @@
             <mx:SetProperty target="{playerName}" name="visible" value="true"/>
             <mx:SetProperty target="{level}" name="visible" value="true"/>
             <mx:SetProperty target="{playerState}" name="visible" value="true"/>
-            <mx:SetProperty target="{amount}" name="visible" value="true"/>
             <mx:SetProperty target="{chips}" name="visible" value="true"/>
             <mx:SetProperty target="{chair}" name="visible" value="false"/>
             <mx:SetProperty target="{avatar}" name="visible" value="true"/>
@@ -133,7 +130,6 @@
         <mx:State name="clear" basedOn="arrive" >
             <mx:SetProperty target="{seats}" name="styleName" value="ingame"/>
             <mx:SetProperty target="{playerState}" name="text" value=""/>
-            <mx:SetProperty target="{amount}" name="text" value=""/>
         </mx:State>
 
         <mx:State name="sitin" basedOn="arrive" >
@@ -154,7 +150,6 @@
          <mx:State name="inposition" basedOn="arrive" >
             <mx:SetProperty target="{seats}" name="styleName" value="inposition"/>
             <mx:SetProperty target="{playerState}" name="text" value=""/>
-            <mx:SetProperty target="{amount}" name="text" value=""/>
          </mx:State>
 
         <mx:State name="disabled">
@@ -177,7 +172,6 @@
             <mx:Label id="playerName" styleName="playerName" text="text"/>
             <mx:Label id="level" styleName="level" text="Level: 5"/>
             <mx:Label id="chips" styleName="chips" text="" />
-            <mx:Label id="amount" styleName="amount" text="" />
             <mx:Label id="playerState" styleName="playerState" text="" />
 
             <mx:Image 

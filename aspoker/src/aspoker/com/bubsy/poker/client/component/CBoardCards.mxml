@@ -51,41 +51,39 @@
 	</mx:Script>
 
 	<mx:HBox name="board" id="board">
-		<mx:Image id="card1" 
+		<mx:Image id="card0" 
             styleName="card" 
             name="card0" autoLoad="true"
-            source="{card1.getStyle('backCard')}"
+            source="{card0.getStyle('backCard')}"
         /> 
 
-        <mx:Image id="card2" 
+        <mx:Image id="card1" 
             styleName="card" 
             name="card1" 
             autoLoad="true" 
-            source="{card3.getStyle('backCard')}"/>
+            source="{card1.getStyle('backCard')}"
+        />
  
-		<mx:Image id="card3" 
+		<mx:Image id="card2" 
             styleName="card" 
             name="card2" 
+            autoLoad="true" 
+            source="{card2.getStyle('backCard')}"
+        /> 
+
+        <mx:Image id="card3" 
+            styleName="card" 
+            name="card3" 
             autoLoad="true" 
             source="{card3.getStyle('backCard')}"
         /> 
 
         <mx:Image id="card4" 
             styleName="card" 
-            name="card3" 
-            autoLoad="true" 
-            source="{card4.getStyle('backCard')}"
-        /> 
-
-        <mx:Image id="card5" 
-            styleName="card" 
             name="card4" 
             autoLoad="true" 
-            source="{card5.getStyle('backCard')}"
+            source="{card4.getStyle('backCard')}"
         /> 	
 	</mx:HBox>
 
 </mx:Canvas>
-
-
- 		 

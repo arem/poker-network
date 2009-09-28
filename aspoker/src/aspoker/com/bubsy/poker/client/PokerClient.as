@@ -21,6 +21,8 @@ package aspoker.com.bubsy.poker.client
 {
 import aspoker.com.bubsy.poker.client.communication.JsonStreamProxy;
 import aspoker.com.bubsy.poker.client.model.User;
+import flash.events.*;
+import flash.net.*;
 
 public class PokerClient
 {
@@ -31,17 +33,57 @@ public class PokerClient
     private static var _user:User = null ;;
     private static var _currentState:int = VIEW_IS_BOARD;
 
-    public static const SERVER_HOST:String = "www.aspoker.info";
-    public static const SERVER_PORT:int = 19384;
-    public static const CARDS_PATH:String = "assets/cards/";
-    public static const CARDS_PREFIX:String = "small-";
-    public static const IMAGE_PATH:String = CARDS_PATH + CARDS_PREFIX;
-
+    public static var SERVER_HOST:String = "";
+    public static var SERVER_PORT:int;
+    public static var CARDS_PATH:String = "";
+    public static var CARDS_PREFIX:String = "";
+    public static var IMAGE_PATH:String = CARDS_PATH + CARDS_PREFIX;
+    
     private static var _actionJsonStream:JsonStreamProxy = new JsonStreamProxy();
-
+    private static var _loader:URLLoader = new URLLoader();
+    private static var _request:URLRequest = new URLRequest("config.xml");
+    private static var _configIsLoaded:Boolean = false;    
+ 
     public function PokerClient()
     {
+    }
+    
+    public static function get confiIsLoaded():Boolean
+    {
+        return _configIsLoaded;
+    }
 
+
+     public static function loadConfig():void
+    {
+         _loader.addEventListener(Event.COMPLETE,_onComplete);
+        
+         try {
+            _loader.load(_request);
+         } catch (error:Error) {
+            trace("Unable to load requested document.");
+         }
+    }
+
+    private static function _onComplete(event:Event):void
+    {
+        trace("configuration loaded");
+        var loader:URLLoader = event.target as URLLoader;
+        if (loader != null)
+        {
+            var externalXML:XML = new XML(loader.data);
+            SERVER_PORT = externalXML.restport;        
+            SERVER_HOST = externalXML.resthost;
+            CARDS_PATH = externalXML.imagecardspath;
+            CARDS_PREFIX = externalXML.imagecadsprefix;
+            IMAGE_PATH = CARDS_PATH + CARDS_PREFIX;
+            _configIsLoaded = true;
+        }
+        else
+        {
+            trace("loader is not a URLLoader!");
+            _configIsLoaded = false;
+        }
     }
 
     static public function get stream():JsonStreamProxy
