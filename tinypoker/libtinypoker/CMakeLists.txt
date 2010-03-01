@@ -1,4 +1,4 @@
-# Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Thomas Cort <linuxgeek@gmail.com>
 #
 # This file is part of TinyPoker.
 #
@@ -42,7 +42,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_NAME "libtinypoker")
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
-SET(CPACK_PACKAGE_CONTACT "tcort@tomcort.com")
+SET(CPACK_PACKAGE_CONTACT "linuxgeek@gmail.com")
 
 IF (WIN32)
 
@@ -52,7 +52,7 @@ SET(CPACK_GENERATOR "NSIS")
 SET(CPACK_NSIS_DISPLAY_NAME "libtinypoker")
 SET(CPACK_NSIS_URL_HELP_LINK "http:\\\\\\\\www.tinypoker.org/")
 SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.tinypoker.org/")
-SET(CPACK_NSIS_CONTACT "tcort@tomcort.com")
+SET(CPACK_NSIS_CONTACT "linuxgeek@gmail.com")
 SET(CPACK_NSIS_MODIFY_PATH ON)
 
 ELSE (WIN32)

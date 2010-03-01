@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Thomas Cort <linuxgeek@gmail.com>
  *
  * This file is part of TinyPoker.
  *
@@ -85,7 +85,7 @@ void handle_sigsegv(int sig)
 	fprintf(stderr, " \n");
 	fprintf(stderr, "A fatal error occured causing this application to crash. Please report the\n");
 	fprintf(stderr, "entire error (everything between the 'Segmentation fault' lines) to the\n");
-	fprintf(stderr, "following developer: Thomas Cort <tcort@tomcort.com>\n");
+	fprintf(stderr, "following developer: Thomas Cort <linuxgeek@gmail.com>\n");
 	fprintf(stderr, " \n");
 	fprintf(stderr, "%s version %s was compiled at %s on %s\n", TINYPOKERD_NAME, TINYPOKERD_VERSION, __TIME__, __DATE__);
 

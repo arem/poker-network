@@ -1,4 +1,4 @@
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Thomas Cort <linuxgeek@gmail.com>
 ;;
 ;; This file is part of TinyPoker.
 ;;

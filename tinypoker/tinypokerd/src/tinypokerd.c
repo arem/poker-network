@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Thomas Cort <linuxgeek@gmail.com>
  *
  * This file is part of TinyPoker.
  *
@@ -64,7 +64,7 @@ char *pid_filename;
 void display_version(void)
 {
 	fprintf(stdout, "%s/%s\n", TINYPOKERD_NAME, TINYPOKERD_VERSION);
-	fprintf(stdout, "Copyright (C) 2005, 2006, 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>\n");
+	fprintf(stdout, "Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Thomas Cort <linuxgeek@gmail.com>\n");
 	fprintf(stdout, "This is free software; see the source for copying conditions.  There is NO\n");
 	fprintf(stdout, "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }

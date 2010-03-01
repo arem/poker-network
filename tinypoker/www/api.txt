@@ -1,5 +1,5 @@
 // TinyPoker.org
-// Copyright (C) 2007, 2008, 2009 Thomas Cort <tcort@tomcort.com>
+// Copyright (C) 2007, 2008, 2009, 2010 Thomas Cort <linuxgeek@gmail.com>
 //
 // Permission is granted to copy, distribute and/or modify this document
 // under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -40,10 +40,11 @@ link:download.html[downloading] the latest release.
 Build and Install libtinypoker
 ------------------------------
 
-.Configure, make and install
+.Configure, make, test, and install
 --------------------------------------
  $ cmake -D CMAKE_INSTALL_PREFIX=/usr .
  $ make
+ $ make test
  # make install
 --------------------------------------
 
@@ -105,7 +106,7 @@ int main(int argc, char *argv[]) {
 
 	ipp_init();
 
-	sock = ipp_client_handshake("localhost", "ca.pem", "JSMITH", "ABC123", "500", NULL);
+	sock = ipp_client_handshake("localhost", 9898, "JSMITH", "ABC123", "500", NULL);
 	if (!sock) {
 		ipp_exit();
 		return 1;
@@ -144,7 +145,7 @@ int main(int argc, char *argv[]) {
 
 	ipp_init();
 
-	sock = ipp_client_handshake("localhost", "ca.pem", "JSMITH", "ABC123", "500", protocol_logger);
+	sock = ipp_client_handshake("localhost", 9898, "JSMITH", "ABC123", "500", protocol_logger);
 	if (!sock) {
 		ipp_exit();
 		return 1;
@@ -162,7 +163,7 @@ int main(int argc, char *argv[]) {
 To be continued
 ---------------
 
-This document is being written as *tinypokerclient* and *tinypokerbot* are
+This document is being written as this software is 
 being developed, so it is still very much a work in progress. If you want
 to go further, take a look at *tinypoker.h*; it is well commented and
 should give you and idea about the functions and structures available.
