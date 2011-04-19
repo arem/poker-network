@@ -7,6 +7,9 @@
 */po/*.gmo
 *~
 TAGS
+.project
+.pydevproject
+.settings
 ###########################################################################
 # poker-network: bkuhn-specific files.  Remove this if you add files by
 # this name, bkuhn will appreciate it.

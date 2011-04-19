@@ -1,0 +1,3 @@
+[submodule "pokeradditions"]
+    path = poker-network/pokeradditions
+    url = tracker@anata-it.de:pokeradditions.git
