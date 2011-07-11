@@ -41,7 +41,7 @@ from pokernetwork import pokermemcache
 # like they do.  This is related to another FIXME about this issue you'll
 # find in pokeravatar.py -- bkuhn, 2008-11-28
 def fromutf8(tree, encoding = 'ISO-8859-1'):
-    return __walk(tree, lambda x: x.encode(encoding))
+    return __walk(tree, lambda x: x.encode(encoding,'xmlcharrefreplace'))
 
 def toutf8(tree, encoding = 'ISO-8859-1'):
     return __walk(tree, lambda x: unicode(x, encoding))
@@ -269,11 +269,13 @@ class PokerResource(resource.Resource):
                 self.message("(%s:%s) " % request.findProxiedIP() + "render " + data + " returns " + str(packets))
             #
             # update the session information if the avatar changed
+            # session is reloaded because the session object could have changed in the meantime
             #
             # *do not* update/expire/persist session if handling
             # PacketPokerLongPollReturn
             #
             if packet.type != PACKET_POKER_LONG_POLL_RETURN:
+                session = request.getSession()
                 session.site.updateSession(session)
                 session.site.persistSession(session)
             #
@@ -291,13 +293,16 @@ class PokerResource(resource.Resource):
                 request.finish()
             return True
         def processingFailed(reason):
+            # session is reloaded (and expired) because the session object could have changed in the meantime
+            request.getSession().expire()
+            
             body = reason.getTraceback()
             request.setResponseCode(http.INTERNAL_SERVER_ERROR)
             request.setHeader('content-length', str(len(body)))
             request.setHeader('content-type',"text/html")
             request.write(body)
             request.finish()
-            session.expire()
+            
             if self.verbose >= 0:
                 self.error("(%s:%s) " % request.findProxiedIP() + str(body))
             return True
@@ -483,7 +488,7 @@ class PokerSite(server.Site):
 
     #
     # prevent calling the startFactory method of site.Server
-    # to disable loging.
+    # to disable logging.
     #
     def startFactory(self): 
         pass
