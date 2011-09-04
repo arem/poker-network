@@ -88,7 +88,7 @@ from pokerengine import pokerprizes
 from pokernetwork.protocol import UGAMEProtocol
 from pokernetwork.server import PokerServerProtocol
 from pokernetwork.user import checkName, checkPassword
-from pokernetwork.pokerdatabase import PokerDatabase
+from pokernetwork.pokerdatabase import PokerDatabase,PokerDatabaseAsync
 from pokernetwork.pokerpackets import *
 from pokernetwork.pokersite import PokerTourneyStartResource, PokerImageUpload, PokerAvatarResource, PokerResource, packets2maps, args2packets, fromutf8, toutf8
 from pokernetwork.pokertable import PokerTable, PokerAvatarCollection
@@ -270,6 +270,7 @@ class PokerService(service.Service):
     def startService(self):
         self.monitors = []
         self.db = PokerDatabase(self.settings)
+        self.dba = PokerDatabaseAsync(self.settings)
         self.setupTourneySelectInfo()
         self.setupLadder()
         self.setupResthost()

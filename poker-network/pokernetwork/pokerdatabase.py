@@ -198,3 +198,17 @@ class PokerDatabase:
     def literal(self, args):
         return self.db.literal(args)
 
+from twisted.enterprise import adbapi 
+
+class PokerDatabaseAsync:
+    def __init__(self, settings):
+        self.verbose = settings.headerGetInt("/server/@verbose")
+        self.parameters = settings.headerGetProperties("/server/database")[0]
+        self.mysql_command = settings.headerGet("/server/database/@command")
+        self.db = adbapi.ConnectionPool('MySQLdb',
+            host = self.parameters["host"],
+            port = int(self.parameters.get("port", '3306')),
+            user = self.parameters["user"],
+            passwd = self.parameters["password"],
+            db = self.parameters["name"]
+        )
