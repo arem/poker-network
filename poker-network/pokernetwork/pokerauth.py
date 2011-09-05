@@ -29,14 +29,16 @@
 
 from pokernetwork.user import User
 from twisted.python.runtime import seconds
+from twisted.internet import defer
 
 def message(string):
     print "PokerAuth: " + string
     
 class PokerAuth:
 
-    def __init__(self, db, settings):
+    def __init__(self, db, dba, settings):
         self.db = db
+        self.dba = dba
         self.type2auth = {}
         self.verbose = settings.headerGetInt("/server/@verbose")
         self.auto_create_account = settings.headerGet("/server/@auto_create_account") != 'no'
@@ -52,37 +54,34 @@ class PokerAuth:
 
     def GetLevel(self, type):
         return self.type2auth.has_key(type) and self.type2auth[type]
-
+    
+    @defer.inlineCallbacks
     def auth(self, name, password):
-        cursor = self.db.cursor()
-        cursor.execute("SELECT serial, password, privilege FROM users "
-                       "WHERE name = '%s'" % name)
-        numrows = int(cursor.rowcount)
+        res = yield self.dba.db.runQuery("SELECT serial, password, privilege FROM users WHERE name = %s", name)
+        ret = None
         serial = 0
         privilege = User.REGULAR
-        if numrows <= 0:
+        if len(res) <= 0:
             if self.auto_create_account:
                 if self.verbose > 1:
                     self.message("user %s does not exist, create it" % name)
                 serial = self.userCreate(name, password)
-                cursor.close()
             else:
                 if self.verbose > 1:
                     self.message("user %s does not exist" % name)
-                cursor.close()
-                return ( False, "Invalid login or password" )
-        elif numrows > 1:
+                ret = ( False, "Invalid login or password" )
+        elif len(res) > 1:
             self.error("more than one row for %s" % name)
-            cursor.close()
-            return ( False, "Invalid login or password" )
+            ret = ( False, "Invalid login or password" )
         else:
-            (serial, password_sql, privilege) = cursor.fetchone()
-            cursor.close()
+            (serial, password_sql, privilege) = res[0]
             if password_sql != password:
                 self.message("password mismatch for %s" % name)
-                return ( False, "Invalid login or password" )
-
-        return ( (serial, name, privilege), None )
+                ret = ( False, "Invalid login or password" )
+        if ret is None: 
+            ret = ( (serial, name, privilege), None )
+        
+        defer.returnValue(ret)
 
     def userCreate(self, name, password):
         if self.verbose:
@@ -104,7 +103,7 @@ class PokerAuth:
         return int(serial)
 
 _get_auth_instance = None
-def get_auth_instance(db, settings):
+def get_auth_instance(db, dba, settings):
     global _get_auth_instance
     if _get_auth_instance == None:
         verbose = settings.headerGetInt("/server/@verbose")
@@ -121,5 +120,5 @@ def get_auth_instance(db, settings):
         except:
             if verbose > 1:
                 message("get_auth_instance: falling back on pokerauth.get_auth_instance, script not found: '%s'" % script)
-            _get_auth_instance = lambda db, settings: PokerAuth(db, settings)
-    return apply(_get_auth_instance, [db, settings])
+            _get_auth_instance = lambda db, dba, settings: PokerAuth(db, dba, settings)
+    return apply(_get_auth_instance, [db, dba, settings])

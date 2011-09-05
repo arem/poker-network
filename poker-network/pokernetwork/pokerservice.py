@@ -280,7 +280,7 @@ class PokerService(service.Service):
             self.cleanUp(temporary_users = self.settings.headerGet("/server/users/@temporary"))
         self.cashier = pokercashier.PokerCashier(self.settings)
         self.cashier.setDb(self.db)
-        self.poker_auth = get_auth_instance(self.db, self.settings)
+        self.poker_auth = get_auth_instance(self.db, self.dba, self.settings)
         self.dirs = split(self.settings.headerGet("/server/path"))
         self.avatar_collection = PokerAvatarCollection("service", self.verbose)
         self.avatars = []
@@ -590,12 +590,13 @@ class PokerService(service.Service):
             self.error("b) modified %d rows (expected 1): %s" % ( cursor.rowcount, sql ))
         cursor.close()
         return True
-
+    
+    @defer.inlineCallbacks
     def auth(self, name, password, roles):
-        ( info, reason ) = self.poker_auth.auth(name, password)
+        ( info, reason ) = yield self.poker_auth.auth(name, password)
         if info:
             self.autorefill(info[0])
-        return ( info, reason )
+        defer.returnValue((info,reason))
 
     def autorefill(self, serial):
         if not self.refill:

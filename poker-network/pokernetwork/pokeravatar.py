@@ -126,7 +126,7 @@ class PokerAvatar:
         
     def message(self, string):
         print "PokerAvatar: " + str(string)
-        
+    
     def isAuthorized(self, type):
         return self.user.hasPrivilege(self.service.poker_auth.GetLevel(type))
 
@@ -205,11 +205,12 @@ class PokerAvatar:
             if self.has_session:
                 self.service.sessionEnd(self.getSerial())
             self.user.logout()
-        
+    
+    @defer.inlineCallbacks
     def auth(self, packet):
         status = checkNameAndPassword(packet.name, packet.password)
         if status[0]:
-            ( info, reason ) = self.service.auth(packet.name, packet.password, self.roles)
+            ( info, reason ) = yield self.service.auth(packet.name, packet.password, self.roles)
             code = 0
         else:
             self.message("auth: failure " + str(status))
@@ -220,9 +221,12 @@ class PokerAvatar:
             self.sendPacketVerbose(PacketAuthOk())
             self.login(info)
         else:
-            self.sendPacketVerbose(PacketAuthRefused(message = reason,
-                                                     code = code,
-                                                     other_type = PACKET_LOGIN))
+            self.sendPacketVerbose(PacketAuthRefused(
+                message = reason,
+                code = code,
+                other_type = PACKET_LOGIN
+            ))
+        defer.returnValue(None)
 
     def getSerial(self):
         return self.user.serial
@@ -478,22 +482,27 @@ class PokerAvatar:
             self.longPollReturn()
             return []
 
-        self.handlePacketLogic(packet)
-        packets = self.resetPacketsQueue()
-        if len(packets) == 1 and isinstance(packets[0], defer.Deferred):
-            d = packets[0]
-            #
-            # turn the return value into an List if it is not
-            #
-            def packetList(result):
-                if type(result) == ListType:
-                    return result
-                else:
-                    return [ result ]
-            d.addCallback(packetList)
-            return d
-        else:
-            return packets
+        d = self.handlePacketLogic(packet)
+        
+        def cb(x): 
+            packets = self.resetPacketsQueue()
+            if len(packets) == 1 and isinstance(packets[0], defer.Deferred):
+                d = packets[0]
+                #
+                # turn the return value into an List if it is not
+                #
+                def packetList(result):
+                    if type(result) == ListType:
+                        return result
+                    else:
+                        return [result]
+                d.addCallback(packetList)
+                return d
+            else:
+                return packets
+        
+        d.addCallback(cb)
+        return d
 
     def handlePacket(self, packet):
         self.queuePackets()
@@ -501,70 +510,74 @@ class PokerAvatar:
         self.noqueuePackets()
         return self.resetPacketsQueue()
 
+    @defer.inlineCallbacks
     def handlePacketLogic(self, packet):
+        should_return = False
         if self.service.verbose > 2 and packet.type != PACKET_PING:
             self.message("handlePacketLogic(%d): " % self.getSerial() + str(packet))
-
+        
         if packet.type == PACKET_POKER_EXPLAIN:
             if self.setExplain(packet.value):
                 self.sendPacketVerbose(PacketAck())
             else:
                 self.sendPacketVerbose(PacketError(other_type = PACKET_POKER_EXPLAIN))
-            return
+            should_return = True
         
-        if packet.type == PACKET_POKER_SET_LOCALE:
+        elif packet.type == PACKET_POKER_SET_LOCALE:
             if self.setLocale(packet.locale):
                 self.sendPacketVerbose(PacketAck())
             else:
                 self.sendPacketVerbose(PacketPokerError(serial = self.getSerial(),
                                                         other_type = PACKET_POKER_SET_LOCALE))
-            return
+            should_return = True
 
-        if packet.type == PACKET_POKER_STATS_QUERY:
+        elif packet.type == PACKET_POKER_STATS_QUERY:
             self.sendPacketVerbose(self.service.stats(packet.string))
-            return
+            should_return = True
         
-        if packet.type == PACKET_POKER_MONITOR:
+        elif packet.type == PACKET_POKER_MONITOR:
             self.sendPacketVerbose(self.service.monitor(self))
-            return
+            should_return = True
         
-        if packet.type == PACKET_PING:
-            return
+        elif packet.type == PACKET_PING:
+            should_return = True
         
-        if not self.isAuthorized(packet.type):
+        elif not self.isAuthorized(packet.type):
             self.sendPacketVerbose(PacketAuthRequest())
-            return
+            should_return = True
 
-        if packet.type == PACKET_LOGIN:
+        elif packet.type == PACKET_LOGIN:
             if self.isLogged():
-                self.sendPacketVerbose(PacketError(other_type = PACKET_LOGIN,
-                                                   code = PacketLogin.LOGGED,
-                                                   message = "already logged in"))
+                self.sendPacketVerbose(PacketError(
+                    other_type = PACKET_LOGIN,
+                    code = PacketLogin.LOGGED,
+                    message = "already logged in")
+                )
             else:
-                self.auth(packet)
-            return
+                yield self.auth(packet)
+            should_return = True
 
-        if packet.type == PACKET_POKER_GET_PLAYER_PLACES:
+        elif packet.type == PACKET_POKER_GET_PLAYER_PLACES:
             if packet.serial != 0:
                 self.sendPacketVerbose(self.service.getPlayerPlaces(packet.serial))
             else:
                 self.sendPacketVerbose(self.service.getPlayerPlacesByName(packet.name))
-            return
+            should_return = True
 
-        if packet.type == PACKET_POKER_GET_PLAYER_INFO:
+        elif packet.type == PACKET_POKER_GET_PLAYER_INFO:
             self.sendPacketVerbose(self.getPlayerInfo())
-            return
+            should_return = True
 
-        if packet.type == PACKET_POKER_GET_PLAYER_IMAGE:
+        elif packet.type == PACKET_POKER_GET_PLAYER_IMAGE:
             self.sendPacketVerbose(self.service.getPlayerImage(packet.serial))
-            return
+            should_return = True
 
-        if packet.type == PACKET_POKER_GET_USER_INFO:
+        elif packet.type == PACKET_POKER_GET_USER_INFO:
             if self.getSerial() == packet.serial:
                 self.getUserInfo(packet.serial)
             else:
                 self.message("attempt to get user info for user %d by user %d" % ( packet.serial, self.getSerial() ))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_GET_PERSONAL_INFO:
             if self.getSerial() == packet.serial:
@@ -572,7 +585,7 @@ class PokerAvatar:
             else:
                 self.message("attempt to get personal info for user %d by user %d" % ( packet.serial, self.getSerial() ))
                 self.sendPacketVerbose(PacketAuthRequest())
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_PLAYER_INFO:
             if self.getSerial() == packet.serial:
@@ -584,7 +597,7 @@ class PokerAvatar:
                                                        message = "Failed to save set player information"))
             else:
                 self.message("attempt to set player info for player %d by player %d" % ( packet.serial, self.getSerial() ))
-            return
+            should_return = True
                 
         elif packet.type == PACKET_POKER_PLAYER_IMAGE:
             if self.getSerial() == packet.serial:
@@ -596,14 +609,14 @@ class PokerAvatar:
                                                        message = "Failed to save set player image"))
             else:
                 self.message("attempt to set player image for player %d by player %d" % ( packet.serial, self.getSerial() ))
-            return
+            should_return = True
                 
         elif packet.type == PACKET_POKER_PERSONAL_INFO:
             if self.getSerial() == packet.serial:
                 self.setPersonalInfo(packet)
             else:
                 self.message("attempt to set player info for player %d by player %d" % ( packet.serial, self.getSerial() ))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_CASH_IN:
             if self.getSerial() == packet.serial:
@@ -612,7 +625,7 @@ class PokerAvatar:
                 self.message("attempt to cash in for user %d by user %d" % ( packet.serial, self.getSerial() ))
                 self.sendPacketVerbose(PacketPokerError(serial = self.getSerial(),
                                                         other_type = PACKET_POKER_CASH_IN))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_CASH_OUT:
             if self.getSerial() == packet.serial:
@@ -621,26 +634,26 @@ class PokerAvatar:
                 self.message("attempt to cash out for user %d by user %d" % ( packet.serial, self.getSerial() ))
                 self.sendPacketVerbose(PacketPokerError(serial = self.getSerial(),
                                                         other_type = PACKET_POKER_CASH_OUT))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_CASH_QUERY:
             self.sendPacketVerbose(self.service.cashQuery(packet))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_CASH_OUT_COMMIT:
             self.sendPacketVerbose(self.service.cashOutCommit(packet))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_SET_ROLE:
             self.sendPacketVerbose(self.setRole(packet))
-            return 
+            should_return = True 
 
         elif ( packet.type == PACKET_POKER_SET_ACCOUNT or
                packet.type == PACKET_POKER_CREATE_ACCOUNT ):
             if self.getSerial() != packet.serial:
                 packet.serial = 0
             self.sendPacketVerbose(self.service.setAccount(packet))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_CREATE_TOURNEY:
             if self.getSerial() == packet.serial:
@@ -648,7 +661,7 @@ class PokerAvatar:
             else:
                 self.message("attempt to create tourney for player %d by player %d" % ( packet.serial, self.getSerial() ))
                 self.sendPacketVerbose(PacketAuthRequest())
-            return
+            should_return = True
 
         if packet.type == PACKET_POKER_TOURNEY_SELECT:
             ( playerCount, tourneyCount ) = self.service.tourneyStats()
@@ -661,15 +674,15 @@ class PokerAvatar:
             tourneyInfo = self.service.tourneySelectInfo(packet, tourneys)
             if tourneyInfo:
                 self.sendPacketVerbose(tourneyInfo)
-            return
+            should_return = True
         
         elif packet.type == PACKET_POKER_TOURNEY_REQUEST_PLAYERS_LIST:
             self.sendPacketVerbose(self.service.tourneyPlayersList(packet.game_id))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_GET_TOURNEY_MANAGER:
             self.sendPacketVerbose(self.service.tourneyManager(packet.tourney_serial))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_TOURNEY_REGISTER:
             if self.getSerial() == packet.serial:
@@ -678,7 +691,7 @@ class PokerAvatar:
                 self.tourneyUpdates(packet.serial)
             else:
                 self.message("attempt to register in tournament %d for player %d by player %d" % ( packet.game_id, packet.serial, self.getSerial() ))
-            return
+            should_return = True
             
         elif packet.type == PACKET_POKER_TOURNEY_UNREGISTER:
             if self.getSerial() == packet.serial:
@@ -686,42 +699,45 @@ class PokerAvatar:
                 self.tourneyUpdates(packet.serial)
             else:
                 self.message("attempt to unregister from tournament %d for player %d by player %d" % ( packet.game_id, packet.serial, self.getSerial() ))
-            return
+            should_return = True
             
         elif packet.type == PACKET_POKER_TABLE_REQUEST_PLAYERS_LIST:
             self.listPlayers(packet)
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_TABLE_SELECT:
             self.listTables(packet)
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_HAND_SELECT:
             self.listHands(packet, self.getSerial())
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_HAND_HISTORY:
             if self.getSerial() == packet.serial:
                 self.sendPacketVerbose(self.service.getHandHistory(packet.game_id, packet.serial))
             else:
                 self.message("attempt to get history of player %d by player %d" % ( packet.serial, self.getSerial() ))
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_HAND_SELECT_ALL:
             self.listHands(packet, None)
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_TABLE_JOIN:
             self.performPacketPokerTableJoin(packet)
-
-            return
+            should_return = True
 
         elif packet.type == PACKET_POKER_TABLE_PICKER:
             self.performPacketPokerTablePicker(packet)
-            return
-
+            should_return = True
+        
+        if should_return:
+            defer.returnValue(None)
+            return #not needed
+        
+        
         table = self.packet2table(packet)
-            
         if table:
             if self.service.verbose > 2:
                 self.message("packet for table " + str(table.game.id))
